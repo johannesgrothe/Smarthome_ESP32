@@ -1,0 +1,5 @@
+.DS_Store
+wifi_credentials.h
+.vscode/arduino.json
+.vscode/c_cpp_properties.json
+.vscode/settings.json
