@@ -11,7 +11,7 @@
 #include "SH_Debug_LED.h"
 
 #include <Arduino.h>
-#include <AsyncMqttClient.h>
+#include <PubSubClient.h>
 
 #define MQTT_SH_TOPIC "homebridge/to"
 
@@ -22,42 +22,65 @@
 class SH_Client
 {
 private:
-  WiFiClient espClient;
   long lastMsg;
   char msg[50];
   int value;
-  IPAddress server;
-  SH_Wallswitch testswitch;
-  SH_Debug_LED testled;
+
+  IPAddress mqttServer;
+  WiFiClient networkClient;
+  PubSubClient mqttClient;
 
   uint8_t gadgets_pointer;
-
   SH_Gadget gadgets[MAX_GADGETS];
 
   bool initialized;
 
   void reconnect();
   void setup_wifi();
+  void setup_mqtt();
+
+  void callback(char* topic, byte* payload, unsigned int length) {
+    char message[length+1];
+    for (uint32_t i=0; i<length; i++)
+    {
+      message[i] = (char) payload[i];
+    }
+    message[length] = '\0';
+
+    if ((strcmp(topic, "debug/in") == 0))
+    {
+      Serial.printf("[DEBUG]: %s\n", message);
+    }
+    else if ((strcmp(topic, "homebridge/from/set") == 0))
+    {
+      Serial.printf("[HOMEBRIDGE]: %s\n", message);
+    }
+    else
+    {
+      Serial.printf("Message arrived [%s]: %s\n", topic, message);
+    }
+  }
 
 public:
-  SH_Client(IPAddress server):
-  lastMsg(0),
-  value(0),
-  initialized(false)
-  {
-    testswitch.init(22, false);
-    // testled.init(1, 1, 5, 200);
-  };
+  SH_Client(IPAddress server, uint8_t board_type):
+    mqttServer(server),
+    mqttClient(networkClient),
+    gadgets(),
+    lastMsg(0),
+    value(0),
+    initialized(false)
+    {
+    };
 
   bool init();
 
   void refresh();
 
-  bool addGadget(SH_Gadget * gadget);
+  bool addGadget(SH_Gadget gadget);
 
-  bool removeGadget(char * name);
+  bool unregisterGadget(SH_Gadget * gadget);
 
-  bool removeGadget(uint8_t index);
+  bool registerGadget(SH_Gadget * gadget);
 };
 
 #endif

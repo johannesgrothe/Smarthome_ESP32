@@ -1,42 +1,22 @@
 #include "SH_Client.h"
-#include "SH_Debug_LED.h"
-
 
 #define BUILTIN_LED 2
 
-IPAddress server(192, 168, 178, 23);
+IPAddress mqtt_broker_ip(192, 168, 178, 60);
 
-SH_Client shclient(server);
-
-SH_Debug_LED debug_led;
-
+SH_Client shclient(mqtt_broker_ip, 0);
 
 void setup()
 {
   pinMode(BUILTIN_LED, OUTPUT);
   Serial.begin(115200);
   shclient.init();
-
-  debug_led.setName("LED1");
-  char buffer[8];
-  debug_led.getName(buffer);
-  Serial.println(buffer);
-
-  debug_led.setName("123456789");
-  debug_led.getName(buffer);
-  Serial.println(buffer);
-  debug_led.setName("abcdefg");
-  debug_led.getName(buffer);
-  Serial.println(buffer);
-  debug_led.setName("123456789");
-  debug_led.getName(buffer);
-  Serial.println(buffer);
+  shclient.addGadget(SH_Debug_LED("TestLED"));
+  shclient.addGadget(SH_Debug_LED("TestLED2"));
+  shclient.addGadget(SH_Debug_LED("TestLED3"));
 }
 
 void loop()
 {
   shclient.refresh();
-  debug_led.test();
-  debug_led.setStatus(!debug_led.getStatus());
-  delay(2500);
 }

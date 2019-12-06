@@ -1,10 +1,11 @@
 #include <string.h>
 #include <Arduino.h>
+#include "ArduinoJson.h"
 
 #ifndef __SH_Gadget__
 #define __SH_Gadget__
 
-#define NAME_LEN 7
+#define NAME_LEN 12
 
 enum SH_Color {red, green, blue};
 
@@ -19,6 +20,13 @@ class SH_Gadget
       name(),
       initialized(false)
       {
+      };
+
+    SH_Gadget(const char * name):
+      name(),
+      initialized(false)
+      {
+        setName(name);
       };
 
     void setName(const char * new_name)
@@ -46,7 +54,12 @@ class SH_Gadget
       initialized = true;
     };
 
-    bool decode(DynamicJsonDocument * doc)
+    bool decode(DynamicJsonDocument doc)
+    {
+      return false;
+    }
+
+    bool getRegisterStr(char * buffer)
     {
       return false;
     }
@@ -58,8 +71,9 @@ class SH_Receiver : public SH_Gadget
     bool status;
 
   public:
-    SH_Receiver():
-      SH_Gadget()
+
+    SH_Receiver(const char * name):
+      SH_Gadget(name)
       {
       };
 
@@ -74,8 +88,9 @@ class SH_Lamp : public SH_Receiver
     uint8_t hue[3];
 
   public:
-    SH_Lamp():
-      SH_Receiver(),
+
+    SH_Lamp(const char * name):
+      SH_Receiver(name),
       brightness(100),
       default_brightness(100),
       status(1),
@@ -154,7 +169,7 @@ class SH_Lamp : public SH_Receiver
       status = new_status;
     };
 
-    bool decode(DynamicJsonDocument * doc)
+    bool decode(DynamicJsonDocument doc)
     {
       if (doc["characteristic"] == "On")
       {
@@ -168,7 +183,13 @@ class SH_Lamp : public SH_Receiver
       {
         setBrightness(doc["value"]);
       }
-    }
+    };
+
+    bool getRegisterStr(char * buffer)
+    {
+      sprintf(buffer, "{\"name\": \"%s\", \"service_name\": \"%s\", \"service\": \"Lightbulb\"}", name, name);
+      // sprintf(buffer, '{"name": "%s", "service_name": "%s", "service": "Lightbulb"}', name, name);
+    };
 };
 
 #endif

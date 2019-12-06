@@ -1,38 +1,22 @@
 #include "SH_Client.h"
 
-static void callback(char* topic, byte* payload, unsigned int length)
-{
-  Serial.printf("length: %d", length);
-  char message[length + 1];
-  char p;
-  Serial.print("Message arrived [");
-  Serial.print(topic);
-  Serial.print("] ");
-  for (int i = 0; i < length; i++)
-  {
-    p = (char)payload[i];
-    message[i] = p;
-  }
-  message[length] = '\0';
-  Serial.println(message);
-
-  if ((char)payload[0] == '1')
-  {
-    Serial.println("LED on");
-    // digitalWrite(BUILTIN_LED, HIGH); 
-  }
-  else
-  {
-    Serial.println("LED off");
-    // digitalWrite(BUILTIN_LED, LOW);
-  }
-}
-
 bool SH_Client::init()
 {
-  bool status;
+  mqttClient.setServer(mqttServer, 1883);
+
+  using std::placeholders::_1;
+  using std::placeholders::_2;
+  using std::placeholders::_3;
+  mqttClient.setCallback(std::bind( &SH_Client::callback, this, _1,_2,_3));
+
   setup_wifi();
+  setup_mqtt();
+  mqttClient.subscribe("homebridge/from/#");
+  mqttClient.subscribe("homebridge/to/#");
+  mqttClient.subscribe("debug/in");
+  mqttClient.publish("debug/out", "SH_Client gestartet.");
   initialized = true;
+  return true;
 }
 
 void SH_Client::refresh()
@@ -41,17 +25,12 @@ void SH_Client::refresh()
   {
     init();
   }
-  testswitch.refresh();
-  if (testswitch.hasNewStatus())
+  uint8_t k;
+  for (k = 0; k < gadgets_pointer; k++)
   {
-    // Serial.println(testswitch.getStatus());
-    if (testswitch.getStatus() == 1)
-    {
-      Serial.println("Switching LED");
-      // testled.light_switch();
-    }
+    // Serial.println(gadgets[k].getName());
   }
-  testled.refresh();
+  mqttClient.loop();
 }
 
 void SH_Client::setup_wifi()
@@ -77,33 +56,46 @@ void SH_Client::setup_wifi()
   Serial.println(WiFi.localIP());
 }
 
-bool addGadget(SH_Gadget * gadget)
+void SH_Client::setup_mqtt()
 {
-  uint8_t k;
-  for (k = 0; k < MAX_GADGETS; k++)
+  while (!mqttClient.connected())
   {
-    if (gadgets[k] == nullptr)
-    {
-      gadgets[k] = gadget;
-      return true;
-    }
-  }
-  return false;
-}
-
-bool removeGadget(char * name)
-{
-  uint8_t k;
-  for (k = 0; k < MAX_GADGETS; k++)
-  {
-    if (gadgets[k] != nullptr && strcmp(gadgets[0].getName(), name))
-    {
-      return removeGadget(k);
+    Serial.print("Attempting MQTT connection...");
+    if (mqttClient.connect("arduinoClient")) {
+      Serial.println("connected");
+    } else {
+      Serial.print("failed, rc=");
+      Serial.print(mqttClient.state());
+      Serial.println(" try again in 5 seconds");
+      delay(5000);
     }
   }
 }
 
-bool removeGadget(uint8_t index)
+bool SH_Client::addGadget(SH_Gadget gadget)
 {
-  gadgets[index] = nullptr;
+  Serial.printf("Adding Gadget '%s':\n", gadget.getName());
+  if (gadgets_pointer == MAX_GADGETS) return false;
+  gadgets[gadgets_pointer] = gadget;
+  gadgets_pointer ++;
+  Serial.println("  Unregistering previous Gadget...");
+  unregisterGadget(&gadget);
+  Serial.println("  Registering new Gadget...");
+  registerGadget(&gadget);
+  Serial.println("  Done.");
+  return true;
+}
+
+bool SH_Client::unregisterGadget(SH_Gadget * input)
+{
+  char bufmsg[100];
+  sprintf(bufmsg, "{\"name\": \"%s\"}", input->getName());
+  mqttClient.publish("homebridge/to/remove", bufmsg);
+}
+
+bool SH_Client::registerGadget(SH_Gadget * input)
+{
+  char bufmsg[100];
+  input->getRegisterStr(bufmsg);
+  mqttClient.publish("homebridge/to/add", bufmsg);
 }

@@ -9,12 +9,10 @@ class SH_Debug_LED : public SH_Lamp
   private:
 
     public:
-      SH_Debug_LED():
-        SH_Lamp()
+      SH_Debug_LED(const char * name):
+        SH_Lamp(name)
         {
         };
-      
-      void test();
 
       void setStatus(bool new_status)
       {
