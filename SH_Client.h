@@ -32,7 +32,7 @@ private:
 
   uint8_t gadgets_pointer;
   // SH_Gadget gadgets[MAX_GADGETS];
-  SH_Gadget ** gadgets;
+  SH_Gadget * gadgets[MAX_GADGETS];
 
   bool initialized;
 
@@ -77,7 +77,7 @@ public:
 
   void refresh();
 
-  bool addGadget(SH_Gadget gadget);
+  bool addGadget(SH_Gadget * gadget);
 
   bool unregisterGadget(SH_Gadget * gadget);
 

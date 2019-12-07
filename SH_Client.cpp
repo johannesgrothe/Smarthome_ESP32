@@ -72,18 +72,18 @@ void SH_Client::setup_mqtt()
   }
 }
 
-bool SH_Client::addGadget(SH_Gadget gadget)
+bool SH_Client::addGadget(SH_Gadget * gadget)
 {
-  Serial.printf("Adding Gadget '%s':\n", gadget.getName());
+  Serial.printf("Adding Gadget '%s':\n", gadget->getName());
   if (gadgets_pointer == MAX_GADGETS) return false;
-  gadgets[gadgets_pointer] = &gadget;
+  gadgets[gadgets_pointer] = gadget;
   gadgets_pointer ++;
   char buffer[200];
-  gadget.getRegisterStr(&buffer[0]);
+  gadget->getRegisterStr(&buffer[0]);
   Serial.println("  Unregistering previous Gadget...");
-  unregisterGadget(&gadget);
+  unregisterGadget(gadget);
   Serial.println("  Registering new Gadget...");
-  registerGadget(&gadget);
+  registerGadget(gadget);
   Serial.println("  Done.");
   return true;
 }
