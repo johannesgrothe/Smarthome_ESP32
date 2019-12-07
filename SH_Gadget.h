@@ -59,10 +59,13 @@ class SH_Gadget
       return false;
     }
 
-    bool getRegisterStr(char * buffer)
-    {
-      return false;
-    }
+    virtual bool getRegisterStr(char * buffer) = 0;
+
+    // virtual bool getRegisterStr(char * buffer)
+    // {
+    //   Serial.println("PARENT METHOD");
+    //   return false;
+    // }
 };
 
 class SH_Receiver : public SH_Gadget
@@ -187,8 +190,11 @@ class SH_Lamp : public SH_Receiver
 
     bool getRegisterStr(char * buffer)
     {
+      Serial.println("RegStr");
       sprintf(buffer, "{\"name\": \"%s\", \"service_name\": \"%s\", \"service\": \"Lightbulb\"}", name, name);
-      // sprintf(buffer, '{"name": "%s", "service_name": "%s", "service": "Lightbulb"}', name, name);
+      Serial.println(buffer);
+      Serial.println("RegStr End");
+      return true;
     };
 };
 

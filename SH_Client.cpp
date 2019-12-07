@@ -76,8 +76,10 @@ bool SH_Client::addGadget(SH_Gadget gadget)
 {
   Serial.printf("Adding Gadget '%s':\n", gadget.getName());
   if (gadgets_pointer == MAX_GADGETS) return false;
-  gadgets[gadgets_pointer] = gadget;
+  gadgets[gadgets_pointer] = &gadget;
   gadgets_pointer ++;
+  char buffer[200];
+  gadget.getRegisterStr(&buffer[0]);
   Serial.println("  Unregistering previous Gadget...");
   unregisterGadget(&gadget);
   Serial.println("  Registering new Gadget...");
@@ -95,7 +97,15 @@ bool SH_Client::unregisterGadget(SH_Gadget * input)
 
 bool SH_Client::registerGadget(SH_Gadget * input)
 {
-  char bufmsg[100];
-  input->getRegisterStr(bufmsg);
-  mqttClient.publish("homebridge/to/add", bufmsg);
+  char bufmsg[200];
+  if (input->getRegisterStr(&bufmsg[0]))
+  {
+    mqttClient.publish("homebridge/to/add", bufmsg);
+  }
+  else
+  {
+    Serial.println("  Fehler bei der Registrierung.");
+    return false;
+  }
+  return true;
 }

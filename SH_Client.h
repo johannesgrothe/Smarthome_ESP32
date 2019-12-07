@@ -31,7 +31,8 @@ private:
   PubSubClient mqttClient;
 
   uint8_t gadgets_pointer;
-  SH_Gadget gadgets[MAX_GADGETS];
+  // SH_Gadget gadgets[MAX_GADGETS];
+  SH_Gadget ** gadgets;
 
   bool initialized;
 
