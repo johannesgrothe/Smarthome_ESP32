@@ -54,18 +54,16 @@ class SH_Gadget
       initialized = true;
     };
 
-    bool decode(DynamicJsonDocument doc)
+    bool decode(DynamicJsonDocument * doc)
     {
       return false;
     }
 
-    virtual bool getRegisterStr(char * buffer) = 0;
-
-    // virtual bool getRegisterStr(char * buffer)
-    // {
-    //   Serial.println("PARENT METHOD");
-    //   return false;
-    // }
+    virtual bool getRegisterStr(char * buffer)
+    {
+      Serial.println("PARENT METHOD");
+      return false;
+    }
 };
 
 class SH_Receiver : public SH_Gadget
@@ -190,10 +188,7 @@ class SH_Lamp : public SH_Receiver
 
     bool getRegisterStr(char * buffer)
     {
-      Serial.println("RegStr");
       sprintf(buffer, "{\"name\": \"%s\", \"service_name\": \"%s\", \"service\": \"Lightbulb\"}", name, name);
-      Serial.println(buffer);
-      Serial.println("RegStr End");
       return true;
     };
 };

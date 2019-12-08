@@ -31,7 +31,6 @@ private:
   PubSubClient mqttClient;
 
   uint8_t gadgets_pointer;
-  // SH_Gadget gadgets[MAX_GADGETS];
   SH_Gadget * gadgets[MAX_GADGETS];
 
   bool initialized;
@@ -54,11 +53,18 @@ private:
     }
     else if ((strcmp(topic, "homebridge/from/set") == 0))
     {
-      Serial.printf("[HOMEBRIDGE]: %s\n", message);
+      Serial.printf("[HOMEBRIDGE SET]: %s\n", message);
+      DynamicJsonDocument doc(1024);
+      deserializeJson(doc, message);
+      forwardCommand(&doc);
+    }
+    else if ((strcmp(topic, "homebridge/from/response") == 0))
+    {
+      Serial.printf("[RESPONSE]: %s\n", message);
     }
     else
     {
-      Serial.printf("Message arrived [%s]: %s\n", topic, message);
+      Serial.printf("[MSG '%s']: %s\n", topic, message);
     }
   }
 
@@ -82,6 +88,8 @@ public:
   bool unregisterGadget(SH_Gadget * gadget);
 
   bool registerGadget(SH_Gadget * gadget);
+
+  bool forwardCommand(DynamicJsonDocument * doc);
 };
 
 #endif

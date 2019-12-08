@@ -10,6 +10,17 @@ void setup()
 {
   pinMode(BUILTIN_LED, OUTPUT);
   Serial.begin(115200);
+
+  String msg = "{\"Name\": \"Bobo\"}";
+
+  DynamicJsonDocument doc(1024);
+  deserializeJson(doc, msg);
+  DynamicJsonDocument * docptr = &doc;
+  Serial.println(doc["Name"].as<char*>());
+
+  JsonObject obj = docptr->as<JsonObject>();
+  Serial.println(obj["Name"].as<char*>());
+
   shclient.init();
   
   SH_Debug_LED led1("TestLED");
@@ -17,6 +28,9 @@ void setup()
 
   SH_Debug_LED led2("TestLED2");
   shclient.addGadget(&led2);
+
+  SH_Debug_LED led3("FriLED");
+  shclient.addGadget(&led3);
 }
 
 void loop()

@@ -109,3 +109,12 @@ bool SH_Client::registerGadget(SH_Gadget * input)
   }
   return true;
 }
+
+bool SH_Client::forwardCommand(DynamicJsonDocument * doc)
+{
+  JsonObject json = doc->as<JsonObject>();
+  char * target_gadget = json["name"];
+  Serial.println(target_gadget);
+  return true;
+}
+
