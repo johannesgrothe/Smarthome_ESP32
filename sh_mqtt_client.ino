@@ -13,14 +13,6 @@ void setup()
 
   String msg = "{\"Name\": \"Bobo\"}";
 
-  DynamicJsonDocument doc(1024);
-  deserializeJson(doc, msg);
-  DynamicJsonDocument * docptr = &doc;
-  Serial.println(doc["Name"].as<char*>());
-
-  JsonObject obj = docptr->as<JsonObject>();
-  Serial.println(obj["Name"].as<char*>());
-
   shclient.init();
   
   SH_Debug_LED led1("TestLED");

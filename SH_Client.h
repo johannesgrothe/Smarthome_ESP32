@@ -39,7 +39,8 @@ private:
   void setup_wifi();
   void setup_mqtt();
 
-  void callback(char* topic, byte* payload, unsigned int length) {
+  void callback(char* topic, byte* payload, unsigned int length)
+  {
     char message[length+1];
     for (uint32_t i=0; i<length; i++)
     {
@@ -56,7 +57,15 @@ private:
       Serial.printf("[HOMEBRIDGE SET]: %s\n", message);
       DynamicJsonDocument doc(1024);
       deserializeJson(doc, message);
-      forwardCommand(&doc);
+      bool fw = forwardCommand(&doc);
+      if (fw)
+      {
+        Serial.println("Forwarding successfull");
+      }
+      else
+      {
+        Serial.println("Forwarding failed");
+      }
     }
     else if ((strcmp(topic, "homebridge/from/response") == 0))
     {

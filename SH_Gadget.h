@@ -12,7 +12,8 @@ enum SH_Color {red, green, blue};
 class SH_Gadget
 {
   protected:
-    char name[NAME_LEN + 1];
+    const char * name;
+    // char name[NAME_LEN + 1];
     bool initialized;
 
   public:
@@ -22,23 +23,23 @@ class SH_Gadget
       {
       };
 
-    SH_Gadget(const char * name):
-      name(),
+    SH_Gadget(const char * gadget_name):
+      name(gadget_name),
       initialized(false)
       {
-        setName(name);
       };
 
-    void setName(const char * new_name)
+    const char * getName()
     {
-      strcpy(name, new_name);
-      name[NAME_LEN] = '\0';
-    };
+      Serial.println(name);
+      return &name[0];
+    }
 
-    String getName()
+    void getName(char * buffer)
     {
-      return String(name);
-    };
+      Serial.println(name);
+      strcpy(buffer, name);
+    }
 
     bool isInitialized()
     {
@@ -170,20 +171,21 @@ class SH_Lamp : public SH_Receiver
       status = new_status;
     };
 
-    bool decode(DynamicJsonDocument doc)
+    bool decode(DynamicJsonDocument * doc)
     {
-      if (doc["characteristic"] == "On")
-      {
-        setStatus(doc["value"]);
-      }
-      else if (doc["characteristic"] == "Brightness")
-      {
-        setBrightness(doc["value"]);
-      }
-      else if (doc["characteristic"] == "Hue")
-      {
-        setBrightness(doc["value"]);
-      }
+      Serial.println("decode");
+      // if (doc["characteristic"] == "On")
+      // {
+      //   setStatus(doc["value"]);
+      // }
+      // else if (doc["characteristic"] == "Brightness")
+      // {
+      //   setBrightness(doc["value"]);
+      // }
+      // else if (doc["characteristic"] == "Hue")
+      // {
+      //   setBrightness(doc["value"]);
+      // }
     };
 
     bool getRegisterStr(char * buffer)

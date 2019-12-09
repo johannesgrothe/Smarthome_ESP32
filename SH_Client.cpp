@@ -113,8 +113,22 @@ bool SH_Client::registerGadget(SH_Gadget * input)
 bool SH_Client::forwardCommand(DynamicJsonDocument * doc)
 {
   JsonObject json = doc->as<JsonObject>();
-  char * target_gadget = json["name"];
-  Serial.println(target_gadget);
-  return true;
+  const char * target_gadget = json["name"].as<char*>();
+  uint8_t k;
+  Serial.printf("Searching for Gadget: '%s'\n", target_gadget);
+  for (k = 0; k < gadgets_pointer; k++)
+  {
+    //TODO: Not working at all this bullcrap
+    const char * name = gadgets[k]->getName();
+    Serial.println("Lul");
+    Serial.printf("Gadget: '%s'\n", gadgets[k]->getName());
+    if (strcmp(target_gadget, name) == 0)
+    {
+      Serial.println("Lul");
+      return gadgets[k]->decode(doc);
+    }
+  }
+  Serial.println("No Fitting Gadget found.");
+  return false;
 }
 
