@@ -13,7 +13,6 @@ class SH_Gadget
 {
   protected:
     const char * name;
-    // char name[NAME_LEN + 1];
     bool initialized;
 
   public:
@@ -31,14 +30,7 @@ class SH_Gadget
 
     const char * getName()
     {
-      Serial.println(name);
       return &name[0];
-    }
-
-    void getName(char * buffer)
-    {
-      Serial.println(name);
-      strcpy(buffer, name);
     }
 
     bool isInitialized()
@@ -46,23 +38,23 @@ class SH_Gadget
       return initialized;
     };
 
-    void refresh()
+    virtual void refresh()
     {
     };
 
-    bool init()
+    virtual bool init()
     {
       initialized = true;
+      return false;
     };
 
-    bool decode(DynamicJsonDocument * doc)
+    virtual bool decode(DynamicJsonDocument * doc)
     {
       return false;
     }
 
     virtual bool getRegisterStr(char * buffer)
     {
-      Serial.println("PARENT METHOD");
       return false;
     }
 };
@@ -102,6 +94,7 @@ class SH_Lamp : public SH_Receiver
 
     bool setBrightness(uint8_t new_brightness)
     {
+      Serial.printf("Setting Status: %d\n", new_brightness);
       if (new_brightness > 0)
       {
         if (new_brightness > 100)
@@ -161,6 +154,7 @@ class SH_Lamp : public SH_Receiver
 
     void setStatus(bool new_status)
     {
+      Serial.printf("Setting Status: %d\n", new_status);
       if (new_status)
       {
         if (brightness < 15)
@@ -173,24 +167,29 @@ class SH_Lamp : public SH_Receiver
 
     bool decode(DynamicJsonDocument * doc)
     {
-      Serial.println("decode");
-      // if (doc["characteristic"] == "On")
-      // {
-      //   setStatus(doc["value"]);
-      // }
-      // else if (doc["characteristic"] == "Brightness")
-      // {
-      //   setBrightness(doc["value"]);
-      // }
-      // else if (doc["characteristic"] == "Hue")
-      // {
-      //   setBrightness(doc["value"]);
-      // }
+      Serial.println("Decoding...");
+      JsonObject obj = doc->as<JsonObject>();
+      if (obj["characteristic"] == "On")
+      {
+        setStatus((bool) obj["value"]);
+      }
+      else if (obj["characteristic"] == "Brightness")
+      {
+        setBrightness((uint8_t) obj["value"]);
+      }
+      else if (obj["characteristic"] == "Hue")
+      {
+        setBrightness((uint8_t) obj["value"]);
+      }
+      Serial.println("Decoding Done.");
+      return true;
     };
 
     bool getRegisterStr(char * buffer)
     {
-      sprintf(buffer, "{\"name\": \"%s\", \"service_name\": \"%s\", \"service\": \"Lightbulb\"}", name, name);
+      // sprintf(buffer, "{\"name\": \"%s\", \"service_name\": \"%s\", \"service\": \"Lightbulb\"}", name, name);
+      sprintf(buffer, "{\"name\": \"%s\", \"service_name\": \"%s\", \"service\": \"Lightbulb\", \"Brightness\": \"default\", \"Hue\": \"default\", \"Saturation\": \"default\"}", name, name);
+      // Serial.printf("RegStr: '%s'\n", buffer);
       return true;
     };
 };

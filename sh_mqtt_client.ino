@@ -4,7 +4,13 @@
 
 IPAddress mqtt_broker_ip(192, 168, 178, 60);
 
+// CLient
 SH_Client shclient(mqtt_broker_ip, 0);
+
+// Gadgets
+SH_Debug_LED led1("TestLED");
+SH_Debug_LED led2("TestLED2");
+SH_Debug_LED led3("FriLED");
 
 void setup()
 {
@@ -15,13 +21,8 @@ void setup()
 
   shclient.init();
   
-  SH_Debug_LED led1("TestLED");
   shclient.addGadget(&led1);
-
-  SH_Debug_LED led2("TestLED2");
   shclient.addGadget(&led2);
-
-  SH_Debug_LED led3("FriLED");
   shclient.addGadget(&led3);
 }
 

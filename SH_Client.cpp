@@ -78,36 +78,38 @@ bool SH_Client::addGadget(SH_Gadget * gadget)
   if (gadgets_pointer == MAX_GADGETS) return false;
   gadgets[gadgets_pointer] = gadget;
   gadgets_pointer ++;
-  char buffer[200];
-  gadget->getRegisterStr(&buffer[0]);
   Serial.println("  Unregistering previous Gadget...");
   unregisterGadget(gadget);
-  Serial.println("  Registering new Gadget...");
-  registerGadget(gadget);
-  Serial.println("  Done.");
-  return true;
-}
-
-bool SH_Client::unregisterGadget(SH_Gadget * input)
-{
-  char bufmsg[100];
-  sprintf(bufmsg, "{\"name\": \"%s\"}", input->getName());
-  mqttClient.publish("homebridge/to/remove", bufmsg);
-}
-
-bool SH_Client::registerGadget(SH_Gadget * input)
-{
-  char bufmsg[200];
-  if (input->getRegisterStr(&bufmsg[0]))
+  Serial.println("  Registering Gadget...");
+  if (registerGadget(gadget))
   {
-    mqttClient.publish("homebridge/to/add", bufmsg);
+    Serial.println("  Done.");
+    return true;
   }
   else
   {
     Serial.println("  Fehler bei der Registrierung.");
     return false;
   }
-  return true;
+}
+
+bool SH_Client::unregisterGadget(SH_Gadget * input)
+{
+  char bufmsg[100];
+  sprintf(bufmsg, "{\"name\": \"%s\"}", input->getName());
+  return mqttClient.publish("homebridge/to/remove", bufmsg);
+}
+
+bool SH_Client::registerGadget(SH_Gadget * input)
+{
+  bool status = true;
+  char bufmsg[200];
+  if (input->getRegisterStr(&bufmsg[0]))
+  {
+    Serial.println(strlen(&bufmsg[0]));
+    return mqttClient.publish("homebridge/to/add", bufmsg, strlen(&bufmsg[0]));
+  }
+  return false;
 }
 
 bool SH_Client::forwardCommand(DynamicJsonDocument * doc)
@@ -118,17 +120,12 @@ bool SH_Client::forwardCommand(DynamicJsonDocument * doc)
   Serial.printf("Searching for Gadget: '%s'\n", target_gadget);
   for (k = 0; k < gadgets_pointer; k++)
   {
-    //TODO: Not working at all this bullcrap
     const char * name = gadgets[k]->getName();
-    Serial.println("Lul");
-    Serial.printf("Gadget: '%s'\n", gadgets[k]->getName());
     if (strcmp(target_gadget, name) == 0)
     {
-      Serial.println("Lul");
       return gadgets[k]->decode(doc);
     }
   }
   Serial.println("No Fitting Gadget found.");
   return false;
 }
-

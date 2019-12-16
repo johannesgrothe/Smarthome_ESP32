@@ -58,14 +58,6 @@ private:
       DynamicJsonDocument doc(1024);
       deserializeJson(doc, message);
       bool fw = forwardCommand(&doc);
-      if (fw)
-      {
-        Serial.println("Forwarding successfull");
-      }
-      else
-      {
-        Serial.println("Forwarding failed");
-      }
     }
     else if ((strcmp(topic, "homebridge/from/response") == 0))
     {
