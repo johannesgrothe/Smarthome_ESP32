@@ -1,4 +1,5 @@
 #include "SH_Client.h"
+#include "colors.h"
 
 #define BUILTIN_LED 2
 
@@ -17,9 +18,15 @@ void setup()
   pinMode(BUILTIN_LED, OUTPUT);
   Serial.begin(115200);
 
-  String msg = "{\"Name\": \"Bobo\"}";
-
   shclient.init();
+
+  int rgb[] = {22, 255, 44};
+
+  float hsl[3];
+
+  rgbToHsl(rgb[0], rgb[1], rgb[2], &hsl[0]);
+
+  Serial.printf("RGB: (%d, %d, %d), HSL: (%lf, %lf, %lf)\n", rgb[0], rgb[1], rgb[2], hsl[0] * 360, hsl[1] * 100, hsl[2] * 100);
   
   shclient.addGadget(&led1);
   shclient.addGadget(&led2);

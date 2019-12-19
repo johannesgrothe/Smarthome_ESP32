@@ -69,6 +69,8 @@ private:
     }
   }
 
+  bool publishMessage(char * topic, char * message);
+
 public:
   SH_Client(IPAddress server, uint8_t board_type):
     mqttServer(server),

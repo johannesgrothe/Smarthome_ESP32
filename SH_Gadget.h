@@ -1,13 +1,15 @@
 #include <string.h>
 #include <Arduino.h>
 #include "ArduinoJson.h"
+#include "colors.h"
 
 #ifndef __SH_Gadget__
 #define __SH_Gadget__
 
 #define NAME_LEN 12
 
-enum SH_Color {red, green, blue};
+enum SH_RGB_Color {SH_CLR_red, SH_CLR_green, SH_CLR_blue};
+enum SH_HSL_Color {SH_CLR_hue, SH_CLR_saturation, SH_CLR_lightness};
 
 class SH_Gadget
 {
@@ -76,98 +78,110 @@ class SH_Receiver : public SH_Gadget
 class SH_Lamp : public SH_Receiver
 {
   protected:
-    uint8_t brightness;
-    uint8_t default_brightness;
-    uint8_t status;
-    uint8_t hue[3];
+    float lightness;
+    float last_lightness;
+    float default_lightness;
+
+    float saturation;
+
+    float hue;
 
   public:
 
     SH_Lamp(const char * name):
       SH_Receiver(name),
-      brightness(100),
-      default_brightness(100),
-      status(1),
-      hue({255, 255, 255})
+      default_lightness(100),
+      saturation(0),
+      hue(0)
       {
       };
 
-    bool setBrightness(uint8_t new_brightness)
+// Lightness
+    bool setLightness(float new_brightness)
     {
-      Serial.printf("Setting Status: %d\n", new_brightness);
-      if (new_brightness > 0)
-      {
-        if (new_brightness > 100)
-        {
-          brightness = 100;
-        }
-        else
-        {
-          brightness = new_brightness;
-        }
-        status = true;
-      }
-      else
-      {
-        status = false;
-        brightness = new_brightness;
-      }
-      return true;
+      Serial.printf("[%s] Setting Brightness: %d\n", name, new_brightness);
+      lightness = new_brightness;
+      return false;
     };
 
-    uint8_t getBrightness()
+    float getLightness()
     {
-      return brightness;
+      return lightness;
     };
 
-    bool setHue(uint8_t new_hue[3])
+// Color (RGB)
+    bool setColor(uint8_t r, uint8_t g, uint8_t b)
     {
-      hue[0] = new_hue[0];
-      hue[1] = new_hue[1];
-      hue[2] = new_hue[2];
-      return true;
+      Serial.printf("[%s] Setting Color: [%d, %d, %d]\n", name, r, g, b);
+      float hsl[3];
+      rgbToHsl(r, g, b, &hsl[0]);
+      hue = hsl[SH_CLR_hue];
+      saturation = hsl[SH_CLR_saturation];
+      lightness = hsl[SH_CLR_lightness];
+      return false;
     };
 
-    bool setHue(uint8_t new_hue, uint8_t color_index)
+    uint8_t getColor(uint8_t color_index)
     {
-      hue[color_index] = new_hue;
+      float rgb[3];
+      hslToRgb(hue, saturation, lightness, &rgb[0]);
+      return rgb[color_index];
     }
 
-    uint8_t getHue(uint8_t color_index)
+    void getColor(float color_buffer[])
     {
-      if (color_index > 2)
-      {
-        return false;
-      }
-      return hue[color_index];
+      float rgb[3];
+      hslToRgb(hue, saturation, lightness, &color_buffer[0]);
     }
 
+// Hue
+    bool setHue(float new_hue)
+    {
+      Serial.printf("[%s] Setting Hue: %.1f\n", name, new_hue);
+      hue = new_hue;
+      return true;
+    }
+
+    float getHue()
+    {
+      return hue;
+    }
+
+// Status
     bool toggleStatus()
     {
-      setStatus(!status);
+      setStatus(!getStatus());
     };
 
     bool getStatus()
     {
-      return status;
+      if (lightness > 0) return true;
+      return false;
     };
 
     void setStatus(bool new_status)
     {
-      Serial.printf("Setting Status: %d\n", new_status);
-      if (new_status)
+      Serial.printf("[%s] Setting Status: %d\n", name, new_status);
+      if (new_status == 0)
       {
-        if (brightness < 15)
+        lightness = 0;
+      }
+      else
+      {
+        if (last_lightness > default_lightness)
         {
-          brightness = default_brightness;
+          lightness = last_lightness;
+        }
+        else
+        {
+          lightness = default_lightness;
         }
       }
-      status = new_status;
     };
 
+// Others
     bool decode(DynamicJsonDocument * doc)
     {
-      Serial.println("Decoding...");
       JsonObject obj = doc->as<JsonObject>();
       if (obj["characteristic"] == "On")
       {
@@ -179,9 +193,8 @@ class SH_Lamp : public SH_Receiver
       }
       else if (obj["characteristic"] == "Hue")
       {
-        setBrightness((uint8_t) obj["value"]);
+        setHue((uint16_t) obj["value"]);
       }
-      Serial.println("Decoding Done.");
       return true;
     };
 
@@ -189,7 +202,6 @@ class SH_Lamp : public SH_Receiver
     {
       // sprintf(buffer, "{\"name\": \"%s\", \"service_name\": \"%s\", \"service\": \"Lightbulb\"}", name, name);
       sprintf(buffer, "{\"name\": \"%s\", \"service_name\": \"%s\", \"service\": \"Lightbulb\", \"Brightness\": \"default\", \"Hue\": \"default\", \"Saturation\": \"default\"}", name, name);
-      // Serial.printf("RegStr: '%s'\n", buffer);
       return true;
     };
 };

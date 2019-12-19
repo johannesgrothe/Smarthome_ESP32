@@ -9,8 +9,8 @@ bool SH_Client::init()
   using std::placeholders::_3;
   mqttClient.setCallback(std::bind( &SH_Client::callback, this, _1,_2,_3));
 
-  setup_wifi();
-  setup_mqtt();
+  // setup_wifi();
+  // setup_mqtt();
   mqttClient.subscribe("homebridge/from/#");
   mqttClient.subscribe("homebridge/to/#");
   mqttClient.subscribe("debug/in");
@@ -106,10 +106,23 @@ bool SH_Client::registerGadget(SH_Gadget * input)
   char bufmsg[200];
   if (input->getRegisterStr(&bufmsg[0]))
   {
-    Serial.println(strlen(&bufmsg[0]));
-    return mqttClient.publish("homebridge/to/add", bufmsg, strlen(&bufmsg[0]));
+    return publishMessage("homebridge/to/add", &bufmsg[0]);
   }
   return false;
+}
+
+bool SH_Client::publishMessage(char * topic, char * message)
+{
+  bool status = true;
+  uint16_t msg_len = strlen(message);
+  status = status && mqttClient.beginPublish(topic, msg_len, false);
+  uint16_t k;
+  for (k = 0; k < msg_len; k++)
+  {
+    status = status && mqttClient.write(message[k]);
+  }
+  status = status && mqttClient.endPublish();
+  return status;
 }
 
 bool SH_Client::forwardCommand(DynamicJsonDocument * doc)
@@ -117,7 +130,6 @@ bool SH_Client::forwardCommand(DynamicJsonDocument * doc)
   JsonObject json = doc->as<JsonObject>();
   const char * target_gadget = json["name"].as<char*>();
   uint8_t k;
-  Serial.printf("Searching for Gadget: '%s'\n", target_gadget);
   for (k = 0; k < gadgets_pointer; k++)
   {
     const char * name = gadgets[k]->getName();
@@ -126,6 +138,5 @@ bool SH_Client::forwardCommand(DynamicJsonDocument * doc)
       return gadgets[k]->decode(doc);
     }
   }
-  Serial.println("No Fitting Gadget found.");
   return false;
 }
