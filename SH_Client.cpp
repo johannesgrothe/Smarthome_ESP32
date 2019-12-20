@@ -9,8 +9,8 @@ bool SH_Client::init()
   using std::placeholders::_3;
   mqttClient.setCallback(std::bind( &SH_Client::callback, this, _1,_2,_3));
 
-  // setup_wifi();
-  // setup_mqtt();
+  setup_wifi();
+  setup_mqtt();
   mqttClient.subscribe("homebridge/from/#");
   mqttClient.subscribe("homebridge/to/#");
   mqttClient.subscribe("debug/in");
@@ -28,7 +28,7 @@ void SH_Client::refresh()
   uint8_t k;
   for (k = 0; k < gadgets_pointer; k++)
   {
-    // Serial.println(gadgets[k].getName());
+    gadgets[k]->refresh();
   }
   mqttClient.loop();
 }
@@ -78,18 +78,26 @@ bool SH_Client::addGadget(SH_Gadget * gadget)
   if (gadgets_pointer == MAX_GADGETS) return false;
   gadgets[gadgets_pointer] = gadget;
   gadgets_pointer ++;
-  Serial.println("  Unregistering previous Gadget...");
-  unregisterGadget(gadget);
-  Serial.println("  Registering Gadget...");
-  if (registerGadget(gadget))
+  if (!gadget->init())
   {
-    Serial.println("  Done.");
-    return true;
+    Serial.println("  Fehler bei der Initialisierung.");
   }
   else
   {
-    Serial.println("  Fehler bei der Registrierung.");
-    return false;
+    Serial.println("  Gadget initialisiert.");
+    Serial.println("  Unregistering previous Gadget...");
+    unregisterGadget(gadget);
+    Serial.println("  Registering Gadget...");
+    if (registerGadget(gadget))
+    {
+      Serial.println("  Done.");
+      return true;
+    }
+    else
+    {
+      Serial.println("  Fehler bei der Registrierung.");
+      return false;
+    }
   }
 }
 

@@ -7,8 +7,9 @@
 #include <WiFi.h>
 #include "wifi_credentials.h"
 #include "SH_Wallswitch.h"
-#include "SH_LED.h"
-#include "SH_Debug_LED.h"
+#include "SH_Lamp_NeoPixel.h"
+#include "SH_Lamp_NeoPixel_Basic.h"
+#include "SH_Lamp_Basic.h"
 
 #include <Arduino.h>
 #include <PubSubClient.h>

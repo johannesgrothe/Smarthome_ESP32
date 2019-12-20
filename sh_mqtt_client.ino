@@ -9,13 +9,11 @@ IPAddress mqtt_broker_ip(192, 168, 178, 60);
 SH_Client shclient(mqtt_broker_ip, 0);
 
 // Gadgets
-SH_Debug_LED led1("TestLED");
-SH_Debug_LED led2("TestLED2");
-SH_Debug_LED led3("FriLED");
+SH_Lamp_NeoPixel_Basic rgbled("NeoPixel", 4, 1);
+SH_Lamp_Basic basiclamp("Basic_Lamp", BUILTIN_LED, LOW);
 
 void setup()
 {
-  pinMode(BUILTIN_LED, OUTPUT);
   Serial.begin(115200);
 
   shclient.init();
@@ -28,9 +26,8 @@ void setup()
 
   Serial.printf("RGB: (%d, %d, %d), HSL: (%lf, %lf, %lf)\n", rgb[0], rgb[1], rgb[2], hsl[0] * 360, hsl[1] * 100, hsl[2] * 100);
   
-  shclient.addGadget(&led1);
-  shclient.addGadget(&led2);
-  shclient.addGadget(&led3);
+  shclient.addGadget(&rgbled);
+  shclient.addGadget(&basiclamp);
 }
 
 void loop()
