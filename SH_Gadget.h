@@ -6,8 +6,6 @@
 #ifndef __SH_Gadget__
 #define __SH_Gadget__
 
-#define NAME_LEN 12
-
 enum SH_RGB_Color {SH_CLR_red, SH_CLR_green, SH_CLR_blue};
 enum SH_HSL_Color {SH_CLR_hue, SH_CLR_saturation, SH_CLR_lightness};
 enum SH_LAMP_TYPE {ON_OFF, BRI_ONLY, CLR_ONLY, CLR_BRI};
@@ -44,10 +42,6 @@ class SH_Gadget
       return initialized;
     };
 
-    virtual void refresh()
-    {
-    };
-
     virtual bool init()
     {
       initialized = true;
@@ -63,6 +57,10 @@ class SH_Gadget
     {
       return false;
     }
+
+    virtual void refresh();
+
+    virtual void print();
 };
 
 class SH_Receiver : public SH_Gadget
@@ -107,10 +105,10 @@ class SH_Lamp : public SH_Receiver
       };
 
 // Lightness
-    void setLightness(float new_brightness)
+    void setLightness(float new_lightness)
     {
-      Serial.printf("[%s] Setting Brightness: %d\n", name, new_brightness);
-      lightness = new_brightness;
+      Serial.printf("[%s] Setting Lightness: %d\n", name, new_lightness);
+      lightness = new_lightness;
       has_changed = true;
     };
 
@@ -230,6 +228,12 @@ class SH_Lamp : public SH_Receiver
       }
       return true;
     };
+
+    void print()
+    {
+      Serial.println("LED:");
+      Serial.printf("[%s] Hue: %.2f Lightness: %.2f Saturation: %.2f Status: %d\n", hue, lightness, saturation, getStatus());
+    }
 };
 
 #endif

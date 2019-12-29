@@ -7,10 +7,10 @@
 class SH_Lamp_Basic : public SH_Lamp
 {
   private:
-    uint8_t pin;
-    bool default_state;
-    
 
+    uint8_t pin;
+
+    bool default_state;
 
   public:
     SH_Lamp_Basic(const char * name, uint8_t lamp_pin, bool default_lamp_state):
@@ -24,13 +24,13 @@ class SH_Lamp_Basic : public SH_Lamp
     {
       if (has_changed)
       {
-        Serial.printf("%s has changed.", name);
+        Serial.printf("[%s] has changed.\n", name);
         digitalWrite(pin, (getStatus() != default_state));
       }
       has_changed = false;
     };
 
-    void init()
+    bool init()
     {
       pinMode(pin, OUTPUT);
       digitalWrite(pin, default_state);

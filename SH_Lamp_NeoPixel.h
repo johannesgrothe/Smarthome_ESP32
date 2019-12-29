@@ -21,7 +21,7 @@ class SH_Lamp_NeoPixel : public SH_Lamp
     {
       if (has_changed)
       {
-        Serial.printf("%s has changed.", name);
+        Serial.printf("%s has changed.\n", name);
       }
       has_changed = false;
     };

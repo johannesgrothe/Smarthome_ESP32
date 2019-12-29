@@ -24,7 +24,7 @@ void setup()
 
   rgbToHsl(rgb[0], rgb[1], rgb[2], &hsl[0]);
 
-  Serial.printf("RGB: (%d, %d, %d), HSL: (%lf, %lf, %lf)\n", rgb[0], rgb[1], rgb[2], hsl[0] * 360, hsl[1] * 100, hsl[2] * 100);
+  Serial.printf("RGB: (%d, %d, %d), HSL: (%.2lf, %.2lf, %.2lf)\n", rgb[0], rgb[1], rgb[2], hsl[0] * 360, hsl[1] * 100, hsl[2] * 100);
   
   shclient.addGadget(&rgbled);
   shclient.addGadget(&basiclamp);

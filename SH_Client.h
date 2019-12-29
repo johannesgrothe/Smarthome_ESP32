@@ -20,6 +20,8 @@
 
 #define MAX_GADGETS 20
 
+// #define LOG_MESSAGES
+
 class SH_Client
 {
 private:
@@ -51,22 +53,30 @@ private:
 
     if ((strcmp(topic, "debug/in") == 0))
     {
-      Serial.printf("[DEBUG]: %s\n", message);
+      #ifdef LOG_MESSAGES
+        Serial.printf("[DEBUG]: %s\n", message);
+      #endif
     }
     else if ((strcmp(topic, "homebridge/from/set") == 0))
     {
-      Serial.printf("[HOMEBRIDGE SET]: %s\n", message);
+      #ifdef LOG_MESSAGES
+        Serial.printf("[HOMEBRIDGE SET]: %s\n", message);
+      #endif
       DynamicJsonDocument doc(1024);
       deserializeJson(doc, message);
       bool fw = forwardCommand(&doc);
     }
     else if ((strcmp(topic, "homebridge/from/response") == 0))
     {
-      Serial.printf("[RESPONSE]: %s\n", message);
+      #ifdef LOG_MESSAGES
+        Serial.printf("[RESPONSE]: %s\n", message);
+      #endif
     }
     else
     {
-      Serial.printf("[MSG '%s']: %s\n", topic, message);
+      #ifdef LOG_MESSAGES
+        Serial.printf("[MSG '%s']: %s\n", topic, message);
+      #endif
     }
   }
 
