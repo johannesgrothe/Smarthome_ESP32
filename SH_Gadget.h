@@ -104,7 +104,7 @@ class SH_Lamp : public SH_Receiver
       {
       };
 
-// Lightness
+    // Lightness
     void setLightness(float new_lightness)
     {
       Serial.printf("[%s] Setting Lightness: %d\n", name, new_lightness);
@@ -117,7 +117,7 @@ class SH_Lamp : public SH_Receiver
       return lightness;
     };
 
-// Color (RGB)
+    // Color (RGB)
     void setColor(uint8_t r, uint8_t g, uint8_t b)
     {
       Serial.printf("[%s] Setting Color: [%d, %d, %d]\n", name, r, g, b);
@@ -141,7 +141,7 @@ class SH_Lamp : public SH_Receiver
       hslToRgb(hue, saturation, lightness, &color_buffer[0]);
     }
 
-// Hue
+    // Hue
     void setHue(float new_hue)
     {
       Serial.printf("[%s] Setting Hue: %.1f\n", name, new_hue);
@@ -154,7 +154,7 @@ class SH_Lamp : public SH_Receiver
       return hue;
     }
 
-// Status
+    // Status
     void toggleStatus()
     {
       setStatus(!getStatus());
@@ -188,7 +188,7 @@ class SH_Lamp : public SH_Receiver
       has_changed = true;
     };
 
-// Others
+    // Others
     bool decode(DynamicJsonDocument * doc)
     {
       JsonObject obj = doc->as<JsonObject>();
