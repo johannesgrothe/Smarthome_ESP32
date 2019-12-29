@@ -59,6 +59,7 @@ class SH_Lamp_NeoPixel_Basic : public SH_Lamp
         led_stripe.setPixelColor(k, Adafruit_NeoPixel::Color(r, g, b));
       }
       led_stripe.show();
+      return true
     }
 };
 

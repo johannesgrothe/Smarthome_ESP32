@@ -232,7 +232,7 @@ class SH_Lamp : public SH_Receiver
     void print()
     {
       Serial.println("LED:");
-      Serial.printf("[%s] Hue: %.2f Lightness: %.2f Saturation: %.2f Status: %d\n", hue, lightness, saturation, getStatus());
+      Serial.printf("[%s] Hue: %.2f Lightness: %.2f Saturation: %.2f Status: %d\n", name, hue, lightness, saturation, getStatus());
     }
 };
 
