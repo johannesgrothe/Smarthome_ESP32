@@ -2,7 +2,7 @@
 #include <Arduino.h>
 #include "ArduinoJson.h"
 #include "colors.h"
-#include "IR_Connector.h"
+#include "ir_connector.h"
 
 #ifndef __SH_Gadget__
 #define __SH_Gadget__
@@ -20,7 +20,7 @@ class SH_Gadget : public IR_Connector
 
   public:
     SH_Gadget():
-      name(),
+      name("default"),
       initialized(false),
       has_changed(true)
       {

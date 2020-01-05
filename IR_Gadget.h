@@ -4,7 +4,6 @@
 #define SEND_PIN 13
 
 // #include <Arduino.h>
-// #include <IRremote.h>
 #include <IRrecv.h>
 #include <IRsend.h>
 #include <IRremoteESP8266.h>
@@ -23,6 +22,8 @@ class IR_Gadget
     bool has_new_command;
 
   public:
+
+    IR_Gadget();
 
     IR_Gadget(uint8_t receiver_pin, uint8_t blaster_pin):
       recvPin(receiver_pin),

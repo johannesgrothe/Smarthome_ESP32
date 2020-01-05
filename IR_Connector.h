@@ -13,7 +13,7 @@ class IR_Connector
 
     IR_Gadget * irgadget;
 
-    DynamicJsonDocument recv_commands;
+    // DynamicJsonDocument recv_commands;
 
     bool decode_ir()
     {
