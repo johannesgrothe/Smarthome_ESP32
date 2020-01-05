@@ -13,9 +13,7 @@ class IR_Connector
 
     IR_Gadget * irgadget;
 
-    // DynamicJsonDocument recv_commands;
-
-    // DynamicJsonDocument send_commands;
+    DynamicJsonDocument recv_commands;
 
     bool decode_ir()
     {
@@ -29,11 +27,11 @@ class IR_Connector
 
   public:
 
-    IR_Connector(IR_Gadget * ir_gadget):
-      irgadget(ir_gadget)
-      {
+    void setIRGadget(IR_Gadget * new_gadget)
+    {
+      irgadget = new_gadget;
+    }
 
-      };
 };
 
 #endif

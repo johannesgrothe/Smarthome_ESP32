@@ -90,7 +90,7 @@ class IR_Gadget
           blaster.sendDenon(command);
           break;
         default:
-          Serial.print("Unsupported Command.");
+          Serial.print(" Unsupported Command.\n");
       }
       receiver.resume();
     };

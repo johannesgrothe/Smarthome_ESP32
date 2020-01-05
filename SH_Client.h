@@ -6,6 +6,9 @@
 #include "ArduinoJson.h"
 #include <WiFi.h>
 #include "wifi_credentials.h"
+
+#include "IR_Gadget.h"
+
 #include "SH_Wallswitch.h"
 #include "SH_Lamp_NeoPixel.h"
 #include "SH_Lamp_NeoPixel_Basic.h"
@@ -32,6 +35,8 @@ private:
   IPAddress mqttServer;
   WiFiClient networkClient;
   PubSubClient mqttClient;
+
+  IR_Gadget irGadget;
 
   uint8_t gadgets_pointer;
   SH_Gadget * gadgets[MAX_GADGETS];

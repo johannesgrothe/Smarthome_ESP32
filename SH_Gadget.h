@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include "ArduinoJson.h"
 #include "colors.h"
+#include "IR_Connector.h"
 
 #ifndef __SH_Gadget__
 #define __SH_Gadget__
@@ -10,7 +11,7 @@ enum SH_RGB_Color {SH_CLR_red, SH_CLR_green, SH_CLR_blue};
 enum SH_HSL_Color {SH_CLR_hue, SH_CLR_saturation, SH_CLR_lightness};
 enum SH_LAMP_TYPE {ON_OFF, BRI_ONLY, CLR_ONLY, CLR_BRI};
 
-class SH_Gadget
+class SH_Gadget : public IR_Connector
 {
   protected:
     const char * name;
