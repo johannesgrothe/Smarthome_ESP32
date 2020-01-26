@@ -17,13 +17,18 @@ class IR_Gadget
     uint8_t recvPin;
     IRrecv receiver;
     IRsend blaster;
-    long received_command;
-    uint8_t command_type;
-    bool has_new_command;
+    long received_command{};
+    uint8_t command_type{};
+    bool has_new_command{};
 
   public:
 
-    IR_Gadget();
+    IR_Gadget():
+      recvPin(0),
+      receiver(IRrecv(0)),
+      blaster(IRsend(0))
+    {
+    };
 
     IR_Gadget(uint8_t receiver_pin, uint8_t blaster_pin):
       recvPin(receiver_pin),

@@ -27,6 +27,14 @@ class IR_Connector
 
   public:
 
+    IR_Connector():
+      irgadget(nullptr)
+      {}
+
+    explicit IR_Connector(IR_Gadget * new_gadget):
+      irgadget(new_gadget)
+      {}
+
     void setIRGadget(IR_Gadget * new_gadget)
     {
       irgadget = new_gadget;

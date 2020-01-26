@@ -33,6 +33,14 @@ class SH_Gadget : public IR_Connector
       {
       };
 
+    SH_Gadget(const char * gadget_name, IR_Gadget * ir_connector):
+      IR_Connector(ir_connector),
+      name(gadget_name),
+      initialized(false),
+      has_changed(true)
+    {
+    };
+
     const char * getName()
     {
       return &name[0];
@@ -96,8 +104,8 @@ class SH_Lamp : public SH_Receiver
 
     SH_Lamp(const char * name, SH_LAMP_TYPE lamp_type):
       SH_Receiver(name),
-      default_lightness(100.0),
       lightness(100.0),
+      default_lightness(100.0),
       min_lightness(35),
       saturation(0),
       hue(0),

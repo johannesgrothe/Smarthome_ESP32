@@ -20,14 +20,15 @@ private:
 
 public:
     SH_Wallswitch():
-        is_initialized(false),
-        has_new_status(false),
-        last_action(0),
-        btn_status(false),
+        status(0),
+        switch_pin(0),
         klick_counter(0),
-        status(0)
+        has_new_status(false),
+        btn_status(false),
+        is_initialized(false),
+        last_action(0)
         {
-        };
+        }
 
     bool hasNewStatus();
 

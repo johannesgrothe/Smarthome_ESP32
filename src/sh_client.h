@@ -31,6 +31,7 @@ private:
   long lastMsg;
   char msg[50];
   int value;
+  uint8_t boardtype;
 
   IPAddress mqttServer;
   WiFiClient networkClient;
@@ -88,12 +89,22 @@ private:
   bool publishMessage(char * topic, char * message);
 
 public:
+  SH_Client():
+    lastMsg(0),
+    value(0),
+    boardtype(0),
+    gadgets(),
+    initialized(false)
+    {
+    };
+
   SH_Client(IPAddress server, uint8_t board_type):
+    lastMsg(0),
+    value(0),
+    boardtype(board_type),
     mqttServer(server),
     mqttClient(networkClient),
     gadgets(),
-    lastMsg(0),
-    value(0),
     initialized(false)
     {
     };

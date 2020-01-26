@@ -1,4 +1,4 @@
-#include "SH_Wallswitch.h"
+#include "sh_wallswitch.h"
 
 bool SH_Wallswitch::hasNewStatus() {
     bool buf = has_new_status;
@@ -51,4 +51,5 @@ bool SH_Wallswitch::init(uint8_t pin, bool default_pinstate) {
     switch_pin = pin;
     def_pinstate = default_pinstate;
     pinMode(switch_pin, default_pinstate);
+    return true;
 }
