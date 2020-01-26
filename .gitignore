@@ -1,5 +1,8 @@
 .DS_Store
 wifi_credentials.h
-.vscode/arduino.json
-.vscode/c_cpp_properties.json
-.vscode/settings.json
+.vscode
+.idea
+.pio
+cmake-build-esp32cam
+cmake-build-debug
+CMakeListsPrivate.txt
