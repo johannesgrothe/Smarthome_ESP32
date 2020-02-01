@@ -1,13 +1,12 @@
 #include "SH_Client.h"
 
-bool SH_Client::init()
-{
+bool SH_Client::init() {
   mqttClient.setServer(mqttServer, 1883);
 
   using std::placeholders::_1;
   using std::placeholders::_2;
   using std::placeholders::_3;
-  mqttClient.setCallback(std::bind( &SH_Client::callback, this, _1,_2,_3));
+  mqttClient.setCallback(std::bind(&SH_Client::callback, this, _1, _2, _3));
 
   setup_wifi();
   setup_mqtt();
@@ -19,22 +18,18 @@ bool SH_Client::init()
   return true;
 }
 
-void SH_Client::refresh()
-{
-  while (!initialized)
-  {
+void SH_Client::refresh() {
+  while (!initialized) {
     init();
   }
   uint8_t k;
-  for (k = 0; k < gadgets_pointer; k++)
-  {
+  for (k = 0; k < gadgets_pointer; k++) {
     gadgets[k]->refresh();
   }
   mqttClient.loop();
 }
 
-void SH_Client::setup_wifi()
-{
+void SH_Client::setup_wifi() {
   delay(10);
   Serial.println();
   Serial.print("Connecting to ");
@@ -42,8 +37,7 @@ void SH_Client::setup_wifi()
 
   WiFi.begin(WIFI_SSID, WIFI_PW);
 
-  while (WiFi.status() != WL_CONNECTED)
-  {
+  while (WiFi.status() != WL_CONNECTED) {
     delay(2500);
     Serial.print(".");
   }
@@ -56,10 +50,8 @@ void SH_Client::setup_wifi()
   Serial.println(WiFi.localIP());
 }
 
-void SH_Client::setup_mqtt()
-{
-  while (!mqttClient.connected())
-  {
+void SH_Client::setup_mqtt() {
+  while (!mqttClient.connected()) {
     Serial.print("Attempting MQTT connection...");
     if (mqttClient.connect("arduinoClient")) {
       Serial.println("connected");
@@ -72,29 +64,22 @@ void SH_Client::setup_mqtt()
   }
 }
 
-bool SH_Client::addGadget(SH_Gadget * gadget)
-{
+bool SH_Client::addGadget(SH_Gadget *gadget) {
   Serial.printf("Adding Gadget '%s':\n", gadget->getName());
   if (gadgets_pointer == MAX_GADGETS) return false;
   gadgets[gadgets_pointer] = gadget;
-  gadgets_pointer ++;
-  if (!gadget->init())
-  {
+  gadgets_pointer++;
+  if (!gadget->init()) {
     Serial.println("  Fehler bei der Initialisierung.");
-  }
-  else
-  {
+  } else {
     Serial.println("  Gadget initialisiert.");
     Serial.println("  Unregistering previous Gadget...");
     unregisterGadget(gadget);
     Serial.println("  Registering Gadget...");
-    if (registerGadget(gadget))
-    {
+    if (registerGadget(gadget)) {
       Serial.println("  Done.");
       return true;
-    }
-    else
-    {
+    } else {
       Serial.println("  Fehler bei der Registrierung.");
       return false;
     }
@@ -102,48 +87,40 @@ bool SH_Client::addGadget(SH_Gadget * gadget)
   }
 }
 
-bool SH_Client::unregisterGadget(SH_Gadget * input)
-{
+bool SH_Client::unregisterGadget(SH_Gadget *input) {
   char bufmsg[100];
   sprintf(bufmsg, "{\"name\": \"%s\"}", input->getName());
   return mqttClient.publish("homebridge/to/remove", bufmsg);
 }
 
-bool SH_Client::registerGadget(SH_Gadget * input)
-{
+bool SH_Client::registerGadget(SH_Gadget *input) {
   bool status = true;
   char bufmsg[200];
-  if (input->getRegisterStr(&bufmsg[0]))
-  {
+  if (input->getRegisterStr(&bufmsg[0])) {
     return publishMessage("homebridge/to/add", &bufmsg[0]);
   }
   return false;
 }
 
-bool SH_Client::publishMessage(char * topic, char * message)
-{
+bool SH_Client::publishMessage(char *topic, char *message) {
   bool status = true;
   uint16_t msg_len = strlen(message);
   status = status && mqttClient.beginPublish(topic, msg_len, false);
   uint16_t k;
-  for (k = 0; k < msg_len; k++)
-  {
+  for (k = 0; k < msg_len; k++) {
     status = status && mqttClient.write(message[k]);
   }
   status = status && mqttClient.endPublish();
   return status;
 }
 
-bool SH_Client::forwardCommand(DynamicJsonDocument * doc)
-{
+bool SH_Client::forwardCommand(DynamicJsonDocument *doc) {
   JsonObject json = doc->as<JsonObject>();
-  const char * target_gadget = json["name"].as<char*>();
+  const char *target_gadget = json["name"].as<char *>();
   uint8_t k;
-  for (k = 0; k < gadgets_pointer; k++)
-  {
-    const char * name = gadgets[k]->getName();
-    if (strcmp(target_gadget, name) == 0)
-    {
+  for (k = 0; k < gadgets_pointer; k++) {
+    const char *name = gadgets[k]->getName();
+    if (strcmp(target_gadget, name) == 0) {
       return gadgets[k]->decode(doc);
     }
   }
