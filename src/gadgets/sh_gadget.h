@@ -2,7 +2,7 @@
 #include <Arduino.h>
 #include "ArduinoJson.h"
 #include "colors.h"
-#include "ir_connector.h"
+#include "connectors/ir_connector.h"
 
 #ifndef __SH_Gadget__
 #define __SH_Gadget__
@@ -41,11 +41,17 @@ class SH_Gadget : public IR_Connector
     {
     };
 
+    /**
+    * @return The Name of the Gadget
+    */
     const char * getName()
     {
       return &name[0];
     }
 
+    /**
+    * @return Whether the Gadget is initialized or not
+    */
     bool isInitialized()
     {
       return initialized;
@@ -57,6 +63,9 @@ class SH_Gadget : public IR_Connector
       return false;
     };
 
+   /**
+    * @return Whether the Gadget is initialized or not
+    */
     virtual bool decode(DynamicJsonDocument * doc)
     {
       return false;
@@ -172,8 +181,7 @@ class SH_Lamp : public SH_Receiver
 
     bool getStatus()
     {
-      if (lightness > 0) return true;
-      return false;
+      return lightness != 0;
     };
 
     void setStatus(bool new_status)
@@ -240,8 +248,7 @@ class SH_Lamp : public SH_Receiver
 
     void print()
     {
-      Serial.println("LED:");
-      Serial.printf("[%s] Hue: %.2f Lightness: %.2f Saturation: %.2f Status: %d\n", name, hue, lightness, saturation, getStatus());
+      Serial.printf("[%s] Hue: %.2f, Lightness: %.2f, Saturation: %.2f, Status: %d\n", name, hue, lightness, saturation, getStatus());
     }
 };
 
