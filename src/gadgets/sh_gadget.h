@@ -125,7 +125,7 @@ class SH_Lamp : public SH_Receiver
     // Lightness
     void setLightness(float new_lightness)
     {
-      Serial.printf("[%s] Setting Lightness: %d\n", name, new_lightness);
+      Serial.printf("[%s] Setting Lightness: %f\n", name, new_lightness);
       lightness = new_lightness;
       has_changed = true;
     };

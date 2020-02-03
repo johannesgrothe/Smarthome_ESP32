@@ -7,36 +7,65 @@
 #include <IRrecv.h>
 #include <IRsend.h>
 #include <IRremoteESP8266.h>
+#include <ArduinoJson.h>
 
 // Gadget to send and receive IR-Commands
 class IR_Gadget {
 protected:
 
-  IRrecv receiver;
-  IRsend blaster;
+  IRrecv * receiver;
+  IRsend * blaster;
   long received_command{};
   uint8_t command_type{};
   bool has_new_command{};
+  bool is_initialized;
+  bool is_ready;
 
 public:
 
   IR_Gadget() :
-    receiver(IRrecv(0)),
-    blaster(IRsend(0)) {
+    receiver(new IRrecv(0)),
+    blaster(new IRsend(0)),
+    is_initialized(false) {
   };
 
   IR_Gadget(uint8_t receiver_pin, uint8_t blaster_pin) :
-    receiver(IRrecv(receiver_pin)),
-    blaster(IRsend(blaster_pin)) {
+    receiver(new IRrecv(receiver_pin)),
+    blaster(new IRsend(blaster_pin)),
+    is_initialized(true) {
+  };
+
+  explicit IR_Gadget(JsonObject data) {
+    Serial.println("   [INFO] Creating IR-Gadget");
+    bool everything_ok = true;
+    if (data["recv_pin"] != nullptr) {
+      uint8_t r_pin = data["recv_pin"].as<int>();
+      receiver = new IRrecv(r_pin);
+      Serial.printf("     => Receiver-Pin: %d\n", r_pin);
+    } else {
+      everything_ok = false;
+      Serial.println("     => [ERR] \"recv_pin\" nicht spezifiziert.");
+    }
+    if (data["send_pin"] != nullptr) {
+      uint8_t b_pin = data["send_pin"].as<int>();
+      blaster = new IRsend(b_pin);
+      Serial.printf("     => Blaster-Pin: %d\n", b_pin);
+    } else {
+      everything_ok = false;
+      Serial.println("     => [ERR] \"send_pin\" nicht spezifiziert.");
+    }
+//    Serial.println(receiver->getTolerance());
+    receiver->enableIRIn();
+    is_initialized = everything_ok;
   };
 
   void refresh() {
-    decode_results results;
-    if (receiver.decode(&results)) {
+    decode_results results{};
+    if (receiver->decode(&results)) {
       has_new_command = true;
       command_type = results.decode_type;
       received_command = results.value;
-      receiver.resume();
+      receiver->resume();
 
       // Serial Output
       Serial.println("[System / IR Receiver] Received Something:\n  Encoding: ");
@@ -101,28 +130,31 @@ public:
     Serial.print("[System / IR Receiver] Sending:\n");
     switch (command_type) {
       case NEC:
-        blaster.sendNEC(command);
+        blaster->sendNEC(command);
         break;
       case SONY:
-        blaster.sendSony(command);
+        blaster->sendSony(command);
         break;
       case SAMSUNG:
-        blaster.sendSAMSUNG(command);
+        blaster->sendSAMSUNG(command);
         break;
       case LG:
-        blaster.sendLG(command);
+        blaster->sendLG(command);
         break;
       case DENON:
-        blaster.sendDenon(command);
+        blaster->sendDenon(command);
         break;
       default:
         Serial.print(" Unsupported Command.\n");
     }
-    receiver.resume();
+    receiver->resume();
+    return true;
   };
 
   bool init() {
-    receiver.enableIRIn();
+//    receiver->enableIRIn();
+//    receiver->resume();
+    return true;
   };
 
   bool hasReceived() {
@@ -138,6 +170,10 @@ public:
   uint8_t getCommandEncoding() {
     return command_type;
   }
+
+  bool isInitialized() {
+    return is_initialized;
+  }
 };
 
 
@@ -145,7 +181,7 @@ public:
 class IR_Connector {
 protected:
 
-  IR_Gadget *irgadget;
+  IR_Gadget * irgadget;
 
   // DynamicJsonDocument recv_commands;
 

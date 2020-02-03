@@ -38,6 +38,8 @@ private:
 
   IR_Gadget irGadget;
 
+//  uint32_t blub = mqttServer.uint32_t()
+
   uint8_t gadgets_pointer;
   SH_Gadget *gadgets[MAX_GADGETS];
 
@@ -66,7 +68,7 @@ private:
 #endif
       DynamicJsonDocument doc(1024);
       deserializeJson(doc, message);
-      bool fw = forwardCommand(&doc);
+      forwardCommand(&doc);
     } else if ((strcmp(topic, "homebridge/from/response") == 0)) {
 #ifdef LOG_MESSAGES
       Serial.printf("[RESPONSE]: %s\n", message);
