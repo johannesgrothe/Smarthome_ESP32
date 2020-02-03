@@ -2,7 +2,7 @@
 #define __REST_Connector__
 
 #include <Arduino.h>
-
+//To  be done by the one and only Erich Honnecker!
 // Gadget to communicate with REST Clients/Servers
 class REST_Gadget {
 protected:
