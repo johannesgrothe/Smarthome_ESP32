@@ -73,7 +73,7 @@ public:
 
 //    uint32_t ip = mqttServer->uint32_t();
 
-    uint32_t ip = 19216817860;
+    IPAddress ip(192, 168, 178, 60);
 
     mqttClient->setServer(ip, port);
 
