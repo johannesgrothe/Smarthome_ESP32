@@ -21,7 +21,9 @@
     },
     "mqtt": {
       "ip": "192.168.178.60",
-      "port": "1883"
+      "port": "1883",
+      "user": "testuser",
+      "password": "testpw"
     },
     "rest": {}
   }

@@ -10,6 +10,7 @@
 #include "Client.h"
 #include <WiFi.h>
 #include "ArduinoJson.h"
+
 #include "wifi_credentials.h"
 
 
@@ -74,7 +75,7 @@ private:
     }
 
     if (connectors_json["mqtt"] != nullptr) {
-      mqtt_gadget = new MQTT_Gadget(connectors_json["mqtt"].as<JsonObject>());
+      mqtt_gadget = new MQTT_Gadget(connectors_json["mqtt"].as<JsonObject>(), &network_client);
     }
 
     if (connectors_json["rest"] != nullptr) {
@@ -127,11 +128,14 @@ private:
   bool test_initialization() {
     Serial.println("[SETUP] Testing initialization:");
 
+    bool everything_ok = true;
+
     Serial.print("   => IR: ");
     if (ir_gadget->isInitialized()) {
       Serial.println("OK");
     } else {
       Serial.println("ERR");
+      everything_ok = false;
     }
 
     Serial.print("   => MQTT: ");
@@ -139,7 +143,10 @@ private:
       Serial.println("OK");
     } else {
       Serial.println("ERR");
+      everything_ok = false;
     }
+
+    return everything_ok;
   }
 
   void test_stuff() {

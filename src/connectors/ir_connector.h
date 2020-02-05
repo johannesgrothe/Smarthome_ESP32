@@ -1,8 +1,6 @@
 #ifndef __IR_Connector__
 #define __IR_Connector__
 
-#include "ArduinoJson.h"
-
 #include <Arduino.h>
 #include <IRrecv.h>
 #include <IRsend.h>
@@ -16,7 +14,7 @@ protected:
   IRrecv * receiver;
   IRsend * blaster;
   long received_command{};
-  uint8_t command_type{};
+  int8_t command_type{};
   bool has_new_command{};
   bool is_initialized;
   bool is_ready;
