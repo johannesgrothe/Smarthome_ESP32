@@ -1,4 +1,4 @@
-#include <string.h>
+#include <cstring>
 #include <Arduino.h>
 #include "ArduinoJson.h"
 #include "colors.h"
@@ -81,20 +81,7 @@ public:
 
 };
 
-
-class SH_Receiver : public SH_Gadget {
-protected:
-  bool status{};
-
-public:
-
-  explicit SH_Receiver(JsonObject gadget) :
-    SH_Gadget(gadget) {
-  };
-
-};
-
-class SH_Lamp : public SH_Receiver {
+class SH_Lamp : public SH_Gadget {
 protected:
   float lightness;
   float last_lightness{};
@@ -110,7 +97,7 @@ protected:
 public:
 
   explicit SH_Lamp(JsonObject gadget) :
-    SH_Receiver(gadget),
+    SH_Gadget(gadget),
     lightness(100.0),
     default_lightness(100.0),
     min_lightness(35),
@@ -123,6 +110,17 @@ public:
       type = ON_OFF;
       Serial.println("    => [WARN] No Type Found.");
     }
+  };
+
+  SH_Lamp(JsonObject gadget, uint8_t lamp_type) :
+    SH_Gadget(gadget),
+    lightness(100.0),
+    default_lightness(100.0),
+    min_lightness(35),
+    saturation(0),
+    hue(0),
+    type((SH_LAMP_TYPE) lamp_type) {
+    Serial.printf("    => Type: %d\n", type);
   };
 
   // Lightness
@@ -233,11 +231,11 @@ public:
 
   void print() override {
     Serial.printf("[%s] Hue: %.2f, Lightness: %.2f, Saturation: %.2f, Status: %d\n",
-      name,
-      hue,
-      lightness,
-      saturation,
-      getStatus());
+                  name,
+                  hue,
+                  lightness,
+                  saturation,
+                  getStatus());
   }
 };
 

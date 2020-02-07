@@ -20,10 +20,13 @@ static SH_Gadget * create_gadget(JsonObject gadget_json) {
 
   if (name != nullptr && type != nullptr) {
     Serial.printf("   [INFO] Adding Gadget '%s'\n", name);
+
     if (strcmp(type, "sh_lamp_neopixel_basic") == 0) {
       new_gadget = new SH_Lamp_NeoPixel_Basic(gadget_json);
+
     } else if (strcmp(type, "sh_lamp_basic") == 0) {
       new_gadget = new SH_Lamp_Basic(gadget_json);
+
     } else {
       Serial.printf("     => [ERR] Cannot find type '%s'\n", type);
       return nullptr;

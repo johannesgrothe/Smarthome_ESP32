@@ -17,20 +17,23 @@ private:
   uint16_t len;
   Adafruit_NeoPixel led_stripe;
 
-
 public:
 
   explicit SH_Lamp_NeoPixel_Basic(JsonObject gadget) :
-    SH_Lamp(gadget) {
+    SH_Lamp(gadget, 3) {
     if (gadget["pin"] != nullptr) {
       pin = gadget["pin"].as<uint8_t>();
+      Serial.printf("    => Pin: %d\n", pin);
     } else {
+      Serial.printf("    => [ERR] No Pin Specified\n");
       pin = 0;
     }
     if (gadget["length"] != nullptr) {
       len = gadget["length"].as<uint16_t>();
+      Serial.printf("    => Length: %d\n", len);
     } else {
       len = 1;
+      Serial.printf("    => [ERR] No Length Specified\n");
     }
   };
 

@@ -12,5 +12,4 @@ void setup() {
 
 void loop() {
   shMain.refresh();
-  delay(3000);
 }

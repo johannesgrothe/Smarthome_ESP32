@@ -63,10 +63,10 @@ private:
 
   SH_Gadget * gadgets[20];
 
-  unsigned int anz_gadgets = 0;
+  uint8_t anz_gadgets = 0;
 
   bool init_gadgets(JsonArray gadget_json) {
-    anz_gadgets = gadget_json.size();
+    anz_gadgets = (uint8_t) gadget_json.size();
     Serial.printf("[SETUP] Initializing Gadgets: %d\n", gadget_json.size());
     bool everything_ok = true;
     uint8_t counter = 0;
@@ -191,7 +191,11 @@ public:
   }
 
   void refresh() {
-//    ir_gadget->refresh();
-    test_stuff();
+//    for (auto && sh_gadget : gadgets) {
+//      sh_gadget->refresh();
+//    }
+    for (uint8_t c = 0; c < anz_gadgets; c++) {
+      gadgets[c]->refresh();
+    }
   }
 };
