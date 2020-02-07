@@ -3,8 +3,8 @@
 #include "connectors/mqtt_connector.h"
 #include "connectors/rest_connector.h"
 
-// Gadget
-#include "gadgets/sh_gadget.h"
+// Gadget-Lib
+#include "gadgets/gadget_library.h"
 
 // External Dependencies
 #include "Client.h"
@@ -16,12 +16,20 @@
 
 const char json_str[] = R"(
 {
-  "clients": [
+  "gadgets": [
     {
-      "type": "sh_lamp_neopixel_basic"
+      "type": "sh_lamp_neopixel_basic",
+      "name": "Testlampe NP",
+      "lamp_type": 0,
+      "pin": 23,
+      "length": "1"
     },
     {
-      "type": "sh_lamp_neopixel"
+      "type": "sh_lamp_basic",
+      "name": "Testlampe 2",
+      "lamp_type": 0,
+      "pin": 2,
+      "default_state": 1
     }
   ],
   "network": {
@@ -47,25 +55,36 @@ const char json_str[] = R"(
 
 class SH_Main {
 private:
-  IR_Gadget * ir_gadget;
-  MQTT_Gadget * mqtt_gadget;
-  REST_Gadget * rest_gadget;
+  IR_Gadget *ir_gadget;
+  MQTT_Gadget *mqtt_gadget;
+  REST_Gadget *rest_gadget;
 
   WiFiClient network_client;
 
-  SH_Gadget gadgets[];
+  SH_Gadget * gadgets[20];
+
+  unsigned int anz_gadgets = 0;
 
   bool init_gadgets(JsonArray gadget_json) {
+    anz_gadgets = gadget_json.size();
     Serial.printf("[SETUP] Initializing Gadgets: %d\n", gadget_json.size());
-    add_gadget(gadget_json[0]);
+    bool everything_ok = true;
+    uint8_t counter = 0;
+    for (unsigned int pointer = 0; pointer < gadget_json.size(); pointer++) {
+//    for (auto && pointer : gadget_json) {
+      JsonObject gadget = gadget_json[pointer].as<JsonObject>();
+      gadgets[pointer] = create_gadget(gadget);
+    }
+//    for (JsonVariant gadget : gadget_json) {
 
-    return false;
-  }
-
-  bool add_gadget(JsonObject gadget_json) {
-    Serial.printf("   => Gadget Keys: %d\n", gadget_json.size());
-
-    return false;
+//      everything_ok = everything_ok && add_gadget(gadget);
+//    }
+//    if (everything_ok) {
+//      Serial.printf("   => Everything went fine.\n");
+//    } else {
+//      Serial.printf("   => [ERR] Something went wrong somewhere.\n");
+//    }
+    return everything_ok;
   }
 
   bool init_connectors(JsonObject connectors_json) {
@@ -89,8 +108,8 @@ private:
       Serial.println("[SETUP] Creating Network: WiFi");
       network_client = WiFiClient();
 
-      const char * ssid = json["config"]["ssid"].as<char *>();
-      const char * passwd = json["config"]["password"].as<char *>();
+      const char *ssid = json["config"]["ssid"].as<char *>();
+      const char *passwd = json["config"]["password"].as<char *>();
       Serial.printf("   => Original Values: SSID: %s; PW: %s\n", ssid, passwd);
       ssid = WIFI_SSID;
       passwd = WIFI_PW;
@@ -107,9 +126,9 @@ private:
           Serial.println("\n   => Restarting to try Again...");
           ESP.restart();
         }
-        delay(2500);
+        delay(1000);
         Serial.print(".");
-        connection_tries ++;
+        connection_tries++;
       }
 
       randomSeed(micros());
@@ -150,7 +169,9 @@ private:
   }
 
   void test_stuff() {
-//    ir_gadget->sendIR(12312312312, 1);
+    for (int c = 0; c < anz_gadgets; c++) {
+      gadgets[c]->print();
+    }
   }
 
 
@@ -163,14 +184,14 @@ public:
 
     init_network(json["network"]);
     init_connectors(json["connectors"]);
-    init_gadgets(json["gadgets"].as<JsonArray>());
+    init_gadgets(json["gadgets"]);
 
     test_initialization();
     ir_gadget->init();
   }
 
   void refresh() {
-    ir_gadget->refresh();
+//    ir_gadget->refresh();
     test_stuff();
   }
 };

@@ -1,10 +1,18 @@
 {
-  "clients": [
+  "gadgets": [
     {
-      "type": "sh_lamp_neopixel_basic"
+      "type": "sh_lamp_neopixel_basic",
+      "name": "Testlampe 1",
+      "lamp_type": 0,
+      "pin": 2,
+      "length": "1"
     },
     {
-      "type": "sh_lamp_neopixel"
+      "type": "sh_lamp_neopixel",
+      "name": "Testlampe 2",
+      "lamp_type": 0,
+      "pin": 23,
+      "default_state": 1
     }
   ],
   "network": {

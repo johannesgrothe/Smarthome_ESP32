@@ -7,8 +7,6 @@
 #include <WiFi.h>
 #include "wifi_credentials.h"
 
-#include "gadgets/ir_gadget.h"
-
 #include "gadgets/sh_wallswitch.h"
 #include "gadgets/sh_lamp_neopixel.h"
 #include "gadgets/sh_lamp_neopixel_basic.h"

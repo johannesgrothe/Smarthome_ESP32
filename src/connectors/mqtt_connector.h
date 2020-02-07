@@ -108,6 +108,7 @@ public:
     while (!mqttClient->connected()) {
       if (mqttClient->connect("esp32_test_client")) {
         Serial.println("OK");
+        return true;
       } else {
         if (conn_count > 5) {
           Serial.println("Failed.");
@@ -119,7 +120,7 @@ public:
         conn_count ++;
       }
     }
-    return true;
+    return false;
   }
 
   void callback(char *topic, byte *payload, unsigned int length) {

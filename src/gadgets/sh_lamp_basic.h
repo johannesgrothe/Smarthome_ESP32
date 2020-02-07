@@ -4,38 +4,46 @@
 #include "SH_Gadget.h"
 #include <Arduino.h>
 
-class SH_Lamp_Basic : public SH_Lamp
-{
-  private:
+class SH_Lamp_Basic : public SH_Lamp {
+private:
 
-    uint8_t pin;
+  uint8_t pin;
 
-    bool default_state;
+  bool default_state;
 
-  public:
-    SH_Lamp_Basic(const char * name, uint8_t lamp_pin, bool default_lamp_state):
-      SH_Lamp(name, ON_OFF),
-      pin(lamp_pin),
-      default_state(default_lamp_state)
-      {
-      };
-      
-    void refresh()
-    {
-      if (has_changed)
-      {
-        Serial.printf("[%s] has changed.\n", name);
-        digitalWrite(pin, (getStatus() != default_state));
-      }
-      has_changed = false;
-    };
+public:
 
-    bool init()
-    {
-      pinMode(pin, OUTPUT);
-      digitalWrite(pin, default_state);
-      return true;
+  explicit SH_Lamp_Basic(JsonObject gadget) :
+    SH_Lamp(gadget) {
+    if (gadget["pin"] != nullptr) {
+      pin = gadget["pin"].as<uint8_t>();
+      Serial.printf("    => Pin: %d\n", pin);
+    } else {
+      pin = 0;
+      Serial.println("    => [ERR] No Pin selected.");
     }
+    if (gadget["default_state"] != nullptr) {
+      default_state = gadget["default_state"].as<uint8_t>();
+      Serial.printf("    => Default: %d\n", default_state);
+    } else {
+      default_state = false;
+      Serial.println("    => [ERR] No Default selected");
+    }
+  };
+
+  void refresh() override {
+    if (has_changed) {
+      Serial.printf("[%s] has changed.\n", name);
+      digitalWrite(pin, (getStatus() != default_state));
+    }
+    has_changed = false;
+  };
+
+  bool init() {
+    pinMode(pin, OUTPUT);
+    digitalWrite(pin, default_state);
+    return true;
+  }
 };
 
 #endif
