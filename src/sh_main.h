@@ -2,6 +2,8 @@
 #include "connectors/ir_connector.h"
 #include "connectors/mqtt_connector.h"
 #include "connectors/rest_connector.h"
+#include "connectors/serial_connector.h"
+#include "connectors/radio_connector.h"
 
 // Gadget-Lib
 #include "gadgets/gadget_library.h"
@@ -58,7 +60,8 @@ const char json_str[] = R"(
       "ip": "192.168.178.60",
       "port": "1883"
     },
-    "rest": {}
+    "rest": {},
+    "serial": {}
   }
 }
 )";
@@ -68,10 +71,12 @@ private:
   IR_Gadget *ir_gadget;
   MQTT_Gadget *mqtt_gadget;
   REST_Gadget *rest_gadget;
+  Serial_Gadget *serial_gadget;
+  Radio_Connector *radio_gadget;
 
   WiFiClient network_client;
 
-  SH_Gadget * gadgets[20];
+  SH_Gadget *gadgets[20];
 
   uint8_t anz_gadgets = 0;
 
@@ -93,16 +98,29 @@ private:
     Serial.printf("[SETUP] Initializing Connectors: %d\n", connectors_json.size());
     if (connectors_json["ir"] != nullptr) {
       ir_gadget = new IR_Gadget(connectors_json["ir"].as<JsonObject>());
+    } else {
+      ir_gadget = new IR_Gadget();
     }
 
     if (connectors_json["mqtt"] != nullptr) {
       mqtt_gadget = new MQTT_Gadget(connectors_json["mqtt"].as<JsonObject>(), &network_client);
+    } else {
+      mqtt_gadget = new MQTT_Gadget();
     }
 
-    if (connectors_json["rest"] != nullptr) {
-//      rest_gadget = new REST_Gadget(connectors_json["rest"].as<JsonObject>());
+//    if (connectors_json["rest"] != nullptr) {
+////      rest_gadget = new REST_Gadget(connectors_json["rest"].as<JsonObject>());
+//    } else {
+////      rest_gadget = new REST_Gadget();
+//    }
+
+    if (connectors_json["serial"] != nullptr) {
+      serial_gadget = new Serial_Gadget(connectors_json["serial"].as<JsonObject>());
+    } else {
+      serial_gadget = new Serial_Gadget();
     }
-    return false;
+
+    return true;
   }
 
   bool init_network(JsonObject json) {
@@ -167,10 +185,19 @@ private:
       everything_ok = false;
     }
 
+    Serial.print("   => Serial: ");
+    if (serial_gadget->isInitialized()) {
+      Serial.println("OK");
+    } else {
+      Serial.println("ERR");
+      everything_ok = false;
+    }
+
     return everything_ok;
   }
 
   void test_stuff() {
+    Serial.println("[INFO] Testing Stuff");
     for (int c = 0; c < anz_gadgets; c++) {
       gadgets[c]->printMapping();
     }
@@ -195,9 +222,27 @@ public:
     test_stuff();
   }
 
-  void forwardCommand(uint64_t code) {
+  void forwardCommand(unsigned long code) {
+    Serial.print("[INFO] Forwarding Command: 0x");
+    Serial.println(code, HEX);
     for (uint8_t c = 0; c < anz_gadgets; c++) {
       gadgets[c]->decodeCommand(code);
+    }
+  }
+
+  void refreshConnectors() {
+    // Refresh All Connectors
+    serial_gadget->refresh();
+
+    // Check if Gadgets have new Commands
+    if (serial_gadget->hasNewCommand()) {
+      Serial.printf("[Serial] Command (%d): '%s' / 0x",
+        serial_gadget->getCommandLength(),
+        serial_gadget->getCommandString());
+      Serial.println(serial_gadget->getCommandHEX(), HEX);
+    }
+    if (serial_gadget->hasHexCommand()) {
+      forwardCommand(serial_gadget->getCommandHEX());
     }
   }
 
@@ -205,6 +250,9 @@ public:
 //    for (auto && sh_gadget : gadgets) {
 //      sh_gadget->refresh();
 //    }
+
+    refreshConnectors();
+
     for (uint8_t c = 0; c < anz_gadgets; c++) {
       gadgets[c]->refresh();
     }

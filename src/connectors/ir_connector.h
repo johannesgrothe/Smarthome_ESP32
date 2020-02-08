@@ -11,19 +11,19 @@
 class IR_Gadget {
 protected:
 
-  IRrecv * receiver;
-  IRsend * blaster;
+  IRrecv *receiver;
+  IRsend *blaster;
   long received_command{};
   int8_t command_type{};
   bool has_new_command{};
   bool is_initialized;
-  bool is_ready;
+  bool is_ready{};
 
 public:
 
   IR_Gadget() :
-    receiver(new IRrecv(0)),
-    blaster(new IRsend(0)),
+    receiver(nullptr),
+    blaster(nullptr),
     is_initialized(false) {
   };
 
@@ -58,6 +58,9 @@ public:
   };
 
   void refresh() {
+    if (!is_initialized) {
+      return;
+    }
     decode_results results{};
     if (receiver->decode(&results)) {
       has_new_command = true;
@@ -179,7 +182,9 @@ public:
 class IR_Connector {
 protected:
 
-  IR_Gadget * irgadget;
+  IR_Gadget *irgadget;
+
+  bool initialized_serial;
 
   // DynamicJsonDocument recv_commands;
 
@@ -196,14 +201,14 @@ protected:
 public:
 
   IR_Connector() :
-    irgadget(nullptr) {}
+    irgadget(nullptr),
+    initialized_serial(false) {}
 
-  IR_Connector(IR_Gadget *new_gadget) :
-    irgadget(new_gadget) {}
-
-  void setIRGadget(IR_Gadget *new_gadget) {
-    irgadget = new_gadget;
+  void init_ir_con(IR_Gadget *new_ir_gadget) {
+    initialized_serial = true;
+    irgadget = new_ir_gadget;
   }
+
 };
 
 #endif

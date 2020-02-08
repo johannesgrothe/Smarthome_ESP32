@@ -20,14 +20,16 @@ protected:
 
   uint16_t port;
 
-  char * username;
+  char *username;
 
-  char * password;
+  char *password;
 
   bool is_initialized;
 
 public:
-  MQTT_Gadget();
+  MQTT_Gadget() :
+    is_initialized(false) {
+  };
 
   MQTT_Gadget(IPAddress *broker_ip, WiFiClient *network_client) :
     mqttServer(broker_ip),
@@ -35,7 +37,7 @@ public:
     connect_mqtt();
   };
 
-  MQTT_Gadget(JsonObject data, WiFiClient * network_client) {
+  MQTT_Gadget(JsonObject data, WiFiClient *network_client) {
     Serial.println("   [INFO] Creating MQTT-Gadget");
     networkClient = network_client;
     mqttClient = new PubSubClient(*networkClient);
@@ -79,7 +81,7 @@ public:
       // everything_ok = false;
       Serial.println("     => no \"username\" in config.");
     }
-    
+
     // Reads the Password from JSON
     if (data["password"] != nullptr) {
       port = data["password"].as<unsigned int>();
@@ -117,7 +119,7 @@ public:
         }
         Serial.print(". ");
         delay(1000);
-        conn_count ++;
+        conn_count++;
       }
     }
     return false;
@@ -131,24 +133,16 @@ public:
     message[length] = '\0';
 
     if ((strcmp(topic, "debug/in") == 0)) {
-#ifdef LOG_MESSAGES
       Serial.printf("[DEBUG]: %s\n", message);
-#endif
     } else if ((strcmp(topic, "homebridge/from/set") == 0)) {
-#ifdef LOG_MESSAGES
       Serial.printf("[HOMEBRIDGE SET]: %s\n", message);
-#endif
       DynamicJsonDocument doc(1024);
       deserializeJson(doc, message);
 //      forwardCommand(&doc);
     } else if ((strcmp(topic, "homebridge/from/response") == 0)) {
-#ifdef LOG_MESSAGES
       Serial.printf("[RESPONSE]: %s\n", message);
-#endif
     } else {
-#ifdef LOG_MESSAGES
       Serial.printf("[MSG '%s']: %s\n", topic, message);
-#endif
     }
   }
 
@@ -167,6 +161,12 @@ public:
   bool isInitialized() {
     return is_initialized;
   }
+
+  void refresh() {
+    if (!is_initialized) {
+      return;
+    }
+  }
 };
 
 
@@ -176,15 +176,16 @@ protected:
 
   MQTT_Gadget *mqttgadget;
 
+  bool initialized_mqtt;
+
 public:
-  MQTT_Connector();
+  MQTT_Connector() :
+    mqttgadget(nullptr),
+    initialized_mqtt(false) {};
 
-  MQTT_Connector(MQTT_Gadget *mqtt_gadget) :
-    mqttgadget(mqtt_gadget) {
-  };
-
-  void set_mqtt_gadget(MQTT_Gadget *mqtt_gadget) {
-    mqttgadget = mqtt_gadget;
+  void init_mqtt_con(MQTT_Gadget *new_mqtt_gadget) {
+    initialized_mqtt = true;
+    mqttgadget = new_mqtt_gadget;
   }
 
   bool decode_mqtt() {

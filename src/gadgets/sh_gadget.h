@@ -25,7 +25,8 @@ protected:
   JsonObject * mapping{};
 
 
-  bool findMethodForCode(char * method_name, uint64_t code) {
+  bool findMethodForCode(char * method_name, unsigned long code) {
+    Serial.println(mapping->size());
     for (auto && map_name : * mapping) {
       JsonArray codes = map_name.value().as<JsonArray>();
       for (auto && counter : codes) {
@@ -93,7 +94,7 @@ public:
     return false;
   }
 
-  virtual bool decodeCommand(uint64_t code) {
+  virtual bool decodeCommand(unsigned int code) {
   }
 
   virtual void refresh() {
@@ -269,7 +270,9 @@ public:
     Serial.println("");
   }
 
-  bool decodeCommand(uint64_t code) override {
+  bool decodeCommand(unsigned int code) override {
+    Serial.printf("    [%s] Decoding 0x", name);
+    Serial.println(code, HEX);
     char method_name[25]{};
     findMethodForCode(&method_name[0], code);
     if (strcmp(method_name, "toggleStatus") == 0) {
