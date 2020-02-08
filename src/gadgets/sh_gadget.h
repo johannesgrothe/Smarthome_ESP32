@@ -22,6 +22,21 @@ protected:
   char name[30]{};
   bool initialized;
   bool has_changed;
+  JsonObject * mapping{};
+
+
+  bool findMethodForCode(char * method_name, uint64_t code) {
+    for (auto && map_name : * mapping) {
+      JsonArray codes = map_name.value().as<JsonArray>();
+      for (auto && counter : codes) {
+        if (counter.as<uint64_t>() == code) {
+          strcpy(method_name, map_name.key().c_str());
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 
 public:
   SH_Gadget() :
@@ -35,11 +50,16 @@ public:
     has_changed(true) {
     if (gadget["name"] != nullptr) {
       strcpy(name, gadget["name"].as<const char *>());
-//      name = gadget["name"].as<const char *>();
       Serial.printf("    => Name: %s\n", name);
     } else {
       strcpy(name, "");
       Serial.println("    => [ERR] No Name Found.");
+    }
+    mapping = new JsonObject(gadget["mapping"]);
+    if (gadget["mapping"] != nullptr) {
+      Serial.printf("    => Method Mapping loaded: %d Commands total.\n", mapping->size());
+    } else {
+      Serial.println("    => [WARN] No Method Mapping Found.");
     }
   };
 
@@ -73,10 +93,19 @@ public:
     return false;
   }
 
+  virtual bool decodeCommand(uint64_t code) {
+  }
+
   virtual void refresh() {
   }
 
   virtual void print() {
+  }
+
+  void printMapping() {
+    Serial.printf("[%s] Accessible Methods: ", name);
+    delay(15);
+    Serial.printf("%d\n", mapping->size());
   }
 
 };
@@ -230,12 +259,32 @@ public:
   };
 
   void print() override {
-    Serial.printf("[%s] Hue: %.2f, Lightness: %.2f, Saturation: %.2f, Status: %d\n",
-                  name,
-                  hue,
-                  lightness,
-                  saturation,
-                  getStatus());
+    Serial.printf("[%s] Status: %d", name, getStatus());
+    if (type == CLR_BRI || type == CLR_ONLY) {
+      Serial.printf(", Hue: %.2f, Saturation: %.2f", hue, saturation);
+    }
+    if (type == CLR_BRI || type == BRI_ONLY) {
+      Serial.printf(", Lightness: %.2f", lightness);
+    }
+    Serial.println("");
+  }
+
+  bool decodeCommand(uint64_t code) override {
+    char method_name[25]{};
+    findMethodForCode(&method_name[0], code);
+    if (strcmp(method_name, "toggleStatus") == 0) {
+      Serial.println("Found toggleStatus");
+      toggleStatus();
+    } else if (strcmp(method_name, "turnOn") == 0) {
+      Serial.println("Found turnOn");
+      setStatus(true);
+    } else if (strcmp(method_name, "turnOff") == 0) {
+      Serial.println("Found turnOff");
+      setStatus(false);
+    } else {
+      return false;
+    }
+    return true;
   }
 };
 

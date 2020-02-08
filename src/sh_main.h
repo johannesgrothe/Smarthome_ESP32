@@ -22,14 +22,24 @@ const char json_str[] = R"(
       "name": "Testlampe NP",
       "lamp_type": 0,
       "pin": 23,
-      "length": "1"
+      "length": "1",
+      "mapping": {
+        "toggleStatus": [1],
+        "tunOn": [2],
+        "tunOff": [3]
+      }
     },
     {
       "type": "sh_lamp_basic",
       "name": "Testlampe 2",
       "lamp_type": 0,
       "pin": 2,
-      "default_state": 1
+      "default_state": 1,
+      "mapping": {
+        "toggleStatus": [1],
+        "tunOn": [2],
+        "tunOff": [3]
+      }
     }
   ],
   "network": {
@@ -74,16 +84,8 @@ private:
 //    for (auto && pointer : gadget_json) {
       JsonObject gadget = gadget_json[pointer].as<JsonObject>();
       gadgets[pointer] = create_gadget(gadget);
+      everything_ok = everything_ok && gadgets[pointer]->init();
     }
-//    for (JsonVariant gadget : gadget_json) {
-
-//      everything_ok = everything_ok && add_gadget(gadget);
-//    }
-//    if (everything_ok) {
-//      Serial.printf("   => Everything went fine.\n");
-//    } else {
-//      Serial.printf("   => [ERR] Something went wrong somewhere.\n");
-//    }
     return everything_ok;
   }
 
@@ -170,8 +172,9 @@ private:
 
   void test_stuff() {
     for (int c = 0; c < anz_gadgets; c++) {
-      gadgets[c]->print();
+      gadgets[c]->printMapping();
     }
+    forwardCommand(1);
   }
 
 
@@ -188,6 +191,14 @@ public:
 
     test_initialization();
     ir_gadget->init();
+
+    test_stuff();
+  }
+
+  void forwardCommand(uint64_t code) {
+    for (uint8_t c = 0; c < anz_gadgets; c++) {
+      gadgets[c]->decodeCommand(code);
+    }
   }
 
   void refresh() {

@@ -2,17 +2,27 @@
   "gadgets": [
     {
       "type": "sh_lamp_neopixel_basic",
-      "name": "Testlampe 1",
-      "lamp_type": 0,
-      "pin": 2,
-      "length": "1"
-    },
-    {
-      "type": "sh_lamp_neopixel",
-      "name": "Testlampe 2",
+      "name": "Testlampe NP",
       "lamp_type": 0,
       "pin": 23,
-      "default_state": 1
+      "length": "1",
+      "mapping": {
+        "toggleStatus": [1],
+        "tunOn": [2],
+        "tunOff": [3]
+      }
+    },
+    {
+      "type": "sh_lamp_basic",
+      "name": "Testlampe 2",
+      "lamp_type": 0,
+      "pin": 2,
+      "default_state": 1,
+      "mapping": {
+        "toggleStatus": [1],
+        "tunOn": [2],
+        "tunOff": [3]
+      }
     }
   ],
   "network": {
@@ -29,9 +39,7 @@
     },
     "mqtt": {
       "ip": "192.168.178.60",
-      "port": "1883",
-      "user": "testuser",
-      "password": "testpw"
+      "port": "1883"
     },
     "rest": {}
   }

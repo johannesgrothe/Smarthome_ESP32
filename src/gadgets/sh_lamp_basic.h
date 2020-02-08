@@ -29,20 +29,18 @@ public:
       default_state = false;
       Serial.println("    => [ERR] No Default selected");
     }
-  };
+    pinMode(pin, OUTPUT);
+    digitalWrite(pin, default_state);
+    initialized = true;
+  }
 
   void refresh() override {
     if (has_changed) {
       Serial.printf("[%s] has changed.\n", name);
-      digitalWrite(pin, (getStatus() != default_state));
+      digitalWrite(pin, getStatus());
+      print();
     }
     has_changed = false;
-  };
-
-  bool init() {
-    pinMode(pin, OUTPUT);
-    digitalWrite(pin, default_state);
-    return true;
   }
 };
 

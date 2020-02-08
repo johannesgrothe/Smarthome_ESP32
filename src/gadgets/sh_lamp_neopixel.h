@@ -34,6 +34,7 @@ public:
       uint8_t rgb[3];
       getColor(&rgb[0]);
       setColor(rgb[SH_CLR_red], rgb[SH_CLR_green], rgb[SH_CLR_blue]);
+      print();
     }
     has_changed = false;
   };
