@@ -3,78 +3,48 @@
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include "code_connector.h"
 
-class Serial_Gadget {
+class Serial_Gadget : public Code_Gadget {
 protected:
-
-  bool is_initialized;
-
-  long last_command;
-
-  char last_command_str[30]{};
-
-  bool has_news;
 
 public:
   Serial_Gadget() :
-    is_initialized(false),
-    last_command(0),
-    has_news(false) {
-//    Serial.begin(115200);
+    Code_Gadget() {
   };
 
-  Serial_Gadget(JsonObject data) :
-    is_initialized(true),
-    last_command(0),
-    has_news(false) {
+  explicit Serial_Gadget(JsonObject data) :
+    Code_Gadget(data) {
     Serial.println("   [INFO] Creating Serial Gadget");
-//    Serial.begin(115200);
   };
 
-  void refresh() {
+  void refresh() override {
     if (!is_initialized) {
       return;
     }
-//    delay(10);
     char incoming_message[30]{};
     uint8_t k = 0;
+    bool new_msg = false;
     while (Serial.available() > 0 && k < 30) {
       char buf = Serial.read();
       if (buf != '\n') {
         incoming_message[k] = buf;
         k++;
+        new_msg = true;
+      }
+    }
+    if (new_msg) {
+      last_command_hex = strtol(&incoming_message[0], NULL, 16);
+      if (last_command_hex == 0) {
+        strcpy(&last_command_str[0], &incoming_message[0]);
+        if (strcmp(last_command_str, "0") != 0) {
+          has_news = true;
+        }
+      } else {
         has_news = true;
       }
     }
-    strcpy(&last_command_str[0], &incoming_message[0]);
   }
-
-  bool hasNewCommand() {
-    bool buffer = has_news;
-    has_news = false;
-    return buffer;
-  }
-
-  bool isInitialized() {
-    return is_initialized;
-  }
-
-  bool hasHexCommand() {
-    return (getCommandHEX() != 0);
-  }
-
-  unsigned int getCommandHEX() {
-    return (strtol(&last_command_str[0], NULL, 16));
-  }
-
-  const char * getCommandString() {
-    return &last_command_str[0];
-  }
-
-  uint8_t getCommandLength() {
-    return strlen(&last_command_str[0]);
-  }
-
 };
 
 class Serial_Connector {

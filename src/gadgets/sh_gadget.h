@@ -1,8 +1,11 @@
 #include <cstring>
 #include <Arduino.h>
+#include <connectors/serial_connector.h>
+#include <connectors/radio_connector.h>
 #include "ArduinoJson.h"
 #include "colors.h"
 #include "connectors/ir_connector.h"
+#include "../helping_structures.h"
 
 #ifndef __SH_Gadget__
 #define __SH_Gadget__
@@ -17,26 +20,23 @@ enum SH_LAMP_TYPE {
   ON_OFF, BRI_ONLY, CLR_ONLY, CLR_BRI
 };
 
-class SH_Gadget : public IR_Connector {
+class SH_Gadget : public IR_Connector, public Serial_Connector, public Radio_Connector {
 protected:
   char name[30]{};
   bool initialized;
   bool has_changed;
-  JsonObject * mapping{};
 
+  byte mapping_count{};
 
-  bool findMethodForCode(char * method_name, unsigned long code) {
-    Serial.println(mapping->size());
-    for (auto && map_name : * mapping) {
-      JsonArray codes = map_name.value().as<JsonArray>();
-      for (auto && counter : codes) {
-        if (counter.as<uint64_t>() == code) {
-          strcpy(method_name, map_name.key().c_str());
-          return true;
-        }
+  Mapping_Reference *mapping[10]{};
+
+  const char *findMethodForCode(unsigned long code) {
+    for (byte k = 0; k < mapping_count; k++) {
+      if (mapping[k]->containsCode(code)) {
+        return mapping[k]->getName();
       }
     }
-    return false;
+    return nullptr;
   }
 
 public:
@@ -56,9 +56,20 @@ public:
       strcpy(name, "");
       Serial.println("    => [ERR] No Name Found.");
     }
-    mapping = new JsonObject(gadget["mapping"]);
     if (gadget["mapping"] != nullptr) {
-      Serial.printf("    => Method Mapping loaded: %d Commands total.\n", mapping->size());
+      JsonObject local_mapping = gadget["mapping"].as<JsonObject>();
+      mapping_count = local_mapping.size() < 30 ? local_mapping.size() : 30;
+      Serial.printf("    => Commands: %d\n", mapping_count);
+      byte j = 0;
+      for (auto &&com : local_mapping) {
+        if (j < mapping_count) {
+          const char *new_name = com.key().c_str();
+          JsonArray buf_arr = com.value().as<JsonArray>();
+          mapping[j] = new Mapping_Reference(buf_arr, new_name);
+          j++;
+        }
+      }
+      Serial.printf("    => Method Mapping loaded: %d Commands total.\n", mapping_count);
     } else {
       Serial.println("    => [WARN] No Method Mapping Found.");
     }
@@ -94,7 +105,7 @@ public:
     return false;
   }
 
-  virtual bool decodeCommand(unsigned int code) {
+  virtual bool decodeCommand(unsigned long code) {
   }
 
   virtual void refresh() {
@@ -104,9 +115,11 @@ public:
   }
 
   void printMapping() {
-    Serial.printf("[%s] Accessible Methods: ", name);
-    delay(15);
-    Serial.printf("%d\n", mapping->size());
+    Serial.printf("    [%s] Accessible Methods: ", name);
+    Serial.printf("%d\n", mapping_count);
+    for (byte k = 0; k < mapping_count; k++) {
+      mapping[k]->printMapping();
+    }
   }
 
 };
@@ -270,22 +283,24 @@ public:
     Serial.println("");
   }
 
-  bool decodeCommand(unsigned int code) override {
+  bool decodeCommand(unsigned long code) override {
     Serial.printf("    [%s] Decoding 0x", name);
     Serial.println(code, HEX);
-    char method_name[25]{};
-    findMethodForCode(&method_name[0], code);
-    if (strcmp(method_name, "toggleStatus") == 0) {
-      Serial.println("Found toggleStatus");
-      toggleStatus();
-    } else if (strcmp(method_name, "turnOn") == 0) {
-      Serial.println("Found turnOn");
-      setStatus(true);
-    } else if (strcmp(method_name, "turnOff") == 0) {
-      Serial.println("Found turnOff");
-      setStatus(false);
-    } else {
-      return false;
+    const char *method_name = findMethodForCode(code);
+    if (method_name != nullptr) {
+      if (strcmp(method_name, "toggleStatus") == 0) {
+        Serial.println("    => Toggle Status");
+        toggleStatus();
+      } else if (strcmp(method_name, "turnOn") == 0) {
+        Serial.println("    => Turn On");
+        setStatus(true);
+      } else if (strcmp(method_name, "turnOff") == 0) {
+        Serial.println("    => Turn Off");
+        setStatus(false);
+      } else {
+        Serial.printf("    => Found Nothing for '%s'\n", method_name);
+        return false;
+      }
     }
     return true;
   }

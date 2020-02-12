@@ -26,9 +26,9 @@ const char json_str[] = R"(
       "pin": 23,
       "length": "1",
       "mapping": {
-        "toggleStatus": [1],
-        "tunOn": [2],
-        "tunOff": [3]
+        "toggleStatus": [1, 16],
+        "turnOn": [2, 17],
+        "turnOff": [3, 18]
       }
     },
     {
@@ -38,9 +38,9 @@ const char json_str[] = R"(
       "pin": 2,
       "default_state": 1,
       "mapping": {
-        "toggleStatus": [1],
-        "tunOn": [2],
-        "tunOff": [3]
+        "toggleStatus": [1, 16],
+        "turnOn": [2, 17],
+        "turnOff": [3, 18]
       }
     }
   ],
@@ -55,10 +55,6 @@ const char json_str[] = R"(
     "ir": {
       "recv_pin": 11,
       "send_pin": 12
-    },
-    "mqtt": {
-      "ip": "192.168.178.60",
-      "port": "1883"
     },
     "rest": {},
     "serial": {}
@@ -75,6 +71,8 @@ private:
   Radio_Connector *radio_gadget;
 
   WiFiClient network_client;
+
+//  Code_Gadget *code_receivers[5];
 
   SH_Gadget *gadgets[20];
 
@@ -96,6 +94,7 @@ private:
 
   bool init_connectors(JsonObject connectors_json) {
     Serial.printf("[SETUP] Initializing Connectors: %d\n", connectors_json.size());
+
     if (connectors_json["ir"] != nullptr) {
       ir_gadget = new IR_Gadget(connectors_json["ir"].as<JsonObject>());
     } else {
@@ -137,27 +136,24 @@ private:
       Serial.print("   => Connecting to ");
       Serial.print(ssid);
 
-      WiFi.begin(ssid, passwd);
-
       uint8_t connection_tries = 0;
 
-      while (WiFiClass::status() != WL_CONNECTED) {
-        if (connection_tries > 5) {
-          Serial.println("\n   => Restarting to try Again...");
-          ESP.restart();
-        }
+//      Serial.printf("   => WiFi Firmware Version: %s\n", WiFi.firmwareVersion());
+      while (WiFiClass::status() != WL_CONNECTED && connection_tries < 6) {
+        WiFi.begin(ssid, passwd);
         delay(1000);
         Serial.print(".");
         connection_tries++;
       }
-
-      randomSeed(micros());
-
-      Serial.println("");
-      Serial.println("   => WiFi connected");
-      Serial.print("   => IP address: ");
-      Serial.println(WiFi.localIP());
-
+      if (WiFiClass::status() != WL_CONNECTED) {
+        Serial.println("\n   => could not establish WiFi Connection...");
+      } else {
+        randomSeed(micros());
+        Serial.println("");
+        Serial.println("   => WiFi connected");
+        Serial.print("   => IP address: ");
+        Serial.println(WiFi.localIP());
+      }
     } else {
       Serial.println("[ERR] Unknown Network Settings");
     }
@@ -199,11 +195,29 @@ private:
   void test_stuff() {
     Serial.println("[INFO] Testing Stuff");
     for (int c = 0; c < anz_gadgets; c++) {
-      gadgets[c]->printMapping();
+//      gadgets[c]->printMapping();
     }
-    forwardCommand(1);
   }
 
+  void refreshConnector(Code_Gadget *gadget) {
+    // Refresh Command
+    gadget->refresh();
+
+    // Check if Gadgets have new Commands
+    if (gadget->hasNewCommand()) {
+      if (gadget->hasHexCommand()) {
+        Serial.printf("[Serial] Hex-Com: (%d): 0x",
+                      gadget->getCommandLength());
+        Serial.print(gadget->getCommandHEX(), HEX);
+        Serial.printf(" / %d\n", (int) gadget->getCommandHEX());
+        forwardCommand(gadget->getCommandHEX());
+      } else {
+        Serial.printf("[Serial] String-Com: (%d): '%s'\n",
+                      gadget->getCommandLength(),
+                      gadget->getCommandStr());
+      }
+    }
+  }
 
 public:
   void init() {
@@ -217,7 +231,6 @@ public:
     init_gadgets(json["gadgets"]);
 
     test_initialization();
-    ir_gadget->init();
 
     test_stuff();
   }
@@ -231,19 +244,10 @@ public:
   }
 
   void refreshConnectors() {
-    // Refresh All Connectors
-    serial_gadget->refresh();
 
-    // Check if Gadgets have new Commands
-    if (serial_gadget->hasNewCommand()) {
-      Serial.printf("[Serial] Command (%d): '%s' / 0x",
-        serial_gadget->getCommandLength(),
-        serial_gadget->getCommandString());
-      Serial.println(serial_gadget->getCommandHEX(), HEX);
-    }
-    if (serial_gadget->hasHexCommand()) {
-      forwardCommand(serial_gadget->getCommandHEX());
-    }
+    refreshConnector(serial_gadget);
+    refreshConnector(ir_gadget);
+//    refreshConnector(radio_gadget);
   }
 
   void refresh() {

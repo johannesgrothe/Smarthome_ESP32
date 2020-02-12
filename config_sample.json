@@ -7,9 +7,18 @@
       "pin": 23,
       "length": "1",
       "mapping": {
-        "toggleStatus": [1],
-        "tunOn": [2],
-        "tunOff": [3]
+        "toggleStatus": [
+          1,
+          16
+        ],
+        "turnOn": [
+          2,
+          17
+        ],
+        "turnOff": [
+          3,
+          18
+        ]
       }
     },
     {
@@ -19,9 +28,18 @@
       "pin": 2,
       "default_state": 1,
       "mapping": {
-        "toggleStatus": [1],
-        "tunOn": [2],
-        "tunOff": [3]
+        "toggleStatus": [
+          1,
+          16
+        ],
+        "turnOn": [
+          2,
+          17
+        ],
+        "turnOff": [
+          3,
+          18
+        ]
       }
     }
   ],
@@ -37,10 +55,7 @@
       "recv_pin": 11,
       "send_pin": 12
     },
-    "mqtt": {
-      "ip": "192.168.178.60",
-      "port": "1883"
-    },
-    "rest": {}
+    "rest": {},
+    "serial": {}
   }
 }

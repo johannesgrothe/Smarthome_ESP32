@@ -4,25 +4,27 @@
 #include <Arduino.h>
 #include "IPAddress.h"
 #include "Client.h"
+#include "WiFiClient.h"
 #include <PubSubClient.h>
 #include "ArduinoJson.h"
-#include <string.h>
+#include <cstring>
+#include "code_connector.h"
 
 // Gadget to communicate with MQTT Endpoint
 class MQTT_Gadget {
 protected:
 
-  IPAddress *mqttServer;
+  IPAddress *mqttServer{};
 
-  WiFiClient *networkClient;
+  WiFiClient *networkClient{};
 
-  PubSubClient *mqttClient;
+  PubSubClient *mqttClient{};
 
-  uint16_t port;
+  uint16_t port{};
 
-  char *username;
+  char *username{};
 
-  char *password;
+  char *password{};
 
   bool is_initialized;
 
@@ -33,7 +35,8 @@ public:
 
   MQTT_Gadget(IPAddress *broker_ip, WiFiClient *network_client) :
     mqttServer(broker_ip),
-    networkClient(network_client) {
+    networkClient(network_client),
+    is_initialized(true) {
     connect_mqtt();
   };
 
@@ -199,4 +202,4 @@ public:
   }
 };
 
-#endif
+#endif //__MQTT_Connector__

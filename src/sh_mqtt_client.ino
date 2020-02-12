@@ -1,6 +1,4 @@
-#include "sh_client.h"
 #include "sh_main.h"
-#include "colors.h"
 
 SH_Main shMain;
 
