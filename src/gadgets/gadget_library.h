@@ -1,5 +1,6 @@
 //Normal Imports
 #include "ArduinoJson.h"
+#include "../console_logger.h"
 
 // Gadget
 #include "sh_gadget.h"
@@ -19,7 +20,10 @@ static SH_Gadget * create_gadget(JsonObject gadget_json) {
   SH_Gadget *new_gadget;
 
   if (name != nullptr && type != nullptr) {
-    Serial.printf("   [INFO] Adding Gadget '%s'\n", name);
+    logger.print("Adding Gadget '");
+    logger.add(name);
+    logger.addln("'");
+    logger.incIntent();
 
     if (strcmp(type, "sh_lamp_neopixel_basic") == 0) {
       new_gadget = new SH_Lamp_NeoPixel_Basic(gadget_json);
@@ -28,11 +32,14 @@ static SH_Gadget * create_gadget(JsonObject gadget_json) {
       new_gadget = new SH_Lamp_Basic(gadget_json);
 
     } else {
-      Serial.printf("     => [ERR] Cannot find type '%s'\n", type);
-      return nullptr;
+      logger.print(LOG_ERR, "Cannot find Type '");
+      logger.add(type);
+      logger.addln("'");
+      new_gadget = nullptr;
     }
+    logger.decIntent();
     return new_gadget;
   }
-  Serial.printf("     => [ERR] Information incomplete.\n");
+  logger.println(LOG_ERR, "Information incomplete.");
   return nullptr;
 }

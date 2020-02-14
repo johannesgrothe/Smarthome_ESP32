@@ -3,8 +3,6 @@
 SH_Main shMain;
 
 void setup() {
-  Serial.begin(115200);
-
   shMain.init();
 }
 

@@ -6,6 +6,8 @@
 #include "colors.h"
 #include "connectors/ir_connector.h"
 #include "../helping_structures.h"
+#include "../system_settings.h"
+#include "../console_logger.h"
 
 #ifndef __SH_Gadget__
 #define __SH_Gadget__
@@ -28,7 +30,7 @@ protected:
 
   byte mapping_count{};
 
-  Mapping_Reference *mapping[10]{};
+  Mapping_Reference *mapping[MAPPING_MAX_COMMANDS]{};
 
   const char *findMethodForCode(unsigned long code) {
     for (byte k = 0; k < mapping_count; k++) {
@@ -51,15 +53,16 @@ public:
     has_changed(true) {
     if (gadget["name"] != nullptr) {
       strcpy(name, gadget["name"].as<const char *>());
-      Serial.printf("    => Name: %s\n", name);
     } else {
-      strcpy(name, "");
-      Serial.println("    => [ERR] No Name Found.");
+      strcpy(name, "Unknown");
+      logger.println(LOG_ERR, "No Name found!");
     }
     if (gadget["mapping"] != nullptr) {
       JsonObject local_mapping = gadget["mapping"].as<JsonObject>();
-      mapping_count = local_mapping.size() < 30 ? local_mapping.size() : 30;
-      Serial.printf("    => Commands: %d\n", mapping_count);
+      mapping_count = local_mapping.size() < MAPPING_MAX_COMMANDS ? local_mapping.size() : MAPPING_MAX_COMMANDS;
+      logger.print(LOG_INFO, "Configuring Mapping, Commands: ");
+      logger.addln(mapping_count);
+      logger.incIntent();
       byte j = 0;
       for (auto &&com : local_mapping) {
         if (j < mapping_count) {
@@ -69,9 +72,10 @@ public:
           j++;
         }
       }
-      Serial.printf("    => Method Mapping loaded: %d Commands total.\n", mapping_count);
+      logger.decIntent();
+      logger.println("Method Mapping loaded.");
     } else {
-      Serial.println("    => [WARN] No Method Mapping Found.");
+      logger.println(LOG_WARN, "No Mapping Found.");
     }
   };
 
@@ -115,11 +119,13 @@ public:
   }
 
   void printMapping() {
-    Serial.printf("    [%s] Accessible Methods: ", name);
-    Serial.printf("%d\n", mapping_count);
+    logger.printname(name, "Accessible Methods: ");
+    logger.addln(mapping_count);
+    logger.incIntent();
     for (byte k = 0; k < mapping_count; k++) {
       mapping[k]->printMapping();
     }
+    logger.decIntent();
   }
 
 };
@@ -148,10 +154,11 @@ public:
     hue(0) {
     if (gadget["lamp_type"] != nullptr) {
       type = (SH_LAMP_TYPE) gadget["lamp_type"].as<uint8_t>();
-      Serial.printf("    => Type: %d\n", type);
+      logger.print("Type: ");
+      logger.addln(type);
     } else {
       type = ON_OFF;
-      Serial.println("    => [WARN] No Type Found.");
+      logger.print(LOG_WARN, "No Type found.");
     }
   };
 
@@ -163,12 +170,13 @@ public:
     saturation(0),
     hue(0),
     type((SH_LAMP_TYPE) lamp_type) {
-    Serial.printf("    => Type: %d\n", type);
+    logger.print("Type: ");
+    logger.addln(type);
   };
 
   // Lightness
   void setLightness(float new_lightness) {
-    Serial.printf("[%s] Setting Lightness: %f\n", name, new_lightness);
+//    Serial.printf("[%s] Setting Lightness: %f\n", name, new_lightness);
     lightness = new_lightness;
     has_changed = true;
   };
@@ -179,7 +187,7 @@ public:
 
   // Color (RGB)
   void setColor(uint8_t r, uint8_t g, uint8_t b) {
-    Serial.printf("[%s] Setting Color: [%d, %d, %d]\n", name, r, g, b);
+//    Serial.printf("[%s] Setting Color: [%d, %d, %d]\n", name, r, g, b);
     float hsl[3];
     rgbToHsl(r, g, b, &hsl[0]);
     hue = hsl[SH_CLR_hue];
@@ -200,7 +208,7 @@ public:
 
   // Hue
   void setHue(float new_hue) {
-    Serial.printf("[%s] Setting Hue: %.1f\n", name, new_hue);
+//    Serial.printf("[%s] Setting Hue: %.1f\n", name, new_hue);
     hue = new_hue;
     has_changed = true;
   }
@@ -220,7 +228,7 @@ public:
   };
 
   void setStatus(bool new_status) {
-    Serial.printf("[%s] Setting Status: %d\n", name, new_status);
+//    Serial.printf("[%s] Setting Status: %d\n", name, new_status);
     if (new_status == 0) {
       lightness = 0;
     } else {
@@ -273,14 +281,14 @@ public:
   };
 
   void print() override {
-    Serial.printf("[%s] Status: %d", name, getStatus());
+//    Serial.printf("[%s] Status: %d", name, getStatus());
     if (type == CLR_BRI || type == CLR_ONLY) {
-      Serial.printf(", Hue: %.2f, Saturation: %.2f", hue, saturation);
+//      Serial.printf(", Hue: %.2f, Saturation: %.2f", hue, saturation);
     }
     if (type == CLR_BRI || type == BRI_ONLY) {
-      Serial.printf(", Lightness: %.2f", lightness);
+//      Serial.printf(", Lightness: %.2f", lightness);
     }
-    Serial.println("");
+//    Serial.println("");
   }
 
   bool decodeCommand(unsigned long code) override {

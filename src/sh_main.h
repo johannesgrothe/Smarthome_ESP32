@@ -1,3 +1,7 @@
+// Settings
+#include "user_settings.h"
+#include "system_settings.h"
+
 // Connectors
 #include "connectors/ir_connector.h"
 #include "connectors/mqtt_connector.h"
@@ -8,6 +12,9 @@
 // Gadget-Lib
 #include "gadgets/gadget_library.h"
 
+// Tools
+#include "console_logger.h"
+
 // External Dependencies
 #include "Client.h"
 #include <WiFi.h>
@@ -15,52 +22,6 @@
 
 #include "wifi_credentials.h"
 
-
-const char json_str[] = R"(
-{
-  "gadgets": [
-    {
-      "type": "sh_lamp_neopixel_basic",
-      "name": "Testlampe NP",
-      "lamp_type": 0,
-      "pin": 23,
-      "length": "1",
-      "mapping": {
-        "toggleStatus": [1, 16],
-        "turnOn": [2, 17],
-        "turnOff": [3, 18]
-      }
-    },
-    {
-      "type": "sh_lamp_basic",
-      "name": "Testlampe 2",
-      "lamp_type": 0,
-      "pin": 2,
-      "default_state": 1,
-      "mapping": {
-        "toggleStatus": [1, 16],
-        "turnOn": [2, 17],
-        "turnOff": [3, 18]
-      }
-    }
-  ],
-  "network": {
-    "type": "wifi",
-    "config": {
-      "ssid": "testwlan",
-      "password": "testpw"
-    }
-  },
-  "connectors": {
-    "ir": {
-      "recv_pin": 11,
-      "send_pin": 12
-    },
-    "rest": {},
-    "serial": {}
-  }
-}
-)";
 
 class SH_Main {
 private:
@@ -74,27 +35,29 @@ private:
 
 //  Code_Gadget *code_receivers[5];
 
-  SH_Gadget *gadgets[20];
+  SH_Gadget *gadgets[MAIN_MAX_GADGETS];
 
-  uint8_t anz_gadgets = 0;
+  byte anz_gadgets = 0;
 
   bool init_gadgets(JsonArray gadget_json) {
-    anz_gadgets = (uint8_t) gadget_json.size();
-    Serial.printf("[SETUP] Initializing Gadgets: %d\n", gadget_json.size());
+    anz_gadgets = gadget_json.size() < MAIN_MAX_GADGETS ? gadget_json.size() : MAIN_MAX_GADGETS;
+    logger.print(LOG_INFO, "Creating Gadgets: ");
+    logger.addln(anz_gadgets);
+    logger.incIntent();
     bool everything_ok = true;
-    uint8_t counter = 0;
-    for (unsigned int pointer = 0; pointer < gadget_json.size(); pointer++) {
-//    for (auto && pointer : gadget_json) {
+    for (unsigned int pointer = 0; pointer < anz_gadgets; pointer++) {
       JsonObject gadget = gadget_json[pointer].as<JsonObject>();
       gadgets[pointer] = create_gadget(gadget);
       everything_ok = everything_ok && gadgets[pointer]->init();
     }
+    logger.decIntent();
     return everything_ok;
   }
 
   bool init_connectors(JsonObject connectors_json) {
-    Serial.printf("[SETUP] Initializing Connectors: %d\n", connectors_json.size());
-
+    logger.print("Initializing Connectors: ");
+    logger.addln(connectors_json.size());
+    logger.incIntent();
     if (connectors_json["ir"] != nullptr) {
       ir_gadget = new IR_Gadget(connectors_json["ir"].as<JsonObject>());
     } else {
@@ -118,103 +81,110 @@ private:
     } else {
       serial_gadget = new Serial_Gadget();
     }
-
+    logger.decIntent();
     return true;
   }
 
   bool init_network(JsonObject json) {
     if (strcmp(json["type"].as<char *>(), "wifi") == 0) {
-      Serial.println("[SETUP] Creating Network: WiFi");
+      logger.println("Creating Network: WiFi");
+      logger.incIntent();
       network_client = WiFiClient();
 
       const char *ssid = json["config"]["ssid"].as<char *>();
       const char *passwd = json["config"]["password"].as<char *>();
-      Serial.printf("   => Original Values: SSID: %s; PW: %s\n", ssid, passwd);
+//      Serial.printf("Original Values: SSID: %s; PW: %s\n", ssid, passwd);
       ssid = WIFI_SSID;
       passwd = WIFI_PW;
 
-      Serial.print("   => Connecting to ");
-      Serial.print(ssid);
+      logger.print(LOG_DATA, "");
+      logger.add("Connecting to ");
+      logger.add(ssid);
 
-      uint8_t connection_tries = 0;
+      byte connection_tries = 0;
 
-//      Serial.printf("   => WiFi Firmware Version: %s\n", WiFi.firmwareVersion());
       while (WiFiClass::status() != WL_CONNECTED && connection_tries < 6) {
         WiFi.begin(ssid, passwd);
         delay(1000);
-        Serial.print(".");
+        logger.add(".");
         connection_tries++;
       }
+      logger.addln();
       if (WiFiClass::status() != WL_CONNECTED) {
-        Serial.println("\n   => could not establish WiFi Connection...");
+        logger.println(LOG_DATA, "could not establish WiFi Connection...");
       } else {
         randomSeed(micros());
-        Serial.println("");
-        Serial.println("   => WiFi connected");
-        Serial.print("   => IP address: ");
-        Serial.println(WiFi.localIP());
+        logger.println(LOG_DATA, "WiFi connected");
+        logger.print(LOG_DATA, "IP address: ");
+        logger.addln(WiFi.localIP());
       }
     } else {
-      Serial.println("[ERR] Unknown Network Settings");
+      logger.println(LOG_ERR, "Unknown Network Settings");
     }
+    logger.decIntent();
     return false;
   }
 
   bool test_initialization() {
-    Serial.println("[SETUP] Testing initialization:");
+    logger.println("Testing initialization:");
+    logger.incIntent();
 
     bool everything_ok = true;
 
-    Serial.print("   => IR: ");
+    logger.print(LOG_DATA, "IR: ");
     if (ir_gadget->isInitialized()) {
-      Serial.println("OK");
+      logger.addln("OK");
     } else {
-      Serial.println("ERR");
+      logger.addln("ERR");
       everything_ok = false;
     }
 
-    Serial.print("   => MQTT: ");
+    logger.print(LOG_DATA, "MQTT: ");
     if (mqtt_gadget->isInitialized()) {
-      Serial.println("OK");
+      logger.addln("OK");
     } else {
-      Serial.println("ERR");
+      logger.addln("ERR");
       everything_ok = false;
     }
 
-    Serial.print("   => Serial: ");
+    logger.print(LOG_DATA, "Serial: ");
     if (serial_gadget->isInitialized()) {
-      Serial.println("OK");
+      logger.addln("OK");
     } else {
-      Serial.println("ERR");
+      logger.addln("ERR");
       everything_ok = false;
     }
-
+    logger.decIntent();
     return everything_ok;
   }
 
   void test_stuff() {
-    Serial.println("[INFO] Testing Stuff");
+    logger.println("Testing Stuff");
+    logger.incIntent();
     for (int c = 0; c < anz_gadgets; c++) {
 //      gadgets[c]->printMapping();
     }
+    logger.decIntent();
   }
 
-  void refreshConnector(Code_Gadget *gadget) {
+  static void refreshConnector(Code_Gadget *gadget) {
     // Refresh Command
     gadget->refresh();
 
     // Check if Gadgets have new Commands
     if (gadget->hasNewCommand()) {
       if (gadget->hasHexCommand()) {
-        Serial.printf("[Serial] Hex-Com: (%d): 0x",
-                      gadget->getCommandLength());
-        Serial.print(gadget->getCommandHEX(), HEX);
-        Serial.printf(" / %d\n", (int) gadget->getCommandHEX());
-        forwardCommand(gadget->getCommandHEX());
+        logger.print("[Serial] Hex-Com: 0x");
+        Serial.println(gadget->getCommandHEX(), HEX);
       } else {
-        Serial.printf("[Serial] String-Com: (%d): '%s'\n",
-                      gadget->getCommandLength(),
-                      gadget->getCommandStr());
+        logger.print("[Serial] String-Com: (");
+        logger.add(gadget->getCommandLength());
+        logger.add(") '");
+        logger.add(gadget->getCommandStr());
+        logger.addln("'");
+//        Serial.printf("[Serial] String-Com: (%d): '%s'\n",
+//                      gadget->getCommandLength(),
+//                      gadget->getCommandStr());
       }
     }
   }
@@ -222,9 +192,23 @@ private:
 public:
   void init() {
 
+    Serial.begin(115200);
+
+    logger.println(LOG_INFO, "Launching...");
+    logger.println(LOG_INFO, "Loading Config...");
+    logger.incIntent();
     DynamicJsonDocument json_file(2048);
-    deserializeJson(json_file, json_str);
+    try {
+      deserializeJson(json_file, json_str);
+    }
+    catch(std::exception& e ) {
+      logger.println(LOG_ERR,"Cannot read JSON, creating blank Config.");
+//      Serial.println("[ERROR] Cannot read JSON, creating blank Config.");
+      deserializeJson(json_file, default_config);
+    }
     JsonObject json = json_file.as<JsonObject>();
+
+    logger.decIntent();
 
     init_network(json["network"]);
     init_connectors(json["connectors"]);
@@ -236,28 +220,25 @@ public:
   }
 
   void forwardCommand(unsigned long code) {
-    Serial.print("[INFO] Forwarding Command: 0x");
+    logger.print("Forwarding Command: 0x");
     Serial.println(code, HEX);
-    for (uint8_t c = 0; c < anz_gadgets; c++) {
+    logger.incIntent();
+    for (byte c = 0; c < anz_gadgets; c++) {
       gadgets[c]->decodeCommand(code);
     }
+    logger.decIntent();
   }
 
   void refreshConnectors() {
-
     refreshConnector(serial_gadget);
     refreshConnector(ir_gadget);
 //    refreshConnector(radio_gadget);
   }
 
   void refresh() {
-//    for (auto && sh_gadget : gadgets) {
-//      sh_gadget->refresh();
-//    }
-
     refreshConnectors();
 
-    for (uint8_t c = 0; c < anz_gadgets; c++) {
+    for (byte c = 0; c < anz_gadgets; c++) {
       gadgets[c]->refresh();
     }
   }

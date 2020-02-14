@@ -3,23 +3,23 @@
 
 #include <ArduinoJson.h>
 #include <cstring>
+#include "system_settings.h"
+#include "console_logger.h"
 
-class Mapping_Reference{
+class Mapping_Reference {
 protected:
   byte code_count;
-  unsigned long codes[15];
-  char command_name[25];
+  unsigned long codes[MAPPING_MAX_CODES];
+  char command_name[MAPPING_MAX_COMMAND_NAME_LEN];
 public:
   Mapping_Reference() {
   };
 
-  explicit Mapping_Reference(JsonArray data, const char * name) {
+  explicit Mapping_Reference(JsonArray data, const char *name) {
     strcpy(command_name, name);
-    code_count = data.size() < 15 ? data.size() : 15;
-//    Serial.printf("      => Scanning %d codes to Command '%s'\n", code_count, name);
+    code_count = data.size() < MAPPING_MAX_CODES ? data.size() : MAPPING_MAX_CODES;
     for (byte k = 0; k < code_count; k++) {
       unsigned long new_code = data[k].as<unsigned long>();
-//      Serial.printf("         => 0x%ld\n", new_code);
       codes[k] = new_code;
     }
     printMapping();
@@ -29,7 +29,7 @@ public:
     return code_count;
   }
 
-  const char * getName() {
+  const char *getName() {
     return &command_name[0];
   }
 
@@ -43,15 +43,16 @@ public:
   }
 
   void printMapping() {
-    Serial.printf("       => %s: [", &command_name[0]);
+    logger.print(LOG_DATA, command_name);
+    logger.add(": [");
     for (byte k = 0; k < code_count; k++) {
+      logger.add("0x");
+      logger.add(codes[k]);
       if (k < code_count - 1) {
-        Serial.printf("0x%ld, ", codes[k]);
-      } else {
-        Serial.printf("0x%ld", codes[k]);
+        logger.add(", ");
       }
     }
-    Serial.println("]");
+    logger.addln("]");
   }
 
 };

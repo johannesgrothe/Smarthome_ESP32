@@ -23,23 +23,25 @@ public:
     SH_Lamp(gadget, 3) {
     if (gadget["pin"] != nullptr) {
       pin = gadget["pin"].as<uint8_t>();
-      Serial.printf("    => Pin: %d\n", pin);
+      logger.print("Pin: ");
+      logger.addln(pin);
     } else {
-      Serial.printf("    => [ERR] No Pin Specified\n");
       pin = 0;
+      logger.println(LOG_ERR,"No Pin selected.");
     }
     if (gadget["length"] != nullptr) {
       len = gadget["length"].as<uint16_t>();
-      Serial.printf("    => Length: %d\n", len);
+      logger.print("Length: ");
+      logger.addln(len);
     } else {
       len = 1;
-      Serial.printf("    => [ERR] No Length Specified\n");
+      logger.println(LOG_ERR,"No Length selected.");
     }
   };
 
   void refresh() override {
     if (has_changed) {
-      Serial.printf("[%s] has changed.\n", name);
+      logger.println(name, "has changed.");
       print();
       uint8_t rgb[3];
       getColor(&rgb[0]);
@@ -58,7 +60,7 @@ public:
   }
 
   bool setLEDColor(uint8_t r, uint8_t g, uint8_t b) {
-    Serial.printf("[%s] Setting Color: (%d, %d, %d)\n", name, r, g, b);
+//    Serial.printf("[%s] Setting Color: (%d, %d, %d)\n", name, r, g, b);
     for (uint16_t k = 0; k < len; k++) {
       led_stripe.setPixelColor(k, Adafruit_NeoPixel::Color(r, g, b));
     }

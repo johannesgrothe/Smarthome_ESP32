@@ -17,17 +17,19 @@ public:
     SH_Lamp(gadget) {
     if (gadget["pin"] != nullptr) {
       pin = gadget["pin"].as<uint8_t>();
-      Serial.printf("    => Pin: %d\n", pin);
+      logger.print("Pin: ");
+      logger.addln(pin);
     } else {
       pin = 0;
-      Serial.println("    => [ERR] No Pin selected.");
+      logger.println(LOG_ERR,"No Pin selected.");
     }
     if (gadget["default_state"] != nullptr) {
       default_state = gadget["default_state"].as<uint8_t>();
-      Serial.printf("    => Default: %d\n", default_state);
+      logger.print("Default: ");
+      logger.addln(default_state);
     } else {
       default_state = false;
-      Serial.println("    => [ERR] No Default selected");
+      logger.println(LOG_ERR,"No Default selected.");
     }
     pinMode(pin, OUTPUT);
     digitalWrite(pin, default_state);
@@ -36,7 +38,7 @@ public:
 
   void refresh() override {
     if (has_changed) {
-      Serial.printf("[%s] has changed.\n", name);
+      logger.println(name, "has changed.");
       digitalWrite(pin, getStatus());
       print();
     }
