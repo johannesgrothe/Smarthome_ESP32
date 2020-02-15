@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include "../console_logger.h"
 
 class Code_Gadget {
 protected:

@@ -25,9 +25,11 @@ static SH_Gadget * create_gadget(JsonObject gadget_json) {
     logger.addln("'");
     logger.incIntent();
 
+    //sh_neopixel_basic.h
     if (strcmp(type, "sh_lamp_neopixel_basic") == 0) {
       new_gadget = new SH_Lamp_NeoPixel_Basic(gadget_json);
 
+    // sh_lamp_basic.h
     } else if (strcmp(type, "sh_lamp_basic") == 0) {
       new_gadget = new SH_Lamp_Basic(gadget_json);
 

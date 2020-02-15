@@ -5,6 +5,7 @@
 #define MAPPING_MAX_CODES 10
 #define MAPPING_MAX_COMMAND_NAME_LEN 25
 #define MAIN_MAX_GADGETS 20
+#define GADGET_NAME_LEN_MAX 25
 
 
 const char json_str[] = R"(

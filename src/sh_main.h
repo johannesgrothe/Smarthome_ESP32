@@ -19,6 +19,7 @@
 #include "Client.h"
 #include <WiFi.h>
 #include "ArduinoJson.h"
+#include <EEPROM.h>
 
 #include "wifi_credentials.h"
 
@@ -32,8 +33,6 @@ private:
   Radio_Connector *radio_gadget;
 
   WiFiClient network_client;
-
-//  Code_Gadget *code_receivers[5];
 
   SH_Gadget *gadgets[MAIN_MAX_GADGETS];
 
@@ -93,7 +92,6 @@ private:
 
       const char *ssid = json["config"]["ssid"].as<char *>();
       const char *passwd = json["config"]["password"].as<char *>();
-//      Serial.printf("Original Values: SSID: %s; PW: %s\n", ssid, passwd);
       ssid = WIFI_SSID;
       passwd = WIFI_PW;
 
@@ -167,32 +165,91 @@ private:
     logger.decIntent();
   }
 
-  static void refreshConnector(Code_Gadget *gadget) {
+  void rebootChip() {
+    rebootChip(nullptr);
+  }
+
+  void rebootChip(const char * reason) {
+    if (reason != nullptr) {
+      logger.print("Rebooting Chip because: '");
+      logger.add(reason);
+      logger.add("' in ");
+    } else {
+      logger.println("Rebooting Chip in ");
+    }
+    for (byte k = 0; k < 5; k++) {
+      logger.add(5-k);
+      logger.add(" ");
+      delay(1000);
+    }
+    ESP.restart();
+  }
+
+  void decodeStringCommand(const char * message, unsigned int length) {
+    std::string com = message;
+
+    if (com.rfind("_sys:", 0) == 0) {
+      logger.print("System Command Detected: ");
+      if (com.rfind("_sys:flash", 0) == 0) {
+        logger.addln("flash");
+        char input_json[900]{};
+      } else if (com.rfind("_sys:reboot", 0) == 0) {
+        logger.addln("reboot");
+        rebootChip("Input Command");
+      } else {
+        logger.addln("<unknown>");
+      }
+    } else if (com.rfind("_dev:", 0) == 0) {
+      logger.print("Development Command Detected: ");
+      if (com.rfind("_dev:log_on", 4) == 0) {
+        logger.addln("log_on");
+        logger.activateLogging();
+      } else if (com.rfind("_dev:log_off", 4) == 0) {
+        logger.addln("log_off");
+        logger.deactivateLogging();
+      } else {
+        logger.addln("<unknown>");
+      }
+    }
+  }
+
+  void refreshConnector(Code_Gadget *gadget) {
     // Refresh Command
     gadget->refresh();
 
     // Check if Gadgets have new Commands
     if (gadget->hasNewCommand()) {
       if (gadget->hasHexCommand()) {
+        unsigned long com = gadget->getCommandHEX();
         logger.print("[Serial] Hex-Com: 0x");
-        Serial.println(gadget->getCommandHEX(), HEX);
+        Serial.println(com, HEX);
+        forwardCommand(com);
       } else {
+        unsigned int length = gadget->getCommandLength();
+
         logger.print("[Serial] String-Com: (");
-        logger.add(gadget->getCommandLength());
+        logger.add(length);
         logger.add(") '");
         logger.add(gadget->getCommandStr());
         logger.addln("'");
-//        Serial.printf("[Serial] String-Com: (%d): '%s'\n",
-//                      gadget->getCommandLength(),
-//                      gadget->getCommandStr());
+
+        decodeStringCommand(gadget->getCommandStr(), length);
       }
     }
   }
+
+
+//  EEPROM.write(0, code);
+//  EEPROM.commit();
 
 public:
   void init() {
 
     Serial.begin(115200);
+
+    EEPROM.begin(1023);
+
+    Serial.println(EEPROM.read(0));
 
     logger.println(LOG_INFO, "Launching...");
     logger.println(LOG_INFO, "Loading Config...");
@@ -203,7 +260,6 @@ public:
     }
     catch(std::exception& e ) {
       logger.println(LOG_ERR,"Cannot read JSON, creating blank Config.");
-//      Serial.println("[ERROR] Cannot read JSON, creating blank Config.");
       deserializeJson(json_file, default_config);
     }
     JsonObject json = json_file.as<JsonObject>();

@@ -1,7 +1,7 @@
 #ifndef __SH_Lamp_Basic__
 #define __SH_Lamp_Basic__
 
-#include "SH_Gadget.h"
+#include "sh_gadget.h"
 #include <Arduino.h>
 
 class SH_Lamp_Basic : public SH_Lamp {

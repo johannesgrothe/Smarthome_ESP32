@@ -15,7 +15,10 @@ public:
 
   explicit Serial_Gadget(JsonObject data) :
     Code_Gadget(data) {
-    Serial.println("   [INFO] Creating Serial Gadget");
+    logger.println("Creating Serial Gadget");
+    logger.incIntent();
+    logger.println(LOG_DATA, "Using default Serial Connection");
+    logger.decIntent();
   };
 
   void refresh() override {

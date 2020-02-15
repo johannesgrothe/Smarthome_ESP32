@@ -38,7 +38,7 @@ static void rgbToHsl(uint8_t r, uint8_t g, uint8_t b, float hsl[])
     double bd = (double) b/255;
     double max = threeway_max(rd, gd, bd);
     double min = threeway_min(rd, gd, bd);
-    double h, s, l = (max + min) / 2;
+    double h = 0, s = 0, l = (max + min) / 2;
 
     if (max == min) {
         h = s = 0; // achromatic

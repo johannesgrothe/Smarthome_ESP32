@@ -24,7 +24,7 @@ enum SH_LAMP_TYPE {
 
 class SH_Gadget : public IR_Connector, public Serial_Connector, public Radio_Connector {
 protected:
-  char name[30]{};
+  char name[GADGET_NAME_LEN_MAX]{};
   bool initialized;
   bool has_changed;
 
@@ -52,7 +52,8 @@ public:
     initialized(false),
     has_changed(true) {
     if (gadget["name"] != nullptr) {
-      strcpy(name, gadget["name"].as<const char *>());
+      byte namelen = strlen(gadget["name"].as<const char *>()) < GADGET_NAME_LEN_MAX ? strlen(gadget["name"].as<const char *>()) : GADGET_NAME_LEN_MAX;
+      strncpy(name, gadget["name"].as<const char *>(), namelen);
     } else {
       strcpy(name, "Unknown");
       logger.println(LOG_ERR, "No Name found!");
@@ -110,6 +111,7 @@ public:
   }
 
   virtual bool decodeCommand(unsigned long code) {
+    return false;
   }
 
   virtual void refresh() {
@@ -292,23 +294,28 @@ public:
   }
 
   bool decodeCommand(unsigned long code) override {
-    Serial.printf("    [%s] Decoding 0x", name);
-    Serial.println(code, HEX);
+    logger.printname(name, "Decoding 0x");
+    logger.add(code, HEX);
+    logger.add(": ");
     const char *method_name = findMethodForCode(code);
     if (method_name != nullptr) {
       if (strcmp(method_name, "toggleStatus") == 0) {
-        Serial.println("    => Toggle Status");
+        logger.addln("'toggleStatus'");
         toggleStatus();
-      } else if (strcmp(method_name, "turnOn") == 0) {
-        Serial.println("    => Turn On");
+      } else if (strcmp(method_name, "'turnOn'") == 0) {
+        logger.addln("'turnOn");
         setStatus(true);
-      } else if (strcmp(method_name, "turnOff") == 0) {
-        Serial.println("    => Turn Off");
+      } else if (strcmp(method_name, "'turnOff'") == 0) {
+        logger.addln("'turnOff");
         setStatus(false);
       } else {
-        Serial.printf("    => Found Nothing for '%s'\n", method_name);
+        logger.add("Found Nothing for '");
+        logger.add(method_name);
+        logger.addln("'");
         return false;
       }
+    } else {
+      logger.addln(" - ");
     }
     return true;
   }

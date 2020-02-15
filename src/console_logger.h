@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <cstring>
+#include "user_settings.h"
 
 #define PREF_LEN 6
 #define INTENT_LEN 3
@@ -13,14 +14,15 @@ enum LOG_TYPE {
 
 class Console_Logger {
 protected:
-  char intent_char;
-  byte intent;
-  byte intent_len;
+  char indent_char;
+  byte indent;
+  byte indent_len;
+  bool logging_active;
 
   void print_intent() {
-    for (byte k = 0; k < intent; k++) {
-      for (byte j = 0; j < intent_len; j++) {
-        Serial.print(intent_char);
+    for (byte k = 0; k < indent; k++) {
+      for (byte j = 0; j < indent_len; j++) {
+        Serial.print(indent_char);
       }
     }
   }
@@ -58,66 +60,105 @@ protected:
 
     Serial.print(pref);
     Serial.print(' ');
-//    for (byte k = strlen(pref); k < PREF_LEN; k++) {
-//      Serial.print(' ');
-//    }
   }
 
 public:
   Console_Logger() :
-    intent_char(' '),
-    intent(0),
-    intent_len(INTENT_LEN) {
+    indent_char(' '),
+    indent(0),
+    indent_len(INTENT_LEN),
+    logging_active(LOGGING_ACTIVE) {
   };
 
+  void activateLogging() {
+    logging_active = true;
+    println("Activating Logger");
+  }
+
+  void deactivateLogging() {
+    println("Deactivating Logger");
+    logging_active = false;
+  }
+
   void incIntent() {
-    intent++;
+    indent++;
   };
 
   void decIntent() {
-    if (intent > 0)
-      intent--;
+    if (indent > 0)
+      indent--;
   };
 
   void printname(const char *name, const char *message) {
+    if (!logging_active)
+      return;
     print_beginning_name(name);
     Serial.print(message);
   }
 
   void println(const char *name, const char *message) {
+    if (!logging_active)
+      return;
     printname(name, message);
     Serial.println();
   }
 
   void print(const char *message) {
+    if (!logging_active)
+      return;
     print(LOG_INFO, message);
   }
 
   void print(LOG_TYPE type, const char *message) {
+    if (!logging_active)
+      return;
     print_beginning(type);
     Serial.print(message);
   }
 
   void println(const char *message) {
+    if (!logging_active)
+      return;
     println(LOG_INFO, message);
   }
 
   void println(LOG_TYPE type, const char *message) {
+    if (!logging_active)
+      return;
     print((LOG_TYPE) type, message);
     Serial.println();
   }
 
   template<class T>
   void add(T message) {
+    if (!logging_active)
+      return;
     Serial.print(message);
   }
 
   template<class T>
   void addln(T message) {
+    if (!logging_active)
+      return;
     Serial.println(message);
   }
 
   void addln() {
+    if (!logging_active)
+      return;
+    Serial.println();
+  }
+
+  void add(unsigned long data, int basis) {
+    if (!logging_active)
+      return;
+    Serial.print(data, basis);
+  }
+
+  void addln(unsigned long data, int basis) {
+    if (!logging_active)
+      return;
+    add(data, basis);
     Serial.println();
   }
 
@@ -139,6 +180,6 @@ public:
 
 };
 
-Console_Logger logger;
+extern Console_Logger logger;
 
 #endif //__CONSOLE_LOGGER__

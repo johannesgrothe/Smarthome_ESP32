@@ -25,28 +25,32 @@ public:
 
   explicit IR_Gadget(JsonObject data) :
     Code_Gadget(data) {
-    Serial.println("   [INFO] Creating IR-Gadget");
+    logger.println("Creating IR-Gadget");
+    logger.incIntent();
     bool everything_ok = true;
     if (data["recv_pin"] != nullptr) {
       uint8_t r_pin = data["recv_pin"].as<int>();
       receiver = new IRrecv(r_pin);
-      Serial.printf("     => Receiver-Pin: %d\n", r_pin);
+      logger.print(LOG_DATA, "Receiver-Pin: ");
+      logger.addln(r_pin);
     } else {
       everything_ok = false;
-      Serial.println("     => [ERR] \"recv_pin\" nicht spezifiziert.");
+      logger.println(LOG_ERR, "'recv_pin' nicht spezifiziert.");
     }
     if (data["send_pin"] != nullptr) {
       uint8_t b_pin = data["send_pin"].as<int>();
       blaster = new IRsend(b_pin);
-      Serial.printf("     => Blaster-Pin: %d\n", b_pin);
+      logger.print(LOG_DATA, "Blaster-Pin: ");
+      logger.addln(b_pin);
     } else {
       everything_ok = false;
-      Serial.println("     => [ERR] \"send_pin\" nicht spezifiziert.");
+      logger.println(LOG_ERR, "'send_pin' nicht spezifiziert.");
     }
 //    Serial.println(receiver->getTolerance());
     receiver->enableIRIn();
 //    receiver->resume();
     is_initialized = everything_ok;
+    logger.decIntent();
   };
 
   void refresh() override {
