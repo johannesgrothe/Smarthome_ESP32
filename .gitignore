@@ -6,3 +6,5 @@ wifi_credentials.h
 cmake-build-esp32cam
 cmake-build-debug
 CMakeListsPrivate.txt
+CMakeLists.txt
+*.elf

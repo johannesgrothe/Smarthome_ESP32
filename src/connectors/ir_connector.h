@@ -1,134 +1,133 @@
 #ifndef __IR_Connector__
 #define __IR_Connector__
 
-#include "ArduinoJson.h"
-
 #include <Arduino.h>
 #include <IRrecv.h>
 #include <IRsend.h>
 #include <IRremoteESP8266.h>
 #include <ArduinoJson.h>
+#include "code_connector.h"
 
 // Gadget to send and receive IR-Commands
-class IR_Gadget {
+class IR_Gadget : public Code_Gadget {
 protected:
 
-  IRrecv * receiver;
-  IRsend * blaster;
-  long received_command{};
-  uint8_t command_type{};
-  bool has_new_command{};
-  bool is_initialized;
-  bool is_ready;
+  IRrecv *receiver;
+  IRsend *blaster;
 
 public:
 
   IR_Gadget() :
-    receiver(new IRrecv(0)),
-    blaster(new IRsend(0)),
-    is_initialized(false) {
+    Code_Gadget(),
+    receiver(nullptr),
+    blaster(nullptr) {
   };
 
-  IR_Gadget(uint8_t receiver_pin, uint8_t blaster_pin) :
-    receiver(new IRrecv(receiver_pin)),
-    blaster(new IRsend(blaster_pin)),
-    is_initialized(true) {
-  };
-
-  explicit IR_Gadget(JsonObject data) {
-    Serial.println("   [INFO] Creating IR-Gadget");
+  explicit IR_Gadget(JsonObject data) :
+    Code_Gadget(data) {
+    logger.println("Creating IR-Gadget");
+    logger.incIntent();
     bool everything_ok = true;
     if (data["recv_pin"] != nullptr) {
       uint8_t r_pin = data["recv_pin"].as<int>();
       receiver = new IRrecv(r_pin);
-      Serial.printf("     => Receiver-Pin: %d\n", r_pin);
+      logger.print(LOG_DATA, "Receiver-Pin: ");
+      logger.addln(r_pin);
     } else {
       everything_ok = false;
-      Serial.println("     => [ERR] \"recv_pin\" nicht spezifiziert.");
+      logger.println(LOG_ERR, "'recv_pin' nicht spezifiziert.");
     }
     if (data["send_pin"] != nullptr) {
       uint8_t b_pin = data["send_pin"].as<int>();
       blaster = new IRsend(b_pin);
-      Serial.printf("     => Blaster-Pin: %d\n", b_pin);
+      logger.print(LOG_DATA, "Blaster-Pin: ");
+      logger.addln(b_pin);
     } else {
       everything_ok = false;
-      Serial.println("     => [ERR] \"send_pin\" nicht spezifiziert.");
+      logger.println(LOG_ERR, "'send_pin' nicht spezifiziert.");
     }
 //    Serial.println(receiver->getTolerance());
     receiver->enableIRIn();
+//    receiver->resume();
     is_initialized = everything_ok;
+    logger.decIntent();
   };
 
-  void refresh() {
+  void refresh() override {
+    if (!is_initialized) {
+      return;
+    }
     decode_results results{};
     if (receiver->decode(&results)) {
-      has_new_command = true;
+      unsigned long received_command{};
+      int8_t command_type{};
       command_type = results.decode_type;
       received_command = results.value;
       receiver->resume();
 
-      // Serial Output
-      Serial.println("[System / IR Receiver] Received Something:\n  Encoding: ");
-      switch (command_type) {
-        default:
-        case UNKNOWN:
-          Serial.print("UNKNOWN");
-          break;
-        case NEC:
-          Serial.print("NEC");
-          break;
-        case SONY:
-          Serial.print("SONY");
-          break;
-        case RC5:
-          Serial.print("RC5");
-          break;
-        case RC6:
-          Serial.print("RC6");
-          break;
-        case DISH:
-          Serial.print("DISH");
-          break;
-        case SHARP:
-          Serial.print("SHARP");
-          break;
-        case JVC:
-          Serial.print("JVC");
-          break;
-        case SANYO:
-          Serial.print("SANYO");
-          break;
-        case MITSUBISHI:
-          Serial.print("MITSUBISHI");
-          break;
-        case SAMSUNG:
-          Serial.print("SAMSUNG");
-          break;
-        case LG:
-          Serial.print("LG");
-          break;
-        case WHYNTER:
-          Serial.print("WHYNTER");
-          break;
-        case AIWA_RC_T501:
-          Serial.print("AIWA_RC_T501");
-          break;
-        case PANASONIC:
-          Serial.print("PANASONIC");
-          break;
-        case DENON:
-          Serial.print("Denon");
-          break;
+//      Serial.println("[System / IR Receiver] Received Something:\n  Encoding: ");
+//      switch (command_type) {
+//        default:
+//        case UNKNOWN:
+//          Serial.print("UNKNOWN");
+//          break;
+//        case NEC:
+//          Serial.print("NEC");
+//          break;
+//        case SONY:
+//          Serial.print("SONY");
+//          break;
+//        case RC5:
+//          Serial.print("RC5");
+//          break;
+//        case RC6:
+//          Serial.print("RC6");
+//          break;
+//        case DISH:
+//          Serial.print("DISH");
+//          break;
+//        case SHARP:
+//          Serial.print("SHARP");
+//          break;
+//        case JVC:
+//          Serial.print("JVC");
+//          break;
+//        case SANYO:
+//          Serial.print("SANYO");
+//          break;
+//        case MITSUBISHI:
+//          Serial.print("MITSUBISHI");
+//          break;
+//        case SAMSUNG:
+//          Serial.print("SAMSUNG");
+//          break;
+//        case LG:
+//          Serial.print("LG");
+//          break;
+//        case WHYNTER:
+//          Serial.print("WHYNTER");
+//          break;
+//        case AIWA_RC_T501:
+//          Serial.print("AIWA_RC_T501");
+//          break;
+//        case PANASONIC:
+//          Serial.print("PANASONIC");
+//          break;
+//        case DENON:
+//          Serial.print("Denon");
+//          break;
+//      }
+      if (command_type != UNKNOWN) {
+        last_command_hex = received_command;
+        last_command_str[0] = '\0';
+        has_news = true;
       }
-      Serial.print("\n  Command: ");
-      Serial.print(received_command, HEX);
-      Serial.println("");
     }
   };
 
-  bool sendIR(long command, uint8_t command_type) {
+  bool sendIR(long command, uint8_t com_type) {
     Serial.print("[System / IR Receiver] Sending:\n");
-    switch (command_type) {
+    switch (com_type) {
       case NEC:
         blaster->sendNEC(command);
         break;
@@ -151,29 +150,9 @@ public:
     return true;
   };
 
-  bool init() {
-//    receiver->enableIRIn();
-//    receiver->resume();
-    return true;
-  };
-
-  bool hasReceived() {
-    bool buf = has_new_command;
-    has_new_command = false;
-    return buf;
-  };
-
-  long getCommand() {
-    return received_command;
-  }
-
-  uint8_t getCommandEncoding() {
-    return command_type;
-  }
-
-  bool isInitialized() {
-    return is_initialized;
-  }
+//  uint8_t getCommandEncoding() {
+//    return command_type;
+//  }
 };
 
 
@@ -181,7 +160,9 @@ public:
 class IR_Connector {
 protected:
 
-  IR_Gadget * irgadget;
+  IR_Gadget *irgadget;
+
+  bool initialized_serial;
 
   // DynamicJsonDocument recv_commands;
 
@@ -198,14 +179,14 @@ protected:
 public:
 
   IR_Connector() :
-    irgadget(nullptr) {}
+    irgadget(nullptr),
+    initialized_serial(false) {}
 
-  IR_Connector(IR_Gadget *new_gadget) :
-    irgadget(new_gadget) {}
-
-  void setIRGadget(IR_Gadget *new_gadget) {
-    irgadget = new_gadget;
+  void init_ir_con(IR_Gadget *new_ir_gadget) {
+    initialized_serial = true;
+    irgadget = new_ir_gadget;
   }
+
 };
 
 #endif

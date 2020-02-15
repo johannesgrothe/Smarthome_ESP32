@@ -83,7 +83,7 @@ bool SH_Client::addGadget(SH_Gadget *gadget) {
       Serial.println("  Fehler bei der Registrierung.");
       return false;
     }
-    gadget->setIRGadget(&irGadget);
+//    gadget->setIRGadget(&irGadget);
   }
 }
 

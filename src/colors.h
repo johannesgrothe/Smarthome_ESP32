@@ -38,7 +38,7 @@ static void rgbToHsl(uint8_t r, uint8_t g, uint8_t b, float hsl[])
     double bd = (double) b/255;
     double max = threeway_max(rd, gd, bd);
     double min = threeway_min(rd, gd, bd);
-    double h, s, l = (max + min) / 2;
+    double h = 0, s = 0, l = (max + min) / 2;
 
     if (max == min) {
         h = s = 0; // achromatic
@@ -88,77 +88,79 @@ static void hslToRgb(double h, double s, double l, uint8_t rgb[])
     rgb[2] = b * 255;
 }
 
-/**
- * Converts an RGB color value to HSV.
- * Assumes r, g, and b are contained in the set [0, 255] and
- * returns h, s, and v in the set [0, 1].
- *
- * @param   Number  r       The red color value
- * @param   Number  g       The green color value
- * @param   Number  b       The blue color value
- * @return  Array           The HSV representation
- */
-static void rgbToHsv(uint8_t r, uint8_t g, uint8_t b, float hsv[])
-{
-    double rd = (double) r / 255;
-    double gd = (double) g / 255;
-    double bd = (double) b / 255;
-    double max = threeway_max(rd, gd, bd), min = threeway_min(rd, gd, bd);
-    double h, s, v = max;
 
-    double d = max - min;
-    s = max == 0 ? 0 : d / max;
+// /**
+//  * Converts an RGB color value to HSV.
+//  * Assumes r, g, and b are contained in the set [0, 255] and
+//  * returns h, s, and v in the set [0, 1].
+//  *
+//  * @param   Number  r       The red color value
+//  * @param   Number  g       The green color value
+//  * @param   Number  b       The blue color value
+//  * @return  Array           The HSV representation
+//  */
+// static void rgbToHsv(uint8_t r, uint8_t g, uint8_t b, float hsv[])
+// {
+//     double rd = (double) r / 255;
+//     double gd = (double) g / 255;
+//     double bd = (double) b / 255;
+//     double max = threeway_max(rd, gd, bd), min = threeway_min(rd, gd, bd);
+//     double h, s, v = max;
 
-    if (max == min) { 
-        h = 0; // achromatic
-    } else {
-        if (max == rd) {
-            h = (gd - bd) / d + (gd < bd ? 6 : 0);
-        } else if (max == gd) {
-            h = (bd - rd) / d + 2;
-        } else if (max == bd) {
-            h = (rd - gd) / d + 4;
-        }
-        h /= 6;
-    }
+//     double d = max - min;
+//     s = max == 0 ? 0 : d / max;
 
-    hsv[0] = h * 360;
-    hsv[1] = s * 100;
-    hsv[2] = v * 100;
-}
+//     if (max == min) { 
+//         h = 0; // achromatic
+//     } else {
+//         if (max == rd) {
+//             h = (gd - bd) / d + (gd < bd ? 6 : 0);
+//         } else if (max == gd) {
+//             h = (bd - rd) / d + 2;
+//         } else if (max == bd) {
+//             h = (rd - gd) / d + 4;
+//         }
+//         h /= 6;
+//     }
 
-/**
- * Converts an HSV color value to RGB.
- * Assumes h, s, and v are contained in the set [0, 1] and
- * returns r, g, and b in the set [0, 255].
- *
- * @param   Number  h       The hue
- * @param   Number  s       The saturation
- * @param   Number  v       The value
- * @return  Array           The RGB representation
- */
-static void hsvToRgb(double h, double s, double v, uint8_t rgb[])
-{
-    double r, g, b;
+//     hsv[0] = h * 360;
+//     hsv[1] = s * 100;
+//     hsv[2] = v * 100;
+// }
 
-    int i = int(h * 6);
-    double f = h * 6 - i;
-    double p = v * (1 - s);
-    double q = v * (1 - f * s);
-    double t = v * (1 - (1 - f) * s);
 
-    switch(i % 6){
-        case 0: r = v, g = t, b = p; break;
-        case 1: r = q, g = v, b = p; break;
-        case 2: r = p, g = v, b = t; break;
-        case 3: r = p, g = q, b = v; break;
-        case 4: r = t, g = p, b = v; break;
-        case 5: r = v, g = p, b = q; break;
-    }
+// /**
+//  * Converts an HSV color value to RGB.
+//  * Assumes h, s, and v are contained in the set [0, 1] and
+//  * returns r, g, and b in the set [0, 255].
+//  *
+//  * @param   Number  h       The hue
+//  * @param   Number  s       The saturation
+//  * @param   Number  v       The value
+//  * @return  Array           The RGB representation
+//  */
+// static void hsvToRgb(double h, double s, double v, uint8_t rgb[])
+// {
+//     double r, g, b;
 
-    rgb[0] = r * 255;
-    rgb[1] = g * 255;
-    rgb[2] = b * 255;
-}
+//     int i = int(h * 6);
+//     double f = h * 6 - i;
+//     double p = v * (1 - s);
+//     double q = v * (1 - f * s);
+//     double t = v * (1 - (1 - f) * s);
+
+//     switch(i % 6){
+//         case 0: r = v, g = t, b = p; break;
+//         case 1: r = q, g = v, b = p; break;
+//         case 2: r = p, g = v, b = t; break;
+//         case 3: r = p, g = q, b = v; break;
+//         case 4: r = t, g = p, b = v; break;
+//         case 5: r = v, g = p, b = q; break;
+//     }
+
+//     rgb[0] = r * 255;
+//     rgb[1] = g * 255;
+//     rgb[2] = b * 255;
+// }
 
 #endif

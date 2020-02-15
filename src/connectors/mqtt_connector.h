@@ -4,64 +4,94 @@
 #include <Arduino.h>
 #include "IPAddress.h"
 #include "Client.h"
+#include "WiFiClient.h"
 #include <PubSubClient.h>
 #include "ArduinoJson.h"
-#include <string.h>
+#include <cstring>
+#include "code_connector.h"
 
 // Gadget to communicate with MQTT Endpoint
 class MQTT_Gadget {
 protected:
 
-  IPAddress *mqttServer;
+  IPAddress *mqttServer{};
 
-  Client *networkClient;
+  WiFiClient *networkClient{};
 
-  PubSubClient *mqttClient;
+  PubSubClient *mqttClient{};
 
-  uint16_t port;
+  uint16_t port{};
+
+  char *username{};
+
+  char *password{};
 
   bool is_initialized;
 
 public:
-  MQTT_Gadget();
+  MQTT_Gadget() :
+    is_initialized(false) {
+  };
 
-  MQTT_Gadget(IPAddress *broker_ip, Client *network_client) :
+  MQTT_Gadget(IPAddress *broker_ip, WiFiClient *network_client) :
     mqttServer(broker_ip),
-    networkClient(network_client) {
+    networkClient(network_client),
+    is_initialized(true) {
     connect_mqtt();
   };
 
-  explicit MQTT_Gadget(JsonObject data) :
-    mqttServer(),
-    networkClient(),
-    mqttClient() {
+  MQTT_Gadget(JsonObject data, WiFiClient *network_client) {
     Serial.println("   [INFO] Creating MQTT-Gadget");
+    networkClient = network_client;
+    mqttClient = new PubSubClient(*networkClient);
     bool everything_ok = true;
+
+    // Reads the IP from the JSON
     if (data["ip"] != nullptr) {
       char ip_str[16];
-      strcpy(ip_str, data["ip"].as<const char*>());
+      strcpy(ip_str, data["ip"].as<const char *>());
       unsigned int ip_arr[4];
       uint8_t count = 0;
-      char * part;
+      char *part;
       part = strtok(ip_str, ".");
       ip_arr[count] = atoi(part);
       while (count < 3) {
         part = strtok(nullptr, ".");
-        count ++;
+        count++;
         ip_arr[count] = atoi(part);
       }
       mqttServer = new IPAddress(ip_arr[0], ip_arr[1], ip_arr[2], ip_arr[3]);
       Serial.printf("     => IP: %d.%d.%d.%d\n", ip_arr[0], ip_arr[1], ip_arr[2], ip_arr[3]);
     } else {
       everything_ok = false;
-      Serial.println("     => [ERR] \"ip\" nicht spezifiziert.");
+      Serial.println("     => [ERR] \"ip\" missing in config.");
     }
+
+    // Reads the Port from the JSON
     if (data["port"] != nullptr) {
       port = data["port"].as<unsigned int>();
       Serial.printf("     => Port: %d\n", port);
     } else {
-      everything_ok = true;
-      Serial.println("     => [ERR] \"port\" nicht spezifiziert.");
+      everything_ok = false;
+      Serial.println("     => [ERR] \"port\" missing in config.");
+    }
+
+    // Reads the Username from JSON
+    if (data["username"] != nullptr) {
+      port = data["username"].as<unsigned int>();
+      Serial.printf("     => Username: %d\n", port);
+    } else {
+      // everything_ok = false;
+      Serial.println("     => no \"username\" in config.");
+    }
+
+    // Reads the Password from JSON
+    if (data["password"] != nullptr) {
+      port = data["password"].as<unsigned int>();
+      Serial.printf("     => Password: %d\n", port);
+    } else {
+      // everything_ok = false;
+      Serial.println("     => no \"password\" in config.");
     }
 
     connect_mqtt();
@@ -71,26 +101,31 @@ public:
 
   bool connect_mqtt() {
 
-//    uint32_t ip = mqttServer->uint32_t();
-
-    uint32_t ip = 19216817860;
-
-    mqttClient->setServer(ip, port);
+    mqttClient->setServer(*mqttServer, port);
 
     using std::placeholders::_1;
     using std::placeholders::_2;
     using std::placeholders::_3;
     mqttClient->setCallback(std::bind(&MQTT_Gadget::callback, this, _1, _2, _3));
 
+    Serial.print("     => Connecting to Broker ");
+    uint8_t conn_count = 0;
     while (!mqttClient->connected()) {
-      Serial.print("   => Connecting to Broker ");
       if (mqttClient->connect("esp32_test_client")) {
         Serial.println("OK");
+        return true;
       } else {
+        if (conn_count > 5) {
+          Serial.println("Failed.");
+          Serial.println("     => [ERR] No Connection to Broker could be established.");
+          break;
+        }
         Serial.print(". ");
-        delay(3000);
+        delay(1000);
+        conn_count++;
       }
     }
+    return false;
   }
 
   void callback(char *topic, byte *payload, unsigned int length) {
@@ -101,24 +136,16 @@ public:
     message[length] = '\0';
 
     if ((strcmp(topic, "debug/in") == 0)) {
-#ifdef LOG_MESSAGES
       Serial.printf("[DEBUG]: %s\n", message);
-#endif
     } else if ((strcmp(topic, "homebridge/from/set") == 0)) {
-#ifdef LOG_MESSAGES
       Serial.printf("[HOMEBRIDGE SET]: %s\n", message);
-#endif
       DynamicJsonDocument doc(1024);
       deserializeJson(doc, message);
 //      forwardCommand(&doc);
     } else if ((strcmp(topic, "homebridge/from/response") == 0)) {
-#ifdef LOG_MESSAGES
       Serial.printf("[RESPONSE]: %s\n", message);
-#endif
     } else {
-#ifdef LOG_MESSAGES
       Serial.printf("[MSG '%s']: %s\n", topic, message);
-#endif
     }
   }
 
@@ -137,6 +164,12 @@ public:
   bool isInitialized() {
     return is_initialized;
   }
+
+  void refresh() {
+    if (!is_initialized) {
+      return;
+    }
+  }
 };
 
 
@@ -146,15 +179,16 @@ protected:
 
   MQTT_Gadget *mqttgadget;
 
+  bool initialized_mqtt;
+
 public:
-  MQTT_Connector();
+  MQTT_Connector() :
+    mqttgadget(nullptr),
+    initialized_mqtt(false) {};
 
-  MQTT_Connector(MQTT_Gadget *mqtt_gadget) :
-    mqttgadget(mqtt_gadget) {
-  };
-
-  void set_mqtt_gadget(MQTT_Gadget *mqtt_gadget) {
-    mqttgadget = mqtt_gadget;
+  void init_mqtt_con(MQTT_Gadget *new_mqtt_gadget) {
+    initialized_mqtt = true;
+    mqttgadget = new_mqtt_gadget;
   }
 
   bool decode_mqtt() {
@@ -168,4 +202,4 @@ public:
   }
 };
 
-#endif
+#endif //__MQTT_Connector__
