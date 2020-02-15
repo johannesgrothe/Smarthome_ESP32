@@ -69,11 +69,11 @@ private:
       mqtt_gadget = new MQTT_Gadget();
     }
 
-//    if (connectors_json["rest"] != nullptr) {
-////      rest_gadget = new REST_Gadget(connectors_json["rest"].as<JsonObject>());
-//    } else {
-////      rest_gadget = new REST_Gadget();
-//    }
+    if (connectors_json["rest"] != nullptr) {
+      rest_gadget = new REST_Gadget(&network_client);
+    } else {
+      rest_gadget = new REST_Gadget();
+    }
 
     if (connectors_json["serial"] != nullptr) {
       serial_gadget = new Serial_Gadget(connectors_json["serial"].as<JsonObject>());
@@ -289,6 +289,15 @@ public:
     refreshConnector(serial_gadget);
     refreshConnector(ir_gadget);
 //    refreshConnector(radio_gadget);
+    rest_gadget->refresh();
+    if(rest_gadget->hasRequest()){
+      logger.print("new Request: ");
+      logger.addln(rest_gadget->getRequestType());
+      logger.incIntent();
+      logger.println(LOG_DATA, rest_gadget->getRequestBody());
+      logger.println(LOG_DATA,rest_gadget->getRequestPath());
+      logger.decIntent();
+    }
   }
 
   void refresh() {

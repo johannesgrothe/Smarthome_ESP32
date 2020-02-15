@@ -43,7 +43,7 @@ public:
   }
 
   void printMapping() {
-    logger.print(LOG_DATA, command_name);
+    logger.print(command_name);
     logger.add(": [");
     for (byte k = 0; k < code_count; k++) {
       logger.add("0x");

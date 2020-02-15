@@ -41,7 +41,7 @@ public:
 
   void refresh() override {
     if (has_changed) {
-      logger.println(name, "has changed.");
+      logger.printname(name, "has changed.");
       print();
       uint8_t rgb[3];
       getColor(&rgb[0]);

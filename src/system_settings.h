@@ -7,6 +7,9 @@
 #define MAIN_MAX_GADGETS 20
 #define GADGET_NAME_LEN_MAX 25
 
+#define REST_MAX_BODY_LEN 500
+#define REST_MAX_PATH_LEN 40
+
 
 const char json_str[] = R"(
 {
