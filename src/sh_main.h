@@ -290,6 +290,8 @@ public:
     refreshConnector(serial_gadget);
     refreshConnector(ir_gadget);
 //    refreshConnector(radio_gadget);
+
+    mqtt_gadget->refresh();
   }
 
   void refresh() {

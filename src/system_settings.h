@@ -7,6 +7,9 @@
 #define MAIN_MAX_GADGETS 20
 #define GADGET_NAME_LEN_MAX 25
 
+#define MQTT_USERNAME_MAX_LEN 40
+#define MQTT_PW_MAX_LEN 40
+
 
 const char json_str[] = R"(
 {
@@ -47,6 +50,10 @@ const char json_str[] = R"(
     "ir": {
       "recv_pin": 11,
       "send_pin": 12
+    },
+    "mqtt": {
+      "ip": "192.168.178.111",
+      "port": "1883"
     },
     "rest": {},
     "serial": {}
