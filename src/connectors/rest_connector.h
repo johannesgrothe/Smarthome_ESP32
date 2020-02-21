@@ -100,6 +100,7 @@ public:
     server->handleClient();
   }
 
+  //void send() {}
 };
 
 // Connector for REST Usage
