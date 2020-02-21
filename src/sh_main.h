@@ -23,7 +23,6 @@
 
 #include "wifi_credentials.h"
 
-//test-commit
 
 class SH_Main {
 private:
@@ -51,7 +50,6 @@ private:
       everything_ok = everything_ok && gadgets[pointer]->init();
     }
     logger.decIntent();
-
     return everything_ok;
   }
 
@@ -71,11 +69,11 @@ private:
       mqtt_gadget = new MQTT_Gadget();
     }
 
-//    if (connectors_json["rest"] != nullptr) {
-////      rest_gadget = new REST_Gadget(connectors_json["rest"].as<JsonObject>());
-//    } else {
-////      rest_gadget = new REST_Gadget();
-//    }
+    if (connectors_json["rest"] != nullptr) {
+      rest_gadget = new REST_Gadget(connectors_json["rest"].as<JsonObject>(), &network_client);
+    } else {
+      rest_gadget = new REST_Gadget();
+    }
 
     if (connectors_json["serial"] != nullptr) {
       serial_gadget = new Serial_Gadget(connectors_json["serial"].as<JsonObject>());
@@ -215,7 +213,7 @@ private:
     }
   }
 
-  void refreshConnector(Code_Gadget *gadget) {
+  void refreshCodeConnector(Code_Gadget *gadget) {
     // Refresh Command
     gadget->refresh();
 
@@ -224,7 +222,7 @@ private:
       if (gadget->hasHexCommand()) {
         unsigned long com = gadget->getCommandHEX();
         logger.print("[Serial] Hex-Com: 0x");
-        Serial.println(com, HEX);
+        logger.addln(com, HEX);
         forwardCommand(com);
       } else {
         unsigned int length = gadget->getCommandLength();
@@ -237,6 +235,60 @@ private:
 
         decodeStringCommand(gadget->getCommandStr(), length);
       }
+    }
+  }
+
+  void refreshRequestConnector(Request_Gadget *gadget) {
+    // Refresh Command
+    gadget->refresh();
+
+    // Check if Gadgets have new Commands
+    if (gadget->hasRequest()) {
+      char type[REQUEST_TYPE_LEN_MAX]{};
+      REQUEST_TYPE req_type = gadget->getRequestType();
+      const char *req_body = gadget->getRequestBody();
+      const char *req_path = gadget->getRequestPath();
+      if (req_type == REQ_UNKNOWN)
+        strncpy(type, "UWH0T??", REQUEST_TYPE_LEN_MAX);
+      else if (req_type == REQ_HTTP_GET)
+        strncpy(type, "GET", REQUEST_TYPE_LEN_MAX);
+      else if (req_type == REQ_HTTP_POST)
+        strncpy(type, "POST", REQUEST_TYPE_LEN_MAX);
+      else if (req_type == REQ_HTTP_DELETE)
+        strncpy(type, "DELETE", REQUEST_TYPE_LEN_MAX);
+      else if (req_type == REQ_HTTP_UPDATE)
+        strncpy(type, "UPDATE", REQUEST_TYPE_LEN_MAX);
+      else if (req_type == REQ_MQTT)
+        strncpy(type, "MQTT", REQUEST_TYPE_LEN_MAX);
+      else if (req_type == REQ_SERIAL)
+        strncpy(type, "Serial", REQUEST_TYPE_LEN_MAX);
+      else
+        strncpy(type, "|_I:I_|", REQUEST_TYPE_LEN_MAX);
+      //      switch ((int) req_type) {
+//        case REQ_UNKNOWN: {
+//          strncpy(type, "UWH0T??", 15);
+//        }
+//        case REQ_HTTP_GET: {
+//          strncpy(type, "GET", 15);
+//        }
+//        case REQ_HTTP_POST: {
+//          strncpy(type, "POST", 15);
+//        }
+//        case REQ_MQTT: {
+//          strncpy(type, "MQTT", 15);
+//        }
+//        case REQ_SERIAL: {
+//          strncpy(type, "Serial", 15);
+//        }
+//      }
+      logger.print("[");
+      logger.add(type);
+      logger.add("] '");
+      logger.add(req_path);
+      logger.add("' :");
+      logger.addln(req_body);
+//      Serial.println(com, HEX);
+//      forwardCommand(com);
     }
   }
 
@@ -285,11 +337,11 @@ public:
   }
 
   void refreshConnectors() {
-    refreshConnector(serial_gadget);
-    refreshConnector(ir_gadget);
-//    refreshConnector(radio_gadget);
-
-    mqtt_gadget->refresh();
+    refreshCodeConnector(serial_gadget);
+    refreshCodeConnector(ir_gadget);
+//    refreshCodeConnector(radio_gadget);
+    refreshRequestConnector(rest_gadget);
+    refreshRequestConnector(mqtt_gadget);
   }
 
   void refresh() {

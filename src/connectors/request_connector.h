@@ -10,7 +10,7 @@
 #include "../console_logger.h"
 
 enum REQUEST_TYPE {
-  REQ_HTTP_GET, REQ_HTTP_POST, REQ_HTTP_UPDATE, REQ_HTTP_DELETE, REQ_MQTT, REQ_SERIAL
+  REQ_UNKNOWN, REQ_HTTP_GET, REQ_HTTP_POST, REQ_HTTP_UPDATE, REQ_HTTP_DELETE, REQ_MQTT, REQ_SERIAL
 };
 
 class Request_Gadget {
@@ -29,7 +29,7 @@ protected:
     strncpy(path, new_path, REQUEST_PATH_LEN_MAX);
   };
 
-  void setRequest(char *new_path, char *new_body, REQUEST_TYPE new_type) {
+  void setRequest(const char *new_path, const char *new_body, REQUEST_TYPE new_type) {
     setBody(new_body);
     setPath(new_path);
     type = new_type;
@@ -43,7 +43,7 @@ public:
   Request_Gadget(JsonObject data) :
     is_initialized(false),
     has_request(false),
-    type(REQ_HTTP_GET) {
+    type(REQ_UNKNOWN) {
   }
 
   bool isInitialized() {
