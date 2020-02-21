@@ -181,7 +181,7 @@ public:
 //    printf(LOG_INFO, message, args);
 //  }
 
-} extern logger;
+} logger;
 
 //extern Console_Logger logger;
 
