@@ -180,6 +180,6 @@ public:
 
 };
 
-extern Console_Logger logger;
+Console_Logger logger;
 
 #endif //__CONSOLE_LOGGER__
