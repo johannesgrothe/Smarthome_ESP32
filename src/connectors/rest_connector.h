@@ -1,30 +1,17 @@
 #ifndef __REST_Connector__
 #define __REST_Connector__
 
-#include <Arduino.h>
-#include "../console_logger.h"
-#include "../system_settings.h"
 #include <WebServer.h>
 #include <ESPmDNS.h>
-#include "../../../../../.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFiClient.h"
-
-
-enum HTTP_TYPE {
-  REQ_HTTP_GET, REQ_HTTP_POST, REQ_HTTP_UPDATE, REQ_HTTP_DELETE
-};
+#include "request_connector.h"
 
 
 //To  be done by the one and only Erich Honnecker!
 // Gadget to communicate with REST Clients/Servers
-class REST_Gadget {
+class REST_Gadget : public Request_Gadget {
 protected:
-  bool is_initialized;
   WiFiClient *momonga;
   WebServer *server;
-  bool has_request;
-  HTTP_TYPE type;
-  char body[REST_MAX_BODY_LEN]{};
-  char path[REST_MAX_PATH_LEN]{};
 
 
   void handleRoot() {
@@ -32,6 +19,9 @@ protected:
   }
 
   void handleNotFound() {
+    REQUEST_TYPE req_type = server->method() == HTTP_GET ? REQ_HTTP_GET : REQ_HTTP_POST;
+    setRequest(server->uri().c_str(), server->arg(0).c_str(), req_type);
+    has_request = true;
     String message = "File Not Found\n\n";
     message += "URI: ";
     message += server->uri();
@@ -45,6 +35,25 @@ protected:
     }
     server->send(404, "text/plain", message);
   }
+  /*TODO*/
+  // class ServerHandler : public RequestHandler{
+  /*
+      bool canHandle(HTTPMethod method, String uri) {
+        return true;
+      }
+
+      bool handle(WebServer& server, HTTPMethod requestMethod, String requestUri) {
+  //    doRobot( requestUri );
+        handleNotFound();
+        server.send(200, "text/plain", "Yes!!");
+        return true;
+      }
+
+    };
+
+    //    ServerHandler *handler = new ServerHandler;
+  //    server->addHandler(&handler);
+    */
 
   void initServer() {
     if (MDNS.begin("esp32")) {
@@ -52,6 +61,7 @@ protected:
     }
     server = new WebServer(80);
 
+    server->on("*", std::bind(&REST_Gadget::handleNotFound, this));
     server->onNotFound(std::bind(&REST_Gadget::handleNotFound, this));
     server->begin();
     logger.println("HTTP server started");
@@ -59,50 +69,32 @@ protected:
 
 public:
   REST_Gadget() :
-      is_initialized(false),
-      momonga(nullptr),
-      has_request(false),
-      type(REQ_HTTP_GET) {
-    initServer();
+      Request_Gadget(),
+      momonga(nullptr){
 
   };
 
-  explicit REST_Gadget(WiFiClient *blubb) :
-      is_initialized(true),
-      momonga(blubb),
-      has_request(false),
-      type(REQ_HTTP_GET) {
+  REST_Gadget(JsonObject data, WiFiClient *blubb) :
+      Request_Gadget(data),
+      momonga(blubb){
     logger.println("Initializing REST_Gadget");
     logger.incIntent();
     initServer();
     logger.decIntent();
+    is_initialized = true;
   };
 
-  bool hasRequest() {
-    bool buffer = has_request;
-    has_request = false;
-    return buffer;
-  }
-
-  HTTP_TYPE getRequestType() {
-    return type;
-  }
-
-  const char *getRequestBody() {
-    return &body[0];
-  }
-
-  const char *getRequestPath() {
-    return &path[0];
-  }
-
-  void refresh() {
+  void refresh() override{
+    if (!is_initialized) {
+      return;
+    }
     server->handleClient();
   }
-
-  //void send() {}
+  /*TODO*/
+  // void send() {}
 };
 
+/*TODO*/
 // Connector for REST Usage
 class REST_Connector {
 //protected:

@@ -11,11 +11,8 @@
 #define MQTT_PW_MAX_LEN 40
 
 #define REQUEST_PATH_LEN_MAX 40
-#define REQUEST_BODY_LEN_MAX 40
-
-#define REST_MAX_BODY_LEN 500
-#define REST_MAX_PATH_LEN 40
-
+#define REQUEST_BODY_LEN_MAX 1000
+#define REQUEST_TYPE_LEN_MAX 20
 
 const char json_str[] = R"(
 {
