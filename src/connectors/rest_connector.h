@@ -99,7 +99,7 @@ public:
   void refresh() {
     server->handleClient();
   }
-  
+
 };
 
 // Connector for REST Usage

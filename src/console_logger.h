@@ -1,7 +1,6 @@
 #ifndef __CONSOLE_LOGGER__
 #define __CONSOLE_LOGGER__
 
-#include <Arduino.h>
 #include <cstring>
 #include "user_settings.h"
 
@@ -165,6 +164,10 @@ public:
 //  void printf(LOG_TYPE type, const char * message, int arg) {
 //    print_beginning(type);
 //    Serial.printf(message, arg);
+//  }
+
+//void printf(char * format_str, ...){
+//
 //  }
 
 

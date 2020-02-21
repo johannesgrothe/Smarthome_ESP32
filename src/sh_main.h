@@ -165,11 +165,11 @@ private:
     logger.decIntent();
   }
 
-  void rebootChip() {
+  static void rebootChip() {
     rebootChip(nullptr);
   }
 
-  void rebootChip(const char * reason) {
+  static void rebootChip(const char *reason) {
     if (reason != nullptr) {
       logger.print("Rebooting Chip because: '");
       logger.add(reason);
@@ -178,21 +178,21 @@ private:
       logger.println("Rebooting Chip in ");
     }
     for (byte k = 0; k < 5; k++) {
-      logger.add(5-k);
+      logger.add(5 - k);
       logger.add(" ");
       delay(1000);
     }
     ESP.restart();
   }
 
-  void decodeStringCommand(const char * message, unsigned int length) {
+  void decodeStringCommand(const char *message, unsigned int length) {
     std::string com = message;
 
     if (com.rfind("_sys:", 0) == 0) {
       logger.print("System Command Detected: ");
       if (com.rfind("_sys:flash", 0) == 0) {
         logger.addln("flash");
-        char input_json[900]{};
+//        char input_json[900]{};
       } else if (com.rfind("_sys:reboot", 0) == 0) {
         logger.addln("reboot");
         rebootChip("Input Command");
@@ -239,9 +239,6 @@ private:
   }
 
 
-//  EEPROM.write(0, code);
-//  EEPROM.commit();
-
 public:
   void init() {
 
@@ -258,8 +255,8 @@ public:
     try {
       deserializeJson(json_file, json_str);
     }
-    catch(std::exception& e ) {
-      logger.println(LOG_ERR,"Cannot read JSON, creating blank Config.");
+    catch (std::exception &e) {
+      logger.println(LOG_ERR, "Cannot read JSON, creating blank Config.");
       deserializeJson(json_file, default_config);
     }
     JsonObject json = json_file.as<JsonObject>();
@@ -298,6 +295,8 @@ public:
       logger.println(LOG_DATA,rest_gadget->getRequestPath());
       logger.decIntent();
     }
+
+    mqtt_gadget->refresh();
   }
 
   void refresh() {
