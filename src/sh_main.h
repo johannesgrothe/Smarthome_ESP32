@@ -24,6 +24,27 @@
 #include "wifi_credentials.h"
 
 
+static void rebootChip(const char *reason) {
+  if (reason != nullptr) {
+    logger.print("Rebooting Chip because: '");
+    logger.add(reason);
+    logger.add("' in ");
+  } else {
+    logger.println("Rebooting Chip in ");
+  }
+  for (byte k = 0; k < 5; k++) {
+    logger.add(5 - k);
+    logger.add(" ");
+    delay(1000);
+  }
+  ESP.restart();
+}
+
+static void rebootChip() {
+  rebootChip(nullptr);
+}
+
+
 class SH_Main {
 private:
   IR_Gadget *ir_gadget;
@@ -46,11 +67,22 @@ private:
     bool everything_ok = true;
     for (unsigned int pointer = 0; pointer < anz_gadgets; pointer++) {
       JsonObject gadget = gadget_json[pointer].as<JsonObject>();
-      gadgets[pointer] = create_gadget(gadget);
+      SH_Gadget * buffergadget = create_gadget(gadget);
+      gadgets[pointer] = buffergadget;
+      initGadgetConnectors(buffergadget);
       everything_ok = everything_ok && gadgets[pointer]->init();
     }
     logger.decIntent();
     return everything_ok;
+  }
+
+  void initGadgetConnectors(SH_Gadget * gadget) {
+    logger.incIntent();
+    logger.println("Initializing Connectors:");
+    logger.incIntent();
+    gadget->initHomebridgeCon(mqtt_gadget);
+    logger.decIntent();
+    logger.decIntent();
   }
 
   bool init_connectors(JsonObject connectors_json) {
@@ -165,26 +197,6 @@ private:
     logger.decIntent();
   }
 
-  static void rebootChip() {
-    rebootChip(nullptr);
-  }
-
-  static void rebootChip(const char *reason) {
-    if (reason != nullptr) {
-      logger.print("Rebooting Chip because: '");
-      logger.add(reason);
-      logger.add("' in ");
-    } else {
-      logger.println("Rebooting Chip in ");
-    }
-    for (byte k = 0; k < 5; k++) {
-      logger.add(5 - k);
-      logger.add(" ");
-      delay(1000);
-    }
-    ESP.restart();
-  }
-
   void decodeStringCommand(const char *message, unsigned int length) {
     std::string com = message;
 
@@ -220,10 +232,9 @@ private:
     // Check if Gadgets have new Commands
     if (gadget->hasNewCommand()) {
       unsigned long com = gadget->getCommand();
-      logger.print("[Serial] Hex-Com: 0x");
+      logger.print("[HEX] Hex-Com: 0x");
       logger.addln(com, HEX);
       forwardCommand(com);
-
     }
   }
 
@@ -261,8 +272,7 @@ private:
       logger.add(req_path);
       logger.add("' :");
       logger.addln(req_body);
-//      Serial.println(com, HEX);
-//      forwardCommand(com);
+      forwardRequest(req_type, req_path, req_body);
     }
   }
 
@@ -301,11 +311,17 @@ public:
   }
 
   void forwardCommand(unsigned long code) {
-    logger.print("Forwarding Command: 0x");
-    Serial.println(code, HEX);
     logger.incIntent();
     for (byte c = 0; c < anz_gadgets; c++) {
       gadgets[c]->decodeCommand(code);
+    }
+    logger.decIntent();
+  }
+
+  void forwardRequest(REQUEST_TYPE type, const char * path, const char * body) {
+    logger.incIntent();
+    for (byte c = 0; c < anz_gadgets; c++) {
+      gadgets[c]->decodeRequest(type, path, body);
     }
     logger.decIntent();
   }

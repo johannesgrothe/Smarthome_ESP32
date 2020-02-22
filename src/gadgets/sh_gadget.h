@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include <connectors/serial_connector.h>
 #include <connectors/radio_connector.h>
+#include <connectors/mqtt_connector.h>
 #include "ArduinoJson.h"
 #include "colors.h"
 #include "connectors/ir_connector.h"
@@ -22,7 +23,7 @@ enum SH_LAMP_TYPE {
   ON_OFF, BRI_ONLY, CLR_ONLY, CLR_BRI
 };
 
-class SH_Gadget : public IR_Connector, public Serial_Connector, public Radio_Connector {
+class SH_Gadget : public IR_Connector, public Serial_Connector, public Radio_Connector, public Homebridge_Connector {
 protected:
   char name[GADGET_NAME_LEN_MAX]{};
   bool initialized;
@@ -110,6 +111,10 @@ public:
     return false;
   }
 
+  virtual bool decodeRequest(REQUEST_TYPE type, const char * path, const char * body) {
+    return false;
+  }
+
   virtual bool decodeCommand(unsigned long code) {
     return false;
   }
@@ -162,6 +167,7 @@ public:
       type = ON_OFF;
       logger.print(LOG_WARN, "No Type found.");
     }
+
   };
 
   SH_Lamp(JsonObject gadget, uint8_t lamp_type) :
@@ -243,6 +249,17 @@ public:
     has_changed = true;
   };
 
+  void print() override {
+//    Serial.printf("[%s] Status: %d", name, getStatus());
+    if (type == CLR_BRI || type == CLR_ONLY) {
+//      Serial.printf(", Hue: %.2f, Saturation: %.2f", hue, saturation);
+    }
+    if (type == CLR_BRI || type == BRI_ONLY) {
+//      Serial.printf(", Lightness: %.2f", lightness);
+    }
+//    Serial.println("");
+  }
+
   // Others
   bool decode(DynamicJsonDocument *doc) override {
     JsonObject obj = doc->as<JsonObject>();
@@ -256,7 +273,16 @@ public:
     return true;
   };
 
-  bool getRegisterStr(char *buffer) override {
+//  Homebridge_Connector
+  void decodeHomebridgeCommand() override {
+    logger.println(LOG_ERR, "decodeMQTTCommand() is not implemented.");
+  }
+
+  void updateHomebridge() override {
+    logger.println(LOG_ERR, "updateStatusOnServer() is not implemented.");
+  }
+
+  bool getHomebridgeRegisterStr(char *buffer) override {
     switch (type) {
       case ON_OFF :
         sprintf(buffer, R"({"name": "%s", "service_name": "%s", "service": "Lightbulb"})", name, name);
@@ -282,17 +308,13 @@ public:
     return true;
   };
 
-  void print() override {
-//    Serial.printf("[%s] Status: %d", name, getStatus());
-    if (type == CLR_BRI || type == CLR_ONLY) {
-//      Serial.printf(", Hue: %.2f, Saturation: %.2f", hue, saturation);
-    }
-    if (type == CLR_BRI || type == BRI_ONLY) {
-//      Serial.printf(", Lightness: %.2f", lightness);
-    }
-//    Serial.println("");
+  bool getHomebridgeUnregisterStr(char * buffer) override {
+    snprintf(&buffer[0], HOMEBRIDGE_UNREGISTER_STR_MAX_LEN, R"({"name": "%s"})", name);
+    return true;
   }
+  // End of Homebridge-Connector
 
+  // Request-Connector
   bool decodeCommand(unsigned long code) override {
     logger.printname(name, "Decoding 0x");
     logger.add(code, HEX);
@@ -319,6 +341,7 @@ public:
     }
     return true;
   }
+  // End of Request-Connector
 };
 
 #endif
