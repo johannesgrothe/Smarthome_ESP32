@@ -8,36 +8,36 @@
 class Code_Gadget {
 protected:
 
-  bool is_initialized;
+  bool code_gadget_is_ready;
 
   unsigned long last_command_hex;
 
-  long last_command;
-
-  char last_command_str[30]{};
-
   bool has_news;
+
+  void setCommand(unsigned long newCommand, bool changeStatus = true) {
+    last_command_hex = newCommand;
+    if(changeStatus)
+      has_news = true;
+  }
 
 public:
   Code_Gadget() :
-    is_initialized(false),
-    last_command_hex(0),
-    last_command(0),
-    has_news(false) {
+      code_gadget_is_ready(false),
+      last_command_hex(0),
+      has_news(false) {
   };
 
   explicit Code_Gadget(JsonObject data) :
-    is_initialized(true),
-    last_command_hex(0),
-    last_command(0),
-    has_news(false) {
+      code_gadget_is_ready(false),
+      last_command_hex(0),
+      has_news(false) {
   };
 
   virtual void refresh() {
   }
 
-  bool isInitialized() {
-    return is_initialized;
+  bool codeGadgetIsReady() {
+    return code_gadget_is_ready;
   }
 
   bool hasNewCommand() {
@@ -46,27 +46,8 @@ public:
     return buffer;
   }
 
-  bool hasHexCommand() {
-    return (getCommandHEX() != 0);
-  }
-
-  bool hasStrCommand() {
-    return last_command_str[0] != '\0';
-  }
-
-  unsigned long getCommandHEX() {
+  unsigned long getCommand() {
     return last_command_hex;
-  }
-
-  const char * getCommandStr() {
-    return &last_command_str[0];
-  }
-
-  uint8_t getCommandLength() {
-    if (hasHexCommand()) {
-      return 0;
-    }
-    return strlen(&last_command_str[0]);
   }
 };
 

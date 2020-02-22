@@ -1,7 +1,6 @@
 #ifndef __MQTT_Connector__
 #define __MQTT_Connector__
 
-#include "IPAddress.h"
 #include "Client.h"
 #include "WiFiClient.h"
 #include <PubSubClient.h>
@@ -146,7 +145,7 @@ public:
 
     connect_mqtt();
     logger.decIntent();
-    is_initialized = everything_ok;
+    request_gadget_is_ready = everything_ok;
   };
 
 
@@ -163,7 +162,7 @@ public:
   }
 
   void refresh() {
-    if (!is_initialized) {
+    if (!request_gadget_is_ready) {
       return;
     }
     mqttClient->loop();

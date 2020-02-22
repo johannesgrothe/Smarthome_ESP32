@@ -49,12 +49,12 @@ public:
 //    Serial.println(receiver->getTolerance());
     receiver->enableIRIn();
 //    receiver->resume();
-    is_initialized = everything_ok;
+    code_gadget_is_ready = everything_ok;
     logger.decIntent();
   };
 
   void refresh() override {
-    if (!is_initialized) {
+    if (!code_gadget_is_ready) {
       return;
     }
     decode_results results{};
@@ -118,9 +118,7 @@ public:
 //          break;
 //      }
       if (command_type != UNKNOWN) {
-        last_command_hex = received_command;
-        last_command_str[0] = '\0';
-        has_news = true;
+        setCommand(received_command);
       }
     }
   };
