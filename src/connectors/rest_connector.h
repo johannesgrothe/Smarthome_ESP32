@@ -19,21 +19,21 @@ protected:
   }
 
   void handleNotFound() {
-    REQUEST_TYPE req_type = server->method() == HTTP_GET ? REQ_HTTP_GET : REQ_HTTP_POST;
+
+    REQUEST_TYPE req_type;
+    if (server->method() == HTTP_GET) {
+      req_type = REQ_HTTP_GET;
+    } else if (server->method() == HTTP_POST) {
+      req_type = REQ_HTTP_POST;
+    } else if (server->method() == HTTP_DELETE) {
+      req_type = REQ_HTTP_DELETE;
+    } else if (server->method() == HTTP_PUT) {
+      req_type = REQ_HTTP_PUT;
+    } else {
+      req_type = REQ_UNKNOWN;
+    }
     setRequest(server->uri().c_str(), server->arg(0).c_str(), req_type);
     has_request = true;
-    String message = "File Not Found\n\n";
-    message += "URI: ";
-    message += server->uri();
-    message += "\nMethod: ";
-    message += (server->method() == HTTP_GET) ? "GET" : "POST";
-    message += "\nArguments: ";
-    message += server->args();
-    message += "\n";
-    for (uint8_t i = 0; i < server->args(); i++) {
-      message += " " + server->argName(i) + ": " + server->arg(i) + "\n";
-    }
-    server->send(404, "text/plain", message);
   }
   /*TODO*/
   // class ServerHandler : public RequestHandler{
@@ -70,28 +70,41 @@ protected:
 public:
   REST_Gadget() :
       Request_Gadget(),
-      momonga(nullptr){
+      momonga(nullptr) {
 
   };
 
   REST_Gadget(JsonObject data, WiFiClient *blubb) :
       Request_Gadget(data),
-      momonga(blubb){
+      momonga(blubb) {
     logger.println("Initializing REST_Gadget");
     logger.incIntent();
     initServer();
     logger.decIntent();
-    is_initialized = true;
+    request_gadget_is_ready = true;
   };
 
-  void refresh() override{
-    if (!is_initialized) {
+  void refresh() override {
+    if (!request_gadget_is_ready) {
       return;
     }
     server->handleClient();
   }
+
   /*TODO*/
-  // void send() {}
+  void sendRequest(REQUEST_TYPE req_type, IPAddress ip, const char *req_path, const char *req_body) override {
+    logger.println(LOG_ERR, "To be Implemented");
+  }
+
+  void sendAnswer(const char *req_body, int status_code) override {
+    server->send(status_code, "text/plain", req_body);
+  }
+
+  void sendAnswer(JsonObject req_body, int status_code) {
+    logger.println(LOG_ERR, "To be Implemented");
+  }
+
+
 };
 
 /*TODO*/

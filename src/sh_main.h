@@ -130,7 +130,7 @@ private:
     bool everything_ok = true;
 
     logger.print(LOG_DATA, "IR: ");
-    if (ir_gadget->isInitialized()) {
+    if (ir_gadget->codeGadgetIsReady()) {
       logger.addln("OK");
     } else {
       logger.addln("ERR");
@@ -138,7 +138,7 @@ private:
     }
 
     logger.print(LOG_DATA, "MQTT: ");
-    if (mqtt_gadget->isInitialized()) {
+    if (mqtt_gadget->requestGadgetIsReady()) {
       logger.addln("OK");
     } else {
       logger.addln("ERR");
@@ -146,7 +146,7 @@ private:
     }
 
     logger.print(LOG_DATA, "Serial: ");
-    if (serial_gadget->isInitialized()) {
+    if (serial_gadget->requestGadgetIsReady()) {
       logger.addln("OK");
     } else {
       logger.addln("ERR");
@@ -219,22 +219,11 @@ private:
 
     // Check if Gadgets have new Commands
     if (gadget->hasNewCommand()) {
-      if (gadget->hasHexCommand()) {
-        unsigned long com = gadget->getCommandHEX();
-        logger.print("[Serial] Hex-Com: 0x");
-        logger.addln(com, HEX);
-        forwardCommand(com);
-      } else {
-        unsigned int length = gadget->getCommandLength();
+      unsigned long com = gadget->getCommand();
+      logger.print("[Serial] Hex-Com: 0x");
+      logger.addln(com, HEX);
+      forwardCommand(com);
 
-        logger.print("[Serial] String-Com: (");
-        logger.add(length);
-        logger.add(") '");
-        logger.add(gadget->getCommandStr());
-        logger.addln("'");
-
-        decodeStringCommand(gadget->getCommandStr(), length);
-      }
     }
   }
 
@@ -256,31 +245,16 @@ private:
         strncpy(type, "POST", REQUEST_TYPE_LEN_MAX);
       else if (req_type == REQ_HTTP_DELETE)
         strncpy(type, "DELETE", REQUEST_TYPE_LEN_MAX);
-      else if (req_type == REQ_HTTP_UPDATE)
-        strncpy(type, "UPDATE", REQUEST_TYPE_LEN_MAX);
+      else if (req_type == REQ_HTTP_PUT)
+        strncpy(type, "PUT", REQUEST_TYPE_LEN_MAX);
       else if (req_type == REQ_MQTT)
         strncpy(type, "MQTT", REQUEST_TYPE_LEN_MAX);
       else if (req_type == REQ_SERIAL)
         strncpy(type, "Serial", REQUEST_TYPE_LEN_MAX);
       else
-        strncpy(type, "|_I:I_|", REQUEST_TYPE_LEN_MAX);
-      //      switch ((int) req_type) {
-//        case REQ_UNKNOWN: {
-//          strncpy(type, "UWH0T??", 15);
-//        }
-//        case REQ_HTTP_GET: {
-//          strncpy(type, "GET", 15);
-//        }
-//        case REQ_HTTP_POST: {
-//          strncpy(type, "POST", 15);
-//        }
-//        case REQ_MQTT: {
-//          strncpy(type, "MQTT", 15);
-//        }
-//        case REQ_SERIAL: {
-//          strncpy(type, "Serial", 15);
-//        }
-//      }
+        strncpy(type, "{|_(-):(-)_|}", REQUEST_TYPE_LEN_MAX);
+
+      gadget->sendAnswer("bullshit", 200);
       logger.print("[");
       logger.add(type);
       logger.add("] '");
@@ -342,6 +316,7 @@ public:
 //    refreshCodeConnector(radio_gadget);
     refreshRequestConnector(rest_gadget);
     refreshRequestConnector(mqtt_gadget);
+    refreshRequestConnector(serial_gadget);
   }
 
   void refresh() {
