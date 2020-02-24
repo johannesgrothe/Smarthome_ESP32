@@ -1,18 +1,25 @@
 #ifndef __SYSTEM_SETTINGS__
 #define __SYSTEM_SETTINGS__
 
+// gadget-Command-Mapping
 #define MAPPING_MAX_COMMANDS 15
 #define MAPPING_MAX_CODES 10
 #define MAPPING_MAX_COMMAND_NAME_LEN 25
 #define MAIN_MAX_GADGETS 20
 #define GADGET_NAME_LEN_MAX 25
 
+// MQTT
 #define MQTT_USERNAME_MAX_LEN 40
 #define MQTT_PW_MAX_LEN 40
 
+// Reguests
 #define REQUEST_PATH_LEN_MAX 40
 #define REQUEST_BODY_LEN_MAX 1000
 #define REQUEST_TYPE_LEN_MAX 20
+
+// Homebridge
+#define HOMEBRIDGE_REGISTER_STR_MAX_LEN 240
+#define HOMEBRIDGE_UNREGISTER_STR_MAX_LEN 50
 
 const char json_str[] = R"(
 {
@@ -55,7 +62,7 @@ const char json_str[] = R"(
       "send_pin": 12
     },
     "mqtt": {
-      "ip": "192.168.178.111",
+      "ip": "192.168.178.108",
       "port": "1883"
     },
     "rest": {},

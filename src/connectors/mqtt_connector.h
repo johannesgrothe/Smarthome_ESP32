@@ -83,7 +83,6 @@ public:
     networkClient = network_client;
     mqttClient = new PubSubClient(*networkClient);
     bool everything_ok = true;
-//    setRequest("ddd", "ddd", REQ_MQTT);
     // Reads the IP from the JSON
     if (data["ip"] != nullptr) {
       char ip_str[15]{};
@@ -149,7 +148,7 @@ public:
   };
 
 
-  bool publishMessage(char *topic, char *message) {
+  bool publishMessage(const char *topic, const char *message) {
     bool status = true;
     uint16_t msg_len = strlen(message);
     status = status && mqttClient->beginPublish(topic, msg_len, false);
@@ -202,29 +201,65 @@ public:
 class Homebridge_Connector {
 protected:
 
-  MQTT_Gadget *mqttgadget;
+  MQTT_Gadget *homebridge_mqtt_gadget;
 
-  bool initialized_mqtt;
+  bool initialized_homebridge;
+
+  bool registerHomebridgeGadget() {
+    char reg_str[HOMEBRIDGE_REGISTER_STR_MAX_LEN]{};
+    if (getHomebridgeRegisterStr(&reg_str[0])) {
+      return homebridge_mqtt_gadget->publishMessage("homebridge/to/add", &reg_str[0]);
+    }
+    return false;
+  }
+
+  bool unregisterHomebridgeGadget()
+  {
+    char buf_msg[HOMEBRIDGE_UNREGISTER_STR_MAX_LEN]{};
+    if (getHomebridgeUnregisterStr(&buf_msg[0])) {
+      return homebridge_mqtt_gadget->publishMessage("homebridge/to/remove", &buf_msg[0]);
+    }
+    return false;
+  }
+
+  virtual bool getHomebridgeRegisterStr(char * buffer) {
+  }
+
+  virtual bool getHomebridgeUnregisterStr(char * buffer) {
+  }
 
 public:
   Homebridge_Connector() :
-      mqttgadget(nullptr),
-      initialized_mqtt(false) {};
+    homebridge_mqtt_gadget(nullptr),
+      initialized_homebridge(false) {};
 
-  void init_mqtt_con(MQTT_Gadget *new_mqtt_gadget) {
-    initialized_mqtt = true;
-    mqttgadget = new_mqtt_gadget;
+  void initHomebridgeCon(MQTT_Gadget *new_mqtt_gadget) {
+    initialized_homebridge = true;
+    homebridge_mqtt_gadget = new_mqtt_gadget;
+    logger.println(LOG_DATA, "Homebridge");
+    logger.incIntent();
+    if (unregisterHomebridgeGadget()) {
+      logger.println(LOG_INFO, "Unregistered previous Gadget");
+    } else {
+      logger.println(LOG_ERR, "Could not Unregister previous Gadget");
+    }
+    if (registerHomebridgeGadget()) {
+      logger.println(LOG_INFO, "Unregistered new Gadget");
+    } else {
+      logger.println(LOG_ERR, "Could not register new Gadget on Server");
+    }
+    logger.decIntent();
   }
 
-  virtual void registerGadget() {
-    logger.println(LOG_ERR, "registerGadget() is not implemented.");
+  bool initializedHomebridge() {
+    return initialized_homebridge;
   }
 
-  virtual void decodeMQTTCommand() {
+  virtual void decodeHomebridgeCommand() {
     logger.println(LOG_ERR, "decodeMQTTCommand() is not implemented.");
   }
 
-  virtual void updateStatusOnServer() {
+  virtual void updateHomebridge() {
     logger.println(LOG_ERR, "updateStatusOnServer() is not implemented.");
   }
 };
