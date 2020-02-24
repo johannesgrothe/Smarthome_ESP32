@@ -13,7 +13,7 @@ protected:
 
   IPAddress *mqttServer{};
 
-  WiFiClient *networkClient{};
+  WiFiClient networkClient{};
 
   PubSubClient *mqttClient{};
 
@@ -71,17 +71,18 @@ public:
 
   MQTT_Gadget(IPAddress *broker_ip, WiFiClient *network_client) :
       Request_Gadget(),
-      mqttServer(broker_ip),
-      networkClient(network_client) {
+      mqttServer(broker_ip) {
     connect_mqtt();
   };
 
   MQTT_Gadget(JsonObject data, WiFiClient *network_client) :
       Request_Gadget() {
     logger.println("Creating MQTT Gadget");
+    networkClient = WiFiClient();
     logger.incIntent();
-    networkClient = network_client;
-    mqttClient = new PubSubClient(*networkClient);
+//    networkClient = network_client;
+//    networkClient = new WifiClient();
+    mqttClient = new PubSubClient(networkClient);
     bool everything_ok = true;
     // Reads the IP from the JSON
     if (data["ip"] != nullptr) {
@@ -164,10 +165,9 @@ public:
     if (!request_gadget_is_ready) {
       return;
     }
-    if (!mqttClient->connected() || used_connector){
+    if (!mqttClient->connected()){
       logger.println("recieve anything?");
       connect_mqtt();
-      used_connector = false;
     }
     mqttClient->loop();
   }

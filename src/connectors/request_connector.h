@@ -5,6 +5,7 @@
 #include <ArduinoJson.h>
 #include <cstring>
 #include <IPAddress.h>
+#include <WiFi.h>
 
 // Other Imports
 #include "../system_settings.h"
@@ -13,8 +14,6 @@
 enum REQUEST_TYPE {
   REQ_UNKNOWN, REQ_HTTP_GET, REQ_HTTP_POST, REQ_HTTP_PUT, REQ_HTTP_DELETE, REQ_MQTT, REQ_SERIAL
 };
-
-bool used_connector = false;
 
 class Request_Gadget {
 protected:

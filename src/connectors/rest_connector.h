@@ -101,7 +101,6 @@ protected:
       client->println(strlen(body));
       client->println();
       client->println(body);
-      used_connector = true;
       return waitForResponse();
     } else {
       return false;
@@ -124,14 +123,13 @@ protected:
 
 public:
   REST_Gadget() :
-      Request_Gadget(),
-      client(nullptr) {
+      Request_Gadget() {
 
   };
 
   REST_Gadget(JsonObject data, WiFiClient *gary) :
-      Request_Gadget(data),
-      client(gary) {
+      Request_Gadget(data) {
+    client = new WiFiClient;
     logger.println("Initializing REST_Gadget");
     logger.incIntent();
     initServer();
