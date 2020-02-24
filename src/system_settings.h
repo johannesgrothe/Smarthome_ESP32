@@ -17,6 +17,9 @@
 #define REQUEST_BODY_LEN_MAX 1000
 #define REQUEST_TYPE_LEN_MAX 20
 
+// Rest
+#define RESPONSE_MAX_WAIT_TIME 1000
+
 // Homebridge
 #define HOMEBRIDGE_REGISTER_STR_MAX_LEN 240
 #define HOMEBRIDGE_UNREGISTER_STR_MAX_LEN 50
@@ -62,7 +65,7 @@ const char json_str[] = R"(
       "send_pin": 12
     },
     "mqtt": {
-      "ip": "192.168.178.108",
+      "ip": "192.168.178.111",
       "port": "1883"
     },
     "rest": {},

@@ -160,9 +160,14 @@ public:
     return status;
   }
 
-  void refresh() {
+  void refresh() override {
     if (!request_gadget_is_ready) {
       return;
+    }
+    if (!mqttClient->connected() || used_connector){
+      logger.println("recieve anything?");
+      connect_mqtt();
+      used_connector = false;
     }
     mqttClient->loop();
   }
@@ -244,7 +249,7 @@ public:
       logger.println(LOG_ERR, "Could not Unregister previous Gadget");
     }
     if (registerHomebridgeGadget()) {
-      logger.println(LOG_INFO, "Unregistered new Gadget");
+      logger.println(LOG_INFO, "Registered new Gadget");
     } else {
       logger.println(LOG_ERR, "Could not register new Gadget on Server");
     }
