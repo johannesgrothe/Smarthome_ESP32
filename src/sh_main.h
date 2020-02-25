@@ -195,6 +195,7 @@ private:
 //      gadgets[c]->printMapping();
     }
     logger.decIntent();
+    rest_gadget->sendRequest(REQ_HTTP_POST, "text/plain", IPAddress(192, 168, 178, 111), 3005, "/irgendein/scheiss", "pennerus maximus schmongus");
   }
 
   void decodeStringCommand(const char *message, unsigned int length) {
@@ -273,6 +274,15 @@ private:
       logger.add("' :");
       logger.addln(req_body);
       forwardRequest(req_type, req_path, req_body);
+    }
+    if (gadget->hasResponse()) {
+
+      logger.print("[");
+      logger.add(gadget->getResponseStatusCode());
+      logger.add("] '");
+      logger.add(gadget->getResponsePath());
+      logger.add("' :");
+      logger.addln(gadget->getResponseBody());
     }
   }
 
