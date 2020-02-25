@@ -67,7 +67,7 @@ private:
     bool everything_ok = true;
     for (unsigned int pointer = 0; pointer < anz_gadgets; pointer++) {
       JsonObject gadget = gadget_json[pointer].as<JsonObject>();
-      SH_Gadget * buffergadget = create_gadget(gadget);
+      SH_Gadget *buffergadget = create_gadget(gadget);
       gadgets[pointer] = buffergadget;
       initGadgetConnectors(buffergadget);
       everything_ok = everything_ok && gadgets[pointer]->init();
@@ -76,7 +76,7 @@ private:
     return everything_ok;
   }
 
-  void initGadgetConnectors(SH_Gadget * gadget) {
+  void initGadgetConnectors(SH_Gadget *gadget) {
     logger.incIntent();
     logger.println("Initializing Connectors:");
     logger.incIntent();
@@ -195,7 +195,8 @@ private:
 //      gadgets[c]->printMapping();
     }
     logger.decIntent();
-    rest_gadget->sendRequest(REQ_HTTP_POST, "text/plain", IPAddress(192, 168, 178, 111), 3005, "/irgendein/scheiss", "pennerus maximus schmongus");
+    rest_gadget->sendRequest(REQ_HTTP_POST, "text/plain", IPAddress(192, 168, 178, 111), 3005, "/irgendein/scheiss",
+                             "pennerus maximus schmongus");
   }
 
   void decodeStringCommand(const char *message, unsigned int length) {
@@ -303,7 +304,7 @@ public:
     try {
       deserializeJson(json_file, json_str);
     }
-    catch (std::exception &e) {
+    catch (DeserializationError &e) {
       logger.println(LOG_ERR, "Cannot read JSON, creating blank Config.");
       deserializeJson(json_file, default_config);
     }
@@ -328,11 +329,23 @@ public:
     logger.decIntent();
   }
 
-  void forwardRequest(REQUEST_TYPE type, const char * path, const char * body) {
+  void forwardRequest(REQUEST_TYPE type, const char *path, const char *body) {
     logger.incIntent();
-    for (byte c = 0; c < anz_gadgets; c++) {
-      gadgets[c]->decodeRequest(type, path, body);
+    try {
+      DynamicJsonDocument json_file(2048);
+      JsonObject json_doc = json_file.as<JsonObject>();
+      deserializeJson(json_file, body);
+      logger.println("Forwarding as JSON");
+      for (byte c = 0; c < anz_gadgets; c++) {
+        gadgets[c]->decodeRequest(type, path, json_doc);
+      }
     }
+    catch (DeserializationError &e) {
+      logger.println("Forwarding as String");
+      for (byte c = 0; c < anz_gadgets; c++) {
+        gadgets[c]->decodeRequest(type, path, body);
+      }
+    };
     logger.decIntent();
   }
 

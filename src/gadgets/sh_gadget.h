@@ -53,7 +53,9 @@ public:
     initialized(false),
     has_changed(true) {
     if (gadget["name"] != nullptr) {
-      byte namelen = strlen(gadget["name"].as<const char *>()) < GADGET_NAME_LEN_MAX ? strlen(gadget["name"].as<const char *>()) : GADGET_NAME_LEN_MAX;
+      byte namelen =
+        strlen(gadget["name"].as<const char *>()) < GADGET_NAME_LEN_MAX ? strlen(gadget["name"].as<const char *>())
+                                                                        : GADGET_NAME_LEN_MAX;
       strncpy(name, gadget["name"].as<const char *>(), namelen);
     } else {
       strcpy(name, "Unknown");
@@ -100,23 +102,25 @@ public:
     return false;
   };
 
-  /**
-   * @return Whether the Gadget is initialized or not
-   */
-  virtual bool decode(DynamicJsonDocument *doc) {
-    return false;
+  void decodeRequest(REQUEST_TYPE type, const char *path, const char *body) {
   }
 
-  virtual bool getRegisterStr(char *buffer) {
-    return false;
+  bool decodeRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
+    if (type == REQ_MQTT && strcmp(path, "homebridge/out") == 0) {
+      decodeHomebridgeCommand(body);
+    }
   }
 
-  virtual bool decodeRequest(REQUEST_TYPE type, const char * path, const char * body) {
-    return false;
+  // Homeridge-Connector
+  void updateHomebridgeCharacteristic(const char *characteristic, int value) override {
+    updateHomebridgeCharakteristicHelper(name, characteristic, value);
   }
 
-  virtual bool decodeCommand(unsigned long code) {
-    return false;
+  void updateHomebridgeCharacteristic(const char *characteristic, bool value) override {
+    updateHomebridgeCharakteristicHelper(name, characteristic, value);
+  }
+
+  virtual void decodeCommand(unsigned long code) {
   }
 
   virtual void refresh() {
@@ -184,7 +188,6 @@ public:
 
   // Lightness
   void setLightness(float new_lightness) {
-//    Serial.printf("[%s] Setting Lightness: %f\n", name, new_lightness);
     lightness = new_lightness;
     has_changed = true;
   };
@@ -195,7 +198,6 @@ public:
 
   // Color (RGB)
   void setColor(uint8_t r, uint8_t g, uint8_t b) {
-//    Serial.printf("[%s] Setting Color: [%d, %d, %d]\n", name, r, g, b);
     float hsl[3];
     rgbToHsl(r, g, b, &hsl[0]);
     hue = hsl[SH_CLR_hue];
@@ -216,7 +218,6 @@ public:
 
   // Hue
   void setHue(float new_hue) {
-//    Serial.printf("[%s] Setting Hue: %.1f\n", name, new_hue);
     hue = new_hue;
     has_changed = true;
   }
@@ -236,7 +237,6 @@ public:
   };
 
   void setStatus(bool new_status) {
-//    Serial.printf("[%s] Setting Status: %d\n", name, new_status);
     if (new_status == 0) {
       lightness = 0;
     } else {
@@ -260,26 +260,18 @@ public:
 //    Serial.println("");
   }
 
-  // Others
-  bool decode(DynamicJsonDocument *doc) override {
-    JsonObject obj = doc->as<JsonObject>();
-    if (obj["characteristic"] == "On") {
-      setStatus((bool) obj["value"]);
-    } else if (obj["characteristic"] == "Brightness") {
-      setLightness((float) obj["value"]);
-    } else if (obj["characteristic"] == "Hue") {
-      setHue((float) obj["value"]);
-    }
-    return true;
-  };
-
 //  Homebridge_Connector
-  void decodeHomebridgeCommand() override {
-    logger.println(LOG_ERR, "decodeMQTTCommand() is not implemented.");
-  }
 
-  void updateHomebridge() override {
-    logger.println(LOG_ERR, "updateStatusOnServer() is not implemented.");
+  void applyHomebridgeCommand(const char *receiver_name, const char *characteristic, int value) override {
+    if (strcmp(name, receiver_name) == 0) {
+      if (strcmp(characteristic, "On") == 0) {
+        setStatus((bool) value);
+      } else if (strcmp(characteristic, "Brightness") == 0) {
+        setStatus((float) value);
+      } else if (strcmp(characteristic, "Hue") == 0) {
+        setHue((float) value);
+      }
+    }
   }
 
   bool getHomebridgeRegisterStr(char *buffer) override {
@@ -308,14 +300,14 @@ public:
     return true;
   };
 
-  bool getHomebridgeUnregisterStr(char * buffer) override {
+  bool getHomebridgeUnregisterStr(char *buffer) override {
     snprintf(&buffer[0], HOMEBRIDGE_UNREGISTER_STR_MAX_LEN, R"({"name": "%s"})", name);
     return true;
   }
   // End of Homebridge-Connector
 
   // Request-Connector
-  bool decodeCommand(unsigned long code) override {
+  void decodeCommand(unsigned long code) override {
     logger.printname(name, "Decoding 0x");
     logger.add(code, HEX);
     logger.add(": ");
@@ -334,12 +326,10 @@ public:
         logger.add("Found Nothing for '");
         logger.add(method_name);
         logger.addln("'");
-        return false;
       }
     } else {
       logger.addln(" - ");
     }
-    return true;
   }
   // End of Request-Connector
 };

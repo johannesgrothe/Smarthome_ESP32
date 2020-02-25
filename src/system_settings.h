@@ -23,6 +23,7 @@
 // Homebridge
 #define HOMEBRIDGE_REGISTER_STR_MAX_LEN 240
 #define HOMEBRIDGE_UNREGISTER_STR_MAX_LEN 50
+#define HOMEBRIDGE_UPDATE_STR_LEN_MAX 240
 
 const char json_str[] = R"(
 {

@@ -22,6 +22,7 @@ protected:
   REQUEST_TYPE type;
   char body[REQUEST_BODY_LEN_MAX]{};
   char path[REQUEST_PATH_LEN_MAX]{};
+
   bool has_response;
   int response_status;
   char response_body[REQUEST_BODY_LEN_MAX]{};
@@ -51,7 +52,8 @@ protected:
     strncpy(response_path, new_response_path, REQUEST_PATH_LEN_MAX);
   };
 
-  void setResponseRequest(const char *new_response_path, const char *new_response_body, REQUEST_TYPE new_response_type, bool changeStatus = true) {
+  void setResponseRequest(const char *new_response_path, const char *new_response_body, REQUEST_TYPE new_response_type,
+                          bool changeStatus = true) {
     setResponseBody(new_response_body);
     setResponsePath(new_response_path);
     response_status = new_response_type;
@@ -61,13 +63,13 @@ protected:
 
 public:
   Request_Gadget() :
-      request_gadget_is_ready(false) {
+    request_gadget_is_ready(false) {
   }
 
   Request_Gadget(JsonObject data) :
-      request_gadget_is_ready(false),
-      has_request(false),
-      type(REQ_UNKNOWN) {
+    request_gadget_is_ready(false),
+    has_request(false),
+    type(REQ_UNKNOWN) {
   }
 
   bool requestGadgetIsReady() {
@@ -110,10 +112,14 @@ public:
     return &response_path[0];
   }
 
-  virtual void sendRequest(REQUEST_TYPE req_type, const char *content_type, IPAddress ip, int port, const char *req_path, const char *req_body) {
+  virtual void
+  sendRequest(REQUEST_TYPE req_type, const char *content_type, IPAddress ip, int port, const char *req_path,
+              const char *req_body) {
   }
 
-  virtual void sendRequest(REQUEST_TYPE req_type, const char *content_type, IPAddress ip, int port, const char *req_path, JsonObject req_body) {
+  virtual void
+  sendRequest(REQUEST_TYPE req_type, const char *content_type, IPAddress ip, int port, const char *req_path,
+              JsonObject req_body) {
   }
 
   virtual void sendAnswer(const char *req_body, int status_code) {

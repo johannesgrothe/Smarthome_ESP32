@@ -3,6 +3,7 @@
 
 #include <cstring>
 #include "user_settings.h"
+#include <stdio.h>
 
 #define PREF_LEN 6
 #define INTENT_LEN 3
@@ -161,25 +162,28 @@ public:
     Serial.println();
   }
 
-//  void printf(LOG_TYPE type, const char * message, int arg) {
-//    print_beginning(type);
-//    Serial.printf(message, arg);
-//  }
+  void printf(LOG_TYPE type, const char *message, ...) {
+    va_list arglist;
+    va_start( arglist, message );
+    printf(message, arglist);
+    va_end( arglist );
+  }
 
-//void printf(char * format_str, ...){
-//
-//  }
+  void printf(LOG_TYPE type, const char *message, va_list arglist) {
+    const short str_len = strlen(message);
+    char buffer[str_len]{};
+    print_beginning(type);
+    vsnprintf (buffer, str_len, message, arglist);
+    Serial.printf(buffer);
+  }
 
 
-//  void printf(LOG_TYPE type, const char *message, va_list args) {
-//    va_list arg;
-//    print_beginning(type);
-//    Serial.printf(message, args);
-//  }
-//
-//  void printf(const char *message, va_list args) {
-//    printf(LOG_INFO, message, args);
-//  }
+  void printf(const char *message, ...) {
+    va_list arglist;
+    va_start( arglist, message );
+    printf(LOG_INFO, message, arglist);
+    va_end( arglist );
+  }
 
 } /*extern logger*/;
 
