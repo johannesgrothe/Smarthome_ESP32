@@ -1,7 +1,7 @@
 #ifndef __SH_Lamp_NeoPixel__
 #define __SH_Lamp_NeoPixel__
 
-#include "sh_gadget.h"
+#include "sh_lamp.h"
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 
@@ -14,7 +14,7 @@ private:
 
 public:
   explicit SH_Lamp_NeoPixel(JsonObject gadget) :
-  SH_Lamp(gadget) {
+    SH_Lamp(gadget) {
     if (gadget["pin"] != nullptr) {
       pin = gadget["pin"].as<uint8_t>();
     } else {

@@ -79,7 +79,7 @@ private:
     logger.incIntent();
     logger.println("Initializing Connectors:");
     logger.incIntent();
-    gadget->initHomebridgeCon(mqtt_gadget);
+    gadget->initConnectors(mqtt_gadget);
     logger.decIntent();
     logger.decIntent();
   }
@@ -190,12 +190,9 @@ private:
   void test_stuff() {
     logger.println("Testing Stuff");
     logger.incIntent();
-    for (int c = 0; c < anz_gadgets; c++) {
-//      gadgets[c]->printMapping();
-    }
-    logger.decIntent();
-//    rest_gadget->sendRequest(REQ_HTTP_POST, "text/plain", IPAddress(192, 168, 178, 111), 3005, "/irgendein/scheiss",
+    //    rest_gadget->sendRequest(REQ_HTTP_POST, "text/plain", IPAddress(192, 168, 178, 111), 3005, "/irgendein/scheiss",
 //                             "pennerus maximus schmongus");
+    logger.decIntent();
   }
 
   void decodeStringCommand(const char *message, unsigned int length) {

@@ -1,7 +1,7 @@
 #ifndef __SH_Lamp_NeoPixel_Basic__
 #define __SH_Lamp_NeoPixel_Basic__
 
-#include "sh_gadget.h"
+#include "sh_lamp.h"
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 

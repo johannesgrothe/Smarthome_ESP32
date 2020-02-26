@@ -215,6 +215,8 @@ public:
 class Homebridge_Connector {
 protected:
 
+  const char * mqtt_gadget_name;
+
   MQTT_Gadget *homebridge_mqtt_gadget;
 
   bool initialized_homebridge;
@@ -235,14 +237,11 @@ protected:
     return false;
   }
 
-  virtual bool getHomebridgeRegisterStr(char *buffer) {
-  }
+  virtual bool getHomebridgeRegisterStr(char *buffer) {}
 
-  virtual bool getHomebridgeUnregisterStr(char *buffer) {
-  }
-
-  void updateHomebridge(const char *data) {
-    homebridge_mqtt_gadget->publishMessage("homebridge/in", data);
+  bool getHomebridgeUnregisterStr(char *buffer) {
+    snprintf(&buffer[0], HOMEBRIDGE_UNREGISTER_STR_MAX_LEN, R"({"name": "%s"})", mqtt_gadget_name);
+    return true;
   }
 
   void updateHomebridge(JsonObject data) {
@@ -251,29 +250,41 @@ protected:
     updateHomebridge(update_str);
   }
 
+  void updateHomebridge(const char *data) {
+    homebridge_mqtt_gadget->publishMessage("homebridge/in/set", data);
+  }
+
   void decodeHomebridgeCommand(JsonObject data) {
-    logger.println("Decoding Homebridge Command");
     if (data["name"] != nullptr && data["characteristic"] != nullptr && data["value"] != nullptr) {
-      logger.println("Valid Homebridge Command");
-      const char *name = data["name"].as<const char *>();
-      int value;
-      const char *characteristc = data["characteristic"].as<const char *>();
-      if (data["value"] == "true")
-        value = 1;
-      else if (data["value"] == "false")
-        value = 0;
-      else
-        value = data["value"].as<int>();
-      applyHomebridgeCommand(name, characteristc, value);
+      logger.println(data["name"].as<const char *>());
+      logger.println(mqtt_gadget_name);
+      if (strcmp(mqtt_gadget_name, data["name"].as<const char *>()) == 0) {
+        logger.println("Correct Name");
+        int value;
+        const char *characteristc = data["characteristic"].as<const char *>();
+        if (data["value"] == "true")
+          value = 1;
+        else if (data["value"] == "false")
+          value = 0;
+        else
+          value = data["value"].as<int>();
+        applyHomebridgeCommand(characteristc, value);
+      }
     }
   }
 
-  void updateHomebridgeCharakteristicHelper(const char *gadget_name, const char *characteristic, int value) {
-    if (gadget_name != nullptr && characteristic != nullptr) {
+public:
+  Homebridge_Connector() :
+    mqtt_gadget_name(nullptr),
+    homebridge_mqtt_gadget(nullptr),
+    initialized_homebridge(false) {};
+
+  void updateHomebridgeCharacteristic(const char *characteristic, int value) {
+    if (characteristic != nullptr) {
       try {
         DynamicJsonDocument json_file(2048);
         JsonObject json_doc = json_file.as<JsonObject>();
-        json_doc["name"] = gadget_name;
+        json_doc["name"] = mqtt_gadget_name;
         json_doc["characteristic"] = characteristic;
         json_doc["value"] = value;
         updateHomebridge(json_doc);
@@ -284,12 +295,12 @@ protected:
     }
   }
 
-  void updateHomebridgeCharakteristicHelper(const char *gadget_name, const char *characteristic, bool value) {
-    if (gadget_name != nullptr && characteristic != nullptr) {
+  void updateHomebridgeCharacteristic(const char *characteristic, bool value) {
+    if (characteristic != nullptr) {
       try {
         DynamicJsonDocument json_file(2048);
         JsonObject json_doc = json_file.as<JsonObject>();
-        json_doc["name"] = gadget_name;
+        json_doc["name"] = mqtt_gadget_name;
         json_doc["characteristic"] = characteristic;
         if (value) {
           json_doc["value"] = "True";
@@ -304,16 +315,15 @@ protected:
     }
   }
 
-public:
-  Homebridge_Connector() :
-    homebridge_mqtt_gadget(nullptr),
-    initialized_homebridge(false) {};
-
-  void initHomebridgeCon(MQTT_Gadget *new_mqtt_gadget) {
-    initialized_homebridge = true;
+  void initHomebridgeConnector(MQTT_Gadget *new_mqtt_gadget, const char * gadget_name) {
+    if (new_mqtt_gadget == nullptr || gadget_name == nullptr)
+      return;
+    mqtt_gadget_name = gadget_name;
     homebridge_mqtt_gadget = new_mqtt_gadget;
     logger.println(LOG_DATA, "Homebridge");
     logger.incIntent();
+    logger.print(LOG_DATA, "Name: ");
+    logger.addln(mqtt_gadget_name);
     if (unregisterHomebridgeGadget()) {
       logger.println(LOG_INFO, "Unregistered previous Gadget");
     } else {
@@ -324,6 +334,7 @@ public:
     } else {
       logger.println(LOG_ERR, "Could not register new Gadget on Server");
     }
+    initialized_homebridge = true;
     logger.decIntent();
   }
 
@@ -331,11 +342,8 @@ public:
     return initialized_homebridge;
   }
 
-  virtual void applyHomebridgeCommand(const char *receiver_name, const char *characteristic, int value) {};
+  virtual void applyHomebridgeCommand(const char *characteristic, int value) {};
 
-  virtual void updateHomebridgeCharacteristic(const char *characteristic, int value) {};
-
-  virtual void updateHomebridgeCharacteristic(const char *characteristic, bool value) {};
 };
 
 #endif //__MQTT_Connector__
