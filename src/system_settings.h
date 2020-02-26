@@ -29,18 +29,6 @@ const char json_str[] = R"(
 {
   "gadgets": [
     {
-      "type": "sh_lamp_neopixel_basic",
-      "name": "Testlampe NP",
-      "lamp_type": 0,
-      "pin": 23,
-      "length": "1",
-      "mapping": {
-        "toggleStatus": [1, 16],
-        "turnOn": [2, 17],
-        "turnOff": [3, 18]
-      }
-    },
-    {
       "type": "sh_lamp_basic",
       "name": "Testlampe 2",
       "lamp_type": 0,

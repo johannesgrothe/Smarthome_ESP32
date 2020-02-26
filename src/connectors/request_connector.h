@@ -18,13 +18,13 @@ enum REQUEST_TYPE {
 class Request_Gadget {
 protected:
   bool request_gadget_is_ready;
-  bool has_request;
+  bool has_request{};
   REQUEST_TYPE type;
   char body[REQUEST_BODY_LEN_MAX]{};
   char path[REQUEST_PATH_LEN_MAX]{};
 
-  bool has_response;
-  int response_status;
+  bool has_response{};
+  int response_status{};
   char response_body[REQUEST_BODY_LEN_MAX]{};
   char response_path[REQUEST_PATH_LEN_MAX]{};
 
@@ -66,7 +66,7 @@ public:
     request_gadget_is_ready(false) {
   }
 
-  Request_Gadget(JsonObject data) :
+  explicit Request_Gadget(JsonObject data) :
     request_gadget_is_ready(false),
     has_request(false),
     type(REQ_UNKNOWN) {

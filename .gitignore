@@ -8,3 +8,4 @@ cmake-build-debug
 CMakeListsPrivate.txt
 CMakeLists.txt
 *.elf
+*.ino.cpp

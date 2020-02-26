@@ -23,7 +23,7 @@ enum SH_LAMP_TYPE {
   ON_OFF, BRI_ONLY, CLR_ONLY, CLR_BRI
 };
 
-class SH_Gadget : public IR_Connector, public Serial_Connector, public Radio_Connector, public Homebridge_Connector {
+class SH_Gadget : public Homebridge_Connector {
 protected:
   char name[GADGET_NAME_LEN_MAX]{};
   bool initialized;
@@ -103,10 +103,12 @@ public:
   };
 
   void decodeRequest(REQUEST_TYPE type, const char *path, const char *body) {
+    logger.println("Decoding String");
   }
 
   bool decodeRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
-    if (type == REQ_MQTT && strcmp(path, "homebridge/out") == 0) {
+    logger.println("Decoding Json");
+    if (type == REQ_MQTT && strcmp(path, "homebridge/from/set") == 0) {
       decodeHomebridgeCommand(body);
     }
   }

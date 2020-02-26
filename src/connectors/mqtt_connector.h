@@ -6,6 +6,16 @@
 #include <PubSubClient.h>
 #include "request_connector.h"
 
+//static void testcallback(char *topic, byte *payload, unsigned int length) {
+//  Serial.println("incomming");
+//  Serial.println(length);
+//  char local_message[length + 1]{};
+//  for (unsigned int i = 0; i < length; i++) {
+//    local_message[i] = (char) payload[i];
+//  }
+//  Serial.println(local_message);
+//}
+
 // Gadget to communicate with MQTT Endpoint
 class MQTT_Gadget : public Request_Gadget {
 //class MQTT_Gadget {
@@ -31,12 +41,15 @@ protected:
     using std::placeholders::_3;
     mqttClient->setCallback(std::bind(&MQTT_Gadget::callback, this, _1, _2, _3));
 
+//    mqttClient->setCallback(testcallback);
+
     logger.print(LOG_DATA, "Connecting to Broker ");
     uint8_t conn_count = 0;
     while (!mqttClient->connected()) {
       if (mqttClient->connect("esp32_test_client")) {
         logger.addln("OK");
         mqttClient->subscribe("debug/in");
+        mqttClient->subscribe("homebridge/from/set");
         mqttClient->publish("debug/out", "hallo welt");
         return true;
       } else {
@@ -54,12 +67,10 @@ protected:
   }
 
   void callback(char *topic, byte *payload, unsigned int length) {
-    char local_message[length + 1];
-    for (uint32_t i = 0; i < length; i++) {
+    char local_message[length + 1]{};
+    for (unsigned int i = 0; i < length; i++) {
       local_message[i] = (char) payload[i];
     }
-    local_message[length] = '\0';
-
     setRequest(topic, &local_message[0], REQ_MQTT);
     has_request = true;
   }
@@ -80,8 +91,6 @@ public:
     logger.println("Creating MQTT Gadget");
     networkClient = WiFiClient();
     logger.incIntent();
-//    networkClient = network_client;
-//    networkClient = new WifiClient();
     mqttClient = new PubSubClient(networkClient);
     bool everything_ok = true;
     // Reads the IP from the JSON
@@ -243,7 +252,9 @@ protected:
   }
 
   void decodeHomebridgeCommand(JsonObject data) {
+    logger.println("Decoding Homebridge Command");
     if (data["name"] != nullptr && data["characteristic"] != nullptr && data["value"] != nullptr) {
+      logger.println("Valid Homebridge Command");
       const char *name = data["name"].as<const char *>();
       int value;
       const char *characteristc = data["characteristic"].as<const char *>();

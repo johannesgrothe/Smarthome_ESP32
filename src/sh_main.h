@@ -44,7 +44,6 @@ static void rebootChip() {
   rebootChip(nullptr);
 }
 
-
 class SH_Main {
 private:
   IR_Gadget *ir_gadget;
@@ -195,8 +194,8 @@ private:
 //      gadgets[c]->printMapping();
     }
     logger.decIntent();
-    rest_gadget->sendRequest(REQ_HTTP_POST, "text/plain", IPAddress(192, 168, 178, 111), 3005, "/irgendein/scheiss",
-                             "pennerus maximus schmongus");
+//    rest_gadget->sendRequest(REQ_HTTP_POST, "text/plain", IPAddress(192, 168, 178, 111), 3005, "/irgendein/scheiss",
+//                             "pennerus maximus schmongus");
   }
 
   void decodeStringCommand(const char *message, unsigned int length) {
@@ -276,17 +275,72 @@ private:
       logger.addln(req_body);
       forwardRequest(req_type, req_path, req_body);
     }
-    if (gadget->hasResponse()) {
+//    if (gadget->hasResponse()) {
+//
+//      logger.print("[");
+//      logger.add(gadget->getResponseStatusCode());
+//      logger.add("] '");
+//      logger.add(gadget->getResponsePath());
+//      logger.add("' :");
+//      logger.addln(gadget->getResponseBody());
+//    }
+  }
 
-      logger.print("[");
-      logger.add(gadget->getResponseStatusCode());
-      logger.add("] '");
-      logger.add(gadget->getResponsePath());
-      logger.add("' :");
-      logger.addln(gadget->getResponseBody());
+  void forwardCommand(unsigned long code) {
+    logger.incIntent();
+    for (byte c = 0; c < anz_gadgets; c++) {
+      gadgets[c]->decodeCommand(code);
+    }
+    logger.decIntent();
+  }
+
+  void forwardStringRequest(REQUEST_TYPE type, const char *path, const char *body) {
+    logger.println("Forwarding as String");
+    for (byte c = 0; c < anz_gadgets; c++) {
+      gadgets[c]->decodeRequest(type, path, body);
     }
   }
 
+  void forwardJsonRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
+    logger.println("Forwarding as JSON");
+    for (byte c = 0; c < anz_gadgets; c++) {
+      gadgets[c]->decodeRequest(type, path, body);
+    }
+  }
+
+  void forwardRequest(REQUEST_TYPE type, const char *path, const char *body) {
+    logger.incIntent();
+    if (body != nullptr) {
+      char first_char = body[0];
+      unsigned int last_pos = strlen(body) - 1;
+      if (last_pos > 0) {
+        char last_char = body[last_pos];
+        if (first_char == '{' && last_char == '}') {
+          try {
+            DynamicJsonDocument json_file(2048);
+            deserializeJson(json_file, body);
+            JsonObject json_doc = json_file.as<JsonObject>();
+            forwardJsonRequest(type, path, json_doc);
+          }
+          catch (DeserializationError &e) {
+            forwardStringRequest(type, path, body);
+          }
+        } else {
+          forwardStringRequest(type, path, body);
+        }
+      }
+    }
+    logger.decIntent();
+  }
+
+  void refreshConnectors() {
+    refreshCodeConnector(serial_gadget);
+    refreshCodeConnector(ir_gadget);
+//    refreshCodeConnector(radio_gadget);
+    refreshRequestConnector(rest_gadget);
+    refreshRequestConnector(mqtt_gadget);
+    refreshRequestConnector(serial_gadget);
+  }
 
 public:
   void init() {
@@ -294,8 +348,6 @@ public:
     Serial.begin(115200);
 
     EEPROM.begin(1023);
-
-    Serial.println(EEPROM.read(0));
 
     logger.println(LOG_INFO, "Launching...");
     logger.println(LOG_INFO, "Loading Config...");
@@ -319,43 +371,7 @@ public:
     test_initialization();
 
     test_stuff();
-  }
-
-  void forwardCommand(unsigned long code) {
-    logger.incIntent();
-    for (byte c = 0; c < anz_gadgets; c++) {
-      gadgets[c]->decodeCommand(code);
-    }
-    logger.decIntent();
-  }
-
-  void forwardRequest(REQUEST_TYPE type, const char *path, const char *body) {
-    logger.incIntent();
-    try {
-      DynamicJsonDocument json_file(2048);
-      JsonObject json_doc = json_file.as<JsonObject>();
-      deserializeJson(json_file, body);
-      logger.println("Forwarding as JSON");
-      for (byte c = 0; c < anz_gadgets; c++) {
-        gadgets[c]->decodeRequest(type, path, json_doc);
-      }
-    }
-    catch (DeserializationError &e) {
-      logger.println("Forwarding as String");
-      for (byte c = 0; c < anz_gadgets; c++) {
-        gadgets[c]->decodeRequest(type, path, body);
-      }
-    };
-    logger.decIntent();
-  }
-
-  void refreshConnectors() {
-    refreshCodeConnector(serial_gadget);
-    refreshCodeConnector(ir_gadget);
-//    refreshCodeConnector(radio_gadget);
-    refreshRequestConnector(rest_gadget);
-    refreshRequestConnector(mqtt_gadget);
-    refreshRequestConnector(serial_gadget);
+    logger.printf("Free Heap: %d\n", ESP.getFreeHeap());
   }
 
   void refresh() {
