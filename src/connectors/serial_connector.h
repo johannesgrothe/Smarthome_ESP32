@@ -3,8 +3,8 @@
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
-#include "code_connector.h"
-#include "request_connector.h"
+#include "code_gadget.h"
+#include "request_gadget.h"
 
 class Serial_Gadget : public Code_Gadget, public Request_Gadget {
 protected:

@@ -9,6 +9,9 @@
 #include "../helping_structures.h"
 #include "../system_settings.h"
 #include "../console_logger.h"
+#include "../connectors/request_connector.h"
+#include "../connectors/code_connector.h"
+#include "../connectors/homebridge_connector.h"
 
 #ifndef __SH_Gadget__
 #define __SH_Gadget__
@@ -20,7 +23,7 @@ enum SH_HSL_Color {
   SH_CLR_hue, SH_CLR_saturation, SH_CLR_lightness
 };
 
-class SH_Gadget : public Homebridge_Connector {
+class SH_Gadget : public Homebridge_Connector, public Request_Connector, public Code_Connector {
 protected:
   char name[GADGET_NAME_LEN_MAX]{};
   bool initialized;
@@ -78,6 +81,7 @@ public:
     } else {
       logger.println(LOG_WARN, "No Mapping Found.");
     }
+    logger.println("Loading Gadgets:");
   };
 
   void initConnectors(MQTT_Gadget *mqtt_gadget) {
@@ -103,19 +107,16 @@ public:
     return false;
   };
 
-  void decodeRequest(REQUEST_TYPE type, const char *path, const char *body) {
+  void decodeRequest(REQUEST_TYPE type, const char *path, const char *body) override {
     logger.println("Decoding String");
   }
 
-  bool decodeRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
+  bool decodeRequest(REQUEST_TYPE type, const char *path, JsonObject body) override {
     logger.println("Decoding Json");
 //    if (type == REQ_MQTT && strcmp(path, "homebridge/from/set") == 0) {
     if (type == REQ_MQTT && strcmp(path, "homebridge/from/set") == 0) {
       decodeHomebridgeCommand(body);
     }
-  }
-
-  virtual void decodeCommand(unsigned long code) {
   }
 
   virtual void refresh() {

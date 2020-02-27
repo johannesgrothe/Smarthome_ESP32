@@ -1,7 +1,7 @@
 #ifndef RADIO_CONNECTOR_H
 #define RADIO_CONNECTOR_H
 
-#include "code_connector.h"
+#include "code_gadget.h"
 
 class Radio_Gadget : public Code_Gadget {
 protected:

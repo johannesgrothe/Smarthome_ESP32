@@ -50,6 +50,7 @@ public:
     type((SH_LAMP_TYPE) lamp_type) {
     logger.print("Type: ");
     logger.addln(type);
+    setHomebridgeServiceType("Lightbulb");
   };
 
   // Lightness
@@ -130,7 +131,6 @@ public:
   }
 
 //  Homebridge_Connector
-
   void applyHomebridgeCommand(const char *characteristic, int value) override {
     if (strcmp(characteristic, "On") == 0) {
       setStatus((bool) value);
