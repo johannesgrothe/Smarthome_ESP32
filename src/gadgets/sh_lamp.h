@@ -37,7 +37,7 @@ public:
       type = ON_OFF;
       logger.print(LOG_WARN, "No Type found.");
     }
-
+    setHomebridgeServiceType("Lightbulb");
   };
 
   SH_Lamp(JsonObject gadget, uint8_t lamp_type) :
@@ -130,7 +130,7 @@ public:
 //    Serial.println("");
   }
 
-//  Homebridge_Connector
+//  Homebridge-Connector
   void applyHomebridgeCommand(const char *characteristic, int value) override {
     if (strcmp(characteristic, "On") == 0) {
       setStatus((bool) value);
@@ -141,25 +141,18 @@ public:
     }
   }
 
-  bool getHomebridgeRegisterStr(char *buffer) override {
+  bool getHomebridgeCharacteristics(char *buffer) override {
     switch (type) {
       case ON_OFF :
-        sprintf(buffer, R"({"name": "%s", "service_name": "%s", "service": "Lightbulb"})", name, name);
-        break;
+        return false;
       case BRI_ONLY :
-        sprintf(buffer,
-                R"({"name": "%s", "service_name": "%s", "service": "Lightbulb", "Brightness": "default"})",
-                name, name);
+        strcpy(buffer,  R"("Brightness": "default")");
         break;
       case CLR_ONLY :
-        sprintf(buffer,
-                R"({"name": "%s", "service_name": "%s", "service": "Lightbulb", "Hue": "default", "Saturation": "default"})",
-                name, name);
+        strcpy(buffer,  R"("Hue": "default", "Saturation": "default")");
         break;
       case CLR_BRI :
-        sprintf(buffer,
-                R"({"name": "%s", "service_name": "%s", "service": "Lightbulb", "Brightness": "default", "Hue": "default", "Saturation": "default"})",
-                name, name);
+        strcpy(buffer, R"("Brightness": "default", "Hue": "default", "Saturation": "default")");
         break;
       default :
         return false;
@@ -168,32 +161,28 @@ public:
   }
   // End of Homebridge-Connector
 
-  // Request-Connector
-  void decodeCommand(unsigned long code) override {
-    logger.printname(name, "Decoding 0x");
-    logger.add(code, HEX);
-    logger.add(": ");
-    const char *method_name = findMethodForCode(code);
-    if (method_name != nullptr) {
-      if (strcmp(method_name, "toggleStatus") == 0) {
+  // Code-Connector
+  virtual void applyMappingMethod(const char *method) override {
+    if (method != nullptr) {
+      if (strcmp(method, "toggleStatus") == 0) {
         logger.addln("'toggleStatus'");
         toggleStatus();
-      } else if (strcmp(method_name, "'turnOn'") == 0) {
+      } else if (strcmp(method, "'turnOn'") == 0) {
         logger.addln("'turnOn");
         setStatus(true);
-      } else if (strcmp(method_name, "'turnOff'") == 0) {
+      } else if (strcmp(method, "'turnOff'") == 0) {
         logger.addln("'turnOff");
         setStatus(false);
       } else {
         logger.add("Found Nothing for '");
-        logger.add(method_name);
+        logger.add(method);
         logger.addln("'");
       }
     } else {
       logger.addln(" - ");
     }
   }
-  // End of Request-Connector
+  // End of Code-Connector
 };
 
 #endif //__SH_Lamp__

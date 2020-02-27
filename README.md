@@ -89,3 +89,17 @@ if you're using CLion IDE, open Project Root in Terminal (or use CLions own Term
   }
 }
 ```
+
+## Additional Gadgets
+## Methods to be implemented:
+
+### Code-Command
+```
+void applyMappingMethod(const char *method)
+```
+
+### Homebridge
+```
+bool getHomebridgeCharacteristics(char *buffer)
+void applyHomebridgeCommand(const char *characteristic, int value)
+```

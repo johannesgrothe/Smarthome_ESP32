@@ -32,8 +32,6 @@ protected:
     using std::placeholders::_3;
     mqttClient->setCallback(std::bind(&MQTT_Gadget::callback, this, _1, _2, _3));
 
-//    mqttClient->setCallback(testcallback);
-
     logger.print(LOG_DATA, "Connecting to Broker ");
     uint8_t conn_count = 0;
     while (!mqttClient->connected()) {
