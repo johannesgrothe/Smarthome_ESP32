@@ -116,7 +116,7 @@ public:
       }
     }
     has_changed = true;
-    updateHomebridgeCharacteristic("Brightness", (int) lightness);
+    updateHomebridgeCharacteristic("On", new_status);
   };
 
   void print() override {

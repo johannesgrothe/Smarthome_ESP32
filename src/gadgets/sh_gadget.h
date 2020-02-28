@@ -62,13 +62,13 @@ protected:
     } else {
       sprintf(reg_str, R"({"name": "%s", "service_name": "%s", "service": "%s"})", name, name, homebridge_service_type);
     }
-    return homebridge_mqtt_gadget->publishMessage("homebridge/to/add", &reg_str[0]);
+    return homebridge_mqtt_gadget->publishMessageAndWaitForAnswer("homebridge/to/add", &reg_str[0]);
   }
 
   bool unregisterHomebridgeGadget() {
     char buf_msg[HOMEBRIDGE_UNREGISTER_STR_MAX_LEN]{};
     snprintf(&buf_msg[0], HOMEBRIDGE_UNREGISTER_STR_MAX_LEN, R"({"name": "%s"})", name);
-    return homebridge_mqtt_gadget->publishMessage("homebridge/to/remove", &buf_msg[0]);
+    return homebridge_mqtt_gadget->publishMessageAndWaitForAnswer("homebridge/to/remove", &buf_msg[0]);
   }
 
   void initHomebridgeConnector(MQTT_Gadget *new_gadget) {
@@ -77,7 +77,6 @@ protected:
     setHomebridgeMQTTGadget(new_gadget);
     if (unregisterHomebridgeGadget())
       logger.println(LOG_DATA, "Unregistered old gadget");
-    delay(50);
     if (registerHomebridgeGadget())
       logger.println(LOG_DATA, "Registered new gadget");
     logger.decIntent();
@@ -89,10 +88,9 @@ protected:
 
   void decodeHomebridgeCommand(JsonObject data) {
     if (data["name"] != nullptr && data["characteristic"] != nullptr && data["value"] != nullptr) {
-      logger.println(data["name"].as<const char *>());
-      logger.println(name);
       if (strcmp(name, data["name"].as<const char *>()) == 0) {
-        logger.println("Correct Name");
+        logger.print(LOG_DATA, "Gadget found: ");
+        logger.addln(name);
         int value;
         const char *characteristc = data["characteristic"].as<const char *>();
         if (data["value"] == "true")

@@ -69,7 +69,9 @@ private:
       SH_Gadget *buffergadget = create_gadget(gadget);
       gadgets[pointer] = buffergadget;
       initGadgetConnectors(buffergadget);
+      delay(500);
       everything_ok = everything_ok && gadgets[pointer]->init();
+      delay(500);
     }
     logger.decIntent();
     return everything_ok;
