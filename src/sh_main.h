@@ -69,7 +69,9 @@ private:
       SH_Gadget *buffergadget = create_gadget(gadget);
       gadgets[pointer] = buffergadget;
       initGadgetConnectors(buffergadget);
+      delay(500);
       everything_ok = everything_ok && gadgets[pointer]->init();
+      delay(500);
     }
     logger.decIntent();
     return everything_ok;
@@ -286,7 +288,7 @@ private:
   void forwardCommand(unsigned long code) {
     logger.incIntent();
     for (byte c = 0; c < anz_gadgets; c++) {
-      gadgets[c]->decodeCommand(code);
+      gadgets[c]->handleCode(code);
     }
     logger.decIntent();
   }
@@ -294,14 +296,14 @@ private:
   void forwardStringRequest(REQUEST_TYPE type, const char *path, const char *body) {
     logger.println("Forwarding as String");
     for (byte c = 0; c < anz_gadgets; c++) {
-      gadgets[c]->decodeRequest(type, path, body);
+      gadgets[c]->handleRequest(type, path, body);
     }
   }
 
   void forwardJsonRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
     logger.println("Forwarding as JSON");
     for (byte c = 0; c < anz_gadgets; c++) {
-      gadgets[c]->decodeRequest(type, path, body);
+      gadgets[c]->handleRequest(type, path, body);
     }
   }
 

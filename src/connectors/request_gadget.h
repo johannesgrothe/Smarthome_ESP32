@@ -52,11 +52,11 @@ protected:
     strncpy(response_path, new_response_path, REQUEST_PATH_LEN_MAX);
   };
 
-  void setResponseRequest(const char *new_response_path, const char *new_response_body, REQUEST_TYPE new_response_type,
+  void setResponseRequest(const char *new_response_path, const char *new_response_body, int new_response_code,
                           bool changeStatus = true) {
     setResponseBody(new_response_body);
     setResponsePath(new_response_path);
-    response_status = new_response_type;
+    response_status = new_response_code;
     if (changeStatus)
       has_response = true;
   };
