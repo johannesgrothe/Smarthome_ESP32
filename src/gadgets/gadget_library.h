@@ -10,10 +10,11 @@
 #include "sh_lamp_neopixel_basic.h"
 #include "sh_lamp_basic.h"
 
+//Fan
+#include "sh_fan_basic.h"
 
 
-
-static SH_Gadget * create_gadget(JsonObject gadget_json) {
+static SH_Gadget *create_gadget(JsonObject gadget_json) {
   const char *name = gadget_json["name"].as<const char *>();
   const char *type = gadget_json["type"].as<const char *>();
 
@@ -28,9 +29,14 @@ static SH_Gadget * create_gadget(JsonObject gadget_json) {
     //sh_neopixel_basic.h
     if (strcmp(type, "sh_lamp_neopixel_basic") == 0) {
       new_gadget = new SH_Lamp_NeoPixel_Basic(gadget_json);
-    // sh_lamp_basic.h
+
+      // sh_lamp_basic.h
     } else if (strcmp(type, "sh_lamp_basic") == 0) {
       new_gadget = new SH_Lamp_Basic(gadget_json);
+
+      // sh_fan_basic.h
+    } else if (strcmp(type, "sh_fan_basic") == 0) {
+      new_gadget = new SH_Fan_Basic(gadget_json);
 
     } else {
       logger.print(LOG_ERR, "Cannot find Type '");

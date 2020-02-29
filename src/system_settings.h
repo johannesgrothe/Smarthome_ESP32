@@ -52,6 +52,15 @@ const char json_str[] = R"(
         "turnOn": [2, 17],
         "turnOff": [3, 18]
       }
+    },
+    {
+      "type": "sh_fan_basic",
+      "name": "TestFan",
+      "mapping": {
+        "toggleStatus": [5, 16],
+        "turnOn": [6, 17],
+        "turnOff": [7, 18]
+      }
     }
   ],
   "network": {

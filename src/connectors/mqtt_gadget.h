@@ -187,7 +187,6 @@ public:
     return false;
   }
 
-
   bool publishMessage(const char *topic, const char *message, bool wait_for_answer = false) {
     if (!request_gadget_is_ready) {
       return false;

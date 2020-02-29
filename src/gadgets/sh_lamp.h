@@ -98,7 +98,6 @@ public:
   // Status
   void toggleStatus() {
     setStatus(!getStatus());
-    has_changed = true;
   };
 
   bool getStatus() {

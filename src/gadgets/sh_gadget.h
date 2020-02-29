@@ -113,8 +113,8 @@ protected:
     homebridge_mqtt_gadget = new_gadget;
   }
 
-  void updateHomebridgeCharacteristic(const char *characteristic, int value) {
-    if (characteristic != nullptr) {
+  void updateHomebridgeCharacteristic(const char *characteristic, int value, bool do_update=true) {
+    if (characteristic != nullptr && do_update) {
       char update_str[HOMEBRIDGE_UPDATE_STR_LEN_MAX]{};
       sprintf(&update_str[0],
               "{\"name\":\"%s\",\"service_name\":\"%s\",\"service_type\":\"%s\",\"characteristic\":\"%s\",\"value\":%d}",
@@ -127,8 +127,8 @@ protected:
     }
   }
 
-  void updateHomebridgeCharacteristic(const char *characteristic, bool value) {
-    if (characteristic != nullptr) {
+  void updateHomebridgeCharacteristic(const char *characteristic, bool value, bool do_update=true) {
+    if (characteristic != nullptr && do_update) {
       char bool_str[6]{};
       if (value)
         strcpy(bool_str, "true");
