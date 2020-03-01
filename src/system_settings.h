@@ -60,7 +60,9 @@ const char json_str[] = R"(
         "toggleStatus": [5, 16],
         "turnOn": [6, 17],
         "turnOff": [7, 18]
-      }
+      },
+      "levels": 4,
+      out_mapping: [1111, 2222, 3333, 4444]
     }
   ],
   "network": {

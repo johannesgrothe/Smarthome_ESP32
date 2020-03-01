@@ -3,10 +3,13 @@
 
 #include "sh_gadget.h"
 
+#define FAN_ROTATION_SPEED_MAX 100
+
 class SH_Fan : public SH_Gadget {
 protected:
   byte rotation_speed;
   byte last_rotation_speed;
+  byte levels;
 
 public:
 
@@ -15,6 +18,9 @@ public:
     rotation_speed(0),
     last_rotation_speed(1) {
     setHomebridgeServiceType("Fan");
+    if (gadget["levels"] != nullptr) {
+      levels = (byte) gadget["levels"].as<unsigned int>();
+    }
   };
 
   // Status
@@ -42,7 +48,17 @@ public:
     return rotation_speed;
   }
 
+  void rotationSpeedUp() {
+    setRotationSpeed(getRotationSpeed() + (FAN_ROTATION_SPEED_MAX / levels));
+  }
+
+  void rotationSpeedDown() {
+    setRotationSpeed(getRotationSpeed() - (FAN_ROTATION_SPEED_MAX / levels));
+  }
+
   void setRotationSpeed(byte new_speed, bool remote_update=true) {
+//    if (new_speed < 0) new_speed = 0;
+    if (new_speed > FAN_ROTATION_SPEED_MAX) new_speed = FAN_ROTATION_SPEED_MAX;
     if (new_speed == 0) {
       last_rotation_speed = rotation_speed;
       rotation_speed = new_speed;
