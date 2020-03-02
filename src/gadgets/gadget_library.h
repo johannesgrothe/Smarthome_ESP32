@@ -9,6 +9,7 @@
 #include "sh_lamp_neopixel.h"
 #include "sh_lamp_neopixel_basic.h"
 #include "sh_lamp_basic.h"
+#include "sh_doorbell_basic.h"
 
 //Fan
 #include "sh_fan_basic.h"
@@ -37,6 +38,10 @@ static SH_Gadget *create_gadget(JsonObject gadget_json) {
       // sh_fan_basic.h
     } else if (strcmp(type, "sh_fan_basic") == 0) {
       new_gadget = new SH_Fan_Basic(gadget_json);
+
+      // sh_fan_basic.h
+    } else if (strcmp(type, "sh_doorbell_basic") == 0) {
+      new_gadget = new SH_Doorbell_Basic(gadget_json);
 
     } else {
       logger.print(LOG_ERR, "Cannot find Type '");

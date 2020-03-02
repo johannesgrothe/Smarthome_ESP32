@@ -41,6 +41,34 @@
           18
         ]
       }
+    },
+    {
+      "type": "sh_fan_basic",
+      "name": "TestFan",
+      "mapping": {
+        "toggleStatus": [
+          5,
+          16
+        ],
+        "turnOn": [
+          6,
+          17
+        ],
+        "turnOff": [
+          7,
+          18
+        ]
+      },
+      "levels": 4
+    },
+    {
+      "type": "sh_doorbell_basic",
+      "name": "Doorbell",
+      "mapping": {
+        "triggerDoorbell": [
+          8
+        ]
+      }
     }
   ],
   "network": {
@@ -54,6 +82,10 @@
     "ir": {
       "recv_pin": 11,
       "send_pin": 12
+    },
+    "mqtt": {
+      "ip": "192.168.178.111",
+      "port": "1883"
     },
     "rest": {},
     "serial": {}

@@ -36,9 +36,18 @@ const char json_str[] = R"(
       "pin": 23,
       "length": "1",
       "mapping": {
-        "toggleStatus": [1, 16],
-        "turnOn": [2, 17],
-        "turnOff": [3, 18]
+        "toggleStatus": [
+          1,
+          16
+        ],
+        "turnOn": [
+          2,
+          17
+        ],
+        "turnOff": [
+          3,
+          18
+        ]
       }
     },
     {
@@ -46,23 +55,51 @@ const char json_str[] = R"(
       "name": "Testlampe 2",
       "lamp_type": 0,
       "pin": 2,
-      "default_state": 1,
+      "default_state": 0,
       "mapping": {
-        "toggleStatus": [1, 16],
-        "turnOn": [2, 17],
-        "turnOff": [3, 18]
+        "toggleStatus": [
+          1,
+          16
+        ],
+        "turnOn": [
+          2,
+          17
+        ],
+        "turnOff": [
+          3,
+          18
+        ]
       }
     },
     {
       "type": "sh_fan_basic",
       "name": "TestFan",
       "mapping": {
-        "toggleStatus": [5, 16],
-        "turnOn": [6, 17],
-        "turnOff": [7, 18]
+        "toggleStatus": [
+          5,
+          16
+        ],
+        "turnOn": [
+          6,
+          17
+        ],
+        "turnOff": [
+          7,
+          18
+        ]
       },
-      "levels": 4,
-      out_mapping: [1111, 2222, 3333, 4444]
+      "levels": 4
+    },
+    {
+      "type": "sh_doorbell_basic",
+      "pin": 22,
+      "default_state": 0,
+      "name": "Doorbell",
+      "mapping": {
+        "triggerDoorbell": [
+          8
+        ]
+      }
     }
   ],
   "network": {

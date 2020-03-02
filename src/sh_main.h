@@ -370,7 +370,9 @@ public:
     test_initialization();
 
     test_stuff();
-    logger.printf("Free Heap: %d\n", ESP.getFreeHeap());
+    logger.print("Free Heap:");
+    logger.add(ESP.getFreeHeap());
+    logger.addln();
   }
 
   void refresh() {
