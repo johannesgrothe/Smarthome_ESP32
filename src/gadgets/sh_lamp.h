@@ -166,11 +166,11 @@ public:
       if (strcmp(method, "toggleStatus") == 0) {
         logger.addln("'toggleStatus'");
         toggleStatus();
-      } else if (strcmp(method, "'turnOn'") == 0) {
-        logger.addln("'turnOn");
+      } else if (strcmp(method, "turnOn") == 0) {
+        logger.addln("'turnOn'");
         setStatus(true);
-      } else if (strcmp(method, "'turnOff'") == 0) {
-        logger.addln("'turnOff");
+      } else if (strcmp(method, "turnOff") == 0) {
+        logger.addln("'turnOff'");
         setStatus(false);
       } else {
         logger.add("Found Nothing for '");
