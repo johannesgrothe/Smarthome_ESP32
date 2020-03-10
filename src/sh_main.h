@@ -77,12 +77,65 @@ private:
     return everything_ok;
   }
 
+  SH_Gadget *getGadgetForName(const char *name) {
+    for (byte k = 0; k < anz_gadgets; k++) {
+      SH_Gadget *it_gadget = gadgets[k];
+      if (strcmp(it_gadget->getName(), name) == 0) {
+        return it_gadget;
+      }
+    }
+    return nullptr;
+  }
+
   void initGadgetConnectors(SH_Gadget *gadget) {
     logger.incIntent();
-    logger.println("Initializing Connectors:");
+    logger.println("Initializing Remote Connectors:");
     logger.incIntent();
     gadget->initConnectors(mqtt_gadget);
     logger.decIntent();
+    logger.decIntent();
+  }
+
+  void map_connectors(JsonObject connectors_json) {
+    logger.println("Mapping Connectors:");
+    logger.incIntent();
+    // IR
+    logger.print("IR:");
+    if (connectors_json["ir"] != nullptr && connectors_json["ir"].as<JsonArray>().size() > 0) {
+      logger.addln();
+      logger.incIntent();
+      JsonArray map_gadgets = connectors_json["ir"].as<JsonArray>();
+      for (byte k = 0; k < map_gadgets.size(); k++) {
+        const char *gadget_name = map_gadgets[k].as<const char *>();
+        SH_Gadget *found_gadget = getGadgetForName(gadget_name);
+        if (found_gadget != nullptr) {
+          found_gadget->setIR(ir_gadget);
+          logger.println(LOG_DATA, gadget_name);
+        }
+      }
+      logger.decIntent();
+    } else {
+      logger.addln(" -");
+    }
+
+    // Radio
+    logger.print("Radio:");
+    if (connectors_json["radio"] != nullptr && connectors_json["radio"].as<JsonArray>().size() > 0) {
+      logger.addln();
+      logger.incIntent();
+      JsonArray map_gadgets = connectors_json["radio"].as<JsonArray>();
+      for (byte k = 0; k < map_gadgets.size(); k++) {
+        const char *gadget_name = map_gadgets[k].as<const char *>();
+        SH_Gadget *found_gadget = getGadgetForName(gadget_name);
+        if (found_gadget != nullptr) {
+          found_gadget->setRadio(radio_gadget);
+          logger.println(LOG_DATA, gadget_name);
+        }
+      }
+      logger.decIntent();
+    } else {
+      logger.addln(" -");
+    }
     logger.decIntent();
   }
 
@@ -366,16 +419,14 @@ public:
     init_network(json["network"]);
     init_connectors(json["connectors"]);
     init_gadgets(json["gadgets"]);
+    map_connectors(json["connector-mapping"]);
 
     test_initialization();
 
     test_stuff();
-    logger.print("Free Heap:");
+    logger.print("Free Heap: ");
     logger.add(ESP.getFreeHeap());
     logger.addln();
-
-    uint16_t rawData[95] = {1264, 418,  1210, 470,  398, 1284,  396, 1266,  420, 1258,  1284, 418,  374, 1308,  372, 1288,  418, 1284,  398, 1282,  1264, 418,  1240, 7154,  1256, 422,  1262, 442,  368, 1292,  392, 1290,  418, 1280,  1238, 444,  372, 1308,  370, 1310,  372, 1306,  422, 1258,  1218, 464,  1210, 7204,  1210, 476,  1232, 442,  424, 1258,  398, 1262,  418, 1280,  1240, 442,  398, 1260,  394, 1288,  416, 1260,  422, 1282,  1238, 442,  1240, 7176,  1208, 470,  1238, 424,  420, 1280,  424, 1236,  392, 1306,  1212, 450,  390, 1312,  370, 1310,  372, 1308,  396, 1264,  1258, 444,  1238};
-    ir_gadget->sendRawIR(rawData, 95);
   }
 
   void refresh() {

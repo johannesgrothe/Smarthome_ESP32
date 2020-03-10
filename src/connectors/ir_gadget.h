@@ -126,7 +126,7 @@ public:
   };
 
   bool sendRawIR(uint16_t raw_data[], uint8_t content_length) {
-    logger.printname("[System / IR]", "Sending Raw Command, 38khz, ");
+    logger.printname("System / IR", "Sending Raw Command, 38kHz, ");
     blaster->sendRaw(raw_data, content_length, 38);
     logger.add(content_length);
     logger.addln(" Blocks.");
@@ -135,7 +135,7 @@ public:
   }
 
   bool sendIR(unsigned long command, uint8_t com_type) {
-    logger.printname("[System / IR]", "Sending: ");
+    logger.printname("System / IR", "Sending: ");
     switch (com_type) {
       case NEC:
         blaster->sendNEC(command);

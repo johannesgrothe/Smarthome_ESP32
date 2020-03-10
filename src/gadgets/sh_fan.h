@@ -32,7 +32,7 @@ public:
     return rotation_speed > 0;
   };
 
-  void setStatus(bool new_status, bool remote_update=true) {
+  void setStatus(bool new_status, bool remote_update = true) {
     if (new_status) {
       updateHomebridgeCharacteristic("On", true, remote_update);
       setRotationSpeed(last_rotation_speed, false);
@@ -56,7 +56,7 @@ public:
     setRotationSpeed(getRotationSpeed() - (FAN_ROTATION_SPEED_MAX / levels));
   }
 
-  void setRotationSpeed(byte new_speed, bool remote_update=true) {
+  void setRotationSpeed(byte new_speed, bool remote_update = true) {
 //    if (new_speed < 0) new_speed = 0;
     if (new_speed > FAN_ROTATION_SPEED_MAX) new_speed = FAN_ROTATION_SPEED_MAX;
     if (new_speed == 0) {
@@ -83,7 +83,7 @@ public:
   }
 
   bool getHomebridgeCharacteristics(char *buffer) override {
-    strcpy(buffer,  R"( "RotationSpeed": {"minValue": 0, "maxValue": 100, "minStep": 25})");
+    strcpy(buffer, R"( "RotationSpeed": {"minValue": 0, "maxValue": 100, "minStep": 25})");
     return true;
   }
   // End of Homebridge-Connector

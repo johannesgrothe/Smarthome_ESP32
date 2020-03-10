@@ -12,7 +12,7 @@
 #include "sh_doorbell_basic.h"
 
 //Fan
-#include "sh_fan_basic.h"
+#include "sh_fan_westinghouse_ir.h"
 
 
 static SH_Gadget *create_gadget(JsonObject gadget_json) {
