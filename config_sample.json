@@ -43,7 +43,7 @@
       }
     },
     {
-      "type": "sh_fan_basic",
+      "type": "sh_fan_westinghouse_ir",
       "name": "TestFan",
       "mapping": {
         "toggleStatus": [
@@ -58,8 +58,12 @@
           7,
           18
         ]
-      },
-      "levels": 4
+      }
+    },
+    {
+      "type": "sh_lamp_westinghouse_ir",
+      "name": "Deckenlampe",
+      "mapping": {}
     }
   ],
   "network": {
@@ -82,7 +86,10 @@
     "serial": {}
   },
   "connector-mapping": {
-    "ir": ["TestFan"],
+    "ir": [
+      "TestFan",
+      "Deckenlampe"
+    ],
     "radio": []
   }
 }

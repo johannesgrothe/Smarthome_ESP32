@@ -72,7 +72,7 @@ const char json_str[] = R"(
       }
     },
     {
-      "type": "sh_fan_basic",
+      "type": "sh_fan_westinghouse_ir",
       "name": "TestFan",
       "mapping": {
         "toggleStatus": [
@@ -87,8 +87,12 @@ const char json_str[] = R"(
           7,
           18
         ]
-      },
-      "levels": 4
+      }
+    },
+    {
+      "type": "sh_lamp_westinghouse_ir",
+      "name": "Deckenlampe",
+      "mapping": {}
     }
   ],
   "network": {
@@ -111,7 +115,10 @@ const char json_str[] = R"(
     "serial": {}
   },
   "connector-mapping": {
-    "ir": ["TestFan"],
+    "ir": [
+      "TestFan",
+      "Deckenlampe"
+    ],
     "radio": []
   }
 }

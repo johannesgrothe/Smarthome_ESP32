@@ -3,11 +3,8 @@
 
 #include "sh_fan.h"
 
-class SH_Fan_Basic : public SH_Fan {
+class SH_Fan_Westinghouse_IR : public SH_Fan {
 protected:
-  bool status;
-  byte rotation_speed;
-  byte last_rotation_speed;
 
   // UNKNOWN 19496A87
   uint16_t level_0[95] = {1252, 432, 1250, 432, 420, 1260, 422, 1262, 420, 1258, 422, 1260, 420, 1258, 1254, 430, 420,
@@ -37,20 +34,22 @@ protected:
 
 public:
 
-  explicit SH_Fan_Basic(JsonObject gadget) :
-    SH_Fan(gadget) {};
+  explicit SH_Fan_Westinghouse_IR(JsonObject gadget) :
+    SH_Fan(gadget, 3) {};
 
   void refresh() override {
     if (has_changed) {
-      logger.println(name, "has changed.");
-      if (rotation_speed == 0) {
+      byte level = getLevel();
+      logger.printname(name, "has changed: Level ");
+      logger.addln(level);
+      if (level == 0) {
         sendRawIR(level_0, 95);
-      } else if (rotation_speed == 1) {
+      } else if (level == 1) {
         sendRawIR(level_1, 119);
-      } else if (rotation_speed == 2) {
+      } else if (level == 2) {
         // TODO: level_2 code needed
         // sendRawIR(level_0, 95);
-      } else if (rotation_speed == 3) {
+      } else if (level == 3) {
         sendRawIR(level_3, 95);
       }
     }

@@ -40,14 +40,14 @@ public:
     setHomebridgeServiceType("Lightbulb");
   };
 
-  SH_Lamp(JsonObject gadget, uint8_t lamp_type) :
+  SH_Lamp(JsonObject gadget, SH_LAMP_TYPE lamp_type) :
     SH_Gadget(gadget),
     lightness(100.0),
     default_lightness(100.0),
     min_lightness(35),
     saturation(0),
     hue(0),
-    type((SH_LAMP_TYPE) lamp_type) {
+    type(lamp_type) {
     logger.print("Type: ");
     logger.addln(type);
     setHomebridgeServiceType("Lightbulb");
@@ -119,14 +119,14 @@ public:
   };
 
   void print() override {
-//    Serial.printf("[%s] Status: %d", name, getStatus());
+    Serial.printf("[%s] Status: %d", name, getStatus());
     if (type == CLR_BRI || type == CLR_ONLY) {
-//      Serial.printf(", Hue: %.2f, Saturation: %.2f", hue, saturation);
+      Serial.printf(", Hue: %.2f, Saturation: %.2f", hue, saturation);
     }
     if (type == CLR_BRI || type == BRI_ONLY) {
-//      Serial.printf(", Lightness: %.2f", lightness);
+      Serial.printf(", Lightness: %.2f", lightness);
     }
-//    Serial.println("");
+    Serial.println("");
   }
 
 //  Homebridge-Connector
@@ -145,10 +145,10 @@ public:
       case ON_OFF :
         return false;
       case BRI_ONLY :
-        strcpy(buffer,  R"("Brightness": "default")");
+        strcpy(buffer, R"("Brightness": "default")");
         break;
       case CLR_ONLY :
-        strcpy(buffer,  R"("Hue": "default", "Saturation": "default")");
+        strcpy(buffer, R"("Hue": "default", "Saturation": "default")");
         break;
       case CLR_BRI :
         strcpy(buffer, R"("Brightness": "default", "Hue": "default", "Saturation": "default")");

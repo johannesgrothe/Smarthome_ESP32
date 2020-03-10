@@ -13,6 +13,7 @@
 
 //Fan
 #include "sh_fan_westinghouse_ir.h"
+#include "sh_lamp_westinghouse_ir.h"
 
 
 static SH_Gadget *create_gadget(JsonObject gadget_json) {
@@ -35,9 +36,13 @@ static SH_Gadget *create_gadget(JsonObject gadget_json) {
     } else if (strcmp(type, "sh_lamp_basic") == 0) {
       new_gadget = new SH_Lamp_Basic(gadget_json);
 
-      // sh_fan_basic.h
-    } else if (strcmp(type, "sh_fan_basic") == 0) {
-      new_gadget = new SH_Fan_Basic(gadget_json);
+      // sh_fan_westinghouse_ir.h
+    } else if (strcmp(type, "sh_fan_westinghouse_ir") == 0) {
+      new_gadget = new SH_Fan_Westinghouse_IR(gadget_json);
+
+      // sh_lamp_westinghouse_ir.h
+    } else if (strcmp(type, "sh_lamp_westinghouse_ir") == 0) {
+      new_gadget = new SH_Lamp_Westinghouse_IR(gadget_json);
 
       // sh_fan_basic.h
     } else if (strcmp(type, "sh_doorbell_basic") == 0) {
