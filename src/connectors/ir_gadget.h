@@ -31,6 +31,7 @@ public:
     if (data["recv_pin"] != nullptr) {
       uint8_t r_pin = data["recv_pin"].as<int>();
       receiver = new IRrecv(r_pin);
+      receiver->enableIRIn();
       logger.print(LOG_DATA, "Receiver-Pin: ");
       logger.addln(r_pin);
     } else {
@@ -40,15 +41,13 @@ public:
     if (data["send_pin"] != nullptr) {
       uint8_t b_pin = data["send_pin"].as<int>();
       blaster = new IRsend(b_pin);
+      blaster->begin();
       logger.print(LOG_DATA, "Blaster-Pin: ");
       logger.addln(b_pin);
     } else {
       everything_ok = false;
       logger.println(LOG_ERR, "'send_pin' nicht spezifiziert.");
     }
-//    Serial.println(receiver->getTolerance());
-    receiver->enableIRIn();
-//    receiver->resume();
     code_gadget_is_ready = everything_ok;
     logger.decIntent();
   };

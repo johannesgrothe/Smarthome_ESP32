@@ -43,12 +43,14 @@ protected:
   bool sendRawIR(uint16_t raw_data[], uint8_t content_length) {
     if (has_ir)
       return ir_gadget->sendRawIR(raw_data, content_length);
+    logger.println(LOG_ERR, "Cannot send: no access.");
     return false;
   }
 
   bool sendIR(unsigned long command, uint8_t com_type) {
     if (has_ir)
       return ir_gadget->sendIR(command, com_type);
+    logger.println(LOG_ERR, "Cannot send: no access.");
     return false;
   }
 
