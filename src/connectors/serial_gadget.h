@@ -71,24 +71,4 @@ public:
   }
 };
 
-class Serial_Connector {
-protected:
-
-  Serial_Gadget *serialgadget;
-
-  bool initialized_serial;
-
-public:
-  Serial_Connector() :
-      serialgadget(nullptr),
-      initialized_serial(false) {
-  };
-
-  void init_serial_con(Serial_Gadget *new_serial_gadget) {
-    initialized_serial = true;
-    serialgadget = new_serial_gadget;
-  }
-
-};
-
 #endif //SERIAL_CONNECTOR_H

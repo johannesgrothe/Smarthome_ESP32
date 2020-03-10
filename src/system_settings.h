@@ -33,7 +33,7 @@ const char json_str[] = R"(
       "type": "sh_lamp_neopixel_basic",
       "name": "Testlampe NP",
       "lamp_type": 0,
-      "pin": 23,
+      "pin": 21,
       "length": "1",
       "mapping": {
         "toggleStatus": [
@@ -59,15 +59,15 @@ const char json_str[] = R"(
       "mapping": {
         "toggleStatus": [
           1,
-          16
+          33464415
         ],
         "turnOn": [
           2,
-          17
+          33448095
         ],
         "turnOff": [
           3,
-          18
+          33480735
         ]
       }
     },
@@ -89,17 +89,6 @@ const char json_str[] = R"(
         ]
       },
       "levels": 4
-    },
-    {
-      "type": "sh_doorbell_basic",
-      "pin": 22,
-      "default_state": 0,
-      "name": "Doorbell",
-      "mapping": {
-        "triggerDoorbell": [
-          8
-        ]
-      }
     }
   ],
   "network": {
@@ -111,8 +100,8 @@ const char json_str[] = R"(
   },
   "connectors": {
     "ir": {
-      "recv_pin": 11,
-      "send_pin": 12
+      "recv_pin": 22,
+      "send_pin": 23
     },
     "mqtt": {
       "ip": "192.168.178.111",
@@ -120,6 +109,10 @@ const char json_str[] = R"(
     },
     "rest": {},
     "serial": {}
+  },
+  "connector-mapping": {
+    "ir": ["TestFan"],
+    "radio": []
   }
 }
 )";

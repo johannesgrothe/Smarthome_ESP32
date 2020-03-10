@@ -182,22 +182,4 @@ public:
 
 };
 
-/*TODO*/
-// Connector for REST Usage
-class REST_Connector {
-//protected:
-//  bool decode_rest() {
-//    Serial.println("[WARN] decode_rest() not implemented");
-//    return false;
-//  };
-//
-//  bool send_rest() {
-//    Serial.println("[WARN] send_rest() not implemented");
-//    return false;
-//  };
-
-public:
-  REST_Connector();
-};
-
 #endif

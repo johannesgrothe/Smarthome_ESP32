@@ -18,14 +18,4 @@ public:
   };
 };
 
-class Radio_Connector {
-protected:
-
-  Radio_Gadget *radiogadget;
-
-public:
-  Radio_Connector() = default;
-
-};
-
 #endif //RADIO_CONNECTOR_H

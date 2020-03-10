@@ -164,25 +164,25 @@ public:
 
   void printf(LOG_TYPE type, const char *message, ...) {
     va_list arglist;
-    va_start( arglist, message );
+    va_start(arglist, message);
     printf(message, arglist);
-    va_end( arglist );
+    va_end(arglist);
   }
 
   void printf(LOG_TYPE type, const char *message, va_list arglist) {
     const short str_len = strlen(message);
     char buffer[str_len]{};
     print_beginning(type);
-    vsnprintf (buffer, str_len, message, arglist);
+    vsnprintf(buffer, str_len, message, arglist);
     Serial.printf(buffer);
   }
 
 
   void printf(const char *message, ...) {
     va_list arglist;
-    va_start( arglist, message );
+    va_start(arglist, message);
     printf(LOG_INFO, message, arglist);
-    va_end( arglist );
+    va_end(arglist);
   }
 
 } /*extern logger*/;

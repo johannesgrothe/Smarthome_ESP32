@@ -3,11 +3,11 @@
 #include "system_settings.h"
 
 // Connectors
-#include "connectors/ir_connector.h"
+#include "connectors/ir_gadget.h"
 #include "connectors/mqtt_connector.h"
 #include "connectors/rest_connector.h"
-#include "connectors/serial_connector.h"
-#include "connectors/radio_connector.h"
+#include "connectors/serial_gadget.h"
+#include "connectors/radio_gadget.h"
 
 // Gadget-Lib
 #include "gadgets/gadget_library.h"
@@ -50,7 +50,7 @@ private:
   MQTT_Gadget *mqtt_gadget;
   REST_Gadget *rest_gadget;
   Serial_Gadget *serial_gadget;
-  Radio_Connector *radio_gadget;
+  Radio_Gadget *radio_gadget;
 
   WiFiClient network_client;
 
@@ -373,6 +373,9 @@ public:
     logger.print("Free Heap:");
     logger.add(ESP.getFreeHeap());
     logger.addln();
+
+    uint16_t rawData[95] = {1264, 418,  1210, 470,  398, 1284,  396, 1266,  420, 1258,  1284, 418,  374, 1308,  372, 1288,  418, 1284,  398, 1282,  1264, 418,  1240, 7154,  1256, 422,  1262, 442,  368, 1292,  392, 1290,  418, 1280,  1238, 444,  372, 1308,  370, 1310,  372, 1306,  422, 1258,  1218, 464,  1210, 7204,  1210, 476,  1232, 442,  424, 1258,  398, 1262,  418, 1280,  1240, 442,  398, 1260,  394, 1288,  416, 1260,  422, 1282,  1238, 442,  1240, 7176,  1208, 470,  1238, 424,  420, 1280,  424, 1236,  392, 1306,  1212, 450,  390, 1312,  370, 1310,  372, 1308,  396, 1264,  1258, 444,  1238};
+    ir_gadget->sendRawIR(rawData, 95);
   }
 
   void refresh() {

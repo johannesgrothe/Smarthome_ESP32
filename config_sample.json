@@ -4,7 +4,7 @@
       "type": "sh_lamp_neopixel_basic",
       "name": "Testlampe NP",
       "lamp_type": 0,
-      "pin": 23,
+      "pin": 21,
       "length": "1",
       "mapping": {
         "toggleStatus": [
@@ -26,19 +26,19 @@
       "name": "Testlampe 2",
       "lamp_type": 0,
       "pin": 2,
-      "default_state": 1,
+      "default_state": 0,
       "mapping": {
         "toggleStatus": [
           1,
-          16
+          33464415
         ],
         "turnOn": [
           2,
-          17
+          33448095
         ],
         "turnOff": [
           3,
-          18
+          33480735
         ]
       }
     },
@@ -60,15 +60,6 @@
         ]
       },
       "levels": 4
-    },
-    {
-      "type": "sh_doorbell_basic",
-      "name": "Doorbell",
-      "mapping": {
-        "triggerDoorbell": [
-          8
-        ]
-      }
     }
   ],
   "network": {
@@ -80,8 +71,8 @@
   },
   "connectors": {
     "ir": {
-      "recv_pin": 11,
-      "send_pin": 12
+      "recv_pin": 22,
+      "send_pin": 23
     },
     "mqtt": {
       "ip": "192.168.178.111",
@@ -89,5 +80,9 @@
     },
     "rest": {},
     "serial": {}
+  },
+  "connector-mapping": {
+    "ir": ["TestFan"],
+    "radio": []
   }
 }
