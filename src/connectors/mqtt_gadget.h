@@ -191,7 +191,7 @@ public:
     if (!request_gadget_is_ready) {
       return false;
     }
-    logger.print("[MQTT] publishing on '");
+    logger.printname("System / MQTT", "publishing on '");
     logger.add(topic);
     if (wait_for_answer)
       logger.add("': ");

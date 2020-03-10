@@ -41,11 +41,8 @@ public:
   virtual void applyMappingMethod(const char *method) override {
     if (method != nullptr) {
       if (strcmp(method, "triggerDoorbell") == 0) {
-        logger.addln("'triggerDoorbell'");
         triggerEvent();
       }
-    } else {
-      logger.addln(" - ");
     }
   };
   // End of Code-Connector

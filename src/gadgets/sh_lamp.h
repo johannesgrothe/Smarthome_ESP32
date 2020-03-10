@@ -164,21 +164,12 @@ public:
   virtual void applyMappingMethod(const char *method) override {
     if (method != nullptr) {
       if (strcmp(method, "toggleStatus") == 0) {
-        logger.addln("'toggleStatus'");
         toggleStatus();
       } else if (strcmp(method, "turnOn") == 0) {
-        logger.addln("'turnOn'");
         setStatus(true);
       } else if (strcmp(method, "turnOff") == 0) {
-        logger.addln("'turnOff'");
         setStatus(false);
-      } else {
-        logger.add("Found Nothing for '");
-        logger.add(method);
-        logger.addln("'");
       }
-    } else {
-      logger.addln(" - ");
     }
   }
   // End of Code-Connector

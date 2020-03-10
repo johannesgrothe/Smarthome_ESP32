@@ -34,7 +34,10 @@ protected:
   const char *findMethodForCode(unsigned long code) {
     for (byte k = 0; k < mapping_count; k++) {
       if (mapping[k]->containsCode(code)) {
-        return mapping[k]->getName();
+        const char *method_name = mapping[k]->getName();
+        logger.printname(name, "-> ");
+        logger.addln(method_name);
+        return method_name;
       }
     }
     return nullptr;
@@ -42,10 +45,6 @@ protected:
 
   virtual void applyMappingMethod(const char *method) {}
   // End Basic Code Connector
-
-  // Basic Request Connector
-
-  // End Basic Request Connector
 
   // Homebridge Connector
   char homebridge_service_type[HOMEBRIDGE_SERVICE_TYPE_LEN_MAX]{};
@@ -87,17 +86,19 @@ protected:
   void decodeHomebridgeCommand(JsonObject data) {
     if (data["name"] != nullptr && data["characteristic"] != nullptr && data["value"] != nullptr) {
       if (strcmp(name, data["name"].as<const char *>()) == 0) {
-        logger.print(LOG_DATA, "Gadget found: ");
-        logger.addln(name);
         int value;
         const char *characteristc = data["characteristic"].as<const char *>();
+        logger.printname(name, "-> ");
+        logger.addln(characteristc);
         if (data["value"] == "true")
           value = 1;
         else if (data["value"] == "false")
           value = 0;
         else
           value = data["value"].as<int>();
+        logger.incIntent();
         applyHomebridgeCommand(characteristc, value);
+        logger.decIntent();
       }
     }
   }
@@ -153,8 +154,7 @@ public:
   SH_Gadget() :
     name("default"),
     initialized(false),
-    has_changed(true) {
-  };
+    has_changed(true) {};
 
   explicit SH_Gadget(JsonObject gadget) :
     initialized(false),
@@ -208,11 +208,14 @@ public:
   };
 
   void handleCode(unsigned long code) {
-    applyMappingMethod(findMethodForCode(code));
+    const char *method_name = findMethodForCode(code);
+    logger.incIntent();
+    applyMappingMethod(method_name);
+    logger.decIntent();
   }
 
   void handleRequest(REQUEST_TYPE type, const char *path, const char *body) {
-    logger.println("Decoding String");
+//    logger.println("Decoding String");
   }
 
   void handleRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
@@ -221,11 +224,9 @@ public:
     }
   }
 
-  virtual void refresh() {
-  }
+  virtual void refresh() {}
 
-  virtual void print() {
-  }
+  virtual void print() {}
 
   void printMapping() {
     logger.printname(name, "Accessible Methods: ");

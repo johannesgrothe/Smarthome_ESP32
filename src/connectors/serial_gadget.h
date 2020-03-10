@@ -9,7 +9,6 @@
 class Serial_Gadget : public Code_Gadget, public Request_Gadget {
 protected:
   bool messageType(const char *message) {
-    unsigned long comBuffer = 0;
     short bufflen = strlen(message);
     for (short i = 0; i < bufflen; i++) {
       int charInt = (int) message[i];
