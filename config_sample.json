@@ -91,5 +91,14 @@
       "Deckenlampe"
     ],
     "radio": []
+  },
+  "remote-mapping": {
+    "homebridge": [
+      "Testlampe NP",
+      "Testlampe 2",
+      "TestFan",
+      "Deckenlampe"
+    ],
+    "rest": []
   }
 }

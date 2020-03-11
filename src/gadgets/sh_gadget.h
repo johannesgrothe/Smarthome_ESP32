@@ -1,3 +1,6 @@
+#ifndef __SH_Gadget__
+#define __SH_Gadget__
+
 #include <cstring>
 #include <Arduino.h>
 #include "ArduinoJson.h"
@@ -7,12 +10,14 @@
 #include "../console_logger.h"
 #include "../connectors/connectors.h"
 
-#ifndef __SH_Gadget__
-#define __SH_Gadget__
+enum Gadget_Type {
+  None, Lightbulb, Fan, Doorbell
+};
 
 enum SH_RGB_Color {
   SH_CLR_red, SH_CLR_green, SH_CLR_blue
 };
+
 enum SH_HSL_Color {
   SH_CLR_hue, SH_CLR_saturation, SH_CLR_lightness
 };
@@ -20,6 +25,11 @@ enum SH_HSL_Color {
 class SH_Gadget : public IR_Connector, public Radio_Connector {
 private:
 
+  std::function<void(const char *, int)> updateRemotesInt;
+
+  std::function<void(const char *, bool)> updateRemotesBool;
+
+  bool remoteInitialized;
 
 protected:
   // Main Gadget
@@ -27,8 +37,22 @@ protected:
   bool initialized;
   bool has_changed;
   byte mapping_count{};
+  Gadget_Type type;
   Mapping_Reference *mapping[MAPPING_MAX_COMMANDS]{};
   // End Main Gadget
+
+
+  // Remotes
+  void updateCharacteristic(const char *characteristic, int value) {
+    updateRemotesInt(characteristic, value);
+  }
+
+  void updateCharacteristic(const char *characteristic, bool value) {
+    updateRemotesBool(characteristic, value);
+  }
+
+  virtual void handleCharacteristicUpdate(const char *characteristic, bool value) {}
+  // Remotes End
 
   // Basic Code Connector
   const char *findMethodForCode(unsigned long code) {
@@ -152,11 +176,13 @@ protected:
 
 public:
   SH_Gadget() :
+    remoteInitialized(false),
     name("default"),
     initialized(false),
     has_changed(true) {};
 
   explicit SH_Gadget(JsonObject gadget) :
+    remoteInitialized(false),
     initialized(false),
     has_changed(true) {
     if (gadget["name"] != nullptr) {
@@ -190,13 +216,26 @@ public:
     }
   };
 
+  void initRemoteUpdate(std::function<void(const char *, bool)> update_method_bool,
+                        std::function<void(const char *, int)> update_method_int) {
+    updateRemotesBool = update_method_bool;
+    updateRemotesInt = update_method_int;
+    remoteInitialized = true;
+  }
+
   void initConnectors(MQTT_Gadget *mqtt_gadget) {
     initHomebridgeConnector(mqtt_gadget);
+  }
+
+  Gadget_Type getType() {
+    return type;
   }
 
   const char *getName() {
     return &name[0];
   }
+
+  virtual bool getCharacteristics(const char *caracteristic_str) {};
 
   bool isInitialized() {
     return initialized;

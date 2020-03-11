@@ -22,6 +22,7 @@
 #include <EEPROM.h>
 
 #include "wifi_credentials.h"
+#include "remotes/remote_manager.h"
 
 
 static void rebootChip(const char *reason) {
