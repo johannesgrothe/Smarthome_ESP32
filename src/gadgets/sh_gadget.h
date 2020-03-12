@@ -25,9 +25,9 @@ enum SH_HSL_Color {
 class SH_Gadget : public IR_Connector, public Radio_Connector {
 private:
 
-  std::function<void(const char *, int)> updateRemotesInt;
+  std::function<void(const char *, const char *, const char *, int)> updateRemotesInt;
 
-  std::function<void(const char *, bool)> updateRemotesBool;
+  std::function<void(const char *, const char *, const char *, bool)> updateRemotesBool;
 
   bool remoteInitialized;
 
@@ -44,11 +44,11 @@ protected:
 
   // Remotes
   void updateCharacteristic(const char *characteristic, int value) {
-    updateRemotesInt(characteristic, value);
+    updateRemotesInt(name, name, characteristic, value);
   }
 
   void updateCharacteristic(const char *characteristic, bool value) {
-    updateRemotesBool(characteristic, value);
+    updateRemotesBool(name, name, characteristic, value);
   }
 
   virtual void handleCharacteristicUpdate(const char *characteristic, bool value) {}
@@ -216,11 +216,16 @@ public:
     }
   };
 
-  void initRemoteUpdate(std::function<void(const char *, bool)> update_method_bool,
-                        std::function<void(const char *, int)> update_method_int) {
+  void initRemoteUpdate(std::function<void(const char *, const char *, const char *, bool)> update_method_bool,
+                        std::function<void(const char *, const char *, const char *, int)> update_method_int) {
     updateRemotesBool = update_method_bool;
     updateRemotesInt = update_method_int;
+    logger.println("Initialized Callbacks");
     remoteInitialized = true;
+  }
+
+  bool hasRemoteUpdates() {
+    return remoteInitialized;
   }
 
   void initConnectors(MQTT_Gadget *mqtt_gadget) {

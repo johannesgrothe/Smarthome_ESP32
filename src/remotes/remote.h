@@ -14,6 +14,19 @@ private:
 
   byte gadget_count;
 
+  virtual bool registerGadget(const char *gadget_name, Gadget_Type gadget_type, const char *characteristics) {};
+
+  virtual bool removeGadget(const char *gadget_name) {};
+
+  void updateCharacteristicInt(const char *gadget_name, const char *service, const char *characteristic, int value) {
+    updateCharacteristic(gadget_name, service, characteristic, value);
+  };
+
+  void updateCharacteristicBool(const char *gadget_name, const char *service, const char *characteristic, bool value) {
+    updateCharacteristic(gadget_name, service, characteristic, value);
+  };
+
+
 public:
   Remote() :
     gadget_count(0) {};
@@ -28,18 +41,23 @@ public:
 
   virtual void handleRequest(const char *path, REQUEST_TYPE type, JsonObject body) {};
 
-  virtual bool registerGadget(const char *gadget_name, Gadget_Type gadget_type, const char *characteristics) {};
-
-  virtual bool removeGadget(const char *gadget_name) {};
-
   void addGadget(SH_Gadget *new_gadget) {
     if (gadget_count < (MAIN_MAX_GADGETS - 1)) {
       gadgets[gadget_count] = new_gadget;
       gadget_count++;
+
+      char characteristic_str[HOMEBRIDGE_REGISTER_STR_MAX_LEN - 60];
+      new_gadget->getCharacteristics(&characteristic_str[0]);
+      registerGadget(new_gadget->getName(), new_gadget->getType(), characteristic_str);
+//      if (!new_gadget->hasRemoteUpdates()) {
+//        using std::placeholders::_1;
+//        using std::placeholders::_2;
+//        using std::placeholders::_3;
+//        using std::placeholders::_4;
+//        new_gadget->initRemoteUpdate(std::bind(&Remote::updateCharacteristicInt, this, _1, _2, _3, _4),
+//                                     std::bind(&Remote::updateCharacteristicBool, this, _1, _2, _3, _4));
+//      }
     }
-    char characteristic_str[HOMEBRIDGE_REGISTER_STR_MAX_LEN-60];
-    new_gadget->getCharacteristics(&characteristic_str[0]);
-    registerGadget(new_gadget->getName(), new_gadget->getType(), characteristic_str);
   }
 
 };

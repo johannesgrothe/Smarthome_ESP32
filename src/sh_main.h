@@ -55,6 +55,8 @@ private:
 
   WiFiClient network_client;
 
+  Remote_Manager *remote_manager;
+
   SH_Gadget *gadgets[MAIN_MAX_GADGETS];
 
   byte anz_gadgets = 0;
@@ -210,37 +212,31 @@ private:
     return false;
   }
 
-  bool test_initialization() {
-    logger.println("Testing initialization:");
+  bool initRemoteManager(JsonObject json) {
+    remote_manager = new Remote_Manager();
+    logger.println("Initializing Remote Manager");
     logger.incIntent();
 
-    bool everything_ok = true;
-
-    logger.print(LOG_DATA, "IR: ");
-    if (ir_gadget->codeGadgetIsReady()) {
-      logger.addln("OK");
-    } else {
-      logger.addln("ERR");
-      everything_ok = false;
-    }
-
-    logger.print(LOG_DATA, "MQTT: ");
-    if (mqtt_gadget->requestGadgetIsReady()) {
-      logger.addln("OK");
-    } else {
-      logger.addln("ERR");
-      everything_ok = false;
-    }
-
-    logger.print(LOG_DATA, "Serial: ");
-    if (serial_gadget->requestGadgetIsReady()) {
-      logger.addln("OK");
-    } else {
-      logger.addln("ERR");
-      everything_ok = false;
+    if (json["homebridge"] != nullptr) {
+      JsonArray gadget_list = json["homebridge"].as<JsonArray>();
+      if (gadget_list.size() > 0) {
+        logger.println(LOG_DATA, "Homebridge");
+        logger.incIntent();
+        auto *homebridge_remote = new Remote();
+        for (byte k = 0; k < gadget_list.size(); k++) {
+          const char * gadget_name = gadget_list[k].as<const char *>();
+          logger.println(LOG_DATA, gadget_name);
+          SH_Gadget *gadget = getGadgetForName(gadget_name);
+          logger.println(LOG_DATA, gadget->getName());
+          logger.incIntent();
+          homebridge_remote->addGadget(gadget);
+          logger.decIntent();
+        }
+        logger.decIntent();
+        remote_manager->addRemote(homebridge_remote);
+      }
     }
     logger.decIntent();
-    return everything_ok;
   }
 
   void test_stuff() {
@@ -421,18 +417,12 @@ public:
     init_connectors(json["connectors"]);
     init_gadgets(json["gadgets"]);
     map_connectors(json["connector-mapping"]);
-
-    test_initialization();
+    initRemoteManager(json["remote-mapping"]);
 
     test_stuff();
     logger.print("Free Heap: ");
     logger.add(ESP.getFreeHeap());
     logger.addln();
-
-//    unsigned long blub = 0;
-//    blub -= 1;
-//    Serial.println(blub);
-//    Serial.println(blub, HEX);
   }
 
   void refresh() {
