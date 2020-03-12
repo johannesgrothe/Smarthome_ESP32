@@ -100,6 +100,7 @@ private:
   }
 
   void map_connectors(JsonObject connectors_json) {
+    // Mapping Code Connectors (IR/Radio) to the Gadgets for them to use
     logger.println("Mapping Connectors:");
     logger.incIntent();
     // IR
@@ -247,6 +248,7 @@ private:
     logger.decIntent();
   }
 
+  //TODO: move to Serial/Request Connector
   void decodeStringCommand(const char *message, unsigned int length) {
     std::string com = message;
 
