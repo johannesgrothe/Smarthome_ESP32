@@ -340,7 +340,7 @@ private:
   void forwardCommand(unsigned long code) {
     logger.incIntent();
     for (byte c = 0; c < anz_gadgets; c++) {
-      gadgets[c]->handleCode(code);
+      gadgets[c]->handleCodeUpdate(code);
     }
     logger.decIntent();
   }

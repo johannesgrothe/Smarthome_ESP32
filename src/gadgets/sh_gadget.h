@@ -31,10 +31,12 @@ private:
 
   bool remoteInitialized;
 
+  bool initialized;
+
 protected:
   // Main Gadget
   char name[GADGET_NAME_LEN_MAX]{};
-  bool initialized;
+
   bool has_changed;
   byte mapping_count{};
   Gadget_Type type;
@@ -224,48 +226,19 @@ public:
     remoteInitialized = true;
   }
 
-  bool hasRemoteUpdates() {
-    return remoteInitialized;
-  }
+  Gadget_Type getType() { return type; };
 
-  void initConnectors(MQTT_Gadget *mqtt_gadget) {
-    initHomebridgeConnector(mqtt_gadget);
-  }
-
-  Gadget_Type getType() {
-    return type;
-  }
-
-  const char *getName() {
-    return &name[0];
-  }
+  const char *getName() { return &name[0]; };
 
   virtual bool getCharacteristics(const char *caracteristic_str) {};
 
-  bool isInitialized() {
-    return initialized;
-  };
+  bool isInitialized() { return initialized; };
 
-  virtual bool init() {
-    initialized = true;
-    return false;
-  };
-
-  void handleCode(unsigned long code) {
+  void handleCodeUpdate(unsigned long code) {
     const char *method_name = findMethodForCode(code);
     logger.incIntent();
     applyMappingMethod(method_name);
     logger.decIntent();
-  }
-
-  void handleRequest(REQUEST_TYPE type, const char *path, const char *body) {
-//    logger.println("Decoding String");
-  }
-
-  void handleRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
-    if (type == REQ_MQTT && strcmp(path, "homebridge/from/set") == 0) {
-      decodeHomebridgeCommand(body);
-    }
   }
 
   virtual void refresh() {}
