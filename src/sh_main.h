@@ -282,15 +282,14 @@ private:
   }
 
   void handleStringRequest(REQUEST_TYPE type, const char *path, const char *body) {
-    logger.println("Forwarding as String");
-    for (byte c = 0; c < gadget_count; c++) {
-//      gadgets[c]->handleRequest(type, path, body);
-    }
+    logger.println("Forwarding String-Request to Remotes:");
+    logger.incIndent();
+    forwardRequest(type, path, body);
+    logger.decIndent();
   }
 
   void handleJsonRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
-    logger.println("Forwarding as JSON");
-    logger.println("Forwarding to Remotes:");
+    logger.println("Forwarding Json-Request  to Remotes:");
     logger.incIndent();
     forwardRequest(type, path, body);
     logger.decIndent();
