@@ -28,9 +28,9 @@ public:
       Code_Gadget(data),
       Request_Gadget(data) {
     logger.println("Creating Serial Gadget");
-    logger.incIntent();
+    logger.incIndent();
     logger.println(LOG_DATA, "Using default Serial Connection");
-    logger.decIntent();
+    logger.decIndent();
     request_gadget_is_ready = true;
     code_gadget_is_ready = true;
   };

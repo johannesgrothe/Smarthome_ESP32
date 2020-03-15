@@ -131,9 +131,9 @@ public:
       Request_Gadget(data) {
     client = new WiFiClient;
     logger.println("Initializing REST_Gadget");
-    logger.incIntent();
+    logger.incIndent();
     initServer();
-    logger.decIntent();
+    logger.decIndent();
     request_gadget_is_ready = true;
   };
 

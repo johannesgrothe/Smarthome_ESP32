@@ -40,7 +40,7 @@ public:
   void refresh() override {
     if (has_changed) {
       byte level = getLevel();
-      logger.printname(getName(), "has changed: Level ");
+      logger.print(getName(), "has changed: Level ");
       logger.addln(level);
       if (level == 0) {
         sendRawIR(level_0, 95);

@@ -52,7 +52,7 @@ public:
 
   void refresh() override {
     if (has_changed) {
-//      logger.printname(name, "has changed.\n");
+//      logger.print(name, "has changed.\n");
       uint8_t rgb[3];
       getColor(&rgb[0]);
       setLEDColor(rgb[0], rgb[1], rgb[2]);

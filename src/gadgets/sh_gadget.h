@@ -59,7 +59,7 @@ protected:
     for (byte k = 0; k < mapping_count; k++) {
       if (mapping[k]->containsCode(code)) {
         const char *method_name = mapping[k]->getName();
-        logger.printname(name, "-> ");
+        logger.print(name, "-> ");
         logger.addln(method_name);
         return method_name;
       }
@@ -96,7 +96,7 @@ public:
       mapping_count = local_mapping.size() < MAPPING_MAX_COMMANDS ? local_mapping.size() : MAPPING_MAX_COMMANDS;
       logger.print(LOG_INFO, "Configuring Mapping, Commands: ");
       logger.addln(mapping_count);
-      logger.incIntent();
+      logger.incIndent();
       byte j = 0;
       for (auto &&com : local_mapping) {
         if (j < mapping_count) {
@@ -106,7 +106,7 @@ public:
           j++;
         }
       }
-      logger.decIntent();
+      logger.decIndent();
       logger.println("Method Mapping loaded.");
     } else {
       logger.println(LOG_WARN, "No Mapping Found.");
@@ -131,9 +131,9 @@ public:
 
   void handleCodeUpdate(unsigned long code) {
     const char *method_name = findMethodForCode(code);
-    logger.incIntent();
+    logger.incIndent();
     handleMethodUpdate(method_name);
-    logger.decIntent();
+    logger.decIndent();
   }
 
   virtual void handleCharacteristicUpdate(const char *characteristic, int value) {};
@@ -147,13 +147,13 @@ public:
   virtual void print() {}
 
   void printMapping() {
-    logger.printname(name, "Accessible Methods: ");
+    logger.print(name, "Accessible Methods: ");
     logger.addln(mapping_count);
-    logger.incIntent();
+    logger.incIndent();
     for (byte k = 0; k < mapping_count; k++) {
       mapping[k]->printMapping();
     }
-    logger.decIntent();
+    logger.decIndent();
   }
 
 };

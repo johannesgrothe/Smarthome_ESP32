@@ -142,7 +142,7 @@ public:
     mqtt_gadget_name = gadget_name;
     homebridge_mqtt_gadget = new_mqtt_gadget;
     logger.println(LOG_DATA, "Homebridge");
-    logger.incIntent();
+    logger.incIndent();
     logger.print(LOG_DATA, "Name: ");
     logger.addln(mqtt_gadget_name);
     delay(15);
@@ -158,7 +158,7 @@ public:
       logger.println(LOG_ERR, "Could not register new Gadget on Server");
     }
     initialized_homebridge = true;
-    logger.decIntent();
+    logger.decIndent();
   }
 
   bool initializedHomebridge() {

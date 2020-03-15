@@ -63,7 +63,7 @@ private:
     gadget_count = gadget_json.size() < MAIN_MAX_GADGETS ? gadget_json.size() : MAIN_MAX_GADGETS;
     logger.print(LOG_INFO, "Creating Gadgets: ");
     logger.addln(gadget_count);
-    logger.incIntent();
+    logger.incIndent();
     bool everything_ok = true;
     for (unsigned int pointer = 0; pointer < gadget_count; pointer++) {
       JsonObject gadget = gadget_json[pointer].as<JsonObject>();
@@ -77,7 +77,7 @@ private:
       gadgets[pointer] = buffergadget;
       delay(500);
     }
-    logger.decIntent();
+    logger.decIndent();
     return everything_ok;
   }
 
@@ -94,12 +94,12 @@ private:
   void mapConnectors(JsonObject connectors_json) {
     // Mapping Code Connectors (IR/Radio) to the Gadgets for them to use
     logger.println("Mapping Connectors:");
-    logger.incIntent();
+    logger.incIndent();
     // IR
     logger.print("IR:");
     if (connectors_json["ir"] != nullptr && connectors_json["ir"].as<JsonArray>().size() > 0) {
       logger.addln();
-      logger.incIntent();
+      logger.incIndent();
       JsonArray map_gadgets = connectors_json["ir"].as<JsonArray>();
       for (auto && map_gadget : map_gadgets) {
         const char *gadget_name = map_gadget.as<const char *>();
@@ -109,7 +109,7 @@ private:
           logger.println(LOG_DATA, gadget_name);
         }
       }
-      logger.decIntent();
+      logger.decIndent();
     } else {
       logger.addln(" -");
     }
@@ -118,7 +118,7 @@ private:
     logger.print("Radio:");
     if (connectors_json["radio"] != nullptr && connectors_json["radio"].as<JsonArray>().size() > 0) {
       logger.addln();
-      logger.incIntent();
+      logger.incIndent();
       JsonArray map_gadgets = connectors_json["radio"].as<JsonArray>();
       for (auto && map_gadget : map_gadgets) {
         const char *gadget_name = map_gadget.as<const char *>();
@@ -128,17 +128,17 @@ private:
           logger.println(LOG_DATA, gadget_name);
         }
       }
-      logger.decIntent();
+      logger.decIndent();
     } else {
       logger.addln(" -");
     }
-    logger.decIntent();
+    logger.decIndent();
   }
 
   bool initConnectors(JsonObject connectors_json) {
     logger.print("Initializing Connectors: ");
     logger.addln(connectors_json.size());
-    logger.incIntent();
+    logger.incIndent();
     if (connectors_json["ir"] != nullptr) {
       ir_gadget = new IR_Gadget(connectors_json["ir"].as<JsonObject>());
     } else {
@@ -162,14 +162,14 @@ private:
     } else {
       serial_gadget = new Serial_Gadget();
     }
-    logger.decIntent();
+    logger.decIndent();
     return true;
   }
 
   bool initNetwork(JsonObject json) {
     if (strcmp(json["type"].as<char *>(), "wifi") == 0) {
       logger.println("Creating Network: WiFi");
-      logger.incIntent();
+      logger.incIndent();
       network_client = WiFiClient();
 
       const char *ssid = json["config"]["ssid"].as<char *>();
@@ -201,16 +201,16 @@ private:
     } else {
       logger.println(LOG_ERR, "Unknown Network Settings");
     }
-    logger.decIntent();
+    logger.decIndent();
     return false;
   }
 
   void testStuff() {
     logger.println("Testing Stuff");
-    logger.incIntent();
+    logger.incIndent();
     //    rest_gadget->sendRequest(REQ_HTTP_POST, "text/plain", IPAddress(192, 168, 178, 111), 3005, "/irgendein/scheiss",
 //                             "pennerus maximus schmongus");
-    logger.decIntent();
+    logger.decIndent();
   }
 
   void refreshCodeConnector(Code_Gadget *gadget) {
@@ -260,7 +260,7 @@ private:
       logger.add(req_path);
       logger.add("' :");
       logger.addln(req_body);
-      forwardRequest(req_type, req_path, req_body);
+      handleRequest(req_type, req_path, req_body);
     }
 //    if (gadget->hasResponse()) {
 //
@@ -274,29 +274,30 @@ private:
   }
 
   void forwardCommand(unsigned long code) {
-    logger.incIntent();
+    logger.incIndent();
     for (byte c = 0; c < gadget_count; c++) {
       gadgets[c]->handleCodeUpdate(code);
     }
-    logger.decIntent();
+    logger.decIndent();
   }
 
-  void forwardStringRequest(REQUEST_TYPE type, const char *path, const char *body) {
+  void handleStringRequest(REQUEST_TYPE type, const char *path, const char *body) {
     logger.println("Forwarding as String");
     for (byte c = 0; c < gadget_count; c++) {
 //      gadgets[c]->handleRequest(type, path, body);
     }
   }
 
-  void forwardJsonRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
+  void handleJsonRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
     logger.println("Forwarding as JSON");
-    for (byte c = 0; c < gadget_count; c++) {
-//      gadgets[c]->handleRequest(type, path, body);
-    }
+    logger.println("Forwarding to Remotes:");
+    logger.incIndent();
+    forwardRequest(type, path, body);
+    logger.decIndent();
   }
 
-  void forwardRequest(REQUEST_TYPE type, const char *path, const char *body) {
-    logger.incIntent();
+  void handleRequest(REQUEST_TYPE type, const char *path, const char *body) {
+    logger.incIndent();
     if (body != nullptr) {
       char first_char = body[0];
       unsigned int last_pos = strlen(body) - 1;
@@ -307,17 +308,17 @@ private:
             DynamicJsonDocument json_file(2048);
             deserializeJson(json_file, body);
             JsonObject json_doc = json_file.as<JsonObject>();
-            forwardJsonRequest(type, path, json_doc);
+            handleJsonRequest(type, path, json_doc);
           }
           catch (DeserializationError &e) {
-            forwardStringRequest(type, path, body);
+            handleStringRequest(type, path, body);
           }
         } else {
-          forwardStringRequest(type, path, body);
+          handleStringRequest(type, path, body);
         }
       }
     }
-    logger.decIntent();
+    logger.decIndent();
   }
 
   void refreshConnectors() {
@@ -331,31 +332,30 @@ private:
 
   bool initRemotes(JsonObject json) {
     logger.println("Initializing Remotes");
-    logger.incIntent();
+    logger.incIndent();
 
     if (json["homebridge"] != nullptr) {
       JsonArray gadget_list = json["homebridge"].as<JsonArray>();
       if (gadget_list.size() > 0) {
         logger.println(LOG_DATA, "Homebridge");
-        logger.incIntent();
+        logger.incIndent();
         auto *homebridge_remote = new Remote();
         for (auto && new_gadget_name : gadget_list) {
           const char * gadget_name = new_gadget_name.as<const char *>();
           logger.println(LOG_DATA, gadget_name);
           SH_Gadget *gadget = getGadgetForName(gadget_name);
           logger.println(LOG_DATA, gadget->getName());
-          logger.incIntent();
+          logger.incIndent();
           homebridge_remote->addGadget(gadget);
-          logger.decIntent();
+          logger.decIndent();
         }
-        logger.decIntent();
+        logger.decIndent();
         addRemote(homebridge_remote);
       }
     }
-    logger.decIntent();
+    logger.decIndent();
     return true;
   }
-
 
   void updateRemotesInt(const char *gadget_name, const char *service, const char *characteristic, int value) {
     updateRemotes(gadget_name, service, characteristic, value);
@@ -377,13 +377,13 @@ private:
     }
   }
 
-  void forwardRequest(const char *path, REQUEST_TYPE type, const char *body) {
+  void forwardRequest(REQUEST_TYPE type, const char *path, const char *body) {
     for (byte k = 0; k < remote_count; k++) {
       remotes[k]->handleRequest(path, type, body);
     }
   }
 
-  void forwardRequest(const char *path, REQUEST_TYPE type, JsonObject body) {
+  void forwardRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
     for (byte k = 0; k < remote_count; k++) {
       remotes[k]->handleRequest(path, type, body);
     }
@@ -405,7 +405,7 @@ public:
 
     logger.println(LOG_INFO, "Launching...");
     logger.println(LOG_INFO, "Loading Config...");
-    logger.incIntent();
+    logger.incIndent();
     DynamicJsonDocument json_file(2048);
     try {
       deserializeJson(json_file, json_str);
@@ -416,7 +416,7 @@ public:
     }
     JsonObject json = json_file.as<JsonObject>();
 
-    logger.decIntent();
+    logger.decIndent();
 
     initNetwork(json["network"]);
     initConnectors(json["connectors"]);
