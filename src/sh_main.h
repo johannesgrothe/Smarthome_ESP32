@@ -22,7 +22,7 @@
 #include <EEPROM.h>
 
 #include "wifi_credentials.h"
-#include "remotes/remote_manager.h"
+#include "remotes/remote.h"
 
 
 static void rebootChip(const char *reason) {
@@ -41,10 +41,6 @@ static void rebootChip(const char *reason) {
   ESP.restart();
 }
 
-static void rebootChip() {
-  rebootChip(nullptr);
-}
-
 class SH_Main {
 private:
   IR_Gadget *ir_gadget;
@@ -55,25 +51,30 @@ private:
 
   WiFiClient network_client;
 
-  Remote_Manager *remote_manager;
-
   SH_Gadget *gadgets[MAIN_MAX_GADGETS];
 
-  byte anz_gadgets = 0;
+  byte gadget_count = 0;
 
-  bool init_gadgets(JsonArray gadget_json) {
-    anz_gadgets = gadget_json.size() < MAIN_MAX_GADGETS ? gadget_json.size() : MAIN_MAX_GADGETS;
+  Remote *remotes[REMOTE_MANAGER_MAX_REMOTES]{};
+
+  byte remote_count;
+
+  bool initGadgets(JsonArray gadget_json) {
+    gadget_count = gadget_json.size() < MAIN_MAX_GADGETS ? gadget_json.size() : MAIN_MAX_GADGETS;
     logger.print(LOG_INFO, "Creating Gadgets: ");
-    logger.addln(anz_gadgets);
+    logger.addln(gadget_count);
     logger.incIntent();
     bool everything_ok = true;
-    for (unsigned int pointer = 0; pointer < anz_gadgets; pointer++) {
+    for (unsigned int pointer = 0; pointer < gadget_count; pointer++) {
       JsonObject gadget = gadget_json[pointer].as<JsonObject>();
       SH_Gadget *buffergadget = create_gadget(gadget);
+      using std::placeholders::_1;
+      using std::placeholders::_2;
+      using std::placeholders::_3;
+      using std::placeholders::_4;
+      buffergadget->initRemoteUpdate(std::bind(&SH_Main::updateRemotesBool, this, _1, _2, _3, _4),
+                                     std::bind(&SH_Main::updateRemotesInt, this, _1, _2, _3, _4));
       gadgets[pointer] = buffergadget;
-      initGadgetConnectors(buffergadget);
-      delay(500);
-      everything_ok = everything_ok && gadgets[pointer]->init();
       delay(500);
     }
     logger.decIntent();
@@ -81,7 +82,7 @@ private:
   }
 
   SH_Gadget *getGadgetForName(const char *name) {
-    for (byte k = 0; k < anz_gadgets; k++) {
+    for (byte k = 0; k < gadget_count; k++) {
       SH_Gadget *it_gadget = gadgets[k];
       if (strcmp(it_gadget->getName(), name) == 0) {
         return it_gadget;
@@ -90,16 +91,7 @@ private:
     return nullptr;
   }
 
-  void initGadgetConnectors(SH_Gadget *gadget) {
-    logger.incIntent();
-    logger.println("Initializing Remote Connectors:");
-    logger.incIntent();
-    gadget->initConnectors(mqtt_gadget);
-    logger.decIntent();
-    logger.decIntent();
-  }
-
-  void map_connectors(JsonObject connectors_json) {
+  void mapConnectors(JsonObject connectors_json) {
     // Mapping Code Connectors (IR/Radio) to the Gadgets for them to use
     logger.println("Mapping Connectors:");
     logger.incIntent();
@@ -109,8 +101,8 @@ private:
       logger.addln();
       logger.incIntent();
       JsonArray map_gadgets = connectors_json["ir"].as<JsonArray>();
-      for (byte k = 0; k < map_gadgets.size(); k++) {
-        const char *gadget_name = map_gadgets[k].as<const char *>();
+      for (auto && map_gadget : map_gadgets) {
+        const char *gadget_name = map_gadget.as<const char *>();
         SH_Gadget *found_gadget = getGadgetForName(gadget_name);
         if (found_gadget != nullptr) {
           found_gadget->setIR(ir_gadget);
@@ -128,8 +120,8 @@ private:
       logger.addln();
       logger.incIntent();
       JsonArray map_gadgets = connectors_json["radio"].as<JsonArray>();
-      for (byte k = 0; k < map_gadgets.size(); k++) {
-        const char *gadget_name = map_gadgets[k].as<const char *>();
+      for (auto && map_gadget : map_gadgets) {
+        const char *gadget_name = map_gadget.as<const char *>();
         SH_Gadget *found_gadget = getGadgetForName(gadget_name);
         if (found_gadget != nullptr) {
           found_gadget->setRadio(radio_gadget);
@@ -143,7 +135,7 @@ private:
     logger.decIntent();
   }
 
-  bool init_connectors(JsonObject connectors_json) {
+  bool initConnectors(JsonObject connectors_json) {
     logger.print("Initializing Connectors: ");
     logger.addln(connectors_json.size());
     logger.incIntent();
@@ -174,7 +166,7 @@ private:
     return true;
   }
 
-  bool init_network(JsonObject json) {
+  bool initNetwork(JsonObject json) {
     if (strcmp(json["type"].as<char *>(), "wifi") == 0) {
       logger.println("Creating Network: WiFi");
       logger.incIntent();
@@ -213,68 +205,12 @@ private:
     return false;
   }
 
-  bool initRemoteManager(JsonObject json) {
-    remote_manager = new Remote_Manager();
-    logger.println("Initializing Remote Manager");
-    logger.incIntent();
-
-    if (json["homebridge"] != nullptr) {
-      JsonArray gadget_list = json["homebridge"].as<JsonArray>();
-      if (gadget_list.size() > 0) {
-        logger.println(LOG_DATA, "Homebridge");
-        logger.incIntent();
-        auto *homebridge_remote = new Remote();
-        for (byte k = 0; k < gadget_list.size(); k++) {
-          const char * gadget_name = gadget_list[k].as<const char *>();
-          logger.println(LOG_DATA, gadget_name);
-          SH_Gadget *gadget = getGadgetForName(gadget_name);
-          logger.println(LOG_DATA, gadget->getName());
-          logger.incIntent();
-          homebridge_remote->addGadget(gadget);
-          logger.decIntent();
-        }
-        logger.decIntent();
-        remote_manager->addRemote(homebridge_remote);
-      }
-    }
-    logger.decIntent();
-  }
-
-  void test_stuff() {
+  void testStuff() {
     logger.println("Testing Stuff");
     logger.incIntent();
     //    rest_gadget->sendRequest(REQ_HTTP_POST, "text/plain", IPAddress(192, 168, 178, 111), 3005, "/irgendein/scheiss",
 //                             "pennerus maximus schmongus");
     logger.decIntent();
-  }
-
-  //TODO: move to Serial/Request Connector
-  void decodeStringCommand(const char *message, unsigned int length) {
-    std::string com = message;
-
-    if (com.rfind("_sys:", 0) == 0) {
-      logger.print("System Command Detected: ");
-      if (com.rfind("_sys:flash", 0) == 0) {
-        logger.addln("flash");
-//        char input_json[900]{};
-      } else if (com.rfind("_sys:reboot", 0) == 0) {
-        logger.addln("reboot");
-        rebootChip("Input Command");
-      } else {
-        logger.addln("<unknown>");
-      }
-    } else if (com.rfind("_dev:", 0) == 0) {
-      logger.print("Development Command Detected: ");
-      if (com.rfind("_dev:log_on", 4) == 0) {
-        logger.addln("log_on");
-        logger.activateLogging();
-      } else if (com.rfind("_dev:log_off", 4) == 0) {
-        logger.addln("log_off");
-        logger.deactivateLogging();
-      } else {
-        logger.addln("<unknown>");
-      }
-    }
   }
 
   void refreshCodeConnector(Code_Gadget *gadget) {
@@ -339,7 +275,7 @@ private:
 
   void forwardCommand(unsigned long code) {
     logger.incIntent();
-    for (byte c = 0; c < anz_gadgets; c++) {
+    for (byte c = 0; c < gadget_count; c++) {
       gadgets[c]->handleCodeUpdate(code);
     }
     logger.decIntent();
@@ -347,15 +283,15 @@ private:
 
   void forwardStringRequest(REQUEST_TYPE type, const char *path, const char *body) {
     logger.println("Forwarding as String");
-    for (byte c = 0; c < anz_gadgets; c++) {
-      gadgets[c]->handleRequest(type, path, body);
+    for (byte c = 0; c < gadget_count; c++) {
+//      gadgets[c]->handleRequest(type, path, body);
     }
   }
 
   void forwardJsonRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
     logger.println("Forwarding as JSON");
-    for (byte c = 0; c < anz_gadgets; c++) {
-      gadgets[c]->handleRequest(type, path, body);
+    for (byte c = 0; c < gadget_count; c++) {
+//      gadgets[c]->handleRequest(type, path, body);
     }
   }
 
@@ -393,6 +329,73 @@ private:
     refreshRequestConnector(serial_gadget);
   }
 
+  bool initRemotes(JsonObject json) {
+    logger.println("Initializing Remotes");
+    logger.incIntent();
+
+    if (json["homebridge"] != nullptr) {
+      JsonArray gadget_list = json["homebridge"].as<JsonArray>();
+      if (gadget_list.size() > 0) {
+        logger.println(LOG_DATA, "Homebridge");
+        logger.incIntent();
+        auto *homebridge_remote = new Remote();
+        for (auto && new_gadget_name : gadget_list) {
+          const char * gadget_name = new_gadget_name.as<const char *>();
+          logger.println(LOG_DATA, gadget_name);
+          SH_Gadget *gadget = getGadgetForName(gadget_name);
+          logger.println(LOG_DATA, gadget->getName());
+          logger.incIntent();
+          homebridge_remote->addGadget(gadget);
+          logger.decIntent();
+        }
+        logger.decIntent();
+        addRemote(homebridge_remote);
+      }
+    }
+    logger.decIntent();
+    return true;
+  }
+
+
+  void updateRemotesInt(const char *gadget_name, const char *service, const char *characteristic, int value) {
+    updateRemotes(gadget_name, service, characteristic, value);
+  }
+
+  void updateRemotesBool(const char *gadget_name, const char *service, const char *characteristic, bool value) {
+    updateRemotes(gadget_name, service, characteristic, value);
+  }
+
+  void updateRemotes(const char *gadget_name, const char *service, const char *characteristic, int value) {
+    for (byte k = 0; k < remote_count; k++) {
+      remotes[k]->updateCharacteristic(gadget_name, service, characteristic, value);
+    }
+  }
+
+  void updateRemotes(const char *gadget_name, const char *service, const char *characteristic, bool value) {
+    for (byte k = 0; k < remote_count; k++) {
+      remotes[k]->updateCharacteristic(gadget_name, service, characteristic, value);
+    }
+  }
+
+  void forwardRequest(const char *path, REQUEST_TYPE type, const char *body) {
+    for (byte k = 0; k < remote_count; k++) {
+      remotes[k]->handleRequest(path, type, body);
+    }
+  }
+
+  void forwardRequest(const char *path, REQUEST_TYPE type, JsonObject body) {
+    for (byte k = 0; k < remote_count; k++) {
+      remotes[k]->handleRequest(path, type, body);
+    }
+  }
+
+  void addRemote(Remote *new_remote) {
+    if (remote_count < (REMOTE_MANAGER_MAX_REMOTES - 1)) {
+      remotes[remote_count] = new_remote;
+      remote_count++;
+    }
+  }
+
 public:
   void init() {
 
@@ -415,13 +418,13 @@ public:
 
     logger.decIntent();
 
-    init_network(json["network"]);
-    init_connectors(json["connectors"]);
-    init_gadgets(json["gadgets"]);
-    map_connectors(json["connector-mapping"]);
-    initRemoteManager(json["remote-mapping"]);
+    initNetwork(json["network"]);
+    initConnectors(json["connectors"]);
+    initGadgets(json["gadgets"]);
+    mapConnectors(json["connector-mapping"]);
+    initRemotes(json["remote-mapping"]);
 
-    test_stuff();
+    testStuff();
     logger.print("Free Heap: ");
     logger.add(ESP.getFreeHeap());
     logger.addln();
@@ -430,7 +433,7 @@ public:
   void refresh() {
     refreshConnectors();
 
-    for (byte c = 0; c < anz_gadgets; c++) {
+    for (byte c = 0; c < gadget_count; c++) {
       gadgets[c]->refresh();
     }
   }

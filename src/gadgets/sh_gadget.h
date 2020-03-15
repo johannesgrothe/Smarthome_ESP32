@@ -31,32 +31,30 @@ private:
 
   bool remoteInitialized;
 
-  bool initialized;
-
-protected:
-  // Main Gadget
   char name[GADGET_NAME_LEN_MAX]{};
 
-  bool has_changed;
+
+
   byte mapping_count{};
-  Gadget_Type type;
+
   Mapping_Reference *mapping[MAPPING_MAX_COMMANDS]{};
-  // End Main Gadget
 
+protected:
 
-  // Remotes
+  bool initialized;
+
+  bool has_changed;
+
+  Gadget_Type type;
+
   void updateCharacteristic(const char *characteristic, int value) {
-    updateRemotesInt(name, name, characteristic, value);
+    updateRemotesInt(&name[0], &name[0], characteristic, value);
   }
 
   void updateCharacteristic(const char *characteristic, bool value) {
-    updateRemotesBool(name, name, characteristic, value);
+    updateRemotesBool(&name[0], &name[0], characteristic, value);
   }
 
-  virtual void handleCharacteristicUpdate(const char *characteristic, bool value) {}
-  // Remotes End
-
-  // Basic Code Connector
   const char *findMethodForCode(unsigned long code) {
     for (byte k = 0; k < mapping_count; k++) {
       if (mapping[k]->containsCode(code)) {
@@ -69,124 +67,21 @@ protected:
     return nullptr;
   }
 
-  virtual void applyMappingMethod(const char *method) {}
-  // End Basic Code Connector
-
-  // Homebridge Connector
-  char homebridge_service_type[HOMEBRIDGE_SERVICE_TYPE_LEN_MAX]{};
-  MQTT_Gadget *homebridge_mqtt_gadget;
-
-  bool registerHomebridgeGadget() {
-    char reg_str[HOMEBRIDGE_REGISTER_STR_MAX_LEN]{};
-    char characteristic_buffer[HOMEBRIDGE_REGISTER_STR_MAX_LEN - 80]{};
-    if (getHomebridgeCharacteristics(&characteristic_buffer[0])) {
-      snprintf(reg_str, HOMEBRIDGE_REGISTER_STR_MAX_LEN, R"({"name": "%s", "service_name": "%s", "service": "%s", %s})",
-               name, name, homebridge_service_type, characteristic_buffer);
-    } else {
-      sprintf(reg_str, R"({"name": "%s", "service_name": "%s", "service": "%s"})", name, name, homebridge_service_type);
-    }
-    return homebridge_mqtt_gadget->publishMessageAndWaitForAnswer("homebridge/to/add", &reg_str[0]);
-  }
-
-  bool unregisterHomebridgeGadget() {
-    char buf_msg[HOMEBRIDGE_UNREGISTER_STR_MAX_LEN]{};
-    snprintf(&buf_msg[0], HOMEBRIDGE_UNREGISTER_STR_MAX_LEN, R"({"name": "%s"})", name);
-    return homebridge_mqtt_gadget->publishMessageAndWaitForAnswer("homebridge/to/remove", &buf_msg[0]);
-  }
-
-  void initHomebridgeConnector(MQTT_Gadget *new_gadget) {
-    logger.println("Homebridge:");
-    logger.incIntent();
-    setHomebridgeMQTTGadget(new_gadget);
-    if (unregisterHomebridgeGadget())
-      logger.println(LOG_DATA, "Unregistered old gadget");
-    if (registerHomebridgeGadget())
-      logger.println(LOG_DATA, "Registered new gadget");
-    logger.decIntent();
-  }
-
-  void updateHomebridge(const char *data) {
-    homebridge_mqtt_gadget->publishMessage("homebridge/to/set", data);
-  }
-
-  void decodeHomebridgeCommand(JsonObject data) {
-    if (data["name"] != nullptr && data["characteristic"] != nullptr && data["value"] != nullptr) {
-      if (strcmp(name, data["name"].as<const char *>()) == 0) {
-        int value;
-        const char *characteristc = data["characteristic"].as<const char *>();
-        logger.printname(name, "-> ");
-        logger.addln(characteristc);
-        if (data["value"] == "true")
-          value = 1;
-        else if (data["value"] == "false")
-          value = 0;
-        else
-          value = data["value"].as<int>();
-        logger.incIntent();
-        applyHomebridgeCommand(characteristc, value);
-        logger.decIntent();
-      }
-    }
-  }
-
-  void setHomebridgeServiceType(const char *service_type) {
-    strncpy(&homebridge_service_type[0], service_type, HOMEBRIDGE_SERVICE_TYPE_LEN_MAX);
-  }
-
-  void setHomebridgeMQTTGadget(MQTT_Gadget *new_gadget) {
-    logger.println(LOG_DATA, "Setting MQTT Gadget");
-    homebridge_mqtt_gadget = new_gadget;
-  }
-
-  void updateHomebridgeCharacteristic(const char *characteristic, int value, bool do_update = true) {
-    if (characteristic != nullptr && do_update) {
-      char update_str[HOMEBRIDGE_UPDATE_STR_LEN_MAX]{};
-      sprintf(&update_str[0],
-              "{\"name\":\"%s\",\"service_name\":\"%s\",\"service_type\":\"%s\",\"characteristic\":\"%s\",\"value\":%d}",
-              name,
-              name,
-              &homebridge_service_type[0],
-              characteristic,
-              value);
-      updateHomebridge(&update_str[0]);
-    }
-  }
-
-  void updateHomebridgeCharacteristic(const char *characteristic, bool value, bool do_update = true) {
-    if (characteristic != nullptr && do_update) {
-      char bool_str[6]{};
-      if (value)
-        strcpy(bool_str, "true");
-      else
-        strcpy(bool_str, "false");
-      char update_str[HOMEBRIDGE_UPDATE_STR_LEN_MAX]{};
-      sprintf(&update_str[0],
-              "{\"name\":\"%s\",\"service_name\":\"%s\",\"service_type\":\"%s\",\"characteristic\":\"%s\",\"value\":%s}",
-              name,
-              name,
-              &homebridge_service_type[0],
-              characteristic,
-              &bool_str[0]);
-      updateHomebridge(&update_str[0]);
-    }
-  }
-
-  virtual bool getHomebridgeCharacteristics(char *buffer) { return false; }
-
-  virtual void applyHomebridgeCommand(const char *characteristic, int value) {};
-  // End Homebridge Connector
+  virtual void handleMethodUpdate(const char *method) {}
 
 public:
   SH_Gadget() :
     remoteInitialized(false),
     name("default"),
     initialized(false),
-    has_changed(true) {};
+    has_changed(true),
+    type(None) {};
 
-  explicit SH_Gadget(JsonObject gadget) :
+  explicit SH_Gadget(JsonObject gadget, Gadget_Type gadget_type) :
     remoteInitialized(false),
     initialized(false),
-    has_changed(true) {
+    has_changed(true),
+    type(gadget_type) {
     if (gadget["name"] != nullptr) {
       byte namelen =
         strlen(gadget["name"].as<const char *>()) < GADGET_NAME_LEN_MAX ? strlen(gadget["name"].as<const char *>())
@@ -230,16 +125,22 @@ public:
 
   const char *getName() { return &name[0]; };
 
-  virtual bool getCharacteristics(const char *caracteristic_str) {};
+  virtual bool getCharacteristics(char *characteristic_str) { return false; };
 
   bool isInitialized() { return initialized; };
 
   void handleCodeUpdate(unsigned long code) {
     const char *method_name = findMethodForCode(code);
     logger.incIntent();
-    applyMappingMethod(method_name);
+    handleMethodUpdate(method_name);
     logger.decIntent();
   }
+
+  virtual void handleCharacteristicUpdate(const char *characteristic, int value) {};
+
+  void handleCharacteristicUpdate(const char *characteristic, bool value) {
+    handleCharacteristicUpdate(characteristic, (int) value);
+  };
 
   virtual void refresh() {}
 

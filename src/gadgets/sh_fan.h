@@ -14,22 +14,19 @@ protected:
 public:
 
   explicit SH_Fan(JsonObject gadget) :
-    SH_Gadget(gadget),
+    SH_Gadget(gadget, Fan),
     rotation_speed(0),
     last_rotation_speed(1) {
-    setHomebridgeServiceType("Fan");
     if (gadget["levels"] != nullptr) {
       levels = (byte) gadget["levels"].as<unsigned int>();
     }
   };
 
   explicit SH_Fan(JsonObject gadget, byte levels_count) :
-    SH_Gadget(gadget),
+    SH_Gadget(gadget, Fan),
     rotation_speed(0),
     last_rotation_speed(1),
-    levels(levels_count) {
-    setHomebridgeServiceType("Fan");
-  };
+    levels(levels_count) {};
 
   // Status
   void toggleStatus() {
@@ -49,13 +46,17 @@ public:
       if (rotation_speed == 0) {
         rotation_speed = last_rotation_speed;
       }
-      updateHomebridgeCharacteristic("On", true, remote_update);
-      updateHomebridgeCharacteristic("RotationSpeed", rotation_speed, remote_update);
+      if (remote_update) {
+        updateCharacteristic("On", true);
+        updateCharacteristic("RotationSpeed", rotation_speed);
+      }
     } else {
       last_rotation_speed = rotation_speed;
       rotation_speed = 0;
-      updateHomebridgeCharacteristic("On", false, remote_update);
-      updateHomebridgeCharacteristic("RotationSpeed", rotation_speed, remote_update);
+      if (remote_update) {
+        updateCharacteristic("On", false);
+        updateCharacteristic("RotationSpeed", rotation_speed);
+      }
     }
     has_changed = true;
   };
@@ -77,12 +78,16 @@ public:
     if (new_speed == 0) {
       last_rotation_speed = rotation_speed;
       rotation_speed = 0;
-      updateHomebridgeCharacteristic("On", true, remote_update);
-      updateHomebridgeCharacteristic("RotationSpeed", rotation_speed, remote_update);
+      if (remote_update) {
+        updateCharacteristic("On", true);
+        updateCharacteristic("RotationSpeed", rotation_speed);
+      }
     } else {
       rotation_speed = new_speed;
-      updateHomebridgeCharacteristic("On", true, remote_update);
-      updateHomebridgeCharacteristic("RotationSpeed", rotation_speed, remote_update);
+      if (remote_update) {
+        updateCharacteristic("On", true);
+        updateCharacteristic("RotationSpeed", rotation_speed);
+      }
     }
     has_changed = true;
   }
@@ -91,7 +96,7 @@ public:
   }
 
 //  Homebridge-Connector
-  void applyHomebridgeCommand(const char *characteristic, int value) override {
+  void handleCharacteristicUpdate(const char *characteristic, int value) override {
     if (strcmp(characteristic, "On") == 0) {
       setStatus((bool) value, false);
     } else if (strcmp(characteristic, "RotationSpeed") == 0) {
@@ -99,7 +104,7 @@ public:
     }
   }
 
-  bool getHomebridgeCharacteristics(char *buffer) override {
+  bool getCharacteristics(char *buffer) override {
     byte steps = (FAN_ROTATION_SPEED_MAX / levels);
     sprintf(buffer, R"( "RotationSpeed": {"minValue": 0, "maxValue": %d, "minStep": %d})", FAN_ROTATION_SPEED_MAX, steps);
     return true;
@@ -107,7 +112,7 @@ public:
   // End of Homebridge-Connector
 
   // Code-Connector
-  virtual void applyMappingMethod(const char *method) override {
+  virtual void handleMethodUpdate(const char *method) override {
     if (method != nullptr) {
       if (strcmp(method, "toggleStatus") == 0) {
         toggleStatus();

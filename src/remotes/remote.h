@@ -14,18 +14,9 @@ private:
 
   byte gadget_count;
 
-  virtual bool registerGadget(const char *gadget_name, Gadget_Type gadget_type, const char *characteristics) {};
+  virtual bool registerGadget(const char *gadget_name, Gadget_Type gadget_type, const char *characteristics) { return false; };
 
-  virtual bool removeGadget(const char *gadget_name) {};
-
-  void updateCharacteristicInt(const char *gadget_name, const char *service, const char *characteristic, int value) {
-    updateCharacteristic(gadget_name, service, characteristic, value);
-  };
-
-  void updateCharacteristicBool(const char *gadget_name, const char *service, const char *characteristic, bool value) {
-    updateCharacteristic(gadget_name, service, characteristic, value);
-  };
-
+  virtual bool removeGadget(const char *gadget_name) { return false; };
 
 public:
   Remote() :

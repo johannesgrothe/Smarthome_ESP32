@@ -71,3 +71,35 @@ public:
 };
 
 #endif //SERIAL_CONNECTOR_H
+
+#if false
+
+void decodeStringCommand(const char *message, unsigned int length) {
+    std::string com = message;
+
+    if (com.rfind("_sys:", 0) == 0) {
+      logger.print("System Command Detected: ");
+      if (com.rfind("_sys:flash", 0) == 0) {
+        logger.addln("flash");
+//        char input_json[900]{};
+      } else if (com.rfind("_sys:reboot", 0) == 0) {
+        logger.addln("reboot");
+        rebootChip("Input Command");
+      } else {
+        logger.addln("<unknown>");
+      }
+    } else if (com.rfind("_dev:", 0) == 0) {
+      logger.print("Development Command Detected: ");
+      if (com.rfind("_dev:log_on", 4) == 0) {
+        logger.addln("log_on");
+        logger.activateLogging();
+      } else if (com.rfind("_dev:log_off", 4) == 0) {
+        logger.addln("log_off");
+        logger.deactivateLogging();
+      } else {
+        logger.addln("<unknown>");
+      }
+    }
+  }
+
+#endif

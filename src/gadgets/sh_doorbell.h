@@ -19,26 +19,24 @@ protected:
 public:
 
   explicit SH_Doorbell(JsonObject gadget) :
-    SH_Gadget(gadget) {
-    setHomebridgeServiceType("Doorbell");
-  };
+    SH_Gadget(gadget, Doorbell) {};
 
   void triggerEvent() {
     has_changed = true;
 //    updateHomebridgeCharacteristic("ProgrammableSwitchEvent", false);
-    updateHomebridgeCharacteristic("ProgrammableSwitchEvent", true);
+    updateCharacteristic("ProgrammableSwitchEvent", true);
   }
 
   void print() override {};
 
 //  Homebridge-Connector
-  void applyHomebridgeCommand(const char *characteristic, int value) override {};
+  void handleCharacteristicUpdate(const char *characteristic, int value) override {};
 
-  bool getHomebridgeCharacteristics(char *buffer) override {return false;};
+  bool getCharacteristics(char *buffer) override {return false;};
   // End of Homebridge-Connector
 
   // Code-Connector
-  virtual void applyMappingMethod(const char *method) override {
+  virtual void handleMethodUpdate(const char *method) override {
     if (method != nullptr) {
       if (strcmp(method, "triggerDoorbell") == 0) {
         triggerEvent();

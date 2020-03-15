@@ -95,11 +95,11 @@ if you're using CLion IDE, open Project Root in Terminal (or use CLions own Term
 
 ### Code-Command
 ```
-void applyMappingMethod(const char *method)
+void handleMethodUpdate(const char *method)
 ```
 
 ### Homebridge
 ```
 bool getHomebridgeCharacteristics(char *buffer)
-void applyHomebridgeCommand(const char *characteristic, int value)
+void handleCharacteristicUpdate(const char *characteristic, int value)
 ```
