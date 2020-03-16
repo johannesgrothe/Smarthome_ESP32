@@ -30,7 +30,11 @@ public:
   void print() override {};
 
 //  Homebridge-Connector
-  void handleCharacteristicUpdate(const char *characteristic, int value) override {};
+  void handleCharacteristicUpdate(const char *characteristic, int value) override {
+    logger.print(getName(), "Updating Characteristic: '");
+    logger.add(characteristic);
+    logger.addln("'");
+  };
 
   bool getCharacteristics(char *buffer) override {return false;};
   // End of Homebridge-Connector

@@ -14,12 +14,27 @@ private:
 
   byte gadget_count;
 
+
   virtual bool
   registerGadget(const char *gadget_name, Gadget_Type gadget_type, const char *characteristics) { return false; };
 
   virtual bool removeGadget(const char *gadget_name) { return false; };
 
+  bool lock_updates;
+
 protected:
+
+  bool updatesAreLocked() { return lock_updates; }
+
+  void lockUpdates() {
+    logger.println("Locking Updates");
+    lock_updates = true;
+  }
+
+  void unlockUpdates() {
+    logger.println("Unlocking Updates");
+    lock_updates = false;
+  }
 
   SH_Gadget *getGadgetForName(const char *name) {
     for (byte k = 0; k < gadget_count; k++) {
@@ -34,7 +49,8 @@ protected:
 
 public:
   Remote() :
-    gadget_count(0) {};
+    gadget_count(0),
+    lock_updates(false) {};
 
   virtual void
   updateCharacteristic(const char *gadget_name, const char *service, const char *characteristic, int value) {};

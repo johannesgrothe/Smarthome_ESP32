@@ -22,7 +22,7 @@
 #include <EEPROM.h>
 
 #include "wifi_credentials.h"
-#include "remotes/remote.h"
+#include "remotes/homebridge_remote.h"
 
 
 static void rebootChip(const char *reason) {
@@ -289,7 +289,9 @@ private:
   }
 
   void handleJsonRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
-    logger.println("Forwarding Json-Request  to Remotes:");
+    logger.print("Forwarding Json-Request to ");
+    logger.add(remote_count);
+    logger.addln(" Remotes:");
     logger.incIndent();
     forwardRequest(type, path, body);
     logger.decIndent();
@@ -338,10 +340,9 @@ private:
       if (gadget_list.size() > 0) {
         logger.println(LOG_DATA, "Homebridge");
         logger.incIndent();
-        auto *homebridge_remote = new Remote();
+        auto *homebridge_remote = new Homebridge_Remote(mqtt_gadget);
         for (auto && new_gadget_name : gadget_list) {
           const char * gadget_name = new_gadget_name.as<const char *>();
-          logger.println(LOG_DATA, gadget_name);
           SH_Gadget *gadget = getGadgetForName(gadget_name);
           logger.println(LOG_DATA, gadget->getName());
           logger.incIndent();

@@ -12,7 +12,6 @@ private:
   bool registerGadget(const char *gadget_name, Gadget_Type gadget_type, const char *characteristics) override {
     removeGadget(gadget_name);
     char reg_str[HOMEBRIDGE_REGISTER_STR_MAX_LEN]{};
-    char characteristic_buffer[HOMEBRIDGE_REGISTER_STR_MAX_LEN - 80]{};
     const char *service_name;
     if (gadget_type == Lightbulb)
       service_name = "Lightbulb";
@@ -26,7 +25,7 @@ private:
     }
     if (characteristics != nullptr) {
       snprintf(reg_str, HOMEBRIDGE_REGISTER_STR_MAX_LEN, R"({"name": "%s", "service_name": "%s", "service": "%s", %s})",
-               gadget_name, gadget_name, service_name, characteristic_buffer);
+               gadget_name, gadget_name, service_name, characteristics);
     } else {
       sprintf(reg_str, R"({"name": "%s", "service_name": "%s", "service": "%s"})", gadget_name, gadget_name,
               service_name);
@@ -47,6 +46,7 @@ public:
 
   void
   updateCharacteristic(const char *gadget_name, const char *service, const char *characteristic, int value) override {
+    if (updatesAreLocked()) return;
     SH_Gadget *target_gadget = getGadgetForName(gadget_name);
     if (characteristic != nullptr && target_gadget != nullptr) {
       char update_str[HOMEBRIDGE_UPDATE_STR_LEN_MAX]{};
@@ -63,6 +63,7 @@ public:
 
   void
   updateCharacteristic(const char *gadget_name, const char *service, const char *characteristic, bool value) override {
+    if (updatesAreLocked()) return;
     SH_Gadget *target_gadget = getGadgetForName(gadget_name);
     if (characteristic != nullptr && target_gadget != nullptr) {
       const char *bool_str;
@@ -82,7 +83,9 @@ public:
     }
   };
 
-  void handleRequest(const char *path, REQUEST_TYPE type, const char *body) override {};
+  void handleRequest(const char *path, REQUEST_TYPE type, const char *body) override {
+    logger.println(LOG_ERR, "Homebridge-Remote cannot handle String Bodys.");
+  };
 
   void handleRequest(const char *path, REQUEST_TYPE type, JsonObject body) override {
     if (type == REQ_MQTT && strcmp(path, "homebridge/from/set") == 0) {
@@ -95,14 +98,10 @@ public:
           logger.add("/");
           logger.addln(characteristc);
           logger.incIndent();
-          if (body["value"] == "true")
-            target_gadget->handleCharacteristicUpdate(characteristc, true);
-          else if (body["value"] == "false")
-            target_gadget->handleCharacteristicUpdate(characteristc, false);
-          else {
-            int value = body["value"].as<int>();
-            target_gadget->handleCharacteristicUpdate(characteristc, true);
-          }
+          lockUpdates();
+          int value = body["value"].as<int>();
+          target_gadget->handleCharacteristicUpdate(characteristc, value);
+          unlockUpdates();
           logger.decIndent();
         } else {
           logger.add("Unknown Gadget");
@@ -112,8 +111,6 @@ public:
       logger.println("System / Homebridge-Remote", "Received uncomplete Request");
     }
   }
-};
-
 };
 
 #endif //__Homebridge_Remote__

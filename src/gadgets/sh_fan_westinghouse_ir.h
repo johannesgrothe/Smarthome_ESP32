@@ -42,6 +42,7 @@ public:
       byte level = getLevel();
       logger.print(getName(), "has changed: Level ");
       logger.addln(level);
+      logger.incIndent();
       if (level == 0) {
         sendRawIR(level_0, 95);
       } else if (level == 1) {
@@ -52,6 +53,7 @@ public:
       } else if (level == 3) {
         sendRawIR(level_3, 95);
       }
+      logger.decIndent();
     }
     has_changed = false;
   }

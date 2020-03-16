@@ -41,22 +41,18 @@ public:
     return (rotation_speed / (FAN_ROTATION_SPEED_MAX / levels));
   }
 
-  void setStatus(bool new_status, bool remote_update = true) {
+  void setStatus(bool new_status) {
     if (new_status) {
       if (rotation_speed == 0) {
         rotation_speed = last_rotation_speed;
       }
-      if (remote_update) {
-        updateCharacteristic("On", true);
-        updateCharacteristic("RotationSpeed", rotation_speed);
-      }
+      updateCharacteristic("On", true);
+      updateCharacteristic("RotationSpeed", rotation_speed);
     } else {
       last_rotation_speed = rotation_speed;
       rotation_speed = 0;
-      if (remote_update) {
-        updateCharacteristic("On", false);
-        updateCharacteristic("RotationSpeed", rotation_speed);
-      }
+      updateCharacteristic("On", false);
+      updateCharacteristic("RotationSpeed", rotation_speed);
     }
     has_changed = true;
   };
@@ -73,21 +69,17 @@ public:
     setRotationSpeed(getRotationSpeed() - (FAN_ROTATION_SPEED_MAX / levels));
   }
 
-  void setRotationSpeed(byte new_speed, bool remote_update = true) {
+  void setRotationSpeed(byte new_speed) {
     if (new_speed > FAN_ROTATION_SPEED_MAX) new_speed = FAN_ROTATION_SPEED_MAX;
     if (new_speed == 0) {
       last_rotation_speed = rotation_speed;
       rotation_speed = 0;
-      if (remote_update) {
-        updateCharacteristic("On", true);
-        updateCharacteristic("RotationSpeed", rotation_speed);
-      }
+      updateCharacteristic("On", true);
+      updateCharacteristic("RotationSpeed", rotation_speed);
     } else {
       rotation_speed = new_speed;
-      if (remote_update) {
-        updateCharacteristic("On", true);
-        updateCharacteristic("RotationSpeed", rotation_speed);
-      }
+      updateCharacteristic("On", true);
+      updateCharacteristic("RotationSpeed", rotation_speed);
     }
     has_changed = true;
   }
@@ -97,16 +89,20 @@ public:
 
 //  Homebridge-Connector
   void handleCharacteristicUpdate(const char *characteristic, int value) override {
+    logger.print(getName(), "Updating Characteristic: '");
+    logger.add(characteristic);
+    logger.addln("'");
     if (strcmp(characteristic, "On") == 0) {
-      setStatus((bool) value, false);
+      setStatus((bool) value);
     } else if (strcmp(characteristic, "RotationSpeed") == 0) {
-      setRotationSpeed(value, false);
+      setRotationSpeed(value);
     }
   }
 
   bool getCharacteristics(char *buffer) override {
     byte steps = (FAN_ROTATION_SPEED_MAX / levels);
-    sprintf(buffer, R"( "RotationSpeed": {"minValue": 0, "maxValue": %d, "minStep": %d})", FAN_ROTATION_SPEED_MAX, steps);
+    sprintf(buffer, R"( "RotationSpeed": {"minValue": 0, "maxValue": %d, "minStep": %d})", FAN_ROTATION_SPEED_MAX,
+            steps);
     return true;
   }
   // End of Homebridge-Connector

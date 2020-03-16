@@ -128,6 +128,9 @@ public:
   }
 
   void handleCharacteristicUpdate(const char *characteristic, int value) override {
+    logger.print(getName(), "Updating Characteristic: '");
+    logger.add(characteristic);
+    logger.addln("'");
     if (strcmp(characteristic, "On") == 0) {
       setStatus((bool) value);
     } else if (strcmp(characteristic, "Brightness") == 0) {
