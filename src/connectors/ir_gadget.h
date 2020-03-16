@@ -26,7 +26,7 @@ public:
   explicit IR_Gadget(JsonObject data) :
     Code_Gadget(data) {
     logger.println("Creating IR-Gadget");
-    logger.incIntent();
+    logger.incIndent();
     bool everything_ok = true;
     if (data["recv_pin"] != nullptr) {
       uint8_t r_pin = data["recv_pin"].as<int>();
@@ -49,7 +49,7 @@ public:
       logger.println(LOG_ERR, "'send_pin' nicht spezifiziert.");
     }
     code_gadget_is_ready = everything_ok;
-    logger.decIntent();
+    logger.decIndent();
   };
 
   void refresh() override {
@@ -125,7 +125,7 @@ public:
   };
 
   bool sendRawIR(uint16_t raw_data[], uint8_t content_length) {
-    logger.printname("System / IR", "Sending Raw Command, 38kHz, ");
+    logger.print("System / IR", "Sending Raw Command, 38kHz, ");
     blaster->sendRaw(raw_data, content_length, 38);
     logger.add(content_length);
     logger.addln(" Blocks.");
@@ -134,7 +134,7 @@ public:
   }
 
   bool sendIR(unsigned long command, uint8_t com_type) {
-    logger.printname("System / IR", "Sending: ");
+    logger.print("System / IR", "Sending: ");
     switch (com_type) {
       case NEC:
         blaster->sendNEC(command);

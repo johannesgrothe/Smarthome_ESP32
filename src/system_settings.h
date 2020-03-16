@@ -26,6 +26,9 @@
 #define HOMEBRIDGE_UPDATE_STR_LEN_MAX 240
 #define HOMEBRIDGE_SERVICE_TYPE_LEN_MAX 25
 
+// Remotes
+#define REMOTE_MANAGER_MAX_REMOTES 3
+
 const char json_str[] = R"(
 {
   "gadgets": [
@@ -120,6 +123,15 @@ const char json_str[] = R"(
       "Deckenlampe"
     ],
     "radio": []
+  },
+  "remote-mapping": {
+    "homebridge": [
+      "Testlampe NP",
+      "Testlampe 2",
+      "TestFan",
+      "Deckenlampe"
+    ],
+    "rest": []
   }
 }
 )";

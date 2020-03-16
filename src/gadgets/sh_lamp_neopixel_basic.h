@@ -52,7 +52,7 @@ public:
 
   void refresh() override {
     if (has_changed) {
-//      logger.printname(name, "has changed.\n");
+//      logger.print(name, "has changed.\n");
       uint8_t rgb[3];
       getColor(&rgb[0]);
       setLEDColor(rgb[0], rgb[1], rgb[2]);
@@ -65,17 +65,8 @@ public:
     has_changed = false;
   };
 
-  bool init() override {
-    // pinMode(pin, OUTPUT);
-//    led_stripe = Adafruit_NeoPixel(len, pin, NEO_GRB + NEO_KHZ800);
-//    led_stripe.begin();
-//    led_stripe.clear();
-//    setColor(0, 0, 0xFF);
-    return true;
-  }
-
   void setLEDColor(uint8_t r, uint8_t g, uint8_t b) {
-    Serial.printf("[%s] Setting Color: (%d, %d, %d)\n", name, r, g, b);
+    Serial.printf("[%s] Setting Color: (%d, %d, %d)\n", getName(), r, g, b);
     RgbColor clr(r, g, b);
     for (uint16_t k = 0; k < len; k++) {
 //      led_stripe->SetPixelColor(k, clr);

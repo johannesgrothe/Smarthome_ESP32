@@ -37,7 +37,7 @@ public:
 
   void refresh() override {
     if (has_changed) {
-      logger.println(name, "has changed.");
+      logger.println(getName(), "has changed.");
     }
     has_changed = false;
     if (digitalRead(switch_pin) == HIGH) {

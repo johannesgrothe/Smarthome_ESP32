@@ -39,7 +39,7 @@ public:
 
   void refresh() override {
     if (has_changed) {
-      logger.println(name, "has changed.");
+      logger.println(getName(), "has changed.");
       digitalWrite(pin, getStatus());
     }
     has_changed = false;

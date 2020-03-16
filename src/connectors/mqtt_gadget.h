@@ -98,7 +98,7 @@ public:
     Request_Gadget() {
     logger.println("Creating MQTT Gadget");
     networkClient = WiFiClient();
-    logger.incIntent();
+    logger.incIndent();
     mqttClient = new PubSubClient(networkClient);
     bool everything_ok = true;
     // Reads the IP from the JSON
@@ -161,7 +161,7 @@ public:
     }
 
     connect_mqtt();
-    logger.decIntent();
+    logger.decIndent();
     request_gadget_is_ready = everything_ok;
   };
 
@@ -191,7 +191,7 @@ public:
     if (!request_gadget_is_ready) {
       return false;
     }
-    logger.printname("System / MQTT", "publishing on '");
+    logger.print("System / MQTT", "publishing on '");
     logger.add(topic);
     if (wait_for_answer)
       logger.add("': ");

@@ -18,46 +18,44 @@ protected:
 
   float hue;
 
-  SH_LAMP_TYPE type;
+  SH_LAMP_TYPE lamp_type;
 
 public:
 
   explicit SH_Lamp(JsonObject gadget) :
-    SH_Gadget(gadget),
+    SH_Gadget(gadget, Lightbulb),
     lightness(100.0),
     default_lightness(100.0),
     min_lightness(35),
     saturation(0),
     hue(0) {
     if (gadget["lamp_type"] != nullptr) {
-      type = (SH_LAMP_TYPE) gadget["lamp_type"].as<uint8_t>();
+      lamp_type = (SH_LAMP_TYPE) gadget["lamp_type"].as<uint8_t>();
       logger.print("Type: ");
       logger.addln(type);
     } else {
-      type = ON_OFF;
+      lamp_type = ON_OFF;
       logger.print(LOG_WARN, "No Type found.");
     }
-    setHomebridgeServiceType("Lightbulb");
   };
 
-  SH_Lamp(JsonObject gadget, SH_LAMP_TYPE lamp_type) :
-    SH_Gadget(gadget),
+  SH_Lamp(JsonObject gadget, SH_LAMP_TYPE sh_lamp_type) :
+    SH_Gadget(gadget, Lightbulb),
     lightness(100.0),
     default_lightness(100.0),
     min_lightness(35),
     saturation(0),
     hue(0),
-    type(lamp_type) {
+    lamp_type(sh_lamp_type) {
     logger.print("Type: ");
     logger.addln(type);
-    setHomebridgeServiceType("Lightbulb");
   };
 
   // Lightness
   void setLightness(float new_lightness) {
     lightness = new_lightness;
     has_changed = true;
-    updateHomebridgeCharacteristic("Brightness", (int) lightness);
+    updateCharacteristic("Brightness", (int) lightness);
   };
 
   float getLightness() {
@@ -88,7 +86,7 @@ public:
   void setHue(float new_hue) {
     hue = new_hue;
     has_changed = true;
-    updateHomebridgeCharacteristic("Hue", (int) hue);
+    updateCharacteristic("Hue", (int) hue);
   }
 
   float getHue() {
@@ -115,22 +113,24 @@ public:
       }
     }
     has_changed = true;
-    updateHomebridgeCharacteristic("On", new_status);
+    updateCharacteristic("On", new_status);
   };
 
   void print() override {
-    Serial.printf("[%s] Status: %d", name, getStatus());
-    if (type == CLR_BRI || type == CLR_ONLY) {
+    Serial.printf("[%s] Status: %d", getName(), getStatus());
+    if (lamp_type == CLR_BRI || lamp_type == CLR_ONLY) {
       Serial.printf(", Hue: %.2f, Saturation: %.2f", hue, saturation);
     }
-    if (type == CLR_BRI || type == BRI_ONLY) {
+    if (lamp_type == CLR_BRI || lamp_type == BRI_ONLY) {
       Serial.printf(", Lightness: %.2f", lightness);
     }
     Serial.println("");
   }
 
-//  Homebridge-Connector
-  void applyHomebridgeCommand(const char *characteristic, int value) override {
+  void handleCharacteristicUpdate(const char *characteristic, int value) override {
+    logger.print(getName(), "Updating Characteristic: '");
+    logger.add(characteristic);
+    logger.addln("'");
     if (strcmp(characteristic, "On") == 0) {
       setStatus((bool) value);
     } else if (strcmp(characteristic, "Brightness") == 0) {
@@ -140,28 +140,26 @@ public:
     }
   }
 
-  bool getHomebridgeCharacteristics(char *buffer) override {
+  bool getCharacteristics(char *characteristic_str) override {
     switch (type) {
       case ON_OFF :
         return false;
       case BRI_ONLY :
-        strcpy(buffer, R"("Brightness": "default")");
+        strcpy(characteristic_str, R"("Brightness": "default")");
         break;
       case CLR_ONLY :
-        strcpy(buffer, R"("Hue": "default", "Saturation": "default")");
+        strcpy(characteristic_str, R"("Hue": "default", "Saturation": "default")");
         break;
       case CLR_BRI :
-        strcpy(buffer, R"("Brightness": "default", "Hue": "default", "Saturation": "default")");
+        strcpy(characteristic_str, R"("Brightness": "default", "Hue": "default", "Saturation": "default")");
         break;
       default :
         return false;
     }
     return true;
   }
-  // End of Homebridge-Connector
 
-  // Code-Connector
-  virtual void applyMappingMethod(const char *method) override {
+  virtual void handleMethodUpdate(const char *method) override {
     if (method != nullptr) {
       if (strcmp(method, "toggleStatus") == 0) {
         toggleStatus();
@@ -172,7 +170,6 @@ public:
       }
     }
   }
-  // End of Code-Connector
 };
 
 #endif //__SH_Lamp__

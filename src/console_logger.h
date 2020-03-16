@@ -15,11 +15,11 @@ enum LOG_TYPE {
 class Console_Logger {
 protected:
   char indent_char;
-  byte indent;
-  byte indent_len;
+  byte indent{};
+  byte indent_len{};
   bool logging_active;
 
-  void print_intent() {
+  void printIndent() {
     for (byte k = 0; k < indent; k++) {
       for (byte j = 0; j < indent_len; j++) {
         Serial.print(indent_char);
@@ -27,12 +27,12 @@ protected:
     }
   }
 
-  void print_beginning_name(const char *name) {
-    print_intent();
+  void printBeginningName(const char *name) {
+    printIndent();
     Serial.printf("[%s] ", name);
   }
 
-  void print_beginning(LOG_TYPE type) {
+  void printBeginning(LOG_TYPE type) {
     char pref[PREF_LEN]{};
     switch (type) {
       case LOG_INFO:
@@ -56,7 +56,7 @@ protected:
         break;
     }
 
-    print_intent();
+    printIndent();
 
     Serial.print(pref);
     Serial.print(' ');
@@ -80,26 +80,26 @@ public:
     logging_active = false;
   }
 
-  void incIntent() {
+  void incIndent() {
     indent++;
   };
 
-  void decIntent() {
+  void decIndent() {
     if (indent > 0)
       indent--;
   };
 
-  void printname(const char *name, const char *message) {
+  void print(const char *name, const char *message) {
     if (!logging_active)
       return;
-    print_beginning_name(name);
+    printBeginningName(name);
     Serial.print(message);
   }
 
   void println(const char *name, const char *message) {
     if (!logging_active)
       return;
-    printname(name, message);
+    print(name, message);
     Serial.println();
   }
 
@@ -112,7 +112,7 @@ public:
   void print(LOG_TYPE type, const char *message) {
     if (!logging_active)
       return;
-    print_beginning(type);
+    printBeginning(type);
     Serial.print(message);
   }
 
@@ -172,7 +172,7 @@ public:
   void printf(LOG_TYPE type, const char *message, va_list arglist) {
     const short str_len = strlen(message);
     char buffer[str_len]{};
-    print_beginning(type);
+    printBeginning(type);
     vsnprintf(buffer, str_len, message, arglist);
     Serial.printf(buffer);
   }
