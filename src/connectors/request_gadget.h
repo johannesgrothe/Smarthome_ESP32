@@ -114,22 +114,17 @@ public:
 
   virtual void
   sendRequest(REQUEST_TYPE req_type, const char *content_type, IPAddress ip, int port, const char *req_path,
-              const char *req_body) {
-  }
+              const char *req_body) = 0;
 
   virtual void
   sendRequest(REQUEST_TYPE req_type, const char *content_type, IPAddress ip, int port, const char *req_path,
-              JsonObject req_body) {
-  }
+              JsonObject req_body) = 0;
 
-  virtual void sendAnswer(const char *req_body, int status_code) {
-  }
+  virtual void sendAnswer(const char *req_body, int status_code) = 0;
 
-  virtual void sendAnswer(JsonObject req_body, int status_code) {
-  }
+  virtual void sendAnswer(JsonObject req_body, int status_code) = 0;
 
-  virtual void refresh() {
-  }
+  virtual void refresh() = 0;
 };
 
 #endif //__Request_Gadget__

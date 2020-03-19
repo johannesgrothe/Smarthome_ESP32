@@ -123,7 +123,7 @@ public:
 
   const char *getName() { return &name[0]; };
 
-  virtual bool getCharacteristics(char *characteristic_str) { return false; };
+  virtual bool getCharacteristics(char *characteristic_str) = 0;
 
   bool isInitialized() { return initialized; };
 
@@ -134,15 +134,15 @@ public:
     logger.decIndent();
   }
 
-  virtual void handleCharacteristicUpdate(const char *characteristic, int value) {};
+  virtual void handleCharacteristicUpdate(const char *characteristic, int value) = 0;
 
   void handleCharacteristicUpdate(const char *characteristic, bool value) {
     handleCharacteristicUpdate(characteristic, (int) value);
   };
 
-  virtual void refresh() {}
+  virtual void refresh() = 0;
 
-  virtual void print() {}
+  virtual void print() = 0;
 
   void printMapping() {
     logger.print(name, "Accessible Methods: ");

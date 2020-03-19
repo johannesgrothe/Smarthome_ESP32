@@ -20,19 +20,38 @@ protected:
 
 public:
   Serial_Gadget() :
-      Code_Gadget(),
-      Request_Gadget() {
-  };
+    Code_Gadget(),
+    Request_Gadget() {};
 
   explicit Serial_Gadget(JsonObject data) :
-      Code_Gadget(data),
-      Request_Gadget(data) {
+    Code_Gadget(data),
+    Request_Gadget(data) {
     logger.println("Creating Serial Gadget");
     logger.incIndent();
     logger.println(LOG_DATA, "Using default Serial Connection");
     logger.decIndent();
     request_gadget_is_ready = true;
     code_gadget_is_ready = true;
+  };
+
+  void
+  sendRequest(REQUEST_TYPE req_type, const char *content_type, IPAddress ip, int port, const char *req_path,
+              const char *req_body) override {
+
+  }
+
+  void
+  sendRequest(REQUEST_TYPE req_type, const char *content_type, IPAddress ip, int port, const char *req_path,
+              JsonObject req_body) override {
+
+  }
+
+  void sendAnswer(const char *req_body, int status_code) override {
+
+  };
+
+  void sendAnswer(JsonObject req_body, int status_code) override {
+
   };
 
   void refresh() override {

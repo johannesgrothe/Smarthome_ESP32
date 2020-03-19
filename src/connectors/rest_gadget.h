@@ -137,25 +137,6 @@ public:
     request_gadget_is_ready = true;
   };
 
-  void refresh() override {
-    if (!request_gadget_is_ready) {
-      return;
-    }
-    server->handleClient();
-//    int len = client->available();
-//    if (len > 0) {
-//      if (len > REQUEST_BODY_LEN_MAX) len = REQUEST_BODY_LEN_MAX;
-//      for (int k = 0; k < len; k++){
-//        response_body[k] = (char) client->read();
-//      }
-////      client->read(response_body, len);
-//      has_response = true;
-//
-//      strcpy(response_path, "/test");
-//      response_status = 200;
-//    }
-  }
-
   void sendRequest(REQUEST_TYPE req_type, const char *content_type, IPAddress ip, int port, const char *req_path,
                    const char *req_body) override {
     sendRequestFromClient(req_type, content_type, ip, port, req_path, req_body);
@@ -176,6 +157,25 @@ public:
     char body[REQUEST_BODY_LEN_MAX]{};
     serializeJson(req_body, &body[0], REQUEST_BODY_LEN_MAX);
     sendAnswerFromServer(status_code, "application/json", body);
+  }
+
+  void refresh() override {
+    if (!request_gadget_is_ready) {
+      return;
+    }
+    server->handleClient();
+//    int len = client->available();
+//    if (len > 0) {
+//      if (len > REQUEST_BODY_LEN_MAX) len = REQUEST_BODY_LEN_MAX;
+//      for (int k = 0; k < len; k++){
+//        response_body[k] = (char) client->read();
+//      }
+////      client->read(response_body, len);
+//      has_response = true;
+//
+//      strcpy(response_path, "/test");
+//      response_status = 200;
+//    }
   }
 
 };

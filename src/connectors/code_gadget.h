@@ -33,8 +33,7 @@ public:
       has_news(false) {
   };
 
-  virtual void refresh() {
-  }
+  virtual void refresh() = 0;
 
   bool codeGadgetIsReady() {
     return code_gadget_is_ready;
