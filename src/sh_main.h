@@ -23,7 +23,7 @@
 
 #include "wifi_credentials.h"
 #include "remotes/homebridge_remote.h"
-
+#include "gadget_collection.h"
 
 static void rebootChip(const char *reason) {
   if (reason != nullptr) {
@@ -51,21 +51,19 @@ private:
 
   WiFiClient network_client;
 
-  SH_Gadget *gadgets[MAIN_MAX_GADGETS];
-
-  byte gadget_count = 0;
+  Gadget_Collection gadgets;
 
   Remote *remotes[REMOTE_MANAGER_MAX_REMOTES]{};
 
   byte remote_count;
 
   bool initGadgets(JsonArray gadget_json) {
-    gadget_count = gadget_json.size() < MAIN_MAX_GADGETS ? gadget_json.size() : MAIN_MAX_GADGETS;
+    byte new_gadget_count = gadget_json.size() < MAIN_MAX_GADGETS ? gadget_json.size() : MAIN_MAX_GADGETS;
     logger.print(LOG_INFO, "Creating Gadgets: ");
-    logger.addln(gadget_count);
+    logger.addln(new_gadget_count);
     logger.incIndent();
     bool everything_ok = true;
-    for (unsigned int pointer = 0; pointer < gadget_count; pointer++) {
+    for (unsigned int pointer = 0; pointer < new_gadget_count; pointer++) {
       JsonObject gadget = gadget_json[pointer].as<JsonObject>();
       SH_Gadget *buffergadget = create_gadget(gadget);
       using std::placeholders::_1;
@@ -74,21 +72,11 @@ private:
       using std::placeholders::_4;
       buffergadget->initRemoteUpdate(std::bind(&SH_Main::updateRemotesBool, this, _1, _2, _3, _4),
                                      std::bind(&SH_Main::updateRemotesInt, this, _1, _2, _3, _4));
-      gadgets[pointer] = buffergadget;
+      gadgets.addGadget(buffergadget);
       delay(500);
     }
     logger.decIndent();
     return everything_ok;
-  }
-
-  SH_Gadget *getGadgetForName(const char *name) {
-    for (byte k = 0; k < gadget_count; k++) {
-      SH_Gadget *it_gadget = gadgets[k];
-      if (strcmp(it_gadget->getName(), name) == 0) {
-        return it_gadget;
-      }
-    }
-    return nullptr;
   }
 
   void mapConnectors(JsonObject connectors_json) {
@@ -103,7 +91,7 @@ private:
       JsonArray map_gadgets = connectors_json["ir"].as<JsonArray>();
       for (auto && map_gadget : map_gadgets) {
         const char *gadget_name = map_gadget.as<const char *>();
-        SH_Gadget *found_gadget = getGadgetForName(gadget_name);
+        SH_Gadget *found_gadget = gadgets.getGadget(gadget_name);
         if (found_gadget != nullptr) {
           found_gadget->setIR(ir_gadget);
           logger.println(LOG_DATA, gadget_name);
@@ -122,7 +110,7 @@ private:
       JsonArray map_gadgets = connectors_json["radio"].as<JsonArray>();
       for (auto && map_gadget : map_gadgets) {
         const char *gadget_name = map_gadget.as<const char *>();
-        SH_Gadget *found_gadget = getGadgetForName(gadget_name);
+        SH_Gadget *found_gadget = gadgets.getGadget(gadget_name);
         if (found_gadget != nullptr) {
           found_gadget->setRadio(radio_gadget);
           logger.println(LOG_DATA, gadget_name);
@@ -275,8 +263,8 @@ private:
 
   void forwardCommand(unsigned long code) {
     logger.incIndent();
-    for (byte c = 0; c < gadget_count; c++) {
-      gadgets[c]->handleCodeUpdate(code);
+    for (byte c = 0; c < gadgets.getGadgetCount(); c++) {
+      gadgets.getGadget(c)->handleCodeUpdate(code);
     }
     logger.decIndent();
   }
@@ -343,7 +331,7 @@ private:
         auto *homebridge_remote = new Homebridge_Remote(mqtt_gadget);
         for (auto && new_gadget_name : gadget_list) {
           const char * gadget_name = new_gadget_name.as<const char *>();
-          SH_Gadget *gadget = getGadgetForName(gadget_name);
+          SH_Gadget *gadget = gadgets.getGadget(gadget_name);
           logger.println(LOG_DATA, gadget->getName());
           logger.incIndent();
           homebridge_remote->addGadget(gadget);
@@ -433,8 +421,8 @@ public:
   void refresh() {
     refreshConnectors();
 
-    for (byte c = 0; c < gadget_count; c++) {
-      gadgets[c]->refresh();
+    for (byte c = 0; c < gadgets.getGadgetCount(); c++) {
+      gadgets.getGadget(c)->refresh();
     }
   }
 };

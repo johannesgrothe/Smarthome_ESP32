@@ -47,7 +47,7 @@ public:
   void
   updateCharacteristic(const char *gadget_name, const char *service, const char *characteristic, int value) override {
     if (updatesAreLocked()) return;
-    SH_Gadget *target_gadget = getGadgetForName(gadget_name);
+    SH_Gadget *target_gadget = gadgets.getGadget(gadget_name);
     if (characteristic != nullptr && target_gadget != nullptr) {
       char update_str[HOMEBRIDGE_UPDATE_STR_LEN_MAX]{};
       sprintf(&update_str[0],
@@ -64,7 +64,7 @@ public:
   void
   updateCharacteristic(const char *gadget_name, const char *service, const char *characteristic, bool value) override {
     if (updatesAreLocked()) return;
-    SH_Gadget *target_gadget = getGadgetForName(gadget_name);
+    SH_Gadget *target_gadget = gadgets.getGadget(gadget_name);
     if (characteristic != nullptr && target_gadget != nullptr) {
       const char *bool_str;
       if (value)
@@ -91,7 +91,7 @@ public:
     if (type == REQ_MQTT && strcmp(path, "homebridge/from/set") == 0) {
       if (body["name"] != nullptr && body["characteristic"] != nullptr && body["value"] != nullptr) {
         logger.print("System / Homebridge-Remote", "Received valid Request: ");
-        SH_Gadget *target_gadget = getGadgetForName(body["name"]);
+        SH_Gadget *target_gadget = gadgets.getGadget(body["name"].as<const char *>());
         if (target_gadget != nullptr) {
           const char *characteristc = body["characteristic"].as<const char *>();
           logger.add(target_gadget->getName());
