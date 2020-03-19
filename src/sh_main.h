@@ -4,8 +4,7 @@
 
 // Connectors
 #include "connectors/ir_gadget.h"
-#include "connectors/mqtt_connector.h"
-#include "connectors/rest_connector.h"
+#include "connectors/rest_gadget.h"
 #include "connectors/serial_gadget.h"
 #include "connectors/radio_gadget.h"
 
@@ -43,6 +42,7 @@ static void rebootChip(const char *reason) {
 
 class SH_Main {
 private:
+
   IR_Gadget *ir_gadget;
   MQTT_Gadget *mqtt_gadget;
   REST_Gadget *rest_gadget;
@@ -385,6 +385,7 @@ private:
   }
 
 public:
+
   void init() {
 
     Serial.begin(115200);
@@ -425,4 +426,5 @@ public:
       gadgets.getGadget(c)->refresh();
     }
   }
+
 };

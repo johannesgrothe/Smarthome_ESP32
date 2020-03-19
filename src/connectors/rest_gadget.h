@@ -168,7 +168,6 @@ public:
     sendRequestFromClient(req_type, content_type, ip, port, req_path, body);
   }
 
-
   void sendAnswer(const char *req_body, int status_code) override {
     sendAnswerFromServer(status_code, "text/plain", req_body);
   }
@@ -178,7 +177,6 @@ public:
     serializeJson(req_body, &body[0], REQUEST_BODY_LEN_MAX);
     sendAnswerFromServer(status_code, "application/json", body);
   }
-
 
 };
 

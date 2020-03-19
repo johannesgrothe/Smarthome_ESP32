@@ -33,8 +33,6 @@ private:
 
   char name[GADGET_NAME_LEN_MAX]{};
 
-
-
   byte mapping_count{};
 
   Mapping_Reference *mapping[MAPPING_MAX_COMMANDS]{};
