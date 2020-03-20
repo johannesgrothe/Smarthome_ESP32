@@ -7,9 +7,9 @@
 class Gadget_Collection {
 private:
 
-  SH_Gadget *gadgets[MAIN_MAX_GADGETS];
+  SH_Gadget *gadgets[MAIN_MAX_GADGETS]{};
 
-  byte gadget_count;
+  byte gadget_count{};
 
 public:
 

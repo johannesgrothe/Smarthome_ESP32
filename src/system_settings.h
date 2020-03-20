@@ -1,6 +1,10 @@
 #ifndef __SYSTEM_SETTINGS__
 #define __SYSTEM_SETTINGS__
 
+//general
+#define EEPROM_SIZE 64
+#define SERIAL_SPEED 115200
+
 // gadget-Command-Mapping
 #define MAPPING_MAX_COMMANDS 15
 #define MAPPING_MAX_CODES 10

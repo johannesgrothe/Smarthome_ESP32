@@ -18,11 +18,11 @@
 #include "Client.h"
 #include <WiFi.h>
 #include "ArduinoJson.h"
-#include <EEPROM.h>
 
 #include "wifi_credentials.h"
 #include "remotes/homebridge_remote.h"
 #include "gadget_collection.h"
+//#include "system_storage.h"
 
 static void rebootChip(const char *reason) {
   if (reason != nullptr) {
@@ -43,6 +43,8 @@ static void rebootChip(const char *reason) {
 class SH_Main {
 private:
 
+//  System_Storage *storage;
+
   IR_Gadget *ir_gadget;
   MQTT_Gadget *mqtt_gadget;
   REST_Gadget *rest_gadget;
@@ -58,6 +60,7 @@ private:
   byte remote_count;
 
   bool initGadgets(JsonArray gadget_json) {
+    gadgets = Gadget_Collection();
     byte new_gadget_count = gadget_json.size() < MAIN_MAX_GADGETS ? gadget_json.size() : MAIN_MAX_GADGETS;
     logger.print(LOG_INFO, "Creating Gadgets: ");
     logger.addln(new_gadget_count);
@@ -65,13 +68,12 @@ private:
     bool everything_ok = true;
     for (unsigned int pointer = 0; pointer < new_gadget_count; pointer++) {
       JsonObject gadget = gadget_json[pointer].as<JsonObject>();
-      SH_Gadget *buffergadget = create_gadget(gadget);
+      SH_Gadget *buffergadget = createGadget(gadget);
       using std::placeholders::_1;
       using std::placeholders::_2;
       using std::placeholders::_3;
       using std::placeholders::_4;
-      buffergadget->initRemoteUpdate(std::bind(&SH_Main::updateRemotesBool, this, _1, _2, _3, _4),
-                                     std::bind(&SH_Main::updateRemotesInt, this, _1, _2, _3, _4));
+      buffergadget->initRemoteUpdate(std::bind(&SH_Main::updateRemotes, this, _1, _2, _3, _4));
       gadgets.addGadget(buffergadget);
       delay(500);
     }
@@ -89,7 +91,7 @@ private:
       logger.addln();
       logger.incIndent();
       JsonArray map_gadgets = connectors_json["ir"].as<JsonArray>();
-      for (auto && map_gadget : map_gadgets) {
+      for (auto &&map_gadget : map_gadgets) {
         const char *gadget_name = map_gadget.as<const char *>();
         SH_Gadget *found_gadget = gadgets.getGadget(gadget_name);
         if (found_gadget != nullptr) {
@@ -108,7 +110,7 @@ private:
       logger.addln();
       logger.incIndent();
       JsonArray map_gadgets = connectors_json["radio"].as<JsonArray>();
-      for (auto && map_gadget : map_gadgets) {
+      for (auto &&map_gadget : map_gadgets) {
         const char *gadget_name = map_gadget.as<const char *>();
         SH_Gadget *found_gadget = gadgets.getGadget(gadget_name);
         if (found_gadget != nullptr) {
@@ -329,13 +331,10 @@ private:
         logger.println(LOG_DATA, "Homebridge");
         logger.incIndent();
         auto *homebridge_remote = new Homebridge_Remote(mqtt_gadget);
-        for (auto && new_gadget_name : gadget_list) {
-          const char * gadget_name = new_gadget_name.as<const char *>();
+        for (auto &&gadget_name_str : gadget_list) {
+          const char *gadget_name = gadget_name_str.as<const char *>();
           SH_Gadget *gadget = gadgets.getGadget(gadget_name);
-          logger.println(LOG_DATA, gadget->getName());
-          logger.incIndent();
           homebridge_remote->addGadget(gadget);
-          logger.decIndent();
         }
         logger.decIndent();
         addRemote(homebridge_remote);
@@ -345,21 +344,7 @@ private:
     return true;
   }
 
-  void updateRemotesInt(const char *gadget_name, const char *service, const char *characteristic, int value) {
-    updateRemotes(gadget_name, service, characteristic, value);
-  }
-
-  void updateRemotesBool(const char *gadget_name, const char *service, const char *characteristic, bool value) {
-    updateRemotes(gadget_name, service, characteristic, value);
-  }
-
   void updateRemotes(const char *gadget_name, const char *service, const char *characteristic, int value) {
-    for (byte k = 0; k < remote_count; k++) {
-      remotes[k]->updateCharacteristic(gadget_name, service, characteristic, value);
-    }
-  }
-
-  void updateRemotes(const char *gadget_name, const char *service, const char *characteristic, bool value) {
     for (byte k = 0; k < remote_count; k++) {
       remotes[k]->updateCharacteristic(gadget_name, service, characteristic, value);
     }
@@ -388,12 +373,14 @@ public:
 
   void init() {
 
-    Serial.begin(115200);
-
-    EEPROM.begin(1023);
+    Serial.begin(SERIAL_SPEED);
 
     logger.println(LOG_INFO, "Launching...");
+
+//    storage = System_Storage();
+
     logger.println(LOG_INFO, "Loading Config...");
+
     logger.incIndent();
     DynamicJsonDocument json_file(2048);
     try {

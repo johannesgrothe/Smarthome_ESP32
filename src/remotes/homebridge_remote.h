@@ -61,28 +61,6 @@ public:
     }
   };
 
-  void
-  updateCharacteristic(const char *gadget_name, const char *service, const char *characteristic, bool value) override {
-    if (updatesAreLocked()) return;
-    SH_Gadget *target_gadget = gadgets.getGadget(gadget_name);
-    if (characteristic != nullptr && target_gadget != nullptr) {
-      const char *bool_str;
-      if (value)
-        bool_str = "true";
-      else
-        bool_str = "false";
-      char update_str[HOMEBRIDGE_UPDATE_STR_LEN_MAX]{};
-      sprintf(&update_str[0],
-              "{\"name\":\"%s\",\"service_name\":\"%s\",\"service_type\":\"%s\",\"characteristic\":\"%s\",\"value\":%s}",
-              gadget_name,
-              gadget_name,
-              service,
-              characteristic,
-              bool_str);
-      mqtt_gadget->publishMessage("homebridge/to/set", update_str);
-    }
-  };
-
   void handleRequest(const char *path, REQUEST_TYPE type, const char *body) override {
     logger.println(LOG_ERR, "Homebridge-Remote cannot handle String Bodys.");
   };

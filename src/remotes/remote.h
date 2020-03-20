@@ -36,13 +36,12 @@ protected:
 
 public:
   Remote() :
-    lock_updates(false) {};
+    lock_updates(false) {
+    gadgets = Gadget_Collection();
+  };
 
   virtual void
   updateCharacteristic(const char *gadget_name, const char *service, const char *characteristic, int value) {};
-
-  virtual void
-  updateCharacteristic(const char *gadget_name, const char *service, const char *characteristic, bool value) {};
 
   virtual void handleRequest(const char *path, REQUEST_TYPE type, const char *body) {};
 
@@ -50,9 +49,22 @@ public:
 
   void addGadget(SH_Gadget *new_gadget) {
     if (gadgets.addGadget(new_gadget)) {
+      logger.print(LOG_DATA, "Adding '");
+      logger.add(new_gadget->getName());
+      logger.addln("'");
+
+      logger.incIndent();
       char characteristic_str[HOMEBRIDGE_REGISTER_STR_MAX_LEN - 60];
       new_gadget->getCharacteristics(&characteristic_str[0]);
-      registerGadget(new_gadget->getName(), new_gadget->getType(), characteristic_str);
+      if (registerGadget(new_gadget->getName(), new_gadget->getType(), characteristic_str))
+        logger.println("Registering Gadget successfull.");
+      else
+        logger.println(LOG_ERR, "Failed to register Gadget.");
+      logger.decIndent();
+    } else {
+      logger.print(LOG_ERR, "Unable to add '");
+      logger.add(new_gadget->getName());
+      logger.addln("'");
     }
   }
 

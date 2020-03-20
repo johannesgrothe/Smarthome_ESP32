@@ -25,9 +25,7 @@ enum SH_HSL_Color {
 class SH_Gadget : public IR_Connector, public Radio_Connector {
 private:
 
-  std::function<void(const char *, const char *, const char *, int)> updateRemotesInt;
-
-  std::function<void(const char *, const char *, const char *, bool)> updateRemotesBool;
+  std::function<void(const char *, const char *, const char *, int)> updateRemotes;
 
   bool remoteInitialized;
 
@@ -46,11 +44,7 @@ protected:
   Gadget_Type type;
 
   void updateCharacteristic(const char *characteristic, int value) {
-    updateRemotesInt(&name[0], &name[0], characteristic, value);
-  }
-
-  void updateCharacteristic(const char *characteristic, bool value) {
-    updateRemotesBool(&name[0], &name[0], characteristic, value);
+    updateRemotes(&name[0], &name[0], characteristic, value);
   }
 
   const char *findMethodForCode(unsigned long code) {
@@ -111,10 +105,8 @@ public:
     }
   };
 
-  void initRemoteUpdate(std::function<void(const char *, const char *, const char *, bool)> update_method_bool,
-                        std::function<void(const char *, const char *, const char *, int)> update_method_int) {
-    updateRemotesBool = update_method_bool;
-    updateRemotesInt = update_method_int;
+  void initRemoteUpdate(std::function<void(const char *, const char *, const char *, int)> update_method) {
+    updateRemotes = update_method;
     logger.println("Initialized Callbacks");
     remoteInitialized = true;
   }
@@ -135,10 +127,6 @@ public:
   }
 
   virtual void handleCharacteristicUpdate(const char *characteristic, int value) = 0;
-
-  void handleCharacteristicUpdate(const char *characteristic, bool value) {
-    handleCharacteristicUpdate(characteristic, (int) value);
-  };
 
   virtual void refresh() = 0;
 

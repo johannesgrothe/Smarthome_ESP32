@@ -16,7 +16,7 @@
 #include "sh_lamp_westinghouse_ir.h"
 
 
-static SH_Gadget *create_gadget(JsonObject gadget_json) {
+static SH_Gadget *createGadget(JsonObject gadget_json) {
   const char *name = gadget_json["name"].as<const char *>();
   const char *type = gadget_json["type"].as<const char *>();
 
