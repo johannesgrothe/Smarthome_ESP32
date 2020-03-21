@@ -22,7 +22,10 @@
 #include "wifi_credentials.h"
 #include "remotes/homebridge_remote.h"
 #include "gadget_collection.h"
-//#include "system_storage.h"
+#include "system_storage.h"
+
+
+#include "color.h"
 
 static void rebootChip(const char *reason) {
   if (reason != nullptr) {
@@ -43,7 +46,7 @@ static void rebootChip(const char *reason) {
 class SH_Main {
 private:
 
-//  System_Storage *storage;
+  System_Storage storage;
 
   IR_Gadget *ir_gadget;
   MQTT_Gadget *mqtt_gadget;
@@ -204,10 +207,8 @@ private:
   }
 
   void refreshCodeConnector(Code_Gadget *gadget) {
-    // Refresh Command
     gadget->refresh();
 
-    // Check if Gadgets have new Commands
     if (gadget->hasNewCommand()) {
       unsigned long com = gadget->getCommand();
       logger.print("[HEX] Hex-Com: 0x");
@@ -279,12 +280,28 @@ private:
   }
 
   void handleJsonRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
+//    std::string str_path = path;
+
+//    if (str_path.rfind("sys/", 0) == 0) {
+//      logger.incIndent();
+//      handleSystemRequest(type, path, body);
+//      logger.decIndent();
+//    } else {
     logger.print("Forwarding Json-Request to ");
     logger.add(remote_count);
     logger.addln(" Remotes:");
     logger.incIndent();
     forwardRequest(type, path, body);
     logger.decIndent();
+//    }
+  }
+
+  void handleSystemRequest(REQUEST_TYPE type, const char *path, const char *body) {
+    logger.print("System Command Detected: ");
+    logger.addln(path);
+    if (strcmp(path, "sys/config/write") == 0) {
+      storage.writeConfig(body);
+    }
   }
 
   void handleRequest(REQUEST_TYPE type, const char *path, const char *body) {
@@ -295,14 +312,21 @@ private:
       if (last_pos > 0) {
         char last_char = body[last_pos];
         if (first_char == '{' && last_char == '}') {
-          try {
-            DynamicJsonDocument json_file(2048);
-            deserializeJson(json_file, body);
-            JsonObject json_doc = json_file.as<JsonObject>();
-            handleJsonRequest(type, path, json_doc);
-          }
-          catch (DeserializationError &e) {
-            handleStringRequest(type, path, body);
+          std::string str_path = path;
+          if (str_path.rfind("sys/", 0) == 0) {
+            logger.incIndent();
+            handleSystemRequest(type, path, body);
+            logger.decIndent();
+          } else {
+            try {
+              DynamicJsonDocument json_file(2048);
+              deserializeJson(json_file, body);
+              JsonObject json_doc = json_file.as<JsonObject>();
+              handleJsonRequest(type, path, json_doc);
+            }
+            catch (DeserializationError &e) {
+              handleStringRequest(type, path, body);
+            }
           }
         } else {
           handleStringRequest(type, path, body);
@@ -377,14 +401,16 @@ public:
 
     logger.println(LOG_INFO, "Launching...");
 
-//    storage = System_Storage();
+    char json_str_buffer[EEPROM_CONFIG_LEN_MAX]{};
 
-    logger.println(LOG_INFO, "Loading Config...");
+    storage = System_Storage();
+
+    storage.readConfig(&json_str_buffer[0]);
 
     logger.incIndent();
     DynamicJsonDocument json_file(2048);
     try {
-      deserializeJson(json_file, json_str);
+      deserializeJson(json_file, json_str_buffer);
     }
     catch (DeserializationError &e) {
       logger.println(LOG_ERR, "Cannot read JSON, creating blank Config.");
