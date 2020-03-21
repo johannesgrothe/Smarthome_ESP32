@@ -22,6 +22,7 @@
 #include "wifi_credentials.h"
 #include "remotes/homebridge_remote.h"
 #include "gadget_collection.h"
+#include "color.h"
 //#include "system_storage.h"
 
 static void rebootChip(const char *reason) {
@@ -200,6 +201,14 @@ private:
     logger.incIndent();
     //    rest_gadget->sendRequest(REQ_HTTP_POST, "text/plain", IPAddress(192, 168, 178, 111), 3005, "/irgendein/scheiss",
 //                             "pennerus maximus schmongus");
+    Color test_color = Color();
+    test_color.setRGB(221, 69, 171);
+    RGBColor *rgb_color = test_color.getRGB();
+    HSLColor *hsl_color = test_color.getHSL();
+    HSVColor *hsv_color = test_color.getHSV();
+    Serial.printf("RGB: %d, %d, %d \n", rgb_color->getRed(), rgb_color->getGreen(), rgb_color->getBlue());
+    Serial.printf("HSL: %d, %d, %d \n", hsl_color->getHue(), hsl_color->getSaturation(), hsl_color->getLightness());
+    Serial.printf("HSV: %d, %d, %d \n", hsv_color->getHue(), hsv_color->getSaturation(), hsv_color->getValue());
     logger.decIndent();
   }
 
