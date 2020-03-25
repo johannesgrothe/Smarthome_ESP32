@@ -218,7 +218,6 @@ private:
   }
 
   void refreshRequestConnector(Request_Gadget *gadget) {
-    // Refresh Command
     gadget->refresh();
 
     // Check if Gadgets have new Commands
@@ -228,7 +227,7 @@ private:
       const char *req_body = gadget->getRequestBody();
       const char *req_path = gadget->getRequestPath();
       if (req_type == REQ_UNKNOWN)
-        strncpy(type, "UWH0T??", REQUEST_TYPE_LEN_MAX);
+        strncpy(type, "<unknown>", REQUEST_TYPE_LEN_MAX);
       else if (req_type == REQ_HTTP_GET)
         strncpy(type, "GET", REQUEST_TYPE_LEN_MAX);
       else if (req_type == REQ_HTTP_POST)
@@ -242,9 +241,9 @@ private:
       else if (req_type == REQ_SERIAL)
         strncpy(type, "Serial", REQUEST_TYPE_LEN_MAX);
       else
-        strncpy(type, "{|_(-):(-)_|}", REQUEST_TYPE_LEN_MAX);
+        strncpy(type, "<o.O>", REQUEST_TYPE_LEN_MAX);
 
-      gadget->sendAnswer("bullshit", 200);
+      gadget->sendAnswer("ack", 200);
       logger.print("[");
       logger.add(type);
       logger.add("] '");

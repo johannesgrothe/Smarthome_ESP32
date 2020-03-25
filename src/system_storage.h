@@ -17,6 +17,9 @@ public:
     if (!EEPROM.begin(EEPROM_CONFIG_LEN_MAX)) {
       logger.println(LOG_ERR, "failed to initialize EEPROM");
     }
+//    char gratitude[21] = "Thank You Espressif!";
+//    EEPROM.writeString(0, gratitude);
+//    testRead(33);
   };
 
   void testRead(int len) {
@@ -52,8 +55,6 @@ public:
       }
     } else {
       logger.println(LOG_ERR, "Couldn't load: corrupted data.");
-//      writeConfig(buffer);
-      testRead(50);
     }
     Serial.println(buffer);
     strncpy(buffer, &json_str[0], EEPROM_CONFIG_LEN_MAX);
@@ -83,6 +84,7 @@ public:
     int chars_written = 0;
     logger.incIndent();
     logger.print(LOG_DATA, "");
+
     for (int i = 0; i < strlen(config_str); i++) {
       char write_char = char(config_str[i]);
 
@@ -94,18 +96,18 @@ public:
       } else {
         chars_written++;
         logger.add(write_char);
-        EEPROM.writeChar(write_index, default_config[i]);
+        EEPROM.writeChar(write_index, config_str[i]);
         write_index++;
       }
     }
-    logger.addln();
     EEPROM.commit();
+
+    logger.addln();
     logger.print(LOG_DATA, "Bytes written: ");
     logger.addln(chars_written);
     logger.print(LOG_DATA, "Bytes deleted: ");
     logger.addln(chars_deleted);
     logger.decIndent();
-    testRead(60);
     return true;
   };
 
