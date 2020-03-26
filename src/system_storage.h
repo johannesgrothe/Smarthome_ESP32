@@ -36,6 +36,7 @@ private:
     logger.incIndent();
     logger.print(LOG_DATA, "");
 
+    char write_buffer[EEPROM_CONFIG_LEN_MAX]{};
     for (int i = 0; i < strlen(config_str); i++) {
       char write_char = char(config_str[i]);
 
@@ -48,6 +49,7 @@ private:
         chars_written++;
         logger.add(write_char);
         EEPROM.writeChar(write_index, config_str[i]);
+        write_buffer[write_index] = config_str[i];
         write_index++;
       }
     }
@@ -59,6 +61,17 @@ private:
     logger.print(LOG_DATA, "Bytes deleted: ");
     logger.addln(chars_deleted);
     logger.decIndent();
+    bool everything_ok = true;
+    for (int i = 0; i < write_index; i++) {
+      everything_ok = everything_ok && EEPROM.readChar(i) == write_buffer[i];
+    }
+    logger.println(LOG_INFO, "Validating written Bytes...");
+    logger.incIndent();
+    if (everything_ok)
+      logger.println(LOG_INFO, "Successfull");
+    else
+      logger.println(LOG_ERR, "Validation failed.");
+    return everything_ok;
   }
 
 public:
@@ -69,18 +82,7 @@ public:
     if (!EEPROM.begin(EEPROM_CONFIG_LEN_MAX)) {
       logger.println(LOG_ERR, "failed to initialize EEPROM");
     }
-//    char gratitude[21] = "Thank You Espressif!";
-//    EEPROM.writeString(0, gratitude);
-//    testRead(33);
   };
-
-  void testRead(int len) {
-    for (int i = 0; i < len; i++) {
-      char readValue = EEPROM.readChar(i);
-      Serial.print(readValue);
-    }
-    Serial.println();
-  }
 
   bool readConfig(char *buffer) {
     logger.println(LOG_INFO, "Loading Config...");
@@ -114,17 +116,6 @@ public:
     return true;
   };
 
-  bool writeConfig(JsonObject json_config) {
-    logger.println(LOG_INFO, "Serializing...");
-    logger.incIndent();
-    char buffer[EEPROM_CONFIG_LEN_MAX]{};
-    serializeJson(json_config, buffer);
-    Serial.println(buffer);
-    logger.decIndent();
-
-    return writeConfig(buffer);
-  }
-
   bool writeConfig(const char *config_str) {
     logger.println(LOG_INFO, "Validating...");
     logger.incIndent();
@@ -139,7 +130,7 @@ public:
       return false;
     }
     if (!validateConfig(config_str)) {
-      logger.println(LOG_ERR, "Cannot write config: Configuration");
+      logger.println(LOG_ERR, "Cannot write config: missing Configuration items");
       logger.decIndent();
       return false;
     }
