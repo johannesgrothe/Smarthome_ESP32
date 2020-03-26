@@ -6,8 +6,60 @@
 #include "system_settings.h"
 #include "console_logger.h"
 
+static bool validateJson(const char *json_str) {
+  DynamicJsonDocument json_file(2048);
+  DeserializationError err = deserializeJson(json_file, json_str);
+  return err == DeserializationError::Ok;
+}
+
+static bool validateConfig(const char *json_str) {
+  DynamicJsonDocument json_file(2048);
+  DeserializationError err = deserializeJson(json_file, json_str);
+  if (err != DeserializationError::Ok)
+    return false;
+  return json_file.containsKey("gadgets") &&
+         json_file.containsKey("network") &&
+         json_file.containsKey("connectors") &&
+         json_file.containsKey("connector-mapping") &&
+         json_file.containsKey("remote-mapping");
+}
+
 class System_Storage {
 private:
+
+  bool writeConfigStr(const char *config_str) {
+    logger.println(LOG_INFO, "Writing...");
+    bool inside_string = false;
+    int write_index = 0;
+    int chars_deleted = 0;
+    int chars_written = 0;
+    logger.incIndent();
+    logger.print(LOG_DATA, "");
+
+    for (int i = 0; i < strlen(config_str); i++) {
+      char write_char = char(config_str[i]);
+
+      if (write_char == '"')
+        inside_string = !inside_string;
+
+      if (write_char == '\n' || (write_char == ' ' && !inside_string)) {
+        chars_deleted++;
+      } else {
+        chars_written++;
+        logger.add(write_char);
+        EEPROM.writeChar(write_index, config_str[i]);
+        write_index++;
+      }
+    }
+    EEPROM.commit();
+
+    logger.addln();
+    logger.print(LOG_DATA, "Bytes written: ");
+    logger.addln(chars_written);
+    logger.print(LOG_DATA, "Bytes deleted: ");
+    logger.addln(chars_deleted);
+    logger.decIndent();
+  }
 
 public:
 
@@ -63,52 +115,38 @@ public:
   };
 
   bool writeConfig(JsonObject json_config) {
+    logger.println(LOG_INFO, "Serializing...");
+    logger.incIndent();
     char buffer[EEPROM_CONFIG_LEN_MAX]{};
-
-    DynamicJsonDocument buf = DynamicJsonDocument(json_config);
-//      json_config.as<DynamicJsonDocument>();
-    deserializeJson(buf, &buffer[0], 0);
+    serializeJson(json_config, buffer);
+    Serial.println(buffer);
+    logger.decIndent();
 
     return writeConfig(buffer);
   }
 
   bool writeConfig(const char *config_str) {
+    logger.println(LOG_INFO, "Validating...");
+    logger.incIndent();
     if (strlen(config_str) > EEPROM_CONFIG_LEN_MAX) {
       logger.println(LOG_ERR, "Cannot write config: too long");
+      logger.decIndent();
       return false;
     }
-    logger.println(LOG_INFO, "Writing Config...");
-    bool inside_string = false;
-    int write_index = 0;
-    int chars_deleted = 0;
-    int chars_written = 0;
-    logger.incIndent();
-    logger.print(LOG_DATA, "");
-
-    for (int i = 0; i < strlen(config_str); i++) {
-      char write_char = char(config_str[i]);
-
-      if (write_char == '"')
-        inside_string = !inside_string;
-
-      if (write_char == '\n' || (write_char == ' ' && !inside_string)) {
-        chars_deleted++;
-      } else {
-        chars_written++;
-        logger.add(write_char);
-        EEPROM.writeChar(write_index, config_str[i]);
-        write_index++;
-      }
+    if (!validateJson(config_str)) {
+      logger.println(LOG_ERR, "Cannot write config: invalid JSON String");
+      logger.decIndent();
+      return false;
     }
-    EEPROM.commit();
-
-    logger.addln();
-    logger.print(LOG_DATA, "Bytes written: ");
-    logger.addln(chars_written);
-    logger.print(LOG_DATA, "Bytes deleted: ");
-    logger.addln(chars_deleted);
+    if (!validateConfig(config_str)) {
+      logger.println(LOG_ERR, "Cannot write config: Configuration");
+      logger.decIndent();
+      return false;
+    }
+    logger.println(LOG_INFO, "Validation successfull");
     logger.decIndent();
-    return true;
+
+    return writeConfigStr(config_str);
   };
 
 };

@@ -279,22 +279,28 @@ private:
   }
 
   void handleJsonRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
-//    std::string str_path = path;
+    std::string str_path = path;
 
-//    if (str_path.rfind("sys/", 0) == 0) {
-//      logger.incIndent();
-//      handleSystemRequest(type, path, body);
-//      logger.decIndent();
-//    } else {
+    if (str_path.rfind("sys/", 0) == 0) {
+      logger.incIndent();
+      handleSystemRequest(type, path, body);
+      logger.decIndent();
+    } else {
     logger.print("Forwarding Json-Request to ");
     logger.add(remote_count);
     logger.addln(" Remotes:");
     logger.incIndent();
     forwardRequest(type, path, body);
     logger.decIndent();
-//    }
+    }
   }
 
+  void handleSystemRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
+    if (strcmp(path, "sys/config/write") == 0) {
+      storage.writeConfig(body);
+    }
+  }
+  
   void handleSystemRequest(REQUEST_TYPE type, const char *path, const char *body) {
     logger.print("System Command Detected: ");
     logger.addln(path);
@@ -314,16 +320,18 @@ private:
           std::string str_path = path;
           if (str_path.rfind("sys/", 0) == 0) {
             logger.incIndent();
+            logger.println(LOG_INFO, "Applying new Config...");
+            logger.incIndent();
             handleSystemRequest(type, path, body);
             logger.decIndent();
+            logger.decIndent();
           } else {
-            try {
+            if (validateJson(body)) {
               DynamicJsonDocument json_file(2048);
               deserializeJson(json_file, body);
               JsonObject json_doc = json_file.as<JsonObject>();
               handleJsonRequest(type, path, json_doc);
-            }
-            catch (DeserializationError &e) {
+            } else {
               handleStringRequest(type, path, body);
             }
           }
