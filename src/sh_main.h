@@ -164,7 +164,7 @@ private:
   bool initNetwork(JsonObject json) {
     // check if JSON is valid
     if (json.isNull() || !json.containsKey("type")) {
-      logger.println(LOG_ERR,"No valid network configuration.");
+      logger.println(LOG_ERR, "No valid network configuration.");
       return false;
     }
 
@@ -180,7 +180,7 @@ private:
 //      passwd = WIFI_PW;
 
       if (ssid == nullptr || passwd == nullptr) {
-        logger.println(LOG_ERR,"Missing Username or Password.");
+        logger.println(LOG_ERR, "Missing Username or Password.");
         return false;
       }
 
@@ -427,9 +427,22 @@ public:
 
     initNetwork(json["network"]);
     initConnectors(json["connectors"]);
-    initGadgets(json["gadgets"]);
-    mapConnectors(json["connector-mapping"]);
-    initRemotes(json["remote-mapping"]);
+
+    if (json["gadgets"] != nullptr) {
+      initGadgets(json["gadgets"]);
+    } else {
+      logger.println(LOG_ERR, "No gadgets-configuration found");
+    }
+    if (json["connector-mapping"] != nullptr) {
+      mapConnectors(json["connector-mapping"]);
+    } else {
+      logger.println(LOG_ERR, "No connector-mapping-configuration found");
+    }
+    if (json["remotes"] != nullptr) {
+      initRemotes(json["remote-mapping"]);
+    } else {
+      logger.println(LOG_ERR, "No remotes-configuration found");
+    }
 
     testStuff();
     logger.print("Free Heap: ");

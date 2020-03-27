@@ -119,11 +119,11 @@ public:
       logger.decIndent();
       return false;
     }
-    if (!validateConfig(buffer)) {
-      logger.println(LOG_ERR, "Couldn't load: missing Elements in Config.");
-      logger.decIndent();
-      return false;
-    }
+//    if (!validateConfig(buffer)) {
+//      logger.println(LOG_ERR, "Couldn't load: missing Elements in Config.");
+//      logger.decIndent();
+//      return false;
+//    }
     logger.println(LOG_INFO, "Loading successfull");
     logger.decIndent();
     return true;
@@ -142,11 +142,11 @@ public:
       logger.decIndent();
       return false;
     }
-    if (!validateConfig(config_str)) {
-      logger.println(LOG_ERR, "Cannot write config: missing Configuration items");
-      logger.decIndent();
-      return false;
-    }
+//    if (!validateConfig(config_str)) {
+//      logger.println(LOG_ERR, "Cannot write config: missing Configuration items");
+//      logger.decIndent();
+//      return false;
+//    }
     logger.println(LOG_INFO, "Validation successfull");
     logger.decIndent();
 

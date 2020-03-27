@@ -92,7 +92,7 @@
     ],
     "radio": []
   },
-  "remote-mapping": {
+  "remotes": {
     "homebridge": [
       "Testlampe NP",
       "Testlampe 2",

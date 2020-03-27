@@ -129,7 +129,7 @@ const char json_str[] = R"(
     ],
     "radio": []
   },
-  "remote-mapping": {
+  "remotes": {
     "homebridge": [
       "Testlampe NP",
       "Testlampe 2",
