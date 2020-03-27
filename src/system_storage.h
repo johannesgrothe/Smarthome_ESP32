@@ -6,15 +6,15 @@
 #include "system_settings.h"
 #include "console_logger.h"
 
-static bool validateJson(const char *json_str) {
+static bool validateJson(const char *new_json_str) {
   DynamicJsonDocument json_file(2048);
-  DeserializationError err = deserializeJson(json_file, json_str);
+  DeserializationError err = deserializeJson(json_file, new_json_str);
   return err == DeserializationError::Ok;
 }
 
-static bool validateConfig(const char *json_str) {
+static bool validateConfig(const char *new_json_str) {
   DynamicJsonDocument json_file(2048);
-  DeserializationError err = deserializeJson(json_file, json_str);
+  DeserializationError err = deserializeJson(json_file, new_json_str);
   if (err != DeserializationError::Ok)
     return false;
   return json_file.containsKey("gadgets") &&
@@ -27,7 +27,7 @@ static bool validateConfig(const char *json_str) {
 class System_Storage {
 private:
 
-  bool writeConfigStr(const char *config_str) {
+  static bool writeConfigStr(const char *config_str) {
     logger.println(LOG_INFO, "Writing...");
     bool inside_string = false;
     int write_index = 0;
@@ -76,15 +76,17 @@ private:
 
 public:
 
-  System_Storage() {
+  static bool initEEPROM() {
     logger.println("Initializing EEPROM...");
 
     if (!EEPROM.begin(EEPROM_CONFIG_LEN_MAX)) {
       logger.println(LOG_ERR, "failed to initialize EEPROM");
+      return false;
     }
-  };
+    return true;
+  }
 
-  bool readConfig(char *buffer) {
+  static bool readConfig(char *buffer) {
     logger.println(LOG_INFO, "Loading Config...");
     logger.incIndent();
 
@@ -109,14 +111,25 @@ public:
       }
     } else {
       logger.println(LOG_ERR, "Couldn't load: corrupted data.");
+      logger.decIndent();
+      return false;
     }
-    Serial.println(buffer);
-    strncpy(buffer, &json_str[0], EEPROM_CONFIG_LEN_MAX);
+    if (!validateJson(buffer)) {
+      logger.println(LOG_ERR, "Couldn't load: invalid Json.");
+      logger.decIndent();
+      return false;
+    }
+    if (!validateConfig(buffer)) {
+      logger.println(LOG_ERR, "Couldn't load: missing Elements in Config.");
+      logger.decIndent();
+      return false;
+    }
+    logger.println(LOG_INFO, "Loading successfull");
     logger.decIndent();
     return true;
   };
 
-  bool writeConfig(const char *config_str) {
+  static bool writeConfig(const char *config_str) {
     logger.println(LOG_INFO, "Validating...");
     logger.incIndent();
     if (strlen(config_str) > EEPROM_CONFIG_LEN_MAX) {
@@ -140,6 +153,17 @@ public:
     return writeConfigStr(config_str);
   };
 
+  static bool readDefaultConfig(char *buffer) {
+    logger.println(LOG_INFO, "Loading Default Config");
+    strcpy(buffer, default_config);
+    return true;
+  }
+
+  static bool readHardConfig(char *buffer) {
+    logger.println(LOG_INFO, "Loading Hard Config");
+    strcpy(buffer, json_str);
+    return true;
+  }
 };
 
 #endif //__System_Storage__

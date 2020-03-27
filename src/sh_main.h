@@ -153,13 +153,22 @@ private:
     if (connectors_json["serial"] != nullptr) {
       serial_gadget = new Serial_Gadget(connectors_json["serial"].as<JsonObject>());
     } else {
-      serial_gadget = new Serial_Gadget();
+      DynamicJsonDocument json_file(50);
+      JsonObject doc = json_file.as<JsonObject>();
+      serial_gadget = new Serial_Gadget(doc);
     }
     logger.decIndent();
     return true;
   }
 
   bool initNetwork(JsonObject json) {
+    // check if JSON is valid
+    if (json.isNull() || !json.containsKey("type")) {
+      logger.println(LOG_ERR,"No valid network configuration.");
+      return false;
+    }
+
+    // initialize Network
     if (strcmp(json["type"].as<char *>(), "wifi") == 0) {
       logger.println("Creating Network: WiFi");
       logger.incIndent();
@@ -167,8 +176,13 @@ private:
 
       const char *ssid = json["config"]["ssid"].as<char *>();
       const char *passwd = json["config"]["password"].as<char *>();
-      ssid = WIFI_SSID;
-      passwd = WIFI_PW;
+//      ssid = WIFI_SSID;
+//      passwd = WIFI_PW;
+
+      if (ssid == nullptr || passwd == nullptr) {
+        logger.println(LOG_ERR,"Missing Username or Password.");
+        return false;
+      }
 
       logger.print(LOG_DATA, "");
       logger.add("Connecting to ");
@@ -193,9 +207,10 @@ private:
       }
     } else {
       logger.println(LOG_ERR, "Unknown Network Settings");
+      return false;
     }
     logger.decIndent();
-    return false;
+    return true;
   }
 
   void testStuff() {
@@ -390,29 +405,25 @@ private:
 public:
 
   void init() {
-
     Serial.begin(SERIAL_SPEED);
-
     logger.println(LOG_INFO, "Launching...");
-
-    char json_str_buffer[EEPROM_CONFIG_LEN_MAX]{};
-
-    storage = System_Storage();
-
-    storage.readConfig(&json_str_buffer[0]);
-
-    logger.incIndent();
+    char buffer[EEPROM_CONFIG_LEN_MAX]{};
     DynamicJsonDocument json_file(2048);
-    try {
-      deserializeJson(json_file, json_str_buffer);
+
+    bool eeprom_status = System_Storage::initEEPROM();
+    bool config_status = false;
+    if (eeprom_status && System_Storage::readConfig(&buffer[0])) {
+      config_status = (deserializeJson(json_file, &buffer[0]) == OK);
     }
-    catch (DeserializationError &e) {
-      logger.println(LOG_ERR, "Cannot read JSON, creating blank Config.");
-      deserializeJson(json_file, default_config);
+    if (!config_status) {
+      System_Storage::readDefaultConfig(buffer);
+      config_status = (deserializeJson(json_file, &buffer[0]) == OK);
     }
-    JsonObject json = json_file.as<JsonObject>();
 
     logger.decIndent();
+
+//    deserializeJson(json_file, json_str); // Loads file from system_storage.h
+    JsonObject json = json_file.as<JsonObject>();
 
     initNetwork(json["network"]);
     initConnectors(json["connectors"]);
