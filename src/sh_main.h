@@ -202,13 +202,34 @@ private:
     //    rest_gadget->sendRequest(REQ_HTTP_POST, "text/plain", IPAddress(192, 168, 178, 111), 3005, "/irgendein/scheiss",
 //                             "pennerus maximus schmongus");
     Color test_color = Color();
-    test_color.setRGB(221, 69, 171);
+    test_color.setRGB(203, 80, 163);
     RGBColor *rgb_color = test_color.getRGB();
     HSLColor *hsl_color = test_color.getHSL();
     HSVColor *hsv_color = test_color.getHSV();
+    Serial.println("\nsetRGB(203, 80, 163):");
     Serial.printf("RGB: %d, %d, %d \n", rgb_color->getRed(), rgb_color->getGreen(), rgb_color->getBlue());
     Serial.printf("HSL: %d, %d, %d \n", hsl_color->getHue(), hsl_color->getSaturation(), hsl_color->getLightness());
     Serial.printf("HSV: %d, %d, %d \n", hsv_color->getHue(), hsv_color->getSaturation(), hsv_color->getValue());
+
+    Serial.println("\nsetHSL(126, 39, 29):");
+    test_color.setHSL(126, 39, 29);
+    rgb_color = test_color.getRGB();
+    hsl_color = test_color.getHSL();
+    hsv_color = test_color.getHSV();
+    Serial.printf("RGB: %d, %d, %d \n", rgb_color->getRed(), rgb_color->getGreen(), rgb_color->getBlue());
+    Serial.printf("HSL: %d, %d, %d \n", hsl_color->getHue(), hsl_color->getSaturation(), hsl_color->getLightness());
+    Serial.printf("HSV: %d, %d, %d \n", hsv_color->getHue(), hsv_color->getSaturation(), hsv_color->getValue());
+
+    Serial.println("\nsetHSV(0, 56, 80):");
+    test_color.setHSV(0, 56, 80);
+    rgb_color = test_color.getRGB();
+    hsl_color = test_color.getHSL();
+    hsv_color = test_color.getHSV();
+    Serial.printf("RGB: %d, %d, %d \n", rgb_color->getRed(), rgb_color->getGreen(), rgb_color->getBlue());
+    Serial.printf("HSL: %d, %d, %d \n", hsl_color->getHue(), hsl_color->getSaturation(), hsl_color->getLightness());
+    Serial.printf("HSV: %d, %d, %d \n", hsv_color->getHue(), hsv_color->getSaturation(), hsv_color->getValue());
+    Serial.println();
+
     logger.decIndent();
   }
 
