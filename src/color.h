@@ -190,15 +190,15 @@ private:
       if (max == rd) {
         h = (gd - bd) / d + (gd < bd ? 6 : 0);
       } else if (max == gd) {
-        h = (bd - rd) / d + 2;
+        h = ((bd - rd) + 2) / d;
       } else if (max == bd) {
-        h = (rd - gd) / d + 4;
+        h = ((rd - gd) + 4) / d;
       }
       h /= 6;
     }
-    hsl[0] = h;
-    hsl[1] = s;
-    hsl[2] = l;
+    hsl[0] = h * 360;
+    hsl[1] = s * 100;
+    hsl[2] = l * 100;
   }
 
   static void rgbToHsv(byte r, byte g, byte b, float hsv[]) {
