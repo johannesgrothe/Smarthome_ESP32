@@ -56,20 +56,20 @@ public:
   };
 
   void refresh() override {
-
-    if (!code_gadget_is_ready || !request_gadget_is_ready || Serial.available() <= 0) {
+    if (!code_gadget_is_ready || !request_gadget_is_ready || !Serial.available()) {
       return;
     }
     char incoming_message[REQUEST_BODY_LEN_MAX + REQUEST_PATH_LEN_MAX]{};
-    uint8_t k = 0;
+    unsigned int k = 0;
     bool new_msg = false;
-    while (Serial.available() > 0 && k < REQUEST_BODY_LEN_MAX + REQUEST_PATH_LEN_MAX) {
+    while (Serial.available() && k < REQUEST_BODY_LEN_MAX + REQUEST_PATH_LEN_MAX) {
       char buf = Serial.read();
       if (buf != '\n') {
         incoming_message[k] = buf;
         k++;
         new_msg = true;
       }
+      delayMicroseconds(80);
     }
     if (new_msg) {
       if (strContainsHEX(incoming_message)) {

@@ -129,7 +129,7 @@ const char json_str[] = R"(
     ],
     "radio": []
   },
-  "remote-mapping": {
+  "remotes": {
     "homebridge": [
       "Testlampe NP",
       "Testlampe 2",
@@ -142,11 +142,7 @@ const char json_str[] = R"(
 )";
 
 const char default_config[] = R"(
-{
-  "gadgets": [],
-  "network": {},
-  "connectors": {}
-}
+{"gadgets": [],"network": {},"connectors": {},"connector-mapping": {},"remote-mapping": {}}
 )";
 
 #endif //__SYSTEM_SETTINGS__

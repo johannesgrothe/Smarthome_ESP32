@@ -22,7 +22,10 @@
 #include "wifi_credentials.h"
 #include "remotes/homebridge_remote.h"
 #include "gadget_collection.h"
-//#include "system_storage.h"
+#include "system_storage.h"
+
+
+#include "color.h"
 
 static void rebootChip(const char *reason) {
   if (reason != nullptr) {
@@ -43,7 +46,7 @@ static void rebootChip(const char *reason) {
 class SH_Main {
 private:
 
-//  System_Storage *storage;
+  System_Storage storage;
 
   IR_Gadget *ir_gadget;
   MQTT_Gadget *mqtt_gadget;
@@ -150,13 +153,22 @@ private:
     if (connectors_json["serial"] != nullptr) {
       serial_gadget = new Serial_Gadget(connectors_json["serial"].as<JsonObject>());
     } else {
-      serial_gadget = new Serial_Gadget();
+      DynamicJsonDocument json_file(50);
+      JsonObject doc = json_file.as<JsonObject>();
+      serial_gadget = new Serial_Gadget(doc);
     }
     logger.decIndent();
     return true;
   }
 
   bool initNetwork(JsonObject json) {
+    // check if JSON is valid
+    if (json.isNull() || !json.containsKey("type")) {
+      logger.println(LOG_ERR, "No valid network configuration.");
+      return false;
+    }
+
+    // initialize Network
     if (strcmp(json["type"].as<char *>(), "wifi") == 0) {
       logger.println("Creating Network: WiFi");
       logger.incIndent();
@@ -164,8 +176,13 @@ private:
 
       const char *ssid = json["config"]["ssid"].as<char *>();
       const char *passwd = json["config"]["password"].as<char *>();
-      ssid = WIFI_SSID;
-      passwd = WIFI_PW;
+//      ssid = WIFI_SSID;
+//      passwd = WIFI_PW;
+
+      if (ssid == nullptr || passwd == nullptr) {
+        logger.println(LOG_ERR, "Missing Username or Password.");
+        return false;
+      }
 
       logger.print(LOG_DATA, "");
       logger.add("Connecting to ");
@@ -190,9 +207,10 @@ private:
       }
     } else {
       logger.println(LOG_ERR, "Unknown Network Settings");
+      return false;
     }
     logger.decIndent();
-    return false;
+    return true;
   }
 
   void testStuff() {
@@ -204,10 +222,8 @@ private:
   }
 
   void refreshCodeConnector(Code_Gadget *gadget) {
-    // Refresh Command
     gadget->refresh();
 
-    // Check if Gadgets have new Commands
     if (gadget->hasNewCommand()) {
       unsigned long com = gadget->getCommand();
       logger.print("[HEX] Hex-Com: 0x");
@@ -217,7 +233,6 @@ private:
   }
 
   void refreshRequestConnector(Request_Gadget *gadget) {
-    // Refresh Command
     gadget->refresh();
 
     // Check if Gadgets have new Commands
@@ -227,7 +242,7 @@ private:
       const char *req_body = gadget->getRequestBody();
       const char *req_path = gadget->getRequestPath();
       if (req_type == REQ_UNKNOWN)
-        strncpy(type, "UWH0T??", REQUEST_TYPE_LEN_MAX);
+        strncpy(type, "<unknown>", REQUEST_TYPE_LEN_MAX);
       else if (req_type == REQ_HTTP_GET)
         strncpy(type, "GET", REQUEST_TYPE_LEN_MAX);
       else if (req_type == REQ_HTTP_POST)
@@ -241,9 +256,9 @@ private:
       else if (req_type == REQ_SERIAL)
         strncpy(type, "Serial", REQUEST_TYPE_LEN_MAX);
       else
-        strncpy(type, "{|_(-):(-)_|}", REQUEST_TYPE_LEN_MAX);
+        strncpy(type, "<o.O>", REQUEST_TYPE_LEN_MAX);
 
-      gadget->sendAnswer("bullshit", 200);
+      gadget->sendAnswer("ack", 200);
       logger.print("[");
       logger.add(type);
       logger.add("] '");
@@ -279,12 +294,21 @@ private:
   }
 
   void handleJsonRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
+    std::string str_path = path;
     logger.print("Forwarding Json-Request to ");
     logger.add(remote_count);
     logger.addln(" Remotes:");
     logger.incIndent();
     forwardRequest(type, path, body);
     logger.decIndent();
+  }
+
+  void handleSystemRequest(REQUEST_TYPE type, const char *path, const char *body) {
+    logger.print("System Command Detected: ");
+    logger.addln(path);
+    if (strcmp(path, "sys/config/write") == 0) {
+      storage.writeConfig(body);
+    }
   }
 
   void handleRequest(REQUEST_TYPE type, const char *path, const char *body) {
@@ -295,14 +319,23 @@ private:
       if (last_pos > 0) {
         char last_char = body[last_pos];
         if (first_char == '{' && last_char == '}') {
-          try {
-            DynamicJsonDocument json_file(2048);
-            deserializeJson(json_file, body);
-            JsonObject json_doc = json_file.as<JsonObject>();
-            handleJsonRequest(type, path, json_doc);
-          }
-          catch (DeserializationError &e) {
-            handleStringRequest(type, path, body);
+          std::string str_path = path;
+          if (str_path.rfind("sys/", 0) == 0) {
+            logger.incIndent();
+            logger.println(LOG_INFO, "Applying new Config...");
+            logger.incIndent();
+            handleSystemRequest(type, path, body);
+            logger.decIndent();
+            logger.decIndent();
+          } else {
+            if (validateJson(body)) {
+              DynamicJsonDocument json_file(2048);
+              deserializeJson(json_file, body);
+              JsonObject json_doc = json_file.as<JsonObject>();
+              handleJsonRequest(type, path, json_doc);
+            } else {
+              handleStringRequest(type, path, body);
+            }
           }
         } else {
           handleStringRequest(type, path, body);
@@ -372,33 +405,47 @@ private:
 public:
 
   void init() {
-
     Serial.begin(SERIAL_SPEED);
-
     logger.println(LOG_INFO, "Launching...");
-
-//    storage = System_Storage();
-
-    logger.println(LOG_INFO, "Loading Config...");
-
-    logger.incIndent();
+    char buffer[EEPROM_CONFIG_LEN_MAX]{};
     DynamicJsonDocument json_file(2048);
-    try {
-      deserializeJson(json_file, json_str);
+
+    #ifndef USE_HARD_CONFIG
+    bool eeprom_status = System_Storage::initEEPROM();
+    bool config_status = false;
+    if (eeprom_status && System_Storage::readConfig(&buffer[0])) {
+      config_status = (deserializeJson(json_file, &buffer[0]) == OK);
     }
-    catch (DeserializationError &e) {
-      logger.println(LOG_ERR, "Cannot read JSON, creating blank Config.");
-      deserializeJson(json_file, default_config);
+    if (!config_status) {
+      System_Storage::readDefaultConfig(buffer);
+      config_status = (deserializeJson(json_file, &buffer[0]) == OK);
     }
-    JsonObject json = json_file.as<JsonObject>();
 
     logger.decIndent();
+    #endif
+    #ifdef USE_HARD_CONFIG
+    deserializeJson(json_file, json_str); // Loads file from system_storage.h
+    #endif
+    JsonObject json = json_file.as<JsonObject>();
 
     initNetwork(json["network"]);
     initConnectors(json["connectors"]);
-    initGadgets(json["gadgets"]);
-    mapConnectors(json["connector-mapping"]);
-    initRemotes(json["remote-mapping"]);
+
+    if (json["gadgets"] != nullptr) {
+      initGadgets(json["gadgets"]);
+    } else {
+      logger.println(LOG_ERR, "No gadgets-configuration found");
+    }
+    if (json["connector-mapping"] != nullptr) {
+      mapConnectors(json["connector-mapping"]);
+    } else {
+      logger.println(LOG_ERR, "No connector-mapping-configuration found");
+    }
+    if (json["remotes"] != nullptr) {
+      initRemotes(json["remote-mapping"]);
+    } else {
+      logger.println(LOG_ERR, "No remotes-configuration found");
+    }
 
     testStuff();
     logger.print("Free Heap: ");
