@@ -410,6 +410,7 @@ public:
     char buffer[EEPROM_CONFIG_LEN_MAX]{};
     DynamicJsonDocument json_file(2048);
 
+    #ifndef USE_HARD_CONFIG
     bool eeprom_status = System_Storage::initEEPROM();
     bool config_status = false;
     if (eeprom_status && System_Storage::readConfig(&buffer[0])) {
@@ -421,8 +422,10 @@ public:
     }
 
     logger.decIndent();
-
-//    deserializeJson(json_file, json_str); // Loads file from system_storage.h
+    #endif
+    #ifdef USE_HARD_CONFIG
+    deserializeJson(json_file, json_str); // Loads file from system_storage.h
+    #endif
     JsonObject json = json_file.as<JsonObject>();
 
     initNetwork(json["network"]);
