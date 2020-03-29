@@ -102,9 +102,9 @@ public:
             msg_pointer++;
           }
 
-          setRequest(&message_path[0], &message_body[0], REQ_SERIAL);
+          addRequest(REQ_SERIAL, &message_path[0], &message_body[0]);
         } else {
-          setRequest("_unknown_", &incoming_message[0], REQ_SERIAL);
+          addRequest(REQ_SERIAL, "_unknown_", &incoming_message[0]);
         }
       }
     }

@@ -2,9 +2,9 @@
 #include "user_settings.h"
 #include "system_settings.h"
 
-// Connectors
+// Network Gadgets
 #include "connectors/ir_gadget.h"
-#include "connectors/rest_gadget.h"
+//#include "connectors/rest_gadget.h"
 #include "connectors/serial_gadget.h"
 #include "connectors/radio_gadget.h"
 
@@ -50,7 +50,7 @@ private:
 
   IR_Gadget *ir_gadget;
   MQTT_Gadget *mqtt_gadget;
-  REST_Gadget *rest_gadget;
+//  REST_Gadget *rest_gadget;
   Serial_Gadget *serial_gadget;
   Radio_Gadget *radio_gadget;
 
@@ -145,9 +145,9 @@ private:
     }
 
     if (connectors_json["rest"] != nullptr) {
-      rest_gadget = new REST_Gadget(connectors_json["rest"].as<JsonObject>(), &network_client);
+//      rest_gadget = new REST_Gadget(connectors_json["rest"].as<JsonObject>(), &network_client);
     } else {
-      rest_gadget = new REST_Gadget();
+//      rest_gadget = new REST_Gadget();
     }
 
     if (connectors_json["serial"] != nullptr) {
@@ -234,13 +234,11 @@ private:
 
   void refreshRequestConnector(Request_Gadget *gadget) {
     gadget->refresh();
-
     // Check if Gadgets have new Commands
     if (gadget->hasRequest()) {
       char type[REQUEST_TYPE_LEN_MAX]{};
-      REQUEST_TYPE req_type = gadget->getRequestType();
-      const char *req_body = gadget->getRequestBody();
-      const char *req_path = gadget->getRequestPath();
+      Request *req = gadget->getRequest();
+      REQUEST_TYPE req_type = req->getType();
       if (req_type == REQ_UNKNOWN)
         strncpy(type, "<unknown>", REQUEST_TYPE_LEN_MAX);
       else if (req_type == REQ_HTTP_GET)
@@ -262,10 +260,11 @@ private:
       logger.print("[");
       logger.add(type);
       logger.add("] '");
-      logger.add(req_path);
+      logger.add(req->getPath());
       logger.add("' :");
-      logger.addln(req_body);
-      handleRequest(req_type, req_path, req_body);
+      logger.addln(req->getBody());
+      handleRequest(req_type, req->getPath(), req->getBody());
+      delete req;
     }
 //    if (gadget->hasResponse()) {
 //
@@ -349,9 +348,12 @@ private:
     refreshCodeConnector(serial_gadget);
     refreshCodeConnector(ir_gadget);
 //    refreshCodeConnector(radio_gadget);
-    refreshRequestConnector(rest_gadget);
-    refreshRequestConnector(mqtt_gadget);
     refreshRequestConnector(serial_gadget);
+  }
+
+  void refreshNetworkConnectors() {
+    //    refreshRequestConnector(rest_gadget);
+    refreshRequestConnector(mqtt_gadget);
   }
 
   bool initRemotes(JsonObject json) {
@@ -410,7 +412,7 @@ public:
     char buffer[EEPROM_CONFIG_LEN_MAX]{};
     DynamicJsonDocument json_file(2048);
 
-    #ifndef USE_HARD_CONFIG
+#ifndef USE_HARD_CONFIG
     bool eeprom_status = System_Storage::initEEPROM();
     bool config_status = false;
     if (eeprom_status && System_Storage::readConfig(&buffer[0])) {
@@ -422,10 +424,10 @@ public:
     }
 
     logger.decIndent();
-    #endif
-    #ifdef USE_HARD_CONFIG
+#endif
+#ifdef USE_HARD_CONFIG
     deserializeJson(json_file, json_str); // Loads file from system_storage.h
-    #endif
+#endif
     JsonObject json = json_file.as<JsonObject>();
 
     initNetwork(json["network"]);
@@ -448,6 +450,7 @@ public:
     }
 
     testStuff();
+
     logger.print("Free Heap: ");
     logger.add(ESP.getFreeHeap());
     logger.addln();
@@ -459,6 +462,10 @@ public:
     for (byte c = 0; c < gadgets.getGadgetCount(); c++) {
       gadgets.getGadget(c)->refresh();
     }
+  }
+
+  void refreshNetworks() {
+    refreshNetworkConnectors();
   }
 
 };

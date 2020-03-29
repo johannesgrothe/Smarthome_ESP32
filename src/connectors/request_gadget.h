@@ -15,50 +15,67 @@ enum REQUEST_TYPE {
   REQ_UNKNOWN, REQ_HTTP_GET, REQ_HTTP_POST, REQ_HTTP_PUT, REQ_HTTP_DELETE, REQ_MQTT, REQ_SERIAL
 };
 
-class Request_Gadget {
-protected:
-  bool request_gadget_is_ready;
-  bool has_request{};
+class Request {
+private:
   REQUEST_TYPE type;
   char body[REQUEST_BODY_LEN_MAX]{};
   char path[REQUEST_PATH_LEN_MAX]{};
 
-  bool has_response{};
-  int response_status{};
-  char response_body[REQUEST_BODY_LEN_MAX]{};
-  char response_path[REQUEST_PATH_LEN_MAX]{};
+public:
+  Request(REQUEST_TYPE req_type, const char *req_path, const char *req_body) :
+    type(req_type) {
+    strcpy(path, req_path);
+    strcpy(body, req_body);
+  }
 
-  void setBody(const char *new_body) {
-    strncpy(body, new_body, REQUEST_BODY_LEN_MAX);
+  REQUEST_TYPE getType() {
+    return type;
+  }
+
+  const char *getPath() {
+    return &path[0];
+  }
+
+  const char *getBody() {
+    return &body[0];
+  }
+};
+
+class Response {
+private:
+  int status_code;
+  char body[REQUEST_BODY_LEN_MAX]{};
+
+public:
+  Response(int resp_code, const char *resp_body) :
+    status_code(resp_code) {
+    strcpy(body, resp_body);
+  }
+
+  int getStatus() {
+    return status_code;
+  }
+
+  const char *getBody() {
+    return &body[0];
+  }
+};
+
+class Request_Gadget {
+protected:
+  bool request_gadget_is_ready;
+
+  QueueHandle_t request_queue;
+  QueueHandle_t response_queue;
+
+  void addRequest(REQUEST_TYPE new_type, const char *new_path, const char *new_body) {
+    auto *buffer_req = new Request(new_type, &new_path[0], &new_body[0]);
+    xQueueSend(request_queue, &buffer_req, portMAX_DELAY);
   };
 
-  void setPath(const char *new_path) {
-    strncpy(path, new_path, REQUEST_PATH_LEN_MAX);
-  };
-
-  void setRequest(const char *new_path, const char *new_body, REQUEST_TYPE new_type, bool changeStatus = true) {
-    setBody(new_body);
-    setPath(new_path);
-    type = new_type;
-    if (changeStatus)
-      has_request = true;
-  };
-
-  void setResponseBody(const char *new_response_body) {
-    strncpy(response_body, new_response_body, REQUEST_BODY_LEN_MAX);
-  };
-
-  void setResponsePath(const char *new_response_path) {
-    strncpy(response_path, new_response_path, REQUEST_PATH_LEN_MAX);
-  };
-
-  void setResponseRequest(const char *new_response_path, const char *new_response_body, int new_response_code,
-                          bool changeStatus = true) {
-    setResponseBody(new_response_body);
-    setResponsePath(new_response_path);
-    response_status = new_response_code;
-    if (changeStatus)
-      has_response = true;
+  void addResponse(int new_response_code, const char *new_response_body) {
+    auto *buffer_res = new Response(new_response_code, &new_response_body[0]);
+    xQueueSend(response_queue, &buffer_res, portMAX_DELAY);
   };
 
 public:
@@ -67,9 +84,9 @@ public:
   }
 
   explicit Request_Gadget(JsonObject data) :
-    request_gadget_is_ready(false),
-    has_request(false),
-    type(REQ_UNKNOWN) {
+    request_gadget_is_ready(false) {
+    request_queue = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
+    response_queue = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Response *));
   }
 
   bool requestGadgetIsReady() {
@@ -77,39 +94,25 @@ public:
   }
 
   bool hasRequest() {
-    bool buffer = has_request;
-    has_request = false;
-    return buffer;
+    return uxQueueMessagesWaiting(request_queue) > 0;
+//    return false;
   }
 
-  REQUEST_TYPE getRequestType() {
-    return type;
-  }
-
-  const char *getRequestBody() {
-    return &body[0];
-  }
-
-  const char *getRequestPath() {
-    return &path[0];
+  Request *getRequest() {
+    Request *bufreq;
+    xQueueReceive(request_queue, &bufreq, portMAX_DELAY);
+    return bufreq;
   }
 
   bool hasResponse() {
-    bool buffer = has_response;
-    has_response = false;
-    return buffer;
+    return uxQueueMessagesWaiting(response_queue) > 0;
+//    return false;
   }
 
-  int getResponseStatusCode() {
-    return response_status;
-  }
-
-  const char *getResponseBody() {
-    return &response_body[0];
-  }
-
-  const char *getResponsePath() {
-    return &response_path[0];
+  Response *getResponse() {
+    Response *bufres;
+    xQueueReceive(response_queue, &bufres, portMAX_DELAY);
+    return bufres;
   }
 
   virtual void

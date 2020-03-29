@@ -62,7 +62,6 @@ protected:
       local_message[i] = (char) payload[i];
     }
     if (strcmp(topic, "homebridge/from/response") == 0) {
-      // TODO: if corrupt json arrives, program crashes
 
       bool resp_status = local_message[7] == 't';
       resp_status = resp_status && local_message[8] == 'r';
@@ -75,11 +74,9 @@ protected:
       } else {
         status_code = 400;
       }
-      setResponseRequest(topic, &local_message[0], status_code);
-      has_request = true;
+      addResponse(status_code, &local_message[0]);
     } else {
-      setRequest(topic, &local_message[0], REQ_MQTT);
-      has_request = true;
+      addRequest(REQ_MQTT, topic, &local_message[0]);
     }
   }
 
@@ -94,7 +91,7 @@ public:
   };
 
   MQTT_Gadget(JsonObject data, WiFiClient *network_client) :
-    Request_Gadget() {
+    Request_Gadget(data) {
     logger.println("Creating MQTT Gadget");
     networkClient = WiFiClient();
     logger.incIndent();
@@ -168,34 +165,29 @@ public:
     if (!request_gadget_is_ready) {
       return false;
     }
-    byte count = 0;
-    if (publishMessage(topic, message, true)){
-      refresh();
-      while (count < 10 && !has_response) {
-        logger.add(".");
-        refresh();
-        count ++;
+    if (publishMessage(topic, message)) {
+      byte count = 0;
+      while (count < 5) {
+        if (hasResponse()) {
+          Response *resp = getResponse();
+          return resp->getStatus();
+        }
+        logger.addln(".");
         delay(100);
-      }
-      if (hasResponse()) {
-        logger.addln(getResponseStatusCode());
-        return getResponseStatusCode() == 200;
+        count ++;
       }
     }
     logger.addln("Error");
     return false;
   }
 
-  bool publishMessage(const char *topic, const char *message, bool wait_for_answer = false) {
+  bool publishMessage(const char *topic, const char *message) {
     if (!request_gadget_is_ready) {
       return false;
     }
     logger.print("System / MQTT", "publishing on '");
     logger.add(topic);
-    if (wait_for_answer)
-      logger.add("': ");
-    else
-      logger.addln();
+    logger.addln("'");
     bool status = true;
     uint16_t msg_len = strlen(message);
     status = status && mqttClient->beginPublish(topic, msg_len, false);
