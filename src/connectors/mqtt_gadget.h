@@ -74,10 +74,34 @@ protected:
       } else {
         status_code = 400;
       }
-      addResponse(status_code, &local_message[0]);
+      addIncomingResponse(status_code, &local_message[0]);
     } else {
-      addRequest(REQ_MQTT, topic, &local_message[0]);
+      addIncomingRequest(REQ_MQTT, topic, &local_message[0]);
     }
+  }
+
+  void executeRequestSending(Request *req) override {
+    const char *topic = req->getPath();
+    const char *body = req->getBody();
+    logger.print("System / MQTT", "publishing on '");
+    logger.add(topic);
+    logger.add("': ");
+    bool status = true;
+    uint16_t msg_len = strlen(body);
+    status = status && mqttClient->beginPublish(topic, msg_len, false);
+    uint16_t k;
+    for (k = 0; k < msg_len; k++) {
+      status = status && mqttClient->write(body[k]);
+    }
+    status = status && mqttClient->endPublish();
+    if (status)
+      logger.addln("OK");
+    else
+      logger.addln("ERR");
+  }
+
+  void executeResponseSending(Response *res) override {
+
   }
 
 public:
@@ -161,63 +185,9 @@ public:
     request_gadget_is_ready = everything_ok;
   };
 
-  bool publishMessageAndWaitForAnswer(const char *topic, const char *message) {
-    if (!request_gadget_is_ready) {
-      return false;
-    }
-    if (publishMessage(topic, message)) {
-      byte count = 0;
-      while (count < 5) {
-        if (hasResponse()) {
-          Response *resp = getResponse();
-          return resp->getStatus();
-        }
-        logger.addln(".");
-        delay(100);
-        count ++;
-      }
-    }
-    logger.addln("Error");
-    return false;
+  void sendRequest(const char *path, const char*body) {
+    Request_Gadget::sendRequest(REQ_MQTT, "", IPAddress(0, 0, 0, 0), 0, path, body);
   }
-
-  bool publishMessage(const char *topic, const char *message) {
-    if (!request_gadget_is_ready) {
-      return false;
-    }
-    logger.print("System / MQTT", "publishing on '");
-    logger.add(topic);
-    logger.addln("'");
-    bool status = true;
-    uint16_t msg_len = strlen(message);
-    status = status && mqttClient->beginPublish(topic, msg_len, false);
-    uint16_t k;
-    for (k = 0; k < msg_len; k++) {
-      status = status && mqttClient->write(message[k]);
-    }
-    status = status && mqttClient->endPublish();
-    return status;
-  }
-
-  void
-  sendRequest(REQUEST_TYPE req_type, const char *content_type, IPAddress ip, int port, const char *req_path,
-              const char *req_body) override {
-
-  }
-
-  void
-  sendRequest(REQUEST_TYPE req_type, const char *content_type, IPAddress ip, int port, const char *req_path,
-              JsonObject req_body) override {
-
-  }
-
-  void sendAnswer(const char *req_body, int status_code) override {
-
-  };
-
-  void sendAnswer(JsonObject req_body, int status_code) override {
-
-  };
 
   void refresh() override {
     if (!request_gadget_is_ready) {
@@ -227,6 +197,7 @@ public:
       connect_mqtt();
     }
     mqttClient->loop();
+    sendQueuedItems();
   }
 };
 

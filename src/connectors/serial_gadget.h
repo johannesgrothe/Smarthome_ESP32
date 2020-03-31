@@ -9,15 +9,23 @@
 class Serial_Gadget : public Code_Gadget, public Request_Gadget {
 protected:
 
-  bool strContainsHEX(const char *message) {
-    short bufflen = strlen(message);
-    for (short i = 0; i < bufflen; i++) {
+  static bool strContainsHEX(const char *message) {
+    short buff_len = strlen(message);
+    for (short i = 0; i < buff_len; i++) {
       int charInt = (int) message[i];
       if (!((charInt >= 48 && charInt <= 57) || (charInt >= 65 && charInt <= 70) || (charInt >= 97 && charInt <= 102)))
         return false;
     }
     return true;
   }
+
+  void executeRequestSending(Request *req) override {
+    Serial.printf("%d-%u-%s:%s", req->getType(), req->getID(), req->getPath(), req->getBody());
+  };
+
+  void executeResponseSending(Response *res) override {
+    Serial.printf("%d-%u:%s", res->getStatus(), res->getID(), res->getBody());
+  };
 
 public:
   Serial_Gadget() :
@@ -33,26 +41,6 @@ public:
     logger.decIndent();
     request_gadget_is_ready = true;
     code_gadget_is_ready = true;
-  };
-
-  void
-  sendRequest(REQUEST_TYPE req_type, const char *content_type, IPAddress ip, int port, const char *req_path,
-              const char *req_body) override {
-
-  }
-
-  void
-  sendRequest(REQUEST_TYPE req_type, const char *content_type, IPAddress ip, int port, const char *req_path,
-              JsonObject req_body) override {
-
-  }
-
-  void sendAnswer(const char *req_body, int status_code) override {
-
-  };
-
-  void sendAnswer(JsonObject req_body, int status_code) override {
-
   };
 
   void refresh() override {
@@ -102,46 +90,15 @@ public:
             msg_pointer++;
           }
 
-          addRequest(REQ_SERIAL, &message_path[0], &message_body[0]);
+          addIncomingRequest(REQ_SERIAL, &message_path[0], &message_body[0]);
         } else {
-          addRequest(REQ_SERIAL, "_unknown_", &incoming_message[0]);
+          addIncomingRequest(REQ_SERIAL, "_unknown_", &incoming_message[0]);
         }
       }
     }
+    sendQueuedItems();
   }
 
 };
 
 #endif //SERIAL_CONNECTOR_H
-
-#if false
-
-void decodeStringCommand(const char *message, unsigned int length) {
-    std::string com = message;
-
-    if (com.rfind("_sys:", 0) == 0) {
-      logger.print("System Command Detected: ");
-      if (com.rfind("_sys:flash", 0) == 0) {
-        logger.addln("flash");
-//        char input_json[900]{};
-      } else if (com.rfind("_sys:reboot", 0) == 0) {
-        logger.addln("reboot");
-        rebootChip("Input Command");
-      } else {
-        logger.addln("<unknown>");
-      }
-    } else if (com.rfind("_dev:", 0) == 0) {
-      logger.print("Development Command Detected: ");
-      if (com.rfind("_dev:log_on", 4) == 0) {
-        logger.addln("log_on");
-        logger.activateLogging();
-      } else if (com.rfind("_dev:log_off", 4) == 0) {
-        logger.addln("log_off");
-        logger.deactivateLogging();
-      } else {
-        logger.addln("<unknown>");
-      }
-    }
-  }
-
-#endif

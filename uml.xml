@@ -1093,7 +1093,7 @@
             <mxPoint x="520" y="1100" as="targetPoint"/>
           </mxGeometry>
         </mxCell>
-        <mxCell id="N7pTtKHYTQ4L6rCnfdCQ-84" value="sendAnswer()" style="html=1;verticalAlign=bottom;endArrow=block;dashed=1;entryX=-0.006;entryY=0.011;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" target="N7pTtKHYTQ4L6rCnfdCQ-83" parent="3bSDKnmku6XSPxeCNkpC-1">
+        <mxCell id="N7pTtKHYTQ4L6rCnfdCQ-84" value="sendResponse()" style="html=1;verticalAlign=bottom;endArrow=block;dashed=1;entryX=-0.006;entryY=0.011;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" target="N7pTtKHYTQ4L6rCnfdCQ-83" parent="3bSDKnmku6XSPxeCNkpC-1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="95" y="1160.33" as="sourcePoint"/>
             <mxPoint x="520" y="1160" as="targetPoint"/>

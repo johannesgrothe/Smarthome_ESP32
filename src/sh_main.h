@@ -256,7 +256,7 @@ private:
       else
         strncpy(type, "<o.O>", REQUEST_TYPE_LEN_MAX);
 
-      gadget->sendAnswer("ack", 200);
+      gadget->sendResponse(200, "ack");
       logger.print("[");
       logger.add(type);
       logger.add("] '");
@@ -373,6 +373,8 @@ private:
         }
         logger.decIndent();
         addRemote(homebridge_remote);
+      } else {
+        logger.println(LOG_DATA, "Homebridge-Configuration is empty");
       }
     }
     logger.decIndent();
@@ -444,7 +446,7 @@ public:
       logger.println(LOG_ERR, "No connector-mapping-configuration found");
     }
     if (json["remotes"] != nullptr) {
-      initRemotes(json["remote-mapping"]);
+      initRemotes(json["remotes"]);
     } else {
       logger.println(LOG_ERR, "No remotes-configuration found");
     }

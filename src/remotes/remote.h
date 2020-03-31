@@ -16,6 +16,28 @@ private:
 
   virtual bool removeGadget(const char *gadget_name) { return false; };
 
+  bool registerGadgetOnRemote(const char *gadget_name, Gadget_Type gadget_type, const char *characteristics) {
+    logger.println("Unregistering Gadget:");
+    logger.incIndent();
+    if (removeGadget(gadget_name)) {
+      logger.println(LOG_INFO, "OK");
+      logger.decIndent();
+    } else {
+      logger.println(LOG_ERR, "ERR");
+      logger.decIndent();
+    }
+
+    logger.println("Registering Gadget:");
+    logger.incIndent();
+    if (registerGadget(gadget_name, gadget_type, characteristics)) {
+      logger.println(LOG_INFO, "OK");
+      logger.decIndent();
+    } else {
+      logger.println(LOG_ERR, "ERR");
+      logger.decIndent();
+    }
+  }
+
   bool lock_updates;
 
 protected:
@@ -56,7 +78,7 @@ public:
       logger.incIndent();
       char characteristic_str[HOMEBRIDGE_REGISTER_STR_MAX_LEN - 60];
       new_gadget->getCharacteristics(&characteristic_str[0]);
-      if (registerGadget(new_gadget->getName(), new_gadget->getType(), characteristic_str))
+      if (registerGadgetOnRemote(new_gadget->getName(), new_gadget->getType(), characteristic_str))
         logger.println("Registering Gadget successfull.");
       else
         logger.println(LOG_ERR, "Failed to register Gadget.");

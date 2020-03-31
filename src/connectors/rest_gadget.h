@@ -32,12 +32,12 @@ protected:
     } else {
       req_type = REQ_UNKNOWN;
     }
-    addRequest(server->uri().c_str(), server->arg(0).c_str(), req_type);
+    addIncomingRequest(server->uri().c_str(), server->arg(0).c_str(), req_type);
     has_request = true;
   }
 
   bool writeRespone(const char *response_str, int len) {
-    addResponse(666, response_str);
+    addIncomingResponse(666, response_str);
 //    response_status = 666;
 //    setResponsePath("test");
 //    setResponseBody(response_str);
