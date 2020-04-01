@@ -64,8 +64,10 @@ private:
       } else {
         Response *resp = mqtt_gadget->getResponse();
         if (getIdent(resp->getBody()) == ident) {
+          delete resp;
           return getAck(resp->getBody());
         }
+        delete resp;
       }
     }
     return false;
@@ -84,8 +86,10 @@ private:
       } else {
         Response *resp = mqtt_gadget->getResponse();
         if (getIdent(resp->getBody()) == ident) {
+          delete resp;
           return getAck(resp->getBody());
         }
+        delete resp;
       }
     }
     return false;
