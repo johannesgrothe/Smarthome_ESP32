@@ -33,17 +33,13 @@ public:
   Request(REQUEST_TYPE req_type, const char *req_path, const char *req_body) :
     type(req_type),
     can_respond(false) {
-    Serial.println("Creating Request Gadget");
     strncpy(path, req_path, REQUEST_PATH_LEN_MAX);
     strncpy(body, req_body, REQUEST_BODY_LEN_MAX);
-    Serial.println(path);
-    Serial.println(body);
   }
 
   Request(REQUEST_TYPE req_type, const char *req_path, const char *req_body, std::function<void(Request *request)> answer_method) :
     type(req_type),
     can_respond(true) {
-    Serial.println("Creating Request Gadget 2");
     strncpy(path, req_path, REQUEST_PATH_LEN_MAX);
     strncpy(body, req_body, REQUEST_BODY_LEN_MAX);
     send_answer = answer_method;
@@ -57,7 +53,6 @@ public:
     if (!can_respond)
       return false;
     send_answer(createResponse(res_path, res_body));
-    Serial.println("responded");
     return true;
   }
 
@@ -85,7 +80,7 @@ protected:
   QueueHandle_t out_request_queue;
 
   void addIncomingRequest(Request *request) {
-    xQueueSend(in_request_queue, request, portMAX_DELAY);
+    xQueueSend(in_request_queue, &request, portMAX_DELAY);
   };
 
   virtual void executeRequestSending(Request *req) = 0;
@@ -97,7 +92,6 @@ protected:
     if (uxQueueMessagesWaiting(out_request_queue) > 0) {
       Request *buf_req;
       xQueueReceive(out_request_queue, &buf_req, portMAX_DELAY);
-      Serial.println(buf_req->getPath());
       executeRequestSending(buf_req);
       delete buf_req;
     }
@@ -131,8 +125,7 @@ public:
   }
 
   void sendRequest(Request *request) {
-    Serial.println("queue");
-    xQueueSend(out_request_queue, request, portMAX_DELAY);
+    xQueueSend(out_request_queue, &request, portMAX_DELAY);
   };
 
   virtual void refresh() = 0;

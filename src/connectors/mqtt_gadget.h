@@ -186,7 +186,6 @@ public:
 
   void sendRequest(const char *path, const char *body) {
     auto *req = new MQTTRequest(REQ_MQTT, path, body);
-    Serial.println(req->getPath());
     Request_Gadget::sendRequest(req);
   }
 
