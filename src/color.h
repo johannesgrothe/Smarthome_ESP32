@@ -100,7 +100,7 @@ private:
   HSLColor hsl_color;
   HSVColor hsv_color;
 
-  static void hsvToRgb(double h, double s, double v, uint8_t rgb[]) {
+  static void hsvToRgb(unsigned int h, byte s, byte v, byte rgb[]) {
     double r, g, b;
 
     int i = int(h * 6);
@@ -230,6 +230,20 @@ private:
   }
 
 public:
+  Color() :
+      rgb_color(),
+      hsl_color(),
+      hsv_color() {
+    setRGB(0, 0, 0);
+  };
+
+  Color(byte r, byte g, byte b) :
+      rgb_color(),
+      hsl_color(),
+      hsv_color() {
+    setRGB(r, g, b);
+  };
+
   RGBColor *getRGB() {
     return &rgb_color;
   }
@@ -241,6 +255,15 @@ public:
   HSVColor *getHSV() {
     return &hsv_color;
   }
+
+  byte getBrightness() {
+    return hsv_color.getValue();
+  }
+
+  unsigned int getHue() {
+    return hsv_color.getHue();
+  }
+
 
   void setRGB(byte red, byte green, byte blue) {
     float hsl[3];
@@ -267,10 +290,20 @@ public:
     byte rgb[3];
     hsv_color.setColor(hue, saturation, value);
     hsvToRgb(hue, saturation, value, rgb);
+    rgbToHsl(rgb[0], rgb[1], rgb[2], hsl);
+    Serial.printf("hsl[0]: %f, hsl[1]: %f ,hsl[2]: %f\n", hsl[0], hsl[1], hsl[2]);
     rgb_color.setColor(rgb[0], rgb[1], rgb[2]);
-    rgbToHsv(rgb[0], rgb[1], rgb[2], hsl);
     hsl_color.setColor(hsl[0], hsl[1], hsl[2]);
   }
+
+  void setBrightness(byte brightness) {
+    setHSV(hsv_color.getHue(), hsv_color.getSaturation(), brightness);
+  }
+
+  void setHue(unsigned int hue) {
+    setHSV(hue, hsv_color.getSaturation(), hsv_color.getValue());
+  }
+
 
 };
 

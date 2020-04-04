@@ -822,7 +822,7 @@
         <mxCell id="ZFiH180SvxtKEt1jRk3j-37" value="+ getSaturation(): byte" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ZFiH180SvxtKEt1jRk3j-31" vertex="1">
           <mxGeometry y="138" width="380" height="26" as="geometry"/>
         </mxCell>
-        <mxCell id="ZFiH180SvxtKEt1jRk3j-38" value="+ getLightness(): byte" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ZFiH180SvxtKEt1jRk3j-31" vertex="1">
+        <mxCell id="ZFiH180SvxtKEt1jRk3j-38" value="+ getBrightness(): byte" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ZFiH180SvxtKEt1jRk3j-31" vertex="1">
           <mxGeometry y="164" width="380" height="26" as="geometry"/>
         </mxCell>
         <mxCell id="ZFiH180SvxtKEt1jRk3j-57" value="+ setColor(hue: unsigned int, saturation: byte, lightness: byte): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ZFiH180SvxtKEt1jRk3j-31" vertex="1">
