@@ -59,11 +59,11 @@ private:
     mqtt_gadget->sendRequest("homebridge/to/add", &reg_str[0]);
     unsigned long start_time = millis();
     while (start_time + 5000 > millis()) {
-      if (!mqtt_gadget->hasResponse()) {
+      if (!mqtt_gadget->hasRequest()) {
         mqtt_gadget->refresh();
       } else {
-        Response *resp = mqtt_gadget->getResponse();
-        if (getIdent(resp->getBody()) == ident) {
+        Request *resp = mqtt_gadget->getRequest();
+        if (strcmp(resp->getPath(), "homebridge/from/response") == 0 && getIdent(resp->getBody()) == ident) {
           delete resp;
           return getAck(resp->getBody());
         }
@@ -81,11 +81,11 @@ private:
     mqtt_gadget->sendRequest("homebridge/to/remove", &buf_msg[0]);
     unsigned long start_time = millis();
     while (start_time + 5000 > millis()) {
-      if (!mqtt_gadget->hasResponse()) {
+      if (!mqtt_gadget->hasRequest()) {
         mqtt_gadget->refresh();
       } else {
-        Response *resp = mqtt_gadget->getResponse();
-        if (getIdent(resp->getBody()) == ident) {
+        Request *resp = mqtt_gadget->getRequest();
+        if (strcmp(resp->getPath(), "homebridge/from/response") == 0 && getIdent(resp->getBody()) == ident) {
           delete resp;
           return getAck(resp->getBody());
         }

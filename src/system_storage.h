@@ -12,18 +12,6 @@ static bool validateJson(const char *new_json_str) {
   return err == DeserializationError::Ok;
 }
 
-static bool validateConfig(const char *new_json_str) {
-  DynamicJsonDocument json_file(2048);
-  DeserializationError err = deserializeJson(json_file, new_json_str);
-  if (err != DeserializationError::Ok)
-    return false;
-  return json_file.containsKey("gadgets") &&
-         json_file.containsKey("network") &&
-         json_file.containsKey("connectors") &&
-         json_file.containsKey("connector-mapping") &&
-         json_file.containsKey("remote-mapping");
-}
-
 class System_Storage {
 private:
 

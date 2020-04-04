@@ -6,6 +6,21 @@
 #include "code_gadget.h"
 #include "request_gadget.h"
 
+class SerialRequest : public Request {
+public:
+  SerialRequest(REQUEST_TYPE req_type, const char *req_path, const char *req_body) :
+  Request(req_type, req_path, req_body) {}
+
+  ~SerialRequest() override {
+    Serial.println("Destroying SerialRequest");
+  };
+
+  SerialRequest *createResponse(const char *res_path, const char *res_body) override {
+    auto *res = new SerialRequest(REQ_SERIAL, res_path, res_body);
+    return res;
+  }
+};
+
 class Serial_Gadget : public Code_Gadget, public Request_Gadget {
 protected:
 
@@ -20,11 +35,7 @@ protected:
   }
 
   void executeRequestSending(Request *req) override {
-    Serial.printf("%d-%u-%s:%s", req->getType(), req->getID(), req->getPath(), req->getBody());
-  };
-
-  void executeResponseSending(Response *res) override {
-    Serial.printf("%d-%u:%s", res->getStatus(), res->getID(), res->getBody());
+    Serial.printf("_%s:%s", req->getPath(), req->getBody());
   };
 
 public:
@@ -89,10 +100,11 @@ public:
             body_pointer++;
             msg_pointer++;
           }
-
-          addIncomingRequest(REQ_SERIAL, &message_path[0], &message_body[0]);
+          auto *req = new SerialRequest(REQ_SERIAL, &message_path[0], &message_body[0]);
+          addIncomingRequest(req);
         } else {
-          addIncomingRequest(REQ_SERIAL, "_unknown_", &incoming_message[0]);
+          auto *req = new SerialRequest(REQ_SERIAL, "_unknown_", &incoming_message[0]);
+          addIncomingRequest(req);
         }
       }
     }

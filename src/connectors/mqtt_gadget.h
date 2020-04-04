@@ -7,9 +7,27 @@
 #include "request_gadget.h"
 #include <cstring>
 
+class MQTT_Gadget;
+
+class MQTTRequest : public Request {
+public:
+
+  MQTTRequest(REQUEST_TYPE req_type, const char *req_path, const char *req_body) :
+    Request(req_type, req_path, req_body) {}
+
+  ~MQTTRequest() override {
+    Serial.println("Destroying MQTTRequest");
+  };
+
+  MQTTRequest *createResponse(const char *res_path, const char *res_body) override {
+    auto *res = new MQTTRequest(REQ_MQTT, res_path, res_body);
+    return res;
+  }
+
+};
+
 // Gadget to communicate with MQTT Endpoint
 class MQTT_Gadget : public Request_Gadget {
-//class MQTT_Gadget {
 protected:
 
   IPAddress *mqttServer{};
@@ -61,23 +79,8 @@ protected:
     for (unsigned int i = 0; i < length; i++) {
       local_message[i] = (char) payload[i];
     }
-    if (strcmp(topic, "homebridge/from/response") == 0) {
-
-      bool resp_status = local_message[7] == 't';
-      resp_status = resp_status && local_message[8] == 'r';
-      resp_status = resp_status && local_message[9] == 'u';
-      resp_status = resp_status && local_message[10] == 'e';
-
-      int status_code = 0;
-      if (resp_status) {
-        status_code = 200;
-      } else {
-        status_code = 400;
-      }
-      addIncomingResponse(status_code, &local_message[0]);
-    } else {
-      addIncomingRequest(REQ_MQTT, topic, &local_message[0]);
-    }
+    MQTTRequest *req = new MQTTRequest(REQ_MQTT, topic, &local_message[0]);
+    addIncomingRequest(req);
   }
 
   void executeRequestSending(Request *req) override {
@@ -85,7 +88,7 @@ protected:
     const char *body = req->getBody();
     logger.print("System / MQTT", "publishing on '");
     logger.add(topic);
-    logger.add("': ");
+    logger.add("'");
     bool status = true;
     uint16_t msg_len = strlen(body);
     status = status && mqttClient->beginPublish(topic, msg_len, false);
@@ -98,10 +101,6 @@ protected:
       logger.addln("OK");
     else
       logger.addln("ERR");
-  }
-
-  void executeResponseSending(Response *res) override {
-
   }
 
 public:
@@ -185,8 +184,10 @@ public:
     request_gadget_is_ready = everything_ok;
   };
 
-  void sendRequest(const char *path, const char*body) {
-    Request_Gadget::sendRequest(REQ_MQTT, "", IPAddress(0, 0, 0, 0), 0, path, body);
+  void sendRequest(const char *path, const char *body) {
+    auto *req = new MQTTRequest(REQ_MQTT, path, body);
+    Serial.println(req->getPath());
+    Request_Gadget::sendRequest(req);
   }
 
   void refresh() override {

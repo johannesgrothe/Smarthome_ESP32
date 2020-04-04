@@ -32,10 +32,12 @@ private:
     if (registerGadget(gadget_name, gadget_type, characteristics)) {
       logger.println(LOG_INFO, "OK");
       logger.decIndent();
+      return true;
     } else {
       logger.println(LOG_ERR, "ERR");
       logger.decIndent();
     }
+    return false;
   }
 
   bool lock_updates;

@@ -255,25 +255,16 @@ private:
       else
         strncpy(type, "<o.O>", REQUEST_TYPE_LEN_MAX);
 
-      gadget->sendResponse(200, "ack");
       logger.print("[");
       logger.add(type);
       logger.add("] '");
       logger.add(req->getPath());
       logger.add("' :");
       logger.addln(req->getBody());
-      handleRequest(req_type, req->getPath(), req->getBody());
+//      handleRequest(req_type, req->getPath(), req->getBody());
+      handleRequest(req);
       delete req;
     }
-//    if (gadget->hasResponse()) {
-//
-//      logger.print("[");
-//      logger.add(gadget->getResponseStatusCode());
-//      logger.add("] '");
-//      logger.add(gadget->getResponsePath());
-//      logger.add("' :");
-//      logger.addln(gadget->getResponseBody());
-//    }
   }
 
   void forwardCommand(unsigned long code) {
@@ -301,46 +292,54 @@ private:
     logger.decIndent();
   }
 
-  void handleSystemRequest(REQUEST_TYPE type, const char *path, const char *body) {
+  void handleSystemRequest(Request *req) {
     logger.print("System Command Detected: ");
-    logger.addln(path);
-    if (strcmp(path, "sys/config/write") == 0) {
-      storage.writeConfig(body);
+    logger.addln(req->getPath());
+    if (strcmp(req->getPath(), "sys/config/write") == 0) {
+      System_Storage::writeConfig(req->getBody());
+    } else if (strcmp(req->getPath(), "sys/reboot") == 0) {
+      rebootChip("Called by Request");
+    } else if (strcmp(req->getPath(), "sys/gadgets/list") == 0) {
+      logger.println("[System / Request] Asking for Gadget List");
+      if (req->getType() == REQ_MQTT) {
+        req->respond("smarthome/response", "gadgetlist");
+      } else if (req->getType() == REQ_HTTP_GET) {
+        req->respond("200 OK", "gadgetlist");
+      } else if (req->getType() == REQ_SERIAL) {
+        req->respond("<ok>", "gadgetlist");
+      }
+    } else {
+      logger.println(LOG_ERR, "[System / Request] Unknown Request");
     }
   }
 
-  void handleRequest(REQUEST_TYPE type, const char *path, const char *body) {
+  void handleRequest(Request *req) {
     logger.incIndent();
-    if (body != nullptr) {
-      char first_char = body[0];
-      unsigned int last_pos = strlen(body) - 1;
+    if (req->getBody() != nullptr) {
+      unsigned int last_pos = strlen(req->getBody()) - 1;
       if (last_pos > 0) {
-        char last_char = body[last_pos];
-        if (first_char == '{' && last_char == '}') {
-          std::string str_path = path;
-          if (str_path.rfind("sys/", 0) == 0) {
-            logger.incIndent();
-            logger.println(LOG_INFO, "Applying new Config...");
-            logger.incIndent();
-            handleSystemRequest(type, path, body);
-            logger.decIndent();
-            logger.decIndent();
-          } else {
-            if (validateJson(body)) {
-              DynamicJsonDocument json_file(2048);
-              deserializeJson(json_file, body);
-              JsonObject json_doc = json_file.as<JsonObject>();
-              handleJsonRequest(type, path, json_doc);
-            } else {
-              handleStringRequest(type, path, body);
-            }
-          }
+        std::string str_path = req->getPath();
+        if (str_path.compare(0, 4, "sys/") == 0) {
+          logger.incIndent();
+          logger.println(LOG_INFO, "Applying new Config...");
+          logger.incIndent();
+          handleSystemRequest(req);
+          logger.decIndent();
+          logger.decIndent();
         } else {
-          handleStringRequest(type, path, body);
+          if (validateJson(req->getBody())) {
+            DynamicJsonDocument json_file(2048);
+            deserializeJson(json_file, req->getBody());
+            JsonObject json_doc = json_file.as<JsonObject>();
+            handleJsonRequest(req->getType(), req->getPath(), json_doc);
+          } else {
+            handleStringRequest(req->getType(), req->getPath(), req->getBody());
+          }
         }
       }
     }
     logger.decIndent();
+    delete req;
   }
 
   void refreshConnectors() {
@@ -410,10 +409,10 @@ public:
   void init() {
     Serial.begin(SERIAL_SPEED);
     logger.println(LOG_INFO, "Launching...");
-    char buffer[EEPROM_CONFIG_LEN_MAX]{};
     DynamicJsonDocument json_file(2048);
 
 #ifndef USE_HARD_CONFIG
+    char buffer[EEPROM_CONFIG_LEN_MAX]{};
     bool eeprom_status = System_Storage::initEEPROM();
     bool config_status = false;
     if (eeprom_status && System_Storage::readConfig(&buffer[0])) {

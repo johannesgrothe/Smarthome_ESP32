@@ -2,4 +2,4 @@
 
 #define LOGGING_ACTIVE 1
 
-//#define USE_HARD_CONFIG
+#define USE_HARD_CONFIG
