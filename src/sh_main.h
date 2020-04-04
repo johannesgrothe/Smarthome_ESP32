@@ -291,21 +291,58 @@ private:
     logger.print("System Command Detected: ");
     logger.addln(req->getPath());
     logger.incIndent();
-    if (strcmp(req->getPath(), "sys/config/write") == 0) {
-      System_Storage::writeConfig(req->getBody());
-    } else if (strcmp(req->getPath(), "sys/reboot") == 0) {
-      rebootChip("Called by Request");
-    } else if (strcmp(req->getPath(), "sys/gadgets/list") == 0) {
-      logger.println("[System / Request] Asking for Gadget List");
-      if (req->getType() == REQ_MQTT) {
-        req->respond("smarthome/response", "gadgetlist");
-      } else if (req->getType() == REQ_HTTP_GET) {
-        req->respond("200 OK", "gadgetlist");
-      } else if (req->getType() == REQ_SERIAL) {
-        req->respond("<ok>", "gadgetlist");
-      }
-    } else {
-      logger.println(LOG_ERR, "[System / Request] Unknown Request");
+
+    switch (req->getType()) {
+      case REQ_HTTP_GET:
+        logger.print("System / HTTP-GET", "");
+        if (strcmp(req->getPath(), "sys/gadgets/list") == 0) {
+          logger.addln("Asking for Gadget List");
+          req->respond("200 OK", "gadgetlist");
+        } else {
+          logger.addln("<unknown>");
+        }
+        break;
+
+      case REQ_HTTP_POST:
+        logger.print("System / HTTP-POST", "");
+        if (strcmp(req->getPath(), "sys/config/write") == 0) {
+          logger.addln("Write config");
+          if (System_Storage::writeConfig(req->getBody())) {
+            req->respond("200 OK", "Writing config successfull");
+          } else {
+            req->respond("666 ERR", "Error Writing Config");
+          }
+        } else if (strcmp(req->getPath(), "sys/reboot") == 0) {
+          logger.addln("Reboot");
+          rebootChip(req->getBody());
+        } else {
+          logger.addln("<unknown>");
+        }
+        break;
+
+      case REQ_MQTT:
+        logger.print("System / MQTT", "");
+        logger.addln("<unknown>");
+        break;
+
+      case REQ_SERIAL:
+        logger.print("System / Serial", "");
+        if (strcmp(req->getPath(), "sys/config/write") == 0) {
+          logger.addln("Write config");
+          if (System_Storage::writeConfig(req->getBody())) {
+            req->respond("OK", "Writing config successfull");
+          } else {
+            req->respond("ERR", "Error Writing Config");
+          }
+        } else if (strcmp(req->getPath(), "sys/gadgets/list") == 0) {
+          logger.addln("Asking for Gadget List");
+          req->respond("OK", "gadgetlist");
+        } else {
+          logger.addln("<unknown>");
+        }
+        break;
+      default:
+        logger.print("System / UNHANDLED", "Unknown Request");
     }
     logger.decIndent();
   }
