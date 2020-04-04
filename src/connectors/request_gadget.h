@@ -45,8 +45,7 @@ public:
     send_answer = answer_method;
   }
 
-  virtual ~Request() {
-  };
+  virtual ~Request() = default;
 
   bool respond(const char *res_path, const char *res_body) {
     if (!can_respond) {

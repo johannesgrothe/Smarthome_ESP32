@@ -220,9 +220,7 @@ private:
     logger.decIndent();
   }
 
-  void refreshCodeConnector(Code_Gadget *gadget) {
-    gadget->refresh();
-
+  void handleCodeConnector(Code_Gadget *gadget) {
     if (gadget->hasNewCommand()) {
       unsigned long com = gadget->getCommand();
       logger.print("[HEX] Hex-Com: 0x");
@@ -231,9 +229,7 @@ private:
     }
   }
 
-  void refreshRequestConnector(Request_Gadget *gadget) {
-    gadget->refresh();
-    // Check if Gadgets have new Commands
+  void handleRequestConnector(Request_Gadget *gadget) {
     if (gadget->hasRequest()) {
       char type[REQUEST_TYPE_LEN_MAX]{};
       Request *req = gadget->getRequest();
@@ -335,18 +331,6 @@ private:
       }
     }
     logger.decIndent();
-  }
-
-  void refreshConnectors() {
-    refreshCodeConnector(serial_gadget);
-    refreshCodeConnector(ir_gadget);
-//    refreshCodeConnector(radio_gadget);
-    refreshRequestConnector(serial_gadget);
-  }
-
-  void refreshNetworkConnectors() {
-    //    refreshRequestConnector(rest_gadget);
-    refreshRequestConnector(mqtt_gadget);
   }
 
   bool initRemotes(JsonObject json) {
@@ -452,19 +436,22 @@ public:
   }
 
   void refresh() {
-    refreshConnectors();
+    serial_gadget->refresh();
+    handleCodeConnector(serial_gadget);
+    handleRequestConnector(serial_gadget);
+
+    ir_gadget->refresh();
+    handleCodeConnector(ir_gadget);
+
+    handleRequestConnector(mqtt_gadget);
 
     for (byte c = 0; c < gadgets.getGadgetCount(); c++) {
       gadgets.getGadget(c)->refresh();
     }
   }
 
-  void refreshNetworks() {
-    refreshNetworkConnectors();
-  }
-
   void refreshMQTT() {
-    refreshRequestConnector(mqtt_gadget);
+    mqtt_gadget->refresh();
   }
 
 };

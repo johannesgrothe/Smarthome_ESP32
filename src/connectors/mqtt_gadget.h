@@ -20,8 +20,7 @@ public:
     Request(req_type, req_path, req_body, answer_method) {
   }
 
-  ~MQTTRequest() override {
-  };
+  ~MQTTRequest() override = default;
 
   MQTTRequest *createResponse(const char *res_path, const char *res_body) override {
     auto *res = new MQTTRequest(REQ_MQTT, res_path, res_body);
