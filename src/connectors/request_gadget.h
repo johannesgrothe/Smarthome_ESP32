@@ -46,13 +46,14 @@ public:
   }
 
   virtual ~Request() {
-    Serial.println("Default Destructor");
   };
 
   bool respond(const char *res_path, const char *res_body) {
-    if (!can_respond)
+    if (!can_respond) {
       return false;
-    send_answer(createResponse(res_path, res_body));
+    }
+    Request *req = createResponse(res_path, res_body);
+    send_answer(req);
     return true;
   }
 

@@ -13,10 +13,14 @@ class MQTTRequest : public Request {
 public:
 
   MQTTRequest(REQUEST_TYPE req_type, const char *req_path, const char *req_body) :
-    Request(req_type, req_path, req_body) {}
+    Request(req_type, req_path, req_body) {
+  }
+
+  MQTTRequest(REQUEST_TYPE req_type, const char *req_path, const char *req_body, std::function<void(Request *request)> answer_method) :
+    Request(req_type, req_path, req_body, answer_method) {
+  }
 
   ~MQTTRequest() override {
-    Serial.println("Destroying MQTTRequest");
   };
 
   MQTTRequest *createResponse(const char *res_path, const char *res_body) override {
@@ -58,6 +62,8 @@ protected:
         mqttClient->subscribe("debug/in");
         mqttClient->subscribe("homebridge/from/set");
         mqttClient->subscribe("homebridge/from/response");
+        mqttClient->subscribe("sys/gadgets/list");
+        mqttClient->subscribe("sys/reboot");
         mqttClient->publish("debug/out", "hallo welt");
         return true;
       } else {
@@ -79,7 +85,8 @@ protected:
     for (unsigned int i = 0; i < length; i++) {
       local_message[i] = (char) payload[i];
     }
-    MQTTRequest *req = new MQTTRequest(REQ_MQTT, topic, &local_message[0]);
+    using std::placeholders::_1;
+    MQTTRequest *req = new MQTTRequest(REQ_MQTT, topic, &local_message[0], std::bind(&Request_Gadget::sendRequest, this, _1));
     addIncomingRequest(req);
   }
 

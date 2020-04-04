@@ -261,7 +261,6 @@ private:
       logger.add(req->getPath());
       logger.add("' :");
       logger.addln(req->getBody());
-//      handleRequest(req_type, req->getPath(), req->getBody());
       handleRequest(req);
       delete req;
     }
@@ -295,6 +294,7 @@ private:
   void handleSystemRequest(Request *req) {
     logger.print("System Command Detected: ");
     logger.addln(req->getPath());
+    logger.incIndent();
     if (strcmp(req->getPath(), "sys/config/write") == 0) {
       System_Storage::writeConfig(req->getBody());
     } else if (strcmp(req->getPath(), "sys/reboot") == 0) {
@@ -311,6 +311,7 @@ private:
     } else {
       logger.println(LOG_ERR, "[System / Request] Unknown Request");
     }
+    logger.decIndent();
   }
 
   void handleRequest(Request *req) {
@@ -320,12 +321,7 @@ private:
       if (last_pos > 0) {
         std::string str_path = req->getPath();
         if (str_path.compare(0, 4, "sys/") == 0) {
-          logger.incIndent();
-          logger.println(LOG_INFO, "Applying new Config...");
-          logger.incIndent();
           handleSystemRequest(req);
-          logger.decIndent();
-          logger.decIndent();
         } else {
           if (validateJson(req->getBody())) {
             DynamicJsonDocument json_file(2048);
@@ -339,7 +335,6 @@ private:
       }
     }
     logger.decIndent();
-    delete req;
   }
 
   void refreshConnectors() {

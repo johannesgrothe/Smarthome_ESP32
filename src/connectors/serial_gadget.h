@@ -9,10 +9,14 @@
 class SerialRequest : public Request {
 public:
   SerialRequest(REQUEST_TYPE req_type, const char *req_path, const char *req_body) :
-  Request(req_type, req_path, req_body) {}
+  Request(req_type, req_path, req_body) {
+  }
+
+  SerialRequest(REQUEST_TYPE req_type, const char *req_path, const char *req_body, std::function<void(Request *request)> answer_method) :
+    Request(req_type, req_path, req_body, answer_method) {
+  }
 
   ~SerialRequest() override {
-    Serial.println("Destroying SerialRequest");
   };
 
   SerialRequest *createResponse(const char *res_path, const char *res_body) override {
@@ -35,7 +39,7 @@ protected:
   }
 
   void executeRequestSending(Request *req) override {
-    Serial.printf("_%s:%s", req->getPath(), req->getBody());
+    Serial.printf("_%s:%s\n", req->getPath(), req->getBody());
   };
 
 public:
@@ -55,7 +59,7 @@ public:
   };
 
   void refresh() override {
-    if (!code_gadget_is_ready || !request_gadget_is_ready || !Serial.available()) {
+    if (!code_gadget_is_ready || !request_gadget_is_ready) {
       return;
     }
     char incoming_message[REQUEST_BODY_LEN_MAX + REQUEST_PATH_LEN_MAX]{};
@@ -100,10 +104,12 @@ public:
             body_pointer++;
             msg_pointer++;
           }
-          auto *req = new SerialRequest(REQ_SERIAL, &message_path[0], &message_body[0]);
+          using std::placeholders::_1;
+          auto *req = new SerialRequest(REQ_SERIAL, &message_path[0], &message_body[0], std::bind(&Request_Gadget::sendRequest, this, _1));
           addIncomingRequest(req);
         } else {
-          auto *req = new SerialRequest(REQ_SERIAL, "_unknown_", &incoming_message[0]);
+          using std::placeholders::_1;
+          auto *req = new SerialRequest(REQ_SERIAL, "_unknown_", &incoming_message[0], std::bind(&Request_Gadget::sendRequest, this, _1));
           addIncomingRequest(req);
         }
       }
