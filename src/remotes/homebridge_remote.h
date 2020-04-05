@@ -4,13 +4,37 @@
 #include "../connectors/mqtt_gadget.h"
 #include "remote.h"
 
+static unsigned long getIdent(const char *json_str_input) {
+  DynamicJsonDocument json_file(2048);
+  DeserializationError err = deserializeJson(json_file, json_str_input);
+  if (err == DeserializationError::Ok) {
+    JsonObject json_obj = json_file.as<JsonObject>();
+    if (json_obj["request_id"] != nullptr) {
+      unsigned long ident = json_obj["request_id"].as<unsigned long>();
+      return ident;
+    }
+  }
+  return 0;
+}
+
+static bool getAck(const char *json_str_input) {
+  DynamicJsonDocument json_file(2048);
+  DeserializationError err = deserializeJson(json_file, json_str_input);
+  if (err == DeserializationError::Ok) {
+    JsonObject json_obj = json_file.as<JsonObject>();
+    if (json_obj["ack"] != nullptr) {
+      return json_obj["ack"].as<bool>();
+    }
+  }
+  return false;
+}
+
 class Homebridge_Remote : public Remote {
 private:
-
   MQTT_Gadget *mqtt_gadget;
 
   bool registerGadget(const char *gadget_name, Gadget_Type gadget_type, const char *characteristics) override {
-    removeGadget(gadget_name);
+    unsigned long ident = micros() % 7023;
     char reg_str[HOMEBRIDGE_REGISTER_STR_MAX_LEN]{};
     const char *service_name;
     if (gadget_type == Lightbulb)
@@ -24,23 +48,55 @@ private:
       return false;
     }
     if (characteristics != nullptr) {
-      snprintf(reg_str, HOMEBRIDGE_REGISTER_STR_MAX_LEN, R"({"name": "%s", "service_name": "%s", "service": "%s", %s})",
-               gadget_name, gadget_name, service_name, characteristics);
+      snprintf(reg_str, HOMEBRIDGE_REGISTER_STR_MAX_LEN,
+               R"({"request_id" : %lu, "name": "%s", "service_name": "%s", "service": "%s", %s})",
+               ident, gadget_name, gadget_name, service_name, characteristics);
     } else {
-      sprintf(reg_str, R"({"name": "%s", "service_name": "%s", "service": "%s"})", gadget_name, gadget_name,
+      sprintf(reg_str, R"({"request_id" : %lu, "name": "%s", "service_name": "%s", "service": "%s"})", ident,
+              gadget_name, gadget_name,
               service_name);
     }
-    return mqtt_gadget->publishMessageAndWaitForAnswer("homebridge/to/add", &reg_str[0]);
+    mqtt_gadget->sendRequest("homebridge/to/add", &reg_str[0]);
+    unsigned long start_time = millis();
+    while (start_time + 5000 > millis()) {
+      if (!mqtt_gadget->hasRequest()) {
+        mqtt_gadget->refresh();
+      } else {
+        Request *resp = mqtt_gadget->getRequest();
+        if (strcmp(resp->getPath(), "homebridge/from/response") == 0 && getIdent(resp->getBody()) == ident) {
+          delete resp;
+          return getAck(resp->getBody());
+        }
+        delete resp;
+      }
+    }
+    return false;
   };
 
   bool removeGadget(const char *gadget_name) override {
     char buf_msg[HOMEBRIDGE_UNREGISTER_STR_MAX_LEN]{};
-    snprintf(&buf_msg[0], HOMEBRIDGE_UNREGISTER_STR_MAX_LEN, R"({"name": "%s"})", gadget_name);
-    return mqtt_gadget->publishMessageAndWaitForAnswer("homebridge/to/remove", &buf_msg[0]);
+    unsigned long ident = micros() % 7023;
+    snprintf(&buf_msg[0], HOMEBRIDGE_UNREGISTER_STR_MAX_LEN, R"({"request_id" : %lu, "name": "%s"})", ident,
+             gadget_name);
+    mqtt_gadget->sendRequest("homebridge/to/remove", &buf_msg[0]);
+    unsigned long start_time = millis();
+    while (start_time + 5000 > millis()) {
+      if (!mqtt_gadget->hasRequest()) {
+        mqtt_gadget->refresh();
+      } else {
+        Request *resp = mqtt_gadget->getRequest();
+        if (strcmp(resp->getPath(), "homebridge/from/response") == 0 && getIdent(resp->getBody()) == ident) {
+          delete resp;
+          return getAck(resp->getBody());
+        }
+        delete resp;
+      }
+    }
+    return false;
   };
 
 public:
-  Homebridge_Remote(MQTT_Gadget *new_mqtt_gadget) :
+  explicit Homebridge_Remote(MQTT_Gadget *new_mqtt_gadget) :
     Remote(),
     mqtt_gadget(new_mqtt_gadget) {};
 
@@ -51,13 +107,13 @@ public:
     if (characteristic != nullptr && target_gadget != nullptr) {
       char update_str[HOMEBRIDGE_UPDATE_STR_LEN_MAX]{};
       sprintf(&update_str[0],
-              "{\"name\":\"%s\",\"service_name\":\"%s\",\"service_type\":\"%s\",\"characteristic\":\"%s\",\"value\":%d}",
+              R"({"name":"%s","service_name":"%s","service_type":"%s","characteristic":"%s","value":%d})",
               gadget_name,
               gadget_name,
               service,
               characteristic,
               value);
-      mqtt_gadget->publishMessage("homebridge/to/set", update_str);
+      mqtt_gadget->sendRequest("homebridge/to/set", update_str);
     }
   };
 

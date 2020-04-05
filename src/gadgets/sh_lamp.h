@@ -134,7 +134,7 @@ public:
     if (strcmp(characteristic, "On") == 0) {
       setStatus((bool) value);
     } else if (strcmp(characteristic, "Brightness") == 0) {
-      setStatus((float) value);
+      setStatus((bool) value);
     } else if (strcmp(characteristic, "Hue") == 0) {
       setHue((float) value);
     }

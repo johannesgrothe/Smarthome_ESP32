@@ -1,11 +1,8 @@
 #include "sh_main.h"
-
-SH_Main shMain;
+#include "console_logger.h"
 
 void setup() {
-  shMain.init();
+  startSmarthomeSystem();
 }
 
-void loop() {
-  shMain.refresh();
-}
+void loop() {}

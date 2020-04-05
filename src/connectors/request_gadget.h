@@ -4,6 +4,7 @@
 // External Imports
 #include <ArduinoJson.h>
 #include <cstring>
+#include <utility>
 #include <IPAddress.h>
 #include <WiFi.h>
 
@@ -12,64 +13,101 @@
 #include "../console_logger.h"
 
 enum REQUEST_TYPE {
-  REQ_UNKNOWN, REQ_HTTP_GET, REQ_HTTP_POST, REQ_HTTP_PUT, REQ_HTTP_DELETE, REQ_MQTT, REQ_SERIAL
+  REQ_UNKNOWN, REQ_HTTP_GET, REQ_HTTP_POST, REQ_HTTP_PUT, REQ_HTTP_DELETE, RES_HTTP, REQ_MQTT, REQ_SERIAL
+};
+
+class Request {
+private:
+  REQUEST_TYPE type;
+  char body[REQUEST_BODY_LEN_MAX]{};
+  char path[REQUEST_PATH_LEN_MAX]{};
+  std::function<void(Request *)> send_answer;
+
+protected:
+
+  bool can_respond;
+
+  virtual Request *createResponse(const char *res_path, const char *res_body) = 0;
+
+public:
+  Request(REQUEST_TYPE req_type, const char *req_path, const char *req_body) :
+    type(req_type),
+    can_respond(false) {
+    strncpy(path, req_path, REQUEST_PATH_LEN_MAX);
+    strncpy(body, req_body, REQUEST_BODY_LEN_MAX);
+  }
+
+  Request(REQUEST_TYPE req_type, const char *req_path, const char *req_body, std::function<void(Request *request)> answer_method) :
+    type(req_type),
+    can_respond(true) {
+    strncpy(path, req_path, REQUEST_PATH_LEN_MAX);
+    strncpy(body, req_body, REQUEST_BODY_LEN_MAX);
+    send_answer = answer_method;
+  }
+
+  virtual ~Request() = default;
+
+  bool respond(const char *res_path, const char *res_body) {
+    if (!can_respond) {
+      return false;
+    }
+    Request *req = createResponse(res_path, res_body);
+    send_answer(req);
+    return true;
+  }
+
+  REQUEST_TYPE getType() {
+    return type;
+  }
+
+  const char *getPath() {
+    return &path[0];
+  }
+
+  const char *getBody() {
+    return &body[0];
+  }
+
+
 };
 
 class Request_Gadget {
 protected:
   bool request_gadget_is_ready;
-  bool has_request{};
-  REQUEST_TYPE type;
-  char body[REQUEST_BODY_LEN_MAX]{};
-  char path[REQUEST_PATH_LEN_MAX]{};
 
-  bool has_response{};
-  int response_status{};
-  char response_body[REQUEST_BODY_LEN_MAX]{};
-  char response_path[REQUEST_PATH_LEN_MAX]{};
+  QueueHandle_t in_request_queue;
 
-  void setBody(const char *new_body) {
-    strncpy(body, new_body, REQUEST_BODY_LEN_MAX);
+  QueueHandle_t out_request_queue;
+
+  void addIncomingRequest(Request *request) {
+    xQueueSend(in_request_queue, &request, portMAX_DELAY);
   };
 
-  void setPath(const char *new_path) {
-    strncpy(path, new_path, REQUEST_PATH_LEN_MAX);
-  };
+  virtual void executeRequestSending(Request *req) = 0;
 
-  void setRequest(const char *new_path, const char *new_body, REQUEST_TYPE new_type, bool changeStatus = true) {
-    setBody(new_body);
-    setPath(new_path);
-    type = new_type;
-    if (changeStatus)
-      has_request = true;
-  };
-
-  void setResponseBody(const char *new_response_body) {
-    strncpy(response_body, new_response_body, REQUEST_BODY_LEN_MAX);
-  };
-
-  void setResponsePath(const char *new_response_path) {
-    strncpy(response_path, new_response_path, REQUEST_PATH_LEN_MAX);
-  };
-
-  void setResponseRequest(const char *new_response_path, const char *new_response_body, int new_response_code,
-                          bool changeStatus = true) {
-    setResponseBody(new_response_body);
-    setResponsePath(new_response_path);
-    response_status = new_response_code;
-    if (changeStatus)
-      has_response = true;
-  };
+  void sendQueuedItems() {
+    if (!request_gadget_is_ready) {
+      return;
+    }
+    if (uxQueueMessagesWaiting(out_request_queue) > 0) {
+      Request *buf_req;
+      xQueueReceive(out_request_queue, &buf_req, portMAX_DELAY);
+      executeRequestSending(buf_req);
+      delete buf_req;
+    }
+  }
 
 public:
   Request_Gadget() :
     request_gadget_is_ready(false) {
+    in_request_queue = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
+    out_request_queue = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
   }
 
   explicit Request_Gadget(JsonObject data) :
-    request_gadget_is_ready(false),
-    has_request(false),
-    type(REQ_UNKNOWN) {
+    request_gadget_is_ready(false) {
+    in_request_queue = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
+    out_request_queue = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
   }
 
   bool requestGadgetIsReady() {
@@ -77,52 +115,18 @@ public:
   }
 
   bool hasRequest() {
-    bool buffer = has_request;
-    has_request = false;
-    return buffer;
+    return uxQueueMessagesWaiting(in_request_queue) > 0;
   }
 
-  REQUEST_TYPE getRequestType() {
-    return type;
+  Request *getRequest() {
+    Request *buf_req;
+    xQueueReceive(in_request_queue, &buf_req, portMAX_DELAY);
+    return buf_req;
   }
 
-  const char *getRequestBody() {
-    return &body[0];
-  }
-
-  const char *getRequestPath() {
-    return &path[0];
-  }
-
-  bool hasResponse() {
-    bool buffer = has_response;
-    has_response = false;
-    return buffer;
-  }
-
-  int getResponseStatusCode() {
-    return response_status;
-  }
-
-  const char *getResponseBody() {
-    return &response_body[0];
-  }
-
-  const char *getResponsePath() {
-    return &response_path[0];
-  }
-
-  virtual void
-  sendRequest(REQUEST_TYPE req_type, const char *content_type, IPAddress ip, int port, const char *req_path,
-              const char *req_body) = 0;
-
-  virtual void
-  sendRequest(REQUEST_TYPE req_type, const char *content_type, IPAddress ip, int port, const char *req_path,
-              JsonObject req_body) = 0;
-
-  virtual void sendAnswer(const char *req_body, int status_code) = 0;
-
-  virtual void sendAnswer(JsonObject req_body, int status_code) = 0;
+  void sendRequest(Request *request) {
+    xQueueSend(out_request_queue, &request, portMAX_DELAY);
+  };
 
   virtual void refresh() = 0;
 };
