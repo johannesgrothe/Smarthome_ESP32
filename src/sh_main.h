@@ -426,10 +426,10 @@ public:
     Serial.begin(SERIAL_SPEED);
     logger.println(LOG_INFO, "Launching...");
     DynamicJsonDocument json_file(2048);
+    bool eeprom_status = System_Storage::initEEPROM();
 
 #ifndef USE_HARD_CONFIG
     char buffer[EEPROM_CONFIG_LEN_MAX]{};
-    bool eeprom_status = System_Storage::initEEPROM();
     bool config_status = false;
     if (eeprom_status && System_Storage::readConfig(&buffer[0])) {
       config_status = (deserializeJson(json_file, &buffer[0]) == OK);
