@@ -4,7 +4,7 @@
 
 // Network Gadgets
 #include "connectors/ir_gadget.h"
-//#include "connectors/rest_gadget.h"
+#include "connectors/rest_gadget.h"
 #include "connectors/serial_gadget.h"
 #include "connectors/radio_gadget.h"
 
@@ -44,11 +44,9 @@ static void rebootChip(const char *reason) {
 class SH_Main {
 private:
 
-  System_Storage storage;
-
   IR_Gadget *ir_gadget;
   MQTT_Gadget *mqtt_gadget;
-//  REST_Gadget *rest_gadget;
+  REST_Gadget *rest_gadget;
   Serial_Gadget *serial_gadget;
   Radio_Gadget *radio_gadget;
 
@@ -143,9 +141,9 @@ private:
     }
 
     if (connectors_json["rest"] != nullptr) {
-//      rest_gadget = new REST_Gadget(connectors_json["rest"].as<JsonObject>(), &network_client);
+      rest_gadget = new REST_Gadget(connectors_json["rest"].as<JsonObject>());
     } else {
-//      rest_gadget = new REST_Gadget();
+      rest_gadget = new REST_Gadget();
     }
 
     if (connectors_json["serial"] != nullptr) {
@@ -257,6 +255,14 @@ private:
       logger.add("' :");
       logger.addln(req->getBody());
       handleRequest(req);
+      if (req->needsResponse()) {
+        if (req->getType() == REQ_HTTP_GET || req->getType() == REQ_HTTP_POST || req->getType() == REQ_HTTP_DELETE ||
+            req->getType() == REQ_HTTP_DELETE) {
+          req->respond("404 GG", "unhandled");
+        } else {
+          req->respond("ERR", "unhandled");
+        }
+      }
       delete req;
     }
   }
@@ -480,6 +486,7 @@ public:
     handleCodeConnector(ir_gadget);
 
     handleRequestConnector(mqtt_gadget);
+    handleRequestConnector(rest_gadget);
 
     for (byte c = 0; c < gadgets.getGadgetCount(); c++) {
       gadgets.getGadget(c)->refresh();
@@ -488,6 +495,10 @@ public:
 
   void refreshMQTT() {
     mqtt_gadget->refresh();
+  }
+
+  void refreshREST() {
+    rest_gadget->refresh();
   }
 
 };
@@ -508,6 +519,13 @@ static void mqttTask(void *args) {
   }
 }
 
+static void restTask(void *args) {
+  while (true) {
+    smarthome_system.refreshREST();
+    vTaskDelay(10 / portTICK_PERIOD_MS);
+  }
+}
+
 static void createTasks() {
   xTaskCreatePinnedToCore(
     mainTask,     /* Task function. */
@@ -521,6 +539,15 @@ static void createTasks() {
   xTaskCreatePinnedToCore(
     mqttTask,     /* Task function. */
     "Smarthome_MQTT",       /* String with name of task. */
+    10000,            /* Stack size in words. */
+    NULL,             /* Parameter passed as input of the task */
+    1,                /* Priority of the task. */
+    NULL,
+    1);            /* Task handle. */
+
+  xTaskCreatePinnedToCore(
+    restTask,     /* Task function. */
+    "Smarthome_REST",       /* String with name of task. */
     10000,            /* Stack size in words. */
     NULL,             /* Parameter passed as input of the task */
     1,                /* Priority of the task. */

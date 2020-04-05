@@ -13,7 +13,7 @@
 #include "../console_logger.h"
 
 enum REQUEST_TYPE {
-  REQ_UNKNOWN, REQ_HTTP_GET, REQ_HTTP_POST, REQ_HTTP_PUT, REQ_HTTP_DELETE, RES_HTTP, REQ_MQTT, REQ_SERIAL
+  REQ_UNKNOWN, REQ_HTTP_GET, REQ_HTTP_POST, REQ_HTTP_PUT, REQ_HTTP_DELETE, REQ_HTTP_RESPONSE, REQ_MQTT, REQ_SERIAL
 };
 
 class Request {
@@ -26,20 +26,23 @@ private:
 protected:
 
   bool can_respond;
+  bool needs_response;
 
   virtual Request *createResponse(const char *res_path, const char *res_body) = 0;
 
 public:
   Request(REQUEST_TYPE req_type, const char *req_path, const char *req_body) :
     type(req_type),
-    can_respond(false) {
+    can_respond(false),
+    needs_response(false) {
     strncpy(path, req_path, REQUEST_PATH_LEN_MAX);
     strncpy(body, req_body, REQUEST_BODY_LEN_MAX);
   }
 
   Request(REQUEST_TYPE req_type, const char *req_path, const char *req_body, std::function<void(Request *request)> answer_method) :
     type(req_type),
-    can_respond(true) {
+    can_respond(true),
+    needs_response(true) {
     strncpy(path, req_path, REQUEST_PATH_LEN_MAX);
     strncpy(body, req_body, REQUEST_BODY_LEN_MAX);
     send_answer = answer_method;
@@ -48,12 +51,17 @@ public:
   virtual ~Request() = default;
 
   bool respond(const char *res_path, const char *res_body) {
+    needs_response = false;
     if (!can_respond) {
       return false;
     }
     Request *req = createResponse(res_path, res_body);
     send_answer(req);
     return true;
+  }
+
+  bool dontRespond() {
+    needs_response = false;
   }
 
   REQUEST_TYPE getType() {
@@ -68,7 +76,9 @@ public:
     return &body[0];
   }
 
-
+  bool needsResponse() {
+    return needs_response;
+  }
 };
 
 class Request_Gadget {
