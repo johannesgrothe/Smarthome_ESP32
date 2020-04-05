@@ -19,7 +19,6 @@
 #include <WiFi.h>
 #include "ArduinoJson.h"
 
-#include "wifi_credentials.h"
 #include "remotes/homebridge_remote.h"
 #include "gadget_collection.h"
 #include "system_storage.h"
