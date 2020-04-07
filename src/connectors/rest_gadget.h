@@ -80,6 +80,55 @@ protected:
   WiFiClient *client{};
   WebServer *server{};
 
+  Request *generateResponseObj(const char *res_str, WiFiClient *res_client) {
+    char body_buf[REQUEST_BODY_LEN_MAX]{};
+    char status_buf[10]{};
+    bool had_newline = false;
+    bool in_body = false;
+    bool in_status = false;
+    bool found_status = false;
+    unsigned int body_len = 0;
+    unsigned int status_len = 0;
+    unsigned int c_ptr = 0;
+    unsigned int res_len = strlen(res_str);
+    while (c_ptr < res_len) {
+      char buf_char = res_str[c_ptr];
+      if (buf_char == '\r' || buf_char == '\t') {
+      } else if (buf_char == '\n') {
+        if (had_newline) {
+          in_body = true;
+        }
+        had_newline = true;
+      } else {
+        if (buf_char == ' ') {
+          if (in_status) {
+            found_status = true;
+          } else {
+            in_status = true;
+          }
+        } else if (in_status && !found_status) {
+          status_buf[status_len] = buf_char;
+          status_len ++;
+        }
+        had_newline = false;
+        if (in_body) {
+          if (body_len < REQUEST_BODY_LEN_MAX) {
+            body_buf[body_len] = buf_char;
+            body_len ++;
+          } else {
+            logger.println(LOG_ERR, "Body too long");
+          }
+        }
+      }
+      c_ptr ++;
+    }
+    if (in_body && found_status) {
+      auto *res = new RestRequest(REQ_HTTP_RESPONSE, status_buf, body_buf, res_client->remotePort(), res_client->remoteIP(), "");
+      return res;
+    }
+    return nullptr;
+  }
+
   void executeRequestSending(Request *req) override {
     logger.print("System / REST", "sending Request '");
     char type[REQUEST_TYPE_LEN_MAX];
@@ -104,7 +153,8 @@ protected:
         return;
     }
     logger.add(type);
-    logger.addln("'");
+    logger.addln("':");
+    logger.incIndent();
 
     auto *rest_req = (RestRequest *) req;
     if (req->getType() == REQ_HTTP_RESPONSE) {
@@ -128,7 +178,9 @@ protected:
       res_client->println();
       res_client->stop();
     } else {
-      if (client->connect(*(rest_req->getIP()), rest_req->getPort())) {
+      IPAddress ip = *rest_req->getIP();
+      unsigned int port = rest_req->getPort();
+      if (client->connect(ip, port)) {
         logger.print("connected to ");
         logger.addln(client->remoteIP());
         client->print(type);
@@ -144,7 +196,40 @@ protected:
         client->println();
         client->println(rest_req->getBody());
         client->println();
+        logger.println("OK");
+        logger.decIndent();
+
+        logger.println("Awaiting Response:");
+        logger.incIndent();
+        unsigned long start_time = millis();
+        bool got_request = false;
+        while (start_time + 1000 > millis()) {
+          int len = client->available();
+          if (len) {
+            char buffer[REQUEST_BODY_LEN_MAX]{};
+            if (len > REQUEST_BODY_LEN_MAX)
+              len = REQUEST_BODY_LEN_MAX;
+            for (int k = 0; k < len; k++) {
+              buffer[k] = (char) client->read();
+            }
+            Request *res = generateResponseObj(&buffer[0], client);
+            if (res == nullptr) {
+              logger.println(LOG_ERR,"Cannot decode Response");
+            } else {
+              addIncomingRequest(res);
+              logger.println("Received Response");
+            }
+            got_request = true;
+            break;
+          }
+          delay(10);
+        }
+        if (!got_request)
+          logger.println(LOG_ERR,"No Response Received");
+        logger.decIndent();
         client->stop();
+      } else {
+        logger.println(LOG_ERR, "Error sending request");
       }
     }
   }
@@ -176,10 +261,10 @@ protected:
     }
     WiFiClient newClient = server->client();
     auto *inc_client = new WiFiClient(newClient);
-    Serial.println(inc_client->remotePort());
-    Serial.println(inc_client->remoteIP());
+//    Serial.println(inc_client->remotePort());
+//    Serial.println(inc_client->remoteIP());
     using std::placeholders::_1;
-    auto *req = new RestRequest(req_type, server->uri().c_str(), server->arg(0).c_str(), "text/plain",
+    auto *req = new RestRequest(req_type, &(server->uri().c_str())[1], server->arg(0).c_str(), "text/plain",
                                 std::bind(&Request_Gadget::sendRequest, this, _1), inc_client);
     addIncomingRequest(req);
   }

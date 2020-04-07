@@ -212,8 +212,14 @@ private:
   void testStuff() {
     logger.println("Testing Stuff");
     logger.incIndent();
-    //    rest_gadget->sendRequest(REQ_HTTP_POST, "text/plain", IPAddress(192, 168, 178, 111), 3005, "/irgendein/scheiss",
-//                             "pennerus maximus schmongus");
+    auto *req = new RestRequest(REQ_HTTP_POST, "/irgendein/scheiss", "pennerus maximus schmongus",
+                                3005, IPAddress(192, 168, 178, 108), "text/plain");
+    rest_gadget->sendRequest(req);
+
+    auto *req2 = new RestRequest(REQ_HTTP_GET, "/irgendein/scheiss", "pennerus maximus schmongus",
+                                 3005, IPAddress(192, 168, 178, 108), "text/plain");
+    rest_gadget->sendRequest(req2);
+
     logger.decIndent();
   }
 
@@ -241,6 +247,8 @@ private:
         strncpy(type, "DELETE", REQUEST_TYPE_LEN_MAX);
       else if (req_type == REQ_HTTP_PUT)
         strncpy(type, "PUT", REQUEST_TYPE_LEN_MAX);
+      else if (req_type == REQ_HTTP_RESPONSE)
+        strncpy(type, "RESPONSE", REQUEST_TYPE_LEN_MAX);
       else if (req_type == REQ_MQTT)
         strncpy(type, "MQTT", REQUEST_TYPE_LEN_MAX);
       else if (req_type == REQ_SERIAL)
