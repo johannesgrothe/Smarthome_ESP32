@@ -80,7 +80,7 @@ protected:
   WiFiClient *client{};
   WebServer *server{};
 
-  Request *generateResponseObj(const char *res_str, WiFiClient *res_client) {
+  static Request *generateResponseObj(const char *res_str, WiFiClient *res_client) {
     char body_buf[REQUEST_BODY_LEN_MAX]{};
     char status_buf[10]{};
     bool had_newline = false;

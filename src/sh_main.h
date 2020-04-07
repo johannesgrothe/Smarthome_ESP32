@@ -58,6 +58,8 @@ private:
 
   byte remote_count;
 
+  unsigned long time_index = 0;
+
   bool initGadgets(JsonArray gadget_json) {
     gadgets = Gadget_Collection();
     byte new_gadget_count = gadget_json.size() < MAIN_MAX_GADGETS ? gadget_json.size() : MAIN_MAX_GADGETS;
@@ -172,8 +174,6 @@ private:
 
       const char *ssid = json["config"]["ssid"].as<char *>();
       const char *passwd = json["config"]["password"].as<char *>();
-//      ssid = WIFI_SSID;
-//      passwd = WIFI_PW;
 
       if (ssid == nullptr || passwd == nullptr) {
         logger.println(LOG_ERR, "Missing Username or Password.");
@@ -212,15 +212,36 @@ private:
   void testStuff() {
     logger.println("Testing Stuff");
     logger.incIndent();
-    auto *req = new RestRequest(REQ_HTTP_POST, "/irgendein/scheiss", "pennerus maximus schmongus",
-                                3005, IPAddress(192, 168, 178, 108), "text/plain");
-    rest_gadget->sendRequest(req);
-
-    auto *req2 = new RestRequest(REQ_HTTP_GET, "/irgendein/scheiss", "pennerus maximus schmongus",
-                                 3005, IPAddress(192, 168, 178, 108), "text/plain");
-    rest_gadget->sendRequest(req2);
 
     logger.decIndent();
+  }
+
+  void initTime() {
+    logger.println("Initializing Time");
+    auto *req = new RestRequest(REQ_HTTP_GET, "/time", "",
+                                3006, IPAddress(192, 168, 178, 108), "text/plain");
+    rest_gadget->sendRequest(req);
+    unsigned long start_time = millis();
+    bool found_time = false;
+    while (start_time + 3000 > millis() && !found_time) {
+      if (rest_gadget->hasRequest()) {
+        Request *res = rest_gadget->getRequest();
+        if (strcmp(res->getPath(), "200") == 0) {
+          found_time = true;
+          time_index = strtol(res->getBody(), NULL, 10);
+          logger.print("Got Time: ");
+          logger.add(BASE_TIME);
+          logger.addln(time_index);
+        } else {
+          logger.println("Received: ERR");
+        }
+      } else {
+        rest_gadget->refresh();
+      }
+    }
+    if (!found_time) {
+      logger.println(LOG_ERR, "Cannot Sync Time");
+    }
   }
 
   void handleCodeConnector(Code_Gadget *gadget) {
@@ -281,6 +302,7 @@ private:
       gadgets.getGadget(c)->handleCodeUpdate(code);
     }
     logger.decIndent();
+//    rest_gadget->sendRequest();
   }
 
   void handleStringRequest(REQUEST_TYPE type, const char *path, const char *body) {
@@ -477,6 +499,8 @@ public:
     } else {
       logger.println(LOG_ERR, "No remotes-configuration found");
     }
+
+    initTime();
 
     testStuff();
 

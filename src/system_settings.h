@@ -5,6 +5,7 @@
 #define EEPROM_SIZE 64
 #define SERIAL_SPEED 115200
 #define EEPROM_CONFIG_LEN_MAX 2000
+#define BASE_TIME 15862
 
 // gadget-Command-Mapping
 #define MAPPING_MAX_COMMANDS 15
