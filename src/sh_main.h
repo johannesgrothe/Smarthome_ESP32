@@ -4,7 +4,7 @@
 
 // Network Gadgets
 #include "connectors/ir_gadget.h"
-//#include "connectors/rest_gadget.h"
+#include "connectors/rest_gadget.h"
 #include "connectors/serial_gadget.h"
 #include "connectors/radio_gadget.h"
 
@@ -44,11 +44,9 @@ static void rebootChip(const char *reason) {
 class SH_Main {
 private:
 
-  System_Storage storage;
-
   IR_Gadget *ir_gadget;
   MQTT_Gadget *mqtt_gadget;
-//  REST_Gadget *rest_gadget;
+  REST_Gadget *rest_gadget;
   Serial_Gadget *serial_gadget;
   Radio_Gadget *radio_gadget;
 
@@ -59,6 +57,8 @@ private:
   Remote *remotes[REMOTE_MANAGER_MAX_REMOTES]{};
 
   byte remote_count;
+
+  unsigned long time_index = 0;
 
   bool initGadgets(JsonArray gadget_json) {
     gadgets = Gadget_Collection();
@@ -143,9 +143,9 @@ private:
     }
 
     if (connectors_json["rest"] != nullptr) {
-//      rest_gadget = new REST_Gadget(connectors_json["rest"].as<JsonObject>(), &network_client);
+      rest_gadget = new REST_Gadget(connectors_json["rest"].as<JsonObject>());
     } else {
-//      rest_gadget = new REST_Gadget();
+      rest_gadget = new REST_Gadget();
     }
 
     if (connectors_json["serial"] != nullptr) {
@@ -174,8 +174,6 @@ private:
 
       const char *ssid = json["config"]["ssid"].as<char *>();
       const char *passwd = json["config"]["password"].as<char *>();
-//      ssid = WIFI_SSID;
-//      passwd = WIFI_PW;
 
       if (ssid == nullptr || passwd == nullptr) {
         logger.println(LOG_ERR, "Missing Username or Password.");
@@ -214,9 +212,36 @@ private:
   void testStuff() {
     logger.println("Testing Stuff");
     logger.incIndent();
-    //    rest_gadget->sendRequest(REQ_HTTP_POST, "text/plain", IPAddress(192, 168, 178, 111), 3005, "/irgendein/scheiss",
-//                             "pennerus maximus schmongus");
+
     logger.decIndent();
+  }
+
+  void initTime() {
+    logger.println("Initializing Time");
+    auto *req = new RestRequest(REQ_HTTP_GET, "/time", "",
+                                3006, IPAddress(192, 168, 178, 108), "text/plain");
+    rest_gadget->sendRequest(req);
+    unsigned long start_time = millis();
+    bool found_time = false;
+    while (start_time + 3000 > millis() && !found_time) {
+      if (rest_gadget->hasRequest()) {
+        Request *res = rest_gadget->getRequest();
+        if (strcmp(res->getPath(), "200") == 0) {
+          found_time = true;
+          time_index = strtol(res->getBody(), NULL, 10);
+          logger.print("Got Time: ");
+          logger.add(BASE_TIME);
+          logger.addln(time_index);
+        } else {
+          logger.println("Received: ERR");
+        }
+      } else {
+        rest_gadget->refresh();
+      }
+    }
+    if (!found_time) {
+      logger.println(LOG_ERR, "Cannot Sync Time");
+    }
   }
 
   void handleCodeConnector(Code_Gadget *gadget) {
@@ -243,6 +268,8 @@ private:
         strncpy(type, "DELETE", REQUEST_TYPE_LEN_MAX);
       else if (req_type == REQ_HTTP_PUT)
         strncpy(type, "PUT", REQUEST_TYPE_LEN_MAX);
+      else if (req_type == REQ_HTTP_RESPONSE)
+        strncpy(type, "RESPONSE", REQUEST_TYPE_LEN_MAX);
       else if (req_type == REQ_MQTT)
         strncpy(type, "MQTT", REQUEST_TYPE_LEN_MAX);
       else if (req_type == REQ_SERIAL)
@@ -257,6 +284,14 @@ private:
       logger.add("' :");
       logger.addln(req->getBody());
       handleRequest(req);
+      if (req->needsResponse()) {
+        if (req->getType() == REQ_HTTP_GET || req->getType() == REQ_HTTP_POST || req->getType() == REQ_HTTP_DELETE ||
+            req->getType() == REQ_HTTP_DELETE) {
+          req->respond("404 GG", "unhandled");
+        } else {
+          req->respond("ERR", "unhandled");
+        }
+      }
       delete req;
     }
   }
@@ -267,6 +302,7 @@ private:
       gadgets.getGadget(c)->handleCodeUpdate(code);
     }
     logger.decIndent();
+//    rest_gadget->sendRequest();
   }
 
   void handleStringRequest(REQUEST_TYPE type, const char *path, const char *body) {
@@ -464,6 +500,8 @@ public:
       logger.println(LOG_ERR, "No remotes-configuration found");
     }
 
+    initTime();
+
     testStuff();
 
     logger.print("Free Heap: ");
@@ -480,6 +518,7 @@ public:
     handleCodeConnector(ir_gadget);
 
     handleRequestConnector(mqtt_gadget);
+    handleRequestConnector(rest_gadget);
 
     for (byte c = 0; c < gadgets.getGadgetCount(); c++) {
       gadgets.getGadget(c)->refresh();
@@ -488,6 +527,10 @@ public:
 
   void refreshMQTT() {
     mqtt_gadget->refresh();
+  }
+
+  void refreshREST() {
+    rest_gadget->refresh();
   }
 
 };
@@ -508,6 +551,13 @@ static void mqttTask(void *args) {
   }
 }
 
+static void restTask(void *args) {
+  while (true) {
+    smarthome_system.refreshREST();
+    vTaskDelay(10 / portTICK_PERIOD_MS);
+  }
+}
+
 static void createTasks() {
   xTaskCreatePinnedToCore(
     mainTask,     /* Task function. */
@@ -521,6 +571,15 @@ static void createTasks() {
   xTaskCreatePinnedToCore(
     mqttTask,     /* Task function. */
     "Smarthome_MQTT",       /* String with name of task. */
+    10000,            /* Stack size in words. */
+    NULL,             /* Parameter passed as input of the task */
+    1,                /* Priority of the task. */
+    NULL,
+    1);            /* Task handle. */
+
+  xTaskCreatePinnedToCore(
+    restTask,     /* Task function. */
+    "Smarthome_REST",       /* String with name of task. */
     10000,            /* Stack size in words. */
     NULL,             /* Parameter passed as input of the task */
     1,                /* Priority of the task. */
