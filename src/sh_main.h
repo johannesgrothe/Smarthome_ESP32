@@ -13,6 +13,7 @@
 
 // Tools
 #include "console_logger.h"
+#include "system_timer.h"
 
 // External Dependencies
 #include "Client.h"
@@ -22,6 +23,8 @@
 #include "remotes/homebridge_remote.h"
 #include "gadget_collection.h"
 #include "system_storage.h"
+
+#include "remotes/code_remote.h"
 
 #include "color.h"
 
@@ -54,11 +57,43 @@ private:
 
   Gadget_Collection gadgets;
 
+  CodeRemote *code_remote;
+
   Remote *remotes[REMOTE_MANAGER_MAX_REMOTES]{};
 
   byte remote_count;
 
-  unsigned long time_index = 0;
+  void initTime() {
+    logger.println("Initializing Time");
+    auto *req = new RestRequest(REQ_HTTP_GET, "/time", "",
+                                3006, IPAddress(192, 168, 178, 108), "text/plain");
+    unsigned long request_start_timestamp = millis();
+    rest_gadget->sendRequest(req);
+    unsigned long start_time = millis();
+    bool found_time = false;
+    while (start_time + 3000 > millis() && !found_time) {
+      if (rest_gadget->hasRequest()) {
+        Request *res = rest_gadget->getRequest();
+        if (strcmp(res->getPath(), "200") == 0) {
+          found_time = true;
+          request_start_timestamp = millis() - request_start_timestamp;
+          unsigned long time_offset = millis() - (request_start_timestamp / 2);
+          unsigned long time_index = strtol(res->getBody(), NULL, 10) + (request_start_timestamp / 2);
+          system_timer.setTime(time_index, time_offset);
+          logger.print("Got Time: ");
+          logger.add(BASE_TIME);
+          logger.addln(system_timer.getTime());
+        } else {
+          logger.println("Received: ERR");
+        }
+      } else {
+        rest_gadget->refresh();
+      }
+    }
+    if (!found_time) {
+      logger.println(LOG_ERR, "Cannot Sync Time");
+    }
+  }
 
   bool initGadgets(JsonArray gadget_json) {
     gadgets = Gadget_Collection();
@@ -209,47 +244,35 @@ private:
     return true;
   }
 
-  void testStuff() {
-    logger.println("Testing Stuff");
+  void forwardCode(CodeCommand *com) {
     logger.incIndent();
-
+    for (byte c = 0; c < gadgets.getGadgetCount(); c++) {
+      gadgets.getGadget(c)->handleCodeUpdate(com->getCode());
+    }
     logger.decIndent();
-  }
-
-  void initTime() {
-    logger.println("Initializing Time");
-    auto *req = new RestRequest(REQ_HTTP_GET, "/time", "",
-                                3006, IPAddress(192, 168, 178, 108), "text/plain");
-    rest_gadget->sendRequest(req);
-    unsigned long start_time = millis();
-    bool found_time = false;
-    while (start_time + 3000 > millis() && !found_time) {
-      if (rest_gadget->hasRequest()) {
-        Request *res = rest_gadget->getRequest();
-        if (strcmp(res->getPath(), "200") == 0) {
-          found_time = true;
-          time_index = strtol(res->getBody(), NULL, 10);
-          logger.print("Got Time: ");
-          logger.add(BASE_TIME);
-          logger.addln(time_index);
-        } else {
-          logger.println("Received: ERR");
-        }
-      } else {
-        rest_gadget->refresh();
-      }
-    }
-    if (!found_time) {
-      logger.println(LOG_ERR, "Cannot Sync Time");
-    }
   }
 
   void handleCodeConnector(Code_Gadget *gadget) {
     if (gadget->hasNewCommand()) {
-      unsigned long com = gadget->getCommand();
-      logger.print("[HEX] Hex-Com: 0x");
-      logger.addln(com, HEX);
-      forwardCommand(com);
+      CodeCommand *com = gadget->getCommand();
+      logger.print("HEX", "Hex-Com: 0x");
+      logger.addln(com->getCode(), HEX);
+      if (code_remote != nullptr) {
+        logger.incIndent();
+        code_remote->handleNewCode(com);
+        logger.decIndent();
+      } else {
+        forwardCode(com);
+      }
+    }
+  }
+
+  void handleCodeRemote() {
+    if (code_remote == nullptr)
+      return;
+    if (code_remote->hasCode()) {
+      CodeCommand *com = code_remote->getCode();
+      forwardCode(com);
     }
   }
 
@@ -294,15 +317,6 @@ private:
       }
       delete req;
     }
-  }
-
-  void forwardCommand(unsigned long code) {
-    logger.incIndent();
-    for (byte c = 0; c < gadgets.getGadgetCount(); c++) {
-      gadgets.getGadget(c)->handleCodeUpdate(code);
-    }
-    logger.decIndent();
-//    rest_gadget->sendRequest();
   }
 
   void handleStringRequest(REQUEST_TYPE type, const char *path, const char *body) {
@@ -405,6 +419,31 @@ private:
     logger.decIndent();
   }
 
+  void updateRemotes(const char *gadget_name, const char *service, const char *characteristic, int value) {
+    for (byte k = 0; k < remote_count; k++) {
+      remotes[k]->updateCharacteristic(gadget_name, service, characteristic, value);
+    }
+  }
+
+  void forwardRequest(REQUEST_TYPE type, const char *path, const char *body) {
+    for (byte k = 0; k < remote_count; k++) {
+      remotes[k]->handleRequest(path, type, body);
+    }
+  }
+
+  void forwardRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
+    for (byte k = 0; k < remote_count; k++) {
+      remotes[k]->handleRequest(path, type, body);
+    }
+  }
+
+  void addRemote(Remote *new_remote) {
+    if (remote_count < (REMOTE_MANAGER_MAX_REMOTES - 1)) {
+      remotes[remote_count] = new_remote;
+      remote_count++;
+    }
+  }
+
   bool initRemotes(JsonObject json) {
     logger.println("Initializing Remotes");
     logger.incIndent();
@@ -430,29 +469,25 @@ private:
     return true;
   }
 
-  void updateRemotes(const char *gadget_name, const char *service, const char *characteristic, int value) {
-    for (byte k = 0; k < remote_count; k++) {
-      remotes[k]->updateCharacteristic(gadget_name, service, characteristic, value);
+  bool initCodeRemote(JsonObject json) {
+    logger.println("Initializing Code Remote");
+    logger.incIndent();
+    if (json.size() > 0) {
+      auto *basic_remote = new CodeRemote(json);
+      code_remote = basic_remote;
+      logger.println(LOG_INFO, "OK");
+    } else {
+      logger.println(LOG_ERR, "Insufficient Configuration");
     }
+    logger.decIndent();
+    return true;
   }
 
-  void forwardRequest(REQUEST_TYPE type, const char *path, const char *body) {
-    for (byte k = 0; k < remote_count; k++) {
-      remotes[k]->handleRequest(path, type, body);
-    }
-  }
+  void testStuff() {
+    logger.println("Testing Stuff");
+    logger.incIndent();
 
-  void forwardRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
-    for (byte k = 0; k < remote_count; k++) {
-      remotes[k]->handleRequest(path, type, body);
-    }
-  }
-
-  void addRemote(Remote *new_remote) {
-    if (remote_count < (REMOTE_MANAGER_MAX_REMOTES - 1)) {
-      remotes[remote_count] = new_remote;
-      remote_count++;
-    }
+    logger.decIndent();
   }
 
 public:
@@ -483,6 +518,7 @@ public:
 
     initNetwork(json["network"]);
     initConnectors(json["connectors"]);
+    initTime();
 
     if (json["gadgets"] != nullptr) {
       initGadgets(json["gadgets"]);
@@ -499,8 +535,11 @@ public:
     } else {
       logger.println(LOG_ERR, "No remotes-configuration found");
     }
-
-    initTime();
+    if (json["code-remote"] != nullptr) {
+      initCodeRemote(json["code-remote"]);
+    } else {
+      logger.println(LOG_ERR, "No code-remote-configuration found");
+    }
 
     testStuff();
 
@@ -514,11 +553,13 @@ public:
     handleCodeConnector(serial_gadget);
     handleRequestConnector(serial_gadget);
 
+    handleRequestConnector(mqtt_gadget);
+    handleRequestConnector(rest_gadget);
+
     ir_gadget->refresh();
     handleCodeConnector(ir_gadget);
 
-    handleRequestConnector(mqtt_gadget);
-    handleRequestConnector(rest_gadget);
+    handleCodeRemote();
 
     for (byte c = 0; c < gadgets.getGadgetCount(); c++) {
       gadgets.getGadget(c)->refresh();

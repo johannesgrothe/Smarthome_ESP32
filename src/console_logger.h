@@ -3,7 +3,8 @@
 
 #include <cstring>
 #include "user_settings.h"
-#include <stdio.h>
+#include <cstdio>
+#include "Arduino.h"
 
 #define PREF_LEN 6
 #define INTENT_LEN 3

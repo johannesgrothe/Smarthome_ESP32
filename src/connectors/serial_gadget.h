@@ -76,7 +76,7 @@ public:
     }
     if (new_msg) {
       if (strContainsHEX(incoming_message)) {
-        setCommand(strtol(incoming_message, NULL, 16));
+        setCommand(SERIAL_C, strtoul(incoming_message, NULL, 16));
       } else {
         unsigned int msg_len = strlen(incoming_message);
         if (incoming_message[0] == '_') {

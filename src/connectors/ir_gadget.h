@@ -63,64 +63,59 @@ public:
       command_type = results.decode_type;
       received_command = results.value;
       receiver->resume();
-      if (received_command != 0xFFFFFFFF)
-        setCommand(received_command);
-
-//      Serial.println("[System / IR Receiver] Received Something:\n  Encoding: ");
-//      switch (command_type) {
-//        default:
-//        case UNKNOWN:
-//          Serial.print("UNKNOWN");
-//          break;
-//        case NEC:
-//          Serial.print("NEC");
-//          break;
-//        case SONY:
-//          Serial.print("SONY");
-//          break;
-//        case RC5:
-//          Serial.print("RC5");
-//          break;
-//        case RC6:
-//          Serial.print("RC6");
-//          break;
-//        case DISH:
-//          Serial.print("DISH");
-//          break;
-//        case SHARP:
-//          Serial.print("SHARP");
-//          break;
-//        case JVC:
-//          Serial.print("JVC");
-//          break;
-//        case SANYO:
-//          Serial.print("SANYO");
-//          break;
-//        case MITSUBISHI:
-//          Serial.print("MITSUBISHI");
-//          break;
-//        case SAMSUNG:
-//          Serial.print("SAMSUNG");
-//          break;
-//        case LG:
-//          Serial.print("LG");
-//          break;
-//        case WHYNTER:
-//          Serial.print("WHYNTER");
-//          break;
-//        case AIWA_RC_T501:
-//          Serial.print("AIWA_RC_T501");
-//          break;
-//        case PANASONIC:
-//          Serial.print("PANASONIC");
-//          break;
-//        case DENON:
-//          Serial.print("Denon");
-//          break;
-//      }
-//      if (command_type != UNKNOWN) {
-//        setCommand(received_command);
-//      }
+      if (received_command != 0xFFFFFFFF) {
+        switch (command_type) {
+          default:
+          case UNKNOWN:
+            setCommand(IR_UNKNOWN_C, received_command);
+            break;
+          case NEC:
+            setCommand(IR_NEC_C, received_command);
+            break;
+          case SONY:
+            setCommand(IR_SONY_C, received_command);
+            break;
+          case RC5:
+            setCommand(IR_RC5_C, received_command);
+            break;
+          case RC6:
+            setCommand(IR_RC6_C, received_command);
+            break;
+          case DISH:
+            setCommand(IR_UNKNOWN_C, received_command);
+            break;
+          case SHARP:
+            setCommand(IR_UNKNOWN_C, received_command);
+            break;
+          case JVC:
+            setCommand(IR_UNKNOWN_C, received_command);
+            break;
+          case SANYO:
+            setCommand(IR_UNKNOWN_C, received_command);
+            break;
+          case MITSUBISHI:
+            setCommand(IR_UNKNOWN_C, received_command);
+            break;
+          case SAMSUNG:
+            setCommand(IR_SAMSUNG_C, received_command);
+            break;
+          case LG:
+            setCommand(IR_LG_C, received_command);
+            break;
+          case WHYNTER:
+            setCommand(IR_UNKNOWN_C, received_command);
+            break;
+          case AIWA_RC_T501:
+            setCommand(IR_UNKNOWN_C, received_command);
+            break;
+          case PANASONIC:
+            setCommand(IR_PANASONIC_C, received_command);
+            break;
+          case DENON:
+            setCommand(IR_DENEON_C, received_command);
+            break;
+        }
+      }
     }
   };
 
