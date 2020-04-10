@@ -11,16 +11,14 @@ class Code_Gadget {
 protected:
   bool code_gadget_is_ready;
 
-  CodeCommand **com;
+  CodeCommand *com;
 
   bool has_news;
 
   void setCommand(CodeType type, unsigned long new_command) {
     has_news = true;
-    auto *newcom = new CodeCommand(type, new_command, system_timer.getTime());
-//    Serial.println(newcom->getCode());
-    delay(10);
-    com = &newcom;
+    auto *buf_com(new CodeCommand(type, new_command, system_timer.getTime()));
+    com = buf_com;
   }
 
 public:
@@ -49,7 +47,7 @@ public:
   }
 
   CodeCommand *getCommand() {
-    return *com;
+    return com;
   }
 };
 

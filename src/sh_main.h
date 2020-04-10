@@ -473,7 +473,7 @@ private:
     logger.println("Initializing Code Remote");
     logger.incIndent();
     if (json.size() > 0) {
-      auto *basic_remote = new CodeRemote(json);
+      auto *basic_remote = new CodeRemote(json, rest_gadget);
       code_remote = basic_remote;
       logger.println(LOG_INFO, "OK");
     } else {
