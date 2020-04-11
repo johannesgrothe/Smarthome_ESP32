@@ -48,13 +48,13 @@ public:
     if (!can_respond) {
       return nullptr;
     }
-    RestRequest *res;
+//    RestRequest *res;
     if (validateJson(res_body)) {
-      res = new RestRequest(REQ_HTTP_RESPONSE, res_path, res_body, "application/json", client);
+      return new RestRequest(REQ_HTTP_RESPONSE, res_path, res_body, "application/json", client);
     } else {
-      res = new RestRequest(REQ_HTTP_RESPONSE, res_path, res_body, "plain/text", client);
+      return new RestRequest(REQ_HTTP_RESPONSE, res_path, res_body, "plain/text", client);
     }
-    return res;
+//    return res;
   }
 
   unsigned int getPort() {
@@ -157,6 +157,10 @@ protected:
     logger.incIndent();
 
     auto *rest_req = (RestRequest *) req;
+    Serial.print("testing ");
+    Serial.print(rest_req->getPath());
+    Serial.print(" ");
+    Serial.println(req->getPath());
     if (req->getType() == REQ_HTTP_RESPONSE) {
       WiFiClient *res_client = rest_req->getClient();
       if (res_client == nullptr) {
@@ -204,13 +208,22 @@ protected:
         unsigned long start_time = millis();
         bool got_request = false;
         while (start_time + 1000 > millis()) {
+          Serial.print("-");
           int len = client->available();
+          Serial.println(len);
           if (len) {
             char buffer[REQUEST_BODY_LEN_MAX]{};
             if (len > REQUEST_BODY_LEN_MAX)
               len = REQUEST_BODY_LEN_MAX;
             for (int k = 0; k < len; k++) {
+//              Serial.print("#");
+              if (!client->available()) {
+                Serial.println("BREAK");
+                break;
+              }
               buffer[k] = (char) client->read();
+              delayMicroseconds(80);
+//              Serial.println(buffer[k]);
             }
             Request *res = generateResponseObj(&buffer[0], client);
             if (res == nullptr) {
@@ -227,7 +240,9 @@ protected:
         if (!got_request)
           logger.println(LOG_ERR,"No Response Received");
         logger.decIndent();
+        Serial.print("*");
         client->stop();
+        Serial.println("x");
       } else {
         logger.println(LOG_ERR, "Error sending request");
       }

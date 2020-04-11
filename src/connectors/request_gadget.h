@@ -48,7 +48,10 @@ public:
     send_answer = answer_method;
   }
 
-  virtual ~Request() = default;
+  virtual ~Request() {
+    Serial.print("killing ");
+    Serial.println(path);
+  };
 
   bool respond(const char *res_path, const char *res_body) {
     needs_response = false;
@@ -60,7 +63,7 @@ public:
     return true;
   }
 
-  bool dontRespond() {
+  void dontRespond() {
     needs_response = false;
   }
 
@@ -103,7 +106,10 @@ protected:
       Request *buf_req;
       xQueueReceive(out_request_queue, &buf_req, portMAX_DELAY);
       executeRequestSending(buf_req);
-      delete buf_req;
+      Serial.print("deleting ");
+      Serial.println(buf_req->getPath());
+      delete buf_req;  // crashes with LoadProhibited
+      Serial.println("ok");
     }
   }
 

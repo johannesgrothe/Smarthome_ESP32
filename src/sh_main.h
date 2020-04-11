@@ -69,6 +69,7 @@ private:
                                 3006, IPAddress(192, 168, 178, 108), "text/plain");
     unsigned long request_start_timestamp = millis();
     rest_gadget->sendRequest(req);
+    delete req;
     unsigned long start_time = millis();
     bool found_time = false;
     while (start_time + 3000 > millis() && !found_time) {
@@ -315,6 +316,8 @@ private:
           req->respond("ERR", "unhandled");
         }
       }
+      Serial.print("trying to kill ");
+      Serial.println(req->getPath());
       delete req;
     }
   }
@@ -486,6 +489,10 @@ private:
   void testStuff() {
     logger.println("Testing Stuff");
     logger.incIndent();
+//    auto *req = new RestRequest(REQ_HTTP_GET, "/time", "",
+//                                3006, IPAddress(192, 168, 178, 108), "text/plain");
+//    rest_gadget->sendRequest(req);
+//    rest_gadget->sendRequest(req);
 
     logger.decIndent();
   }
