@@ -1,7 +1,6 @@
 #ifndef __color__
 #define __color__
 
-#include "../.pio/libdeps/esp32cam/ArduinoJson_ID64/src/ArduinoJson/Namespace.hpp"
 
 
 class RGBColor {
@@ -102,32 +101,30 @@ private:
 
   static void hsvToRgb(unsigned int h, byte s, byte v, byte rgb[]) {
     double r, g, b;
+    double sat = s / 100.0;
+    double val = v / 100.0;
 
-    int i = int(h * 6);
-    double f = h * 6 - i;
-    double p = v * (1 - s);
-    double q = v * (1 - f * s);
-    double t = v * (1 - (1 - f) * s);
+    int i = int(h / 60.0);
+    double f = (h / 60.0) - i;
+    double p = val * (1 - sat);
+    double q = val * (1 - f * sat);
+    double t = val * (1 - (1 - f) * sat);
 
-    switch (i % 6) {
-      case 0:
-        r = v, g = t, b = p;
-        break;
-      case 1:
-        r = q, g = v, b = p;
-        break;
-      case 2:
-        r = p, g = v, b = t;
-        break;
-      case 3:
-        r = p, g = q, b = v;
-        break;
-      case 4:
-        r = t, g = p, b = v;
-        break;
-      case 5:
-        r = v, g = p, b = q;
-        break;
+    if (sat == 0.0){
+      r=g=b=v;
+    }
+    if (h <= 60 && h >= 0) {
+      r = val, g = t, b = p;
+    } else if (h > 60 && h <= 120 ) {
+      r = q, g = val, b = p;
+    } else if (h > 120 && h <= 180) {
+      r = p, g = val, b = t;
+    } else if (h > 180 && h <= 240) {
+      r = p, g = q, b = val;
+    } else if (h > 240 && h <= 300) {
+      r = t, g = p, b = val;
+    } else if (h > 300 && h <= 360) {
+      r = val, g = p, b = q;
     }
 
     rgb[0] = r * 255;
@@ -291,7 +288,6 @@ public:
     hsv_color.setColor(hue, saturation, value);
     hsvToRgb(hue, saturation, value, rgb);
     rgbToHsl(rgb[0], rgb[1], rgb[2], hsl);
-    Serial.printf("hsl[0]: %f, hsl[1]: %f ,hsl[2]: %f\n", hsl[0], hsl[1], hsl[2]);
     rgb_color.setColor(rgb[0], rgb[1], rgb[2]);
     hsl_color.setColor(hsl[0], hsl[1], hsl[2]);
   }

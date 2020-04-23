@@ -531,7 +531,7 @@ public:
       logger.println(LOG_ERR, "No remotes-configuration found");
     }
 
-    initTime();
+    //initTime();
 
     testStuff();
 
