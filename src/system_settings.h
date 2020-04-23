@@ -5,6 +5,7 @@
 #define EEPROM_SIZE 64
 #define SERIAL_SPEED 115200
 #define EEPROM_CONFIG_LEN_MAX 2000
+#define BASE_TIME 15862
 
 // gadget-Command-Mapping
 #define MAPPING_MAX_COMMANDS 15
@@ -21,6 +22,8 @@
 #define REQUEST_PATH_LEN_MAX 40
 #define REQUEST_BODY_LEN_MAX 2000
 #define REQUEST_TYPE_LEN_MAX 20
+#define REQUEST_QUEUE_LEN 5
+#define REQUEST_CONTENT_TYPE_LEN_MAX 40
 
 // Rest
 #define RESPONSE_MAX_WAIT_TIME 1000
@@ -129,7 +132,7 @@ const char json_str[] = R"(
     ],
     "radio": []
   },
-  "remote-mapping": {
+  "remotes": {
     "homebridge": [
       "Testlampe NP",
       "Testlampe 2",
@@ -142,11 +145,7 @@ const char json_str[] = R"(
 )";
 
 const char default_config[] = R"(
-{
-  "gadgets": [],
-  "network": {},
-  "connectors": {}
-}
+{"gadgets": [],"network": {},"connectors": {},"connector-mapping": {},"remote-mapping": {}}
 )";
 
 #endif //__SYSTEM_SETTINGS__
