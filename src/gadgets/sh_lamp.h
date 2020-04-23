@@ -2,6 +2,7 @@
 #define __SH_Lamp__
 
 #include "sh_gadget.h"
+#include "../color.h"
 
 enum SH_LAMP_TYPE {
   ON_OFF, BRI_ONLY, CLR_ONLY, CLR_BRI
@@ -9,14 +10,11 @@ enum SH_LAMP_TYPE {
 
 class SH_Lamp : public SH_Gadget {
 protected:
-  float lightness;
-  float last_lightness{};
-  float default_lightness;
-  float min_lightness;
+  Color lamp_color;
 
-  float saturation;
-
-  float hue;
+  byte default_brightness;
+  byte min_brightness;
+  byte last_brightness;
 
   SH_LAMP_TYPE lamp_type;
 
@@ -24,11 +22,11 @@ public:
 
   explicit SH_Lamp(JsonObject gadget) :
     SH_Gadget(gadget, Lightbulb),
-    lightness(100.0),
-    default_lightness(100.0),
-    min_lightness(35),
-    saturation(0),
-    hue(0) {
+    lamp_color(0,0,0),
+    default_brightness(75),
+    min_brightness(10),
+    last_brightness(75)
+    {
     if (gadget["lamp_type"] != nullptr) {
       lamp_type = (SH_LAMP_TYPE) gadget["lamp_type"].as<uint8_t>();
       logger.print("Type: ");
@@ -41,56 +39,57 @@ public:
 
   SH_Lamp(JsonObject gadget, SH_LAMP_TYPE sh_lamp_type) :
     SH_Gadget(gadget, Lightbulb),
-    lightness(100.0),
-    default_lightness(100.0),
-    min_lightness(35),
-    saturation(0),
-    hue(0),
+    lamp_color(0,0,0),
+    default_brightness(75),
+    min_brightness(10),
+    last_brightness(75),
     lamp_type(sh_lamp_type) {
     logger.print("Type: ");
     logger.addln(type);
   };
 
   // Lightness
-  void setLightness(float new_lightness) {
-    lightness = new_lightness;
+  void setBrightness(byte new_brightness) {
+    lamp_color.setBrightness(new_brightness);
     has_changed = true;
-    updateCharacteristic("Brightness", (int) lightness);
+    updateCharacteristic("Brightness", (int) new_brightness);
   };
 
-  float getLightness() {
-    return lightness;
+  float getBrightness() {
+    return lamp_color.getBrightness();
   };
 
   // Color (RGB)
   void setColor(uint8_t r, uint8_t g, uint8_t b) {
-    float hsl[3];
-    rgbToHsl(r, g, b, &hsl[0]);
-    hue = hsl[SH_CLR_hue];
-    saturation = hsl[SH_CLR_saturation];
-    lightness = hsl[SH_CLR_lightness];
+    lamp_color.setRGB(r, g, b);
     has_changed = true;
   };
 
   uint8_t getColor(uint8_t color_index) {
-    uint8_t rgb[3];
-    hslToRgb(hue, saturation, lightness, &rgb[0]);
-    return rgb[color_index];
+    if (color_index == 0)
+      return lamp_color.getRGB()->getRed();
+    if (color_index == 1)
+      return lamp_color.getRGB()->getGreen();
+    if (color_index == 2)
+      return lamp_color.getRGB()->getBlue();
+  return 0;
   }
 
   void getColor(uint8_t color_buffer[]) {
-    hslToRgb(hue, saturation, lightness, &color_buffer[0]);
+    color_buffer[0] = lamp_color.getRGB()->getRed();
+    color_buffer[1] = lamp_color.getRGB()->getGreen();
+    color_buffer[2] = lamp_color.getRGB()->getBlue();
   }
 
   // Hue
-  void setHue(float new_hue) {
-    hue = new_hue;
+  void setHue(unsigned int new_hue) {
+    lamp_color.setHue(new_hue);
     has_changed = true;
-    updateCharacteristic("Hue", (int) hue);
+    updateCharacteristic("Hue", (int) new_hue);
   }
 
   float getHue() {
-    return hue;
+    return lamp_color.getHue();
   }
 
   // Status
@@ -99,17 +98,17 @@ public:
   };
 
   bool getStatus() {
-    return lightness != 0;
+    return getBrightness() != 0;
   };
 
   void setStatus(bool new_status) {
     if (new_status == 0) {
-      lightness = 0;
+      lamp_color.setBrightness(0);
     } else {
-      if (last_lightness > min_lightness) {
-        lightness = last_lightness;
+      if (last_brightness > min_brightness) {
+        lamp_color.setBrightness(last_brightness);
       } else {
-        lightness = default_lightness;
+        lamp_color.setBrightness(default_brightness);
       }
     }
     has_changed = true;
@@ -119,10 +118,10 @@ public:
   void print() override {
     Serial.printf("[%s] Status: %d", getName(), getStatus());
     if (lamp_type == CLR_BRI || lamp_type == CLR_ONLY) {
-      Serial.printf(", Hue: %.2f, Saturation: %.2f", hue, saturation);
+      Serial.printf(", Hue: %.2f, Saturation: %.2f", lamp_color.getHue(), lamp_color.getHSV()->getSaturation());
     }
     if (lamp_type == CLR_BRI || lamp_type == BRI_ONLY) {
-      Serial.printf(", Lightness: %.2f", lightness);
+      Serial.printf(", Brightness: %.2f", lamp_color.getBrightness());
     }
     Serial.println("");
   }
@@ -134,9 +133,9 @@ public:
     if (strcmp(characteristic, "On") == 0) {
       setStatus((bool) value);
     } else if (strcmp(characteristic, "Brightness") == 0) {
-      setStatus((bool) value);
+      setBrightness((byte) value);
     } else if (strcmp(characteristic, "Hue") == 0) {
-      setHue((float) value);
+      setHue((unsigned int) value);
     }
   }
 
