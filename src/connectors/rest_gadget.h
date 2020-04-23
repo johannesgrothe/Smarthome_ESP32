@@ -48,13 +48,13 @@ public:
     if (!can_respond) {
       return nullptr;
     }
-    RestRequest *res;
+//    RestRequest *res;
     if (validateJson(res_body)) {
-      res = new RestRequest(REQ_HTTP_RESPONSE, res_path, res_body, "application/json", client);
+      return new RestRequest(REQ_HTTP_RESPONSE, res_path, res_body, "application/json", client);
     } else {
-      res = new RestRequest(REQ_HTTP_RESPONSE, res_path, res_body, "plain/text", client);
+      return new RestRequest(REQ_HTTP_RESPONSE, res_path, res_body, "plain/text", client);
     }
-    return res;
+//    return res;
   }
 
   unsigned int getPort() {
@@ -210,7 +210,12 @@ protected:
             if (len > REQUEST_BODY_LEN_MAX)
               len = REQUEST_BODY_LEN_MAX;
             for (int k = 0; k < len; k++) {
+              if (!client->available()) {
+                logger.println(LOG_ERR, "Client disconnected while receiving");
+                break;
+              }
               buffer[k] = (char) client->read();
+              delayMicroseconds(80);
             }
             Request *res = generateResponseObj(&buffer[0], client);
             if (res == nullptr) {
@@ -261,8 +266,6 @@ protected:
     }
     WiFiClient newClient = server->client();
     auto *inc_client = new WiFiClient(newClient);
-//    Serial.println(inc_client->remotePort());
-//    Serial.println(inc_client->remoteIP());
     using std::placeholders::_1;
     auto *req = new RestRequest(req_type, &(server->uri().c_str())[1], server->arg(0).c_str(), "text/plain",
                                 std::bind(&Request_Gadget::sendRequest, this, _1), inc_client);

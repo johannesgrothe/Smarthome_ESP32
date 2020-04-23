@@ -25,6 +25,10 @@
 #define REQUEST_QUEUE_LEN 5
 #define REQUEST_CONTENT_TYPE_LEN_MAX 40
 
+// CodeCommands
+#define CODE_BUFFER_SIZE 15
+#define CODE_TIME_GAP 150
+
 // Rest
 #define RESPONSE_MAX_WAIT_TIME 1000
 
@@ -133,13 +137,10 @@ const char json_str[] = R"(
     "radio": []
   },
   "remotes": {
-    "homebridge": [
-      "Testlampe NP",
-      "Testlampe 2",
-      "TestFan",
-      "Deckenlampe"
-    ],
-    "rest": []
+  },
+  "code-remote": {
+    "ip": "192.168.178.108",
+    "port": "3006"
   }
 }
 )";

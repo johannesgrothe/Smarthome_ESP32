@@ -48,7 +48,10 @@ public:
     send_answer = answer_method;
   }
 
-  virtual ~Request() = default;
+  virtual ~Request() {
+    logger.print(LOG_WARN, "Deleting ");
+    logger.addln(path);
+  };
 
   bool respond(const char *res_path, const char *res_body) {
     needs_response = false;
@@ -60,7 +63,7 @@ public:
     return true;
   }
 
-  bool dontRespond() {
+  void dontRespond() {
     needs_response = false;
   }
 
@@ -103,7 +106,7 @@ protected:
       Request *buf_req;
       xQueueReceive(out_request_queue, &buf_req, portMAX_DELAY);
       executeRequestSending(buf_req);
-      delete buf_req;
+//      delete buf_req;  // crashes with LoadProhibited
     }
   }
 

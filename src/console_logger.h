@@ -3,7 +3,8 @@
 
 #include <cstring>
 #include "user_settings.h"
-#include <stdio.h>
+#include <cstdio>
+#include "Arduino.h"
 
 #define PREF_LEN 6
 #define INTENT_LEN 3
@@ -20,6 +21,7 @@ protected:
   bool logging_active;
 
   void printIndent() {
+    Serial.printf("%d | ", xPortGetCoreID());
     for (byte k = 0; k < indent; k++) {
       for (byte j = 0; j < indent_len; j++) {
         Serial.print(indent_char);
