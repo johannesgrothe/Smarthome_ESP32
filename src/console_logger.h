@@ -21,6 +21,7 @@ protected:
   bool logging_active;
 
   void printIndent() {
+    Serial.printf("%d | ", xPortGetCoreID());
     for (byte k = 0; k < indent; k++) {
       for (byte j = 0; j < indent_len; j++) {
         Serial.print(indent_char);

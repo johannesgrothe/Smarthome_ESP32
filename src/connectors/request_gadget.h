@@ -49,8 +49,8 @@ public:
   }
 
   virtual ~Request() {
-    Serial.print("killing ");
-    Serial.println(path);
+    logger.print(LOG_WARN, "Deleting ");
+    logger.addln(path);
   };
 
   bool respond(const char *res_path, const char *res_body) {
@@ -106,10 +106,7 @@ protected:
       Request *buf_req;
       xQueueReceive(out_request_queue, &buf_req, portMAX_DELAY);
       executeRequestSending(buf_req);
-      Serial.print("deleting ");
-      Serial.println(buf_req->getPath());
-      delete buf_req;  // crashes with LoadProhibited
-      Serial.println("ok");
+//      delete buf_req;  // crashes with LoadProhibited
     }
   }
 

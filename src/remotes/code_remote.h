@@ -137,7 +137,7 @@ protected:
   void addCodeToBuffer(CodeCommand *code) {
     if (!codes.codeIsDoubled(code)) {
       codes.addCode(code);
-      codes.print();
+//      codes.print();
     } else {
       logger.println(LOG_ERR, "Ignoring: Double Code");
     }
@@ -146,10 +146,8 @@ protected:
   void sendCodeToRemote(CodeCommand *code) {
     if (!network_initialized)
       return;
-    Serial.println("sending req");
     RestRequest req(REQ_HTTP_POST, "/command", "test", remote_port, remote_ip, "application/json");
     rest_gadget->sendRequest(&req);
-    Serial.println("sending ok");
   }
 
 public:

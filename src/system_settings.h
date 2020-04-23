@@ -137,13 +137,6 @@ const char json_str[] = R"(
     "radio": []
   },
   "remotes": {
-    "homebridge": [
-      "Testlampe NP",
-      "Testlampe 2",
-      "TestFan",
-      "Deckenlampe"
-    ],
-    "rest": []
   },
   "code-remote": {
     "ip": "192.168.178.108",
