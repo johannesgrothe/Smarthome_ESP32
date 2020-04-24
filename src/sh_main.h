@@ -310,8 +310,6 @@ private:
           req->respond("ERR", "unhandled");
         }
       }
-      Serial.print("trying to kill ");
-      Serial.println(req->getPath());
       delete req;
     }
   }
