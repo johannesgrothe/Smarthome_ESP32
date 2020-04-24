@@ -59,11 +59,11 @@ protected:
       if (mqttClient->connect("esp32_test_client")) {
         logger.addln("OK");
         mqttClient->subscribe("debug/in");
-        mqttClient->subscribe("homebridge/from/set");
-        mqttClient->subscribe("homebridge/from/response");
-        mqttClient->subscribe("sys/gadgets/list");
-        mqttClient->subscribe("sys/reboot");
-        mqttClient->publish("debug/out", "hallo welt");
+        mqttClient->subscribe("smarthome/from/sys/config/set");
+        mqttClient->subscribe("smarthome/from/sys/command");
+        mqttClient->subscribe("smarthome/from/gadget/set");
+        mqttClient->subscribe("smarthome/from/response");
+        mqttClient->publish("debug/out", "Controller Launched");
         return true;
       } else {
         if (conn_count > 5) {
@@ -85,7 +85,7 @@ protected:
       local_message[i] = (char) payload[i];
     }
     using std::placeholders::_1;
-    MQTTRequest *req = new MQTTRequest(REQ_MQTT, topic, &local_message[0], std::bind(&Request_Gadget::sendRequest, this, _1));
+    auto *req = new MQTTRequest(REQ_MQTT, topic, &local_message[0], std::bind(&Request_Gadget::sendRequest, this, _1));
     addIncomingRequest(req);
   }
 

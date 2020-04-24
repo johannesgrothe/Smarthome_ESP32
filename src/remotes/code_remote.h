@@ -4,6 +4,7 @@
 #include "ArduinoJson.h"
 #include "../connectors/request_gadget.h"
 #include "../connectors/rest_gadget.h"
+#include "../connectors/mqtt_gadget.h"
 
 #include "../system_settings.h"
 #include "../system_timer.h"
@@ -129,10 +130,9 @@ public:
 class CodeRemote {
 protected:
   CodeCommandBuffer codes;
-  REST_Gadget *rest_gadget;
+//  REST_Gadget *rest_gadget;
+  MQTT_Gadget *mqtt_gadget;
   bool network_initialized;
-  IPAddress remote_ip;
-  unsigned int remote_port;
 
   void addCodeToBuffer(CodeCommand *code) {
     if (!codes.codeIsDoubled(code)) {
@@ -146,56 +146,16 @@ protected:
   void sendCodeToRemote(CodeCommand *code) {
     if (!network_initialized)
       return;
-    RestRequest req(REQ_HTTP_POST, "/command", "test", remote_port, remote_ip, "application/json");
-    rest_gadget->sendRequest(&req);
+    mqtt_gadget->sendRequest("smarthome/to/code", R"({"type": "UNKNOWN_C", "code": 12345, "timestamp": 54321})");
   }
 
 public:
   explicit CodeRemote(JsonObject data):
   network_initialized(false) {};
 
-  CodeRemote(JsonObject data, REST_Gadget *gadget):
-    rest_gadget(gadget) {
-    bool everything_ok = true;
-    // Reads the IP from the JSON
-    if (data["ip"] != nullptr) {
-      char ip_str[15]{};
-      strncpy(ip_str, data["ip"].as<const char *>(), 15);
-      unsigned int ip_arr[4];
-      uint8_t count = 0;
-      char *part;
-      part = strtok(ip_str, ".");
-      ip_arr[count] = atoi(part);
-      while (count < 3) {
-        part = strtok(nullptr, ".");
-        count++;
-        ip_arr[count] = atoi(part);
-      }
-      remote_ip = IPAddress(ip_arr[0], ip_arr[1], ip_arr[2], ip_arr[3]);
-      logger.print(LOG_DATA, "IP: ");
-      logger.add(ip_arr[0]);
-      logger.add(".");
-      logger.add(ip_arr[1]);
-      logger.add(".");
-      logger.add(ip_arr[2]);
-      logger.add(".");
-      logger.addln(ip_arr[3]);
-    } else {
-      everything_ok = false;
-      logger.println(LOG_ERR, "'ip' missing in config.");
-    }
-
-    // Reads the Port from the JSON
-    if (data["port"] != nullptr) {
-      remote_port = data["port"].as<unsigned int>();
-      logger.print(LOG_DATA, "Port: ");
-      logger.addln(remote_port);
-    } else {
-      everything_ok = false;
-      logger.println(LOG_ERR, "'port' missing in config.");
-    }
-    network_initialized = everything_ok;
-  };
+  CodeRemote(JsonObject data, MQTT_Gadget *gadget):
+    mqtt_gadget(gadget),
+    network_initialized(true) {};
 
   void handleRequest(Request *req) {
     Serial.println("handling request");

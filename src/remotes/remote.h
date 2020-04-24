@@ -17,15 +17,15 @@ private:
   virtual bool removeGadget(const char *gadget_name) { return false; };
 
   bool registerGadgetOnRemote(const char *gadget_name, Gadget_Type gadget_type, const char *characteristics) {
-    logger.println("Unregistering Gadget:");
-    logger.incIndent();
-    if (removeGadget(gadget_name)) {
-      logger.println(LOG_INFO, "OK");
-      logger.decIndent();
-    } else {
-      logger.println(LOG_ERR, "ERR");
-      logger.decIndent();
-    }
+//    logger.println("Unregistering Gadget:");
+//    logger.incIndent();
+//    if (removeGadget(gadget_name)) {
+//      logger.println(LOG_INFO, "OK");
+//      logger.decIndent();
+//    } else {
+//      logger.println(LOG_ERR, "ERR");
+//      logger.decIndent();
+//    }
 
     logger.println("Registering Gadget:");
     logger.incIndent();

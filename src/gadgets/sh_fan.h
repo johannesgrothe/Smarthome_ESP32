@@ -46,13 +46,11 @@ public:
       if (rotation_speed == 0) {
         rotation_speed = last_rotation_speed;
       }
-      updateCharacteristic("On", true);
-      updateCharacteristic("RotationSpeed", rotation_speed);
+      updateCharacteristic("rotationspeed", rotation_speed);
     } else {
       last_rotation_speed = rotation_speed;
       rotation_speed = 0;
-      updateCharacteristic("On", false);
-      updateCharacteristic("RotationSpeed", rotation_speed);
+      updateCharacteristic("rotationspeed", rotation_speed);
     }
     has_changed = true;
   };
@@ -74,12 +72,10 @@ public:
     if (new_speed == 0) {
       last_rotation_speed = rotation_speed;
       rotation_speed = 0;
-      updateCharacteristic("On", true);
-      updateCharacteristic("RotationSpeed", rotation_speed);
+      updateCharacteristic("rotaionspeed", rotation_speed);
     } else {
       rotation_speed = new_speed;
-      updateCharacteristic("On", true);
-      updateCharacteristic("RotationSpeed", rotation_speed);
+      updateCharacteristic("rotaionspeed", rotation_speed);
     }
     has_changed = true;
   }
@@ -94,14 +90,14 @@ public:
     logger.addln("'");
     if (strcmp(characteristic, "On") == 0) {
       setStatus((bool) value);
-    } else if (strcmp(characteristic, "RotationSpeed") == 0) {
+    } else if (strcmp(characteristic, "rotationspeed") == 0) {
       setRotationSpeed(value);
     }
   }
 
   bool getCharacteristics(char *buffer) override {
     byte steps = (FAN_ROTATION_SPEED_MAX / levels);
-    sprintf(buffer, R"( "RotationSpeed": {"minValue": 0, "maxValue": %d, "minStep": %d})", FAN_ROTATION_SPEED_MAX,
+    sprintf(buffer, R"( "rotationspeed": {"min": 0, "max": %d, "step": %d})", FAN_ROTATION_SPEED_MAX,
             steps);
     return true;
   }

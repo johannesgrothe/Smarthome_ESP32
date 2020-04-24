@@ -137,6 +137,10 @@ const char json_str[] = R"(
     "radio": []
   },
   "remotes": {
+    "smarthome": [
+      "TestFan",
+      "Testlampe 2"
+    ]
   },
   "code-remote": {
     "ip": "192.168.178.108",

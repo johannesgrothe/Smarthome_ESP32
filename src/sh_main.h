@@ -20,7 +20,8 @@
 #include <WiFi.h>
 #include "ArduinoJson.h"
 
-#include "remotes/homebridge_remote.h"
+//#include "remotes/homebridge_remote.h"
+#include "remotes/smarthome_remote.h"
 #include "gadget_collection.h"
 #include "system_storage.h"
 
@@ -49,7 +50,6 @@ private:
 
   IR_Gadget *ir_gadget;
   MQTT_Gadget *mqtt_gadget;
-  REST_Gadget *rest_gadget;
   Serial_Gadget *serial_gadget;
   Radio_Gadget *radio_gadget;
 
@@ -65,32 +65,32 @@ private:
 
   void initTime() {
     logger.println("Initializing Time");
-    auto *req = new RestRequest(REQ_HTTP_GET, "/time", "",
-                                3006, IPAddress(192, 168, 178, 108), "text/plain");
-    unsigned long request_start_timestamp = millis();
-    rest_gadget->sendRequest(req);
-    delete req;
-    unsigned long start_time = millis();
+//    auto *req = new RestRequest(REQ_HTTP_GET, "/time", "",
+//                                3006, IPAddress(192, 168, 178, 108), "text/plain");
+//    unsigned long request_start_timestamp = millis();
+//    rest_gadget->sendRequest(req);
+//    delete req;
+//    unsigned long start_time = millis();
     bool found_time = false;
-    while (start_time + 3000 > millis() && !found_time) {
-      if (rest_gadget->hasRequest()) {
-        Request *res = rest_gadget->getRequest();
-        if (strcmp(res->getPath(), "200") == 0) {
-          found_time = true;
-          request_start_timestamp = millis() - request_start_timestamp;
-          unsigned long time_offset = millis() - (request_start_timestamp / 2);
-          unsigned long time_index = strtol(res->getBody(), NULL, 10) + (request_start_timestamp / 2);
-          system_timer.setTime(time_index, time_offset);
-          logger.print("Got Time: ");
-          logger.add(BASE_TIME);
-          logger.addln(system_timer.getTime());
-        } else {
-          logger.println("Received: ERR");
-        }
-      } else {
-        rest_gadget->refresh();
-      }
-    }
+//    while (start_time + 3000 > millis() && !found_time) {
+//      if (rest_gadget->hasRequest()) {
+//        Request *res = rest_gadget->getRequest();
+//        if (strcmp(res->getPath(), "200") == 0) {
+//          found_time = true;
+//          request_start_timestamp = millis() - request_start_timestamp;
+//          unsigned long time_offset = millis() - (request_start_timestamp / 2);
+//          unsigned long time_index = strtol(res->getBody(), NULL, 10) + (request_start_timestamp / 2);
+//          system_timer.setTime(time_index, time_offset);
+//          logger.print("Got Time: ");
+//          logger.add(BASE_TIME);
+//          logger.addln(system_timer.getTime());
+//        } else {
+//          logger.println("Received: ERR");
+//        }
+//      } else {
+//        rest_gadget->refresh();
+//      }
+//    }
     if (!found_time) {
       logger.println(LOG_ERR, "Cannot Sync Time");
     }
@@ -176,12 +176,6 @@ private:
       mqtt_gadget = new MQTT_Gadget(connectors_json["mqtt"].as<JsonObject>(), &network_client);
     } else {
       mqtt_gadget = new MQTT_Gadget();
-    }
-
-    if (connectors_json["rest"] != nullptr) {
-      rest_gadget = new REST_Gadget(connectors_json["rest"].as<JsonObject>());
-    } else {
-      rest_gadget = new REST_Gadget();
     }
 
     if (connectors_json["serial"] != nullptr) {
@@ -451,23 +445,24 @@ private:
     logger.println("Initializing Remotes");
     logger.incIndent();
 
-    if (json["homebridge"] != nullptr) {
-      JsonArray gadget_list = json["homebridge"].as<JsonArray>();
+    if (json["smarthome"] != nullptr) {
+      JsonArray gadget_list = json["smarthome"].as<JsonArray>();
       if (gadget_list.size() > 0) {
-        logger.println(LOG_DATA, "Homebridge");
+        logger.println(LOG_DATA, "Smarthome");
         logger.incIndent();
-        auto *homebridge_remote = new Homebridge_Remote(mqtt_gadget);
+        auto *smarthome_remote = new SmarthomeRemote(mqtt_gadget);
         for (auto &&gadget_name_str : gadget_list) {
           const char *gadget_name = gadget_name_str.as<const char *>();
           SH_Gadget *gadget = gadgets.getGadget(gadget_name);
-          homebridge_remote->addGadget(gadget);
+          smarthome_remote->addGadget(gadget);
         }
         logger.decIndent();
-        addRemote(homebridge_remote);
+        addRemote(smarthome_remote);
       } else {
-        logger.println(LOG_DATA, "Homebridge-Configuration is empty");
+        logger.println(LOG_DATA, "Smarthome-Configuration is empty");
       }
     }
+
     logger.decIndent();
     return true;
   }
@@ -476,7 +471,7 @@ private:
     logger.println("Initializing Code Remote");
     logger.incIndent();
     if (json.size() > 0) {
-      auto *basic_remote = new CodeRemote(json, rest_gadget);
+      auto *basic_remote = new CodeRemote(json, mqtt_gadget);
       code_remote = basic_remote;
       logger.println(LOG_INFO, "OK");
     } else {
@@ -489,10 +484,6 @@ private:
   void testStuff() {
     logger.println("Testing Stuff");
     logger.incIndent();
-//    auto *req = new RestRequest(REQ_HTTP_GET, "/time", "",
-//                                3006, IPAddress(192, 168, 178, 108), "text/plain");
-//    rest_gadget->sendRequest(req);
-//    rest_gadget->sendRequest(req);
 
     logger.decIndent();
   }
@@ -561,7 +552,6 @@ public:
     handleRequestConnector(serial_gadget);
 
     handleRequestConnector(mqtt_gadget);
-    handleRequestConnector(rest_gadget);
 
     ir_gadget->refresh();
     handleCodeConnector(ir_gadget);
@@ -575,10 +565,6 @@ public:
 
   void refreshMQTT() {
     mqtt_gadget->refresh();
-  }
-
-  void refreshREST() {
-    rest_gadget->refresh();
   }
 
 };
@@ -599,13 +585,6 @@ static void mqttTask(void *args) {
   }
 }
 
-static void restTask(void *args) {
-  while (true) {
-    smarthome_system.refreshREST();
-    vTaskDelay(10 / portTICK_PERIOD_MS);
-  }
-}
-
 static void createTasks() {
   xTaskCreatePinnedToCore(
     mainTask,     /* Task function. */
@@ -619,15 +598,6 @@ static void createTasks() {
   xTaskCreatePinnedToCore(
     mqttTask,     /* Task function. */
     "Smarthome_MQTT",       /* String with name of task. */
-    10000,            /* Stack size in words. */
-    NULL,             /* Parameter passed as input of the task */
-    1,                /* Priority of the task. */
-    NULL,
-    1);            /* Task handle. */
-
-  xTaskCreatePinnedToCore(
-    restTask,     /* Task function. */
-    "Smarthome_REST",       /* String with name of task. */
     10000,            /* Stack size in words. */
     NULL,             /* Parameter passed as input of the task */
     1,                /* Priority of the task. */
