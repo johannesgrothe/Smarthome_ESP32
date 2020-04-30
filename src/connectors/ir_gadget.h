@@ -112,7 +112,7 @@ public:
             setCommand(IR_PANASONIC_C, received_command);
             break;
           case DENON:
-            setCommand(IR_DENEON_C, received_command);
+            setCommand(IR_DENON_C, received_command);
             break;
         }
       }

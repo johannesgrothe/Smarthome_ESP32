@@ -7,6 +7,9 @@
 #define EEPROM_CONFIG_LEN_MAX 2000
 #define BASE_TIME 15862
 
+// Client
+#define CLIENT_NAME_LEN_MAX 30
+
 // gadget-Command-Mapping
 #define MAPPING_MAX_COMMANDS 15
 #define MAPPING_MAX_CODES 10
@@ -28,6 +31,8 @@
 // CodeCommands
 #define CODE_BUFFER_SIZE 15
 #define CODE_TIME_GAP 150
+#define CODE_TYPE_NAME_LEN 30
+#define CODE_STR_LEN_MAX 300
 
 // Rest
 #define RESPONSE_MAX_WAIT_TIME 1000
@@ -41,8 +46,12 @@
 // Remotes
 #define REMOTE_MANAGER_MAX_REMOTES 3
 
+// Logger
+#define LOGGER_MAX_BUFFER_LEN 4000
+
 const char json_str[] = R"(
 {
+  "id" : "TestClientESP32",
   "gadgets": [
     {
       "type": "sh_lamp_neopixel_basic",

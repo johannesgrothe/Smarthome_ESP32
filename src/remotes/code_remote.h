@@ -3,11 +3,13 @@
 
 #include "ArduinoJson.h"
 #include "../connectors/request_gadget.h"
-#include "../connectors/rest_gadget.h"
 #include "../connectors/mqtt_gadget.h"
 
 #include "../system_settings.h"
 #include "../system_timer.h"
+
+#include <climits>
+#include <cstring>
 
 enum CodeType {
   UNKNOWN_C,
@@ -21,14 +23,97 @@ enum CodeType {
   IR_SAMSUNG_C,
   IR_LG_C,
   IR_PANASONIC_C,
-  IR_DENEON_C
+  IR_DENON_C
 };
+
+static CodeType stringToCodeType(const char *input) {
+  if (strcmp(input, "SERIAL") == 0) {
+    return SERIAL_C;
+  }
+  else if (strcmp(input, "RADIO") == 0) {
+    return RADIO_C;
+  }
+  else if (strcmp(input, "IR_UNKNOWN") == 0) {
+    return IR_UNKNOWN_C;
+  }
+  else if (strcmp(input, "IR_NEC") == 0) {
+    return IR_NEC_C;
+  }
+  else if (strcmp(input, "IR_SONY") == 0) {
+    return IR_SONY_C;
+  }
+  else if (strcmp(input, "IR_RC5") == 0) {
+    return IR_RC5_C;
+  }
+  else if (strcmp(input, "IR_RC6") == 0) {
+    return IR_RC6_C;
+  }
+  else if (strcmp(input, "IR_SAMSUNG") == 0) {
+    return IR_SAMSUNG_C;
+  }
+  else if (strcmp(input, "IR_LG") == 0) {
+    return IR_LG_C;
+  }
+  else if (strcmp(input, "IR_PANASONIC") == 0) {
+    return IR_PANASONIC_C;
+  }
+  else if (strcmp(input, "IR_DENON") == 0) {
+    return IR_DENON_C;
+  }
+  else {
+    return UNKNOWN_C;
+  }
+};
+
+static void codeTypeToString(CodeType code, char *buf) {
+  switch (code) {
+    case UNKNOWN_C:
+      strncpy(buf, "UNKNOWN", CODE_TYPE_NAME_LEN);
+      break;
+    case SERIAL_C:
+      strncpy(buf, "SERIAL", CODE_TYPE_NAME_LEN);
+      break;
+    case RADIO_C:
+      strncpy(buf, "RADIO", CODE_TYPE_NAME_LEN);
+      break;
+    case IR_UNKNOWN_C:
+      strncpy(buf, "IR_UNKNOWN", CODE_TYPE_NAME_LEN);
+      break;
+    case IR_NEC_C:
+      strncpy(buf, "IR_NEC", CODE_TYPE_NAME_LEN);
+      break;
+    case IR_SONY_C:
+      strncpy(buf, "IR_SONY", CODE_TYPE_NAME_LEN);
+      break;
+    case IR_RC5_C:
+      strncpy(buf, "IR_RC5", CODE_TYPE_NAME_LEN);
+      break;
+    case IR_RC6_C:
+      strncpy(buf, "IR_RC6", CODE_TYPE_NAME_LEN);
+      break;
+    case IR_SAMSUNG_C:
+      strncpy(buf, "IR_SAMSUNG", CODE_TYPE_NAME_LEN);
+      break;
+    case IR_LG_C:
+      strncpy(buf, "IR_LG", CODE_TYPE_NAME_LEN);
+      break;
+    case IR_PANASONIC_C:
+      strncpy(buf, "IR_PANASONIC", CODE_TYPE_NAME_LEN);
+      break;
+    case IR_DENON_C:
+      strncpy(buf, "IR_DENON", CODE_TYPE_NAME_LEN);
+      break;
+    default:
+      strncpy(buf, "UNDEFINED", CODE_TYPE_NAME_LEN);
+      break;
+  }
+}
 
 class CodeCommand {
 private:
   CodeType type;
   unsigned long code;
-  unsigned long timestamp;
+  unsigned long long timestamp;
 
 public:
   CodeCommand() :
@@ -36,12 +121,12 @@ public:
     code(0),
     timestamp(0) {};
 
-  CodeCommand(CodeType command_type, unsigned long code_type, unsigned long code_timestamp) :
+  CodeCommand(CodeType command_type, unsigned long code_type, unsigned long long code_timestamp) :
     type(command_type),
     code(code_type),
     timestamp(code_timestamp) {};
 
-  bool getType() {
+  CodeType getType() {
     return type;
   }
 
@@ -49,7 +134,7 @@ public:
     return code;
   }
 
-  unsigned long getTimestamp() {
+  unsigned long long getTimestamp() {
     return timestamp;
   }
 };
@@ -114,7 +199,10 @@ public:
       if (code_list[k] != nullptr) {
         Serial.print(k);
         Serial.print(": ");
-        Serial.print(code_list[k]->getTimestamp());
+        unsigned long first = code_list[k]->getTimestamp() / 1000000000;
+        unsigned long second = code_list[k]->getTimestamp() % 1000000000;
+        Serial.print(first);
+        Serial.print(second);
         Serial.print(" -> ");
         Serial.println(code_list[k]->getCode());
       } else {
@@ -130,14 +218,13 @@ public:
 class CodeRemote {
 protected:
   CodeCommandBuffer codes;
-//  REST_Gadget *rest_gadget;
   MQTT_Gadget *mqtt_gadget;
   bool network_initialized;
 
   void addCodeToBuffer(CodeCommand *code) {
     if (!codes.codeIsDoubled(code)) {
       codes.addCode(code);
-//      codes.print();
+      codes.print();
     } else {
       logger.println(LOG_ERR, "Ignoring: Double Code");
     }
@@ -146,19 +233,53 @@ protected:
   void sendCodeToRemote(CodeCommand *code) {
     if (!network_initialized)
       return;
-    mqtt_gadget->sendRequest("smarthome/to/code", R"({"type": "UNKNOWN_C", "code": 12345, "timestamp": 54321})");
+    if (code->getType() == IR_UNKNOWN_C || code->getType() == UNKNOWN_C) {
+      return;
+    }
+    char code_type[CODE_TYPE_NAME_LEN]{};
+    codeTypeToString(code->getType(), &code_type[0]);
+
+    char code_str[CODE_STR_LEN_MAX]{};
+    unsigned long ident = micros() % 7023;
+    snprintf(code_str, CODE_STR_LEN_MAX, R"({"request_id": %lu, "type": "%s", "code": "%lu", "timestamp": %llu})", ident, code_type, code->getCode(), code->getTimestamp());
+    mqtt_gadget->sendRequest("smarthome/to/code", code_str);
   }
 
 public:
-  explicit CodeRemote(JsonObject data):
-  network_initialized(false) {};
+  explicit CodeRemote(JsonObject data) :
+    network_initialized(false) {};
 
-  CodeRemote(JsonObject data, MQTT_Gadget *gadget):
+  CodeRemote(JsonObject data, MQTT_Gadget *gadget) :
     mqtt_gadget(gadget),
     network_initialized(true) {};
 
   void handleRequest(Request *req) {
-    Serial.println("handling request");
+    DynamicJsonDocument json_file(2048);
+    DeserializationError err = deserializeJson(json_file, req->getBody());
+    if (err != OK) {
+      logger.print(LOG_ERR, "Broken Code Request Received: Invalid JSON");
+      return;
+    }
+    JsonObject json_body = json_file.as<JsonObject>();
+
+    if (json_body["type"] == nullptr) {
+      logger.print(LOG_ERR, "Broken Code Request Received: 'type' missing");
+      return;
+    }
+
+    if (json_body["code"] == nullptr) {
+      logger.print(LOG_ERR, "Broken Code Request Received: 'code' missing");
+      return;
+    }
+
+    if (json_body["timestamp"] == nullptr) {
+      logger.print(LOG_ERR, "Broken Code Request Received: 'timestamp' missing");
+      return;
+    }
+
+    CodeCommand *newCode = new CodeCommand(stringToCodeType(json_body["type"].as<const char *>()), json_body["code"].as<unsigned long>(), json_body["timestamp"].as<unsigned long long>());
+    handleNewCode(newCode);
+
   }
 
   void handleNewCode(CodeCommand *code) {

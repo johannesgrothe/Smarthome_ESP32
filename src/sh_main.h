@@ -4,7 +4,6 @@
 
 // Network Gadgets
 #include "connectors/ir_gadget.h"
-#include "connectors/rest_gadget.h"
 #include "connectors/serial_gadget.h"
 #include "connectors/radio_gadget.h"
 
@@ -48,6 +47,8 @@ static void rebootChip(const char *reason) {
 class SH_Main {
 private:
 
+  char client_name[CLIENT_NAME_LEN_MAX]{};
+
   IR_Gadget *ir_gadget;
   MQTT_Gadget *mqtt_gadget;
   Serial_Gadget *serial_gadget;
@@ -62,39 +63,6 @@ private:
   Remote *remotes[REMOTE_MANAGER_MAX_REMOTES]{};
 
   byte remote_count;
-
-  void initTime() {
-    logger.println("Initializing Time");
-//    auto *req = new RestRequest(REQ_HTTP_GET, "/time", "",
-//                                3006, IPAddress(192, 168, 178, 108), "text/plain");
-//    unsigned long request_start_timestamp = millis();
-//    rest_gadget->sendRequest(req);
-//    delete req;
-//    unsigned long start_time = millis();
-    bool found_time = false;
-//    while (start_time + 3000 > millis() && !found_time) {
-//      if (rest_gadget->hasRequest()) {
-//        Request *res = rest_gadget->getRequest();
-//        if (strcmp(res->getPath(), "200") == 0) {
-//          found_time = true;
-//          request_start_timestamp = millis() - request_start_timestamp;
-//          unsigned long time_offset = millis() - (request_start_timestamp / 2);
-//          unsigned long time_index = strtol(res->getBody(), NULL, 10) + (request_start_timestamp / 2);
-//          system_timer.setTime(time_index, time_offset);
-//          logger.print("Got Time: ");
-//          logger.add(BASE_TIME);
-//          logger.addln(system_timer.getTime());
-//        } else {
-//          logger.println("Received: ERR");
-//        }
-//      } else {
-//        rest_gadget->refresh();
-//      }
-//    }
-    if (!found_time) {
-      logger.println(LOG_ERR, "Cannot Sync Time");
-    }
-  }
 
   bool initGadgets(JsonArray gadget_json) {
     gadgets = Gadget_Collection();
@@ -332,61 +300,54 @@ private:
   }
 
   void handleSystemRequest(Request *req) {
+
+    DynamicJsonDocument json_file(2048);
+    DeserializationError err = deserializeJson(json_file, req->getBody());
+    if (err != OK) {
+      logger.print(LOG_ERR, "Broken System Command Received: Invalid JSON");
+      return;
+    }
+    JsonObject json_body = json_file.as<JsonObject>();
+
+    if (json_body["client_name"] == nullptr) {
+      logger.print(LOG_ERR, "Broken System Command Received: 'client_name' missing");
+      return;
+    }
+
+    if (strcmp(client_name, json_body["client_name"]) != 0) {
+      // Command is not for me
+      return;
+    }
+
     logger.print("System Command Detected: ");
     logger.addln(req->getPath());
     logger.incIndent();
 
-    switch (req->getType()) {
-      case REQ_HTTP_GET:
-        logger.print("System / HTTP-GET", "");
-        if (strcmp(req->getPath(), "sys/gadgets/list") == 0) {
-          logger.addln("Asking for Gadget List");
-          req->respond("200 OK", "gadgetlist");
-        } else {
-          logger.addln("<unknown>");
-        }
-        break;
-
-      case REQ_HTTP_POST:
-        logger.print("System / HTTP-POST", "");
-        if (strcmp(req->getPath(), "sys/config/write") == 0) {
-          logger.addln("Write config");
-          if (System_Storage::writeConfig(req->getBody())) {
-            req->respond("200 OK", "Writing config successfull");
+    if (strcmp(req->getPath(), "smarthome/from/sys/time") == 0) {
+      if (json_body["time"] != nullptr) {
+        unsigned long long new_time = json_body["time"].as<unsigned long long>();
+//        system_timer.setTime(new_time);
+      } else {
+        logger.print(LOG_ERR, "Broken System Command Received: 'time' missing");
+      }
+    } else if (strcmp(req->getPath(), "smarthome/from/sys/command") == 0) {
+      if (json_body["command"] != nullptr) {
+        const char *com = json_body["time"].as<const char *>();
+        if (strcmp(com, "reboot") == 0) {
+          if (json_body["message"] != nullptr) {
+            const char *msg = json_body["message"].as<const char *>();
+            rebootChip(msg);
           } else {
-            req->respond("666 ERR", "Error Writing Config");
+            rebootChip("No Reason given");
           }
-        } else if (strcmp(req->getPath(), "sys/reboot") == 0) {
-          logger.addln("Reboot");
-          rebootChip(req->getBody());
-        } else {
-          logger.addln("<unknown>");
         }
-        break;
+      } else {
+        logger.print(LOG_ERR, "Broken System Command Received: 'command' missing");
+      }
+    } else if (strcmp(req->getPath(), "smarthome/from/sys/config/set") == 0) {
 
-      case REQ_MQTT:
-        logger.print("System / MQTT", "");
-        logger.addln("<unknown>");
-        break;
-
-      case REQ_SERIAL:
-        logger.print("System / Serial", "");
-        if (strcmp(req->getPath(), "sys/config/write") == 0) {
-          logger.addln("Write config");
-          if (System_Storage::writeConfig(req->getBody())) {
-            req->respond("OK", "Writing config successfull");
-          } else {
-            req->respond("ERR", "Error Writing Config");
-          }
-        } else if (strcmp(req->getPath(), "sys/gadgets/list") == 0) {
-          logger.addln("Asking for Gadget List");
-          req->respond("OK", "gadgetlist");
-        } else {
-          logger.addln("<unknown>");
-        }
-        break;
-      default:
-        logger.print("System / UNHANDLED", "Unknown Request");
+    } else {
+      logger.println("Unknown Command");
     }
     logger.decIndent();
   }
@@ -397,8 +358,12 @@ private:
       unsigned int last_pos = strlen(req->getBody()) - 1;
       if (last_pos > 0) {
         std::string str_path = req->getPath();
-        if (str_path.compare(0, 4, "sys/") == 0) {
+        if (str_path.compare(0, 4, "smarthome/from/sys/") == 0) {
           handleSystemRequest(req);
+        } else if (strcmp(req->getPath(), "smarthome/from/response") == 0) {
+          logger.println("Ignoring unhandled response");
+        } else if (strcmp(req->getPath(), "smarthome/from/code") == 0) {
+          code_remote->handleRequest(req);
         } else {
           if (validateJson(req->getBody())) {
             DynamicJsonDocument json_file(2048);
@@ -514,7 +479,13 @@ public:
 
     initNetwork(json["network"]);
     initConnectors(json["connectors"]);
-    initTime();
+
+    if (json["id"] != nullptr) {
+      strncpy(client_name, json["id"].as<const char *>(), CLIENT_NAME_LEN_MAX);
+    } else {
+      logger.println(LOG_ERR, "No Name defined");
+      strcpy(client_name, "TestClient");
+    }
 
     if (json["gadgets"] != nullptr) {
       initGadgets(json["gadgets"]);
@@ -541,6 +512,44 @@ public:
 
     logger.print("Free Heap: ");
     logger.add(ESP.getFreeHeap());
+
+    char client_str[50]{};
+    unsigned long ident = micros() % 7023;
+    snprintf(client_str, 50, R"({"request_id": %lu, "id": "%s"})", ident, client_name);
+    mqtt_gadget->sendRequest("smarthome/to/client/add", client_str);
+    unsigned long const start_time = millis();
+    while (start_time + 5000 > millis()) {
+      if (!mqtt_gadget->hasRequest()) {
+        mqtt_gadget->refresh();
+      } else {
+        Request *resp = mqtt_gadget->getRequest();
+        if (strcmp(resp->getPath(), "smarthome/from/response") == 0 && getIdent(resp->getBody()) == ident) {
+          DynamicJsonDocument time_json(2048);
+          DeserializationError err = deserializeJson(time_json, resp->getBody());
+          if (err == DeserializationError::Ok) {
+            unsigned long time_offset = (millis() - start_time) / 2;
+            JsonObject json_obj = time_json.as<JsonObject>();
+            if (json_obj["ack"] != nullptr) {
+              if (json_obj["ack"].as<bool>()) {
+                logger.println("Adding Gadget succesfull.");
+                if (json_obj["time"] != nullptr) {
+                  unsigned long long new_time = json_obj["time"].as<unsigned long long>();
+                  logger.print("Initializing System Time: ");
+                  logger.add(json_obj["time"].as<const char *>());
+                  logger.add(" (+");
+                  logger.add(time_offset);
+                  logger.addln(")");
+                  system_timer.setTime(new_time + time_offset);
+                }
+              } else {
+                logger.println(LOG_ERR, "Registering Client failed");
+              }
+            }
+          }
+        }
+        delete resp;
+      }
+    }
     logger.addln();
   }
 

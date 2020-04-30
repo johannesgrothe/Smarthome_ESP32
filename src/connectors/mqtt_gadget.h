@@ -7,6 +7,32 @@
 #include "request_gadget.h"
 #include <cstring>
 
+static unsigned long getIdent(const char *json_str_input) {
+  DynamicJsonDocument json_file(2048);
+  DeserializationError err = deserializeJson(json_file, json_str_input);
+  if (err == DeserializationError::Ok) {
+    JsonObject json_obj = json_file.as<JsonObject>();
+    if (json_obj["request_id"] != nullptr) {
+      unsigned long ident = json_obj["request_id"].as<unsigned long>();
+      return ident;
+    }
+  }
+  return 0;
+}
+
+static bool getAck(const char *json_str_input) {
+  DynamicJsonDocument json_file(2048);
+  DeserializationError err = deserializeJson(json_file, json_str_input);
+  if (err == DeserializationError::Ok) {
+    JsonObject json_obj = json_file.as<JsonObject>();
+    if (json_obj["ack"] != nullptr) {
+      return json_obj["ack"].as<bool>();
+    }
+  }
+  return false;
+}
+
+
 class MQTT_Gadget;
 
 class MQTTRequest : public Request {
@@ -61,8 +87,10 @@ protected:
         mqttClient->subscribe("debug/in");
         mqttClient->subscribe("smarthome/from/sys/config/set");
         mqttClient->subscribe("smarthome/from/sys/command");
+        mqttClient->subscribe("smarthome/from/sys/time");
         mqttClient->subscribe("smarthome/from/gadget/set");
         mqttClient->subscribe("smarthome/from/response");
+        mqttClient->subscribe("smarthome/from/code");
         mqttClient->publish("debug/out", "Controller Launched");
         return true;
       } else {
@@ -86,6 +114,7 @@ protected:
     }
     using std::placeholders::_1;
     auto *req = new MQTTRequest(REQ_MQTT, topic, &local_message[0], std::bind(&Request_Gadget::sendRequest, this, _1));
+    // TODO: caused Exception -> Backtrace: 0x4008ea58:0x3ffd5540 0x4008ec89:0x3ffd5560 0x4014034b:0x3ffd5580 0x40140392:0x3ffd55a0 0x4014043f:0x3ffd55c0 0x401404be:0x3ffd55e0 0x400d3569:0x3ffd5600 0x4014dd49:0x3ffd5680 0x400de1cd:0x3ffd56a0 0x400d1ec1:0x3ffd56f0 0x400d1778:0x3ffd5710 0x4008b1a1:0x3ffd5730
     addIncomingRequest(req);
   }
 
