@@ -10,33 +10,6 @@
 #define PREF_LEN 6
 #define INTENT_LEN 3
 
-static void printULongLong(const unsigned long long input, char *buf_arr) {
-  unsigned long long buf = input;
-
-  unsigned long long buf_val = input;
-
-//  unsigned int num_len = 1;
-//  while (buf_val > 0) {
-//    num_len++;
-//    buf_val = buf_val / 10;
-//  }
-
-  unsigned int num_len = 15;
-
-  unsigned int pointer = num_len;
-  while (buf > 0) {
-    char buf_chr[3]{};
-    sprintf(buf_chr, "%d", ((int) (buf % 10)));
-    buf_arr[pointer] = buf_chr[0];
-    buf = buf / 10;
-    pointer--;
-  }
-  while (pointer >= 0) {
-    buf_arr[pointer] = ' ';
-    pointer--;
-  }
-}
-
 enum LOG_TYPE {
   LOG_INFO, LOG_ERR, LOG_DATA, LOG_NONE, LOG_FATAL, LOG_WARN
 };
@@ -265,13 +238,31 @@ public:
     addToBuffer(buffer);
   }
 
-  void add(unsigned long long message) {
-    char buffer[LOGGER_T_BUFFER_LEN]{};
+  void add(const unsigned long long message) {
+    unsigned long long len_count_buffer = message;
 
-    char buf_arr[40]{};
-//    printULongLong(message, &buf_arr[0]);
-//    addToBuffer(buffer);
-    addToBuffer("ULLONG");
+    unsigned int num_len;
+    if (message == 0) {
+      num_len = 2;
+    } else {
+      num_len = 1;
+      while (len_count_buffer > 0) {
+        num_len++;
+        len_count_buffer = len_count_buffer / 10;
+      }
+    }
+
+    unsigned long long buf = message;
+    char buffer[num_len];
+
+    unsigned int pointer = num_len - 2;
+    while (buf > 0) {
+      buffer[pointer] = int(buf % 10) + 48;
+      buf = buf / 10;
+      pointer--;
+    }
+    buffer[num_len - 1] = '\0';
+    addToBuffer(buffer);
   }
 
   void add(float message) {

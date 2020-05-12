@@ -27,6 +27,7 @@ public:
     logger.addln(time);
     logger.print(LOG_DATA, "Momentary System Time: ");
     logger.addln(getTime());
+    logger.decIndent();
   }
 
 };

@@ -78,9 +78,12 @@ private:
       using std::placeholders::_2;
       using std::placeholders::_3;
       using std::placeholders::_4;
-      buffergadget->initRemoteUpdate(std::bind(&SH_Main::updateRemotes, this, _1, _2, _3, _4));
-      gadgets.addGadget(buffergadget);
-      delay(500);
+      if (buffergadget != nullptr) {
+        buffergadget->initRemoteUpdate(std::bind(&SH_Main::updateRemotes, this, _1, _2, _3, _4));
+        gadgets.addGadget(buffergadget);
+      } else {
+        everything_ok = false;
+      }
     }
     logger.decIndent();
     return everything_ok;
@@ -512,7 +515,7 @@ public:
     testStuff();
 
     logger.print("Free Heap: ");
-    logger.add(ESP.getFreeHeap());
+    logger.addln(ESP.getFreeHeap());
 
     char client_str[50]{};
     unsigned long ident = micros() % 7023;
