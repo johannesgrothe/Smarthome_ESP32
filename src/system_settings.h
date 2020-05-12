@@ -48,6 +48,8 @@
 
 // Logger
 #define LOGGER_MAX_BUFFER_LEN 4000
+#define LOGGER_T_BUFFER_LEN 30
+#define LOGGER_MAX_NAME 50
 
 const char json_str[] = R"(
 {

@@ -150,8 +150,7 @@ public:
         logger.addln("Unsupported Command.");
         return false;
     }
-    logger.add("0x");
-    logger.addln(command, HEX);
+    logger.addln(command);
     receiver->resume();
     return true;
   };

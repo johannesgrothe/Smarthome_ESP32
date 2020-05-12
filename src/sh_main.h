@@ -78,9 +78,12 @@ private:
       using std::placeholders::_2;
       using std::placeholders::_3;
       using std::placeholders::_4;
-      buffergadget->initRemoteUpdate(std::bind(&SH_Main::updateRemotes, this, _1, _2, _3, _4));
-      gadgets.addGadget(buffergadget);
-      delay(500);
+      if (buffergadget != nullptr) {
+        buffergadget->initRemoteUpdate(std::bind(&SH_Main::updateRemotes, this, _1, _2, _3, _4));
+        gadgets.addGadget(buffergadget);
+      } else {
+        everything_ok = false;
+      }
     }
     logger.decIndent();
     return everything_ok;
@@ -218,8 +221,9 @@ private:
   void handleCodeConnector(Code_Gadget *gadget) {
     if (gadget->hasNewCommand()) {
       CodeCommand *com = gadget->getCommand();
-      logger.print("HEX", "Hex-Com: 0x");
-      logger.addln(com->getCode(), HEX);
+      logger.print("Command: ");
+      logger.addln(com->getCode());
+
       if (code_remote != nullptr) {
         logger.incIndent();
         code_remote->handleNewCode(com);
@@ -511,7 +515,7 @@ public:
     testStuff();
 
     logger.print("Free Heap: ");
-    logger.add(ESP.getFreeHeap());
+    logger.addln(ESP.getFreeHeap());
 
     char client_str[50]{};
     unsigned long ident = micros() % 7023;
@@ -534,12 +538,7 @@ public:
                 logger.println("Adding Gadget succesfull.");
                 if (json_obj["time"] != nullptr) {
                   unsigned long long new_time = json_obj["time"].as<unsigned long long>();
-                  logger.print("Initializing System Time: ");
-                  logger.add(json_obj["time"].as<const char *>());
-                  logger.add(" (+");
-                  logger.add(time_offset);
-                  logger.addln(")");
-                  system_timer.setTime(new_time + time_offset);
+                  system_timer.setTime(new_time, time_offset);
                 }
               } else {
                 logger.println(LOG_ERR, "Registering Client failed");
