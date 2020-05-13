@@ -17,7 +17,7 @@ protected:
 
   void setCommand(CodeType type, unsigned long new_command) {
     has_news = true;
-    auto *buf_com(new CodeCommand(type, new_command, system_timer.getTime()));
+    auto *buf_com = new CodeCommand(type, new_command, system_timer.getTime());
     com = buf_com;
   }
 
@@ -25,14 +25,12 @@ public:
   Code_Gadget() :
     code_gadget_is_ready(false),
     com(nullptr),
-    has_news(false) {
-  };
+    has_news(false) {};
 
   explicit Code_Gadget(JsonObject data) :
     code_gadget_is_ready(false),
     com(nullptr),
-    has_news(false) {
-  };
+    has_news(false) {};
 
   virtual void refresh() = 0;
 

@@ -7,6 +7,8 @@
 
 #include "../system_settings.h"
 #include "../system_timer.h"
+#include "gadgets/sh_gadget.h"
+#include "../gadget_collection.h"
 
 #include <climits>
 #include <cstring>
@@ -246,7 +248,7 @@ protected:
   }
 
 public:
-  explicit CodeRemote(JsonObject data) :
+  CodeRemote() :
     network_initialized(false) {};
 
   CodeRemote(JsonObject data, MQTT_Gadget *gadget) :

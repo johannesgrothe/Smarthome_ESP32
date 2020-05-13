@@ -144,4 +144,4 @@ public:
 
 };
 
-#endif //__SH_GAGDET__
+#endif //__SH_Gadget__
