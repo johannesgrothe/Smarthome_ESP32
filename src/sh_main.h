@@ -60,7 +60,7 @@ private:
 
   CodeRemote *code_remote;
 
-  GadgetRemote *remotes[REMOTE_MANAGER_MAX_REMOTES]{};
+  GadgetRemote *gadget_remote;
 
   byte remote_count;
 
@@ -79,7 +79,7 @@ private:
       using std::placeholders::_3;
       using std::placeholders::_4;
       if (buffergadget != nullptr) {
-        buffergadget->initRemoteUpdate(std::bind(&SH_Main::updateRemotes, this, _1, _2, _3, _4));
+        buffergadget->initRemoteUpdate(std::bind(&SH_Main::updateGadgetRemote, this, _1, _2, _3, _4));
         gadgets.addGadget(buffergadget);
       } else {
         everything_ok = false;
@@ -286,23 +286,6 @@ private:
     }
   }
 
-//  void handleStringRequest(REQUEST_TYPE type, const char *path, const char *body) {
-//    logger.println("Forwarding String-Request to Remotes:");
-//    logger.incIndent();
-//    forwardRequest(type, path, body);
-//    logger.decIndent();
-//  }
-//
-//  void handleJsonRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
-//    std::string str_path = path;
-//    logger.print("Forwarding Json-Request to ");
-//    logger.add(remote_count);
-//    logger.addln(" Remotes:");
-//    logger.incIndent();
-//    forwardRequest(type, path, body);
-//    logger.decIndent();
-//  }
-
   void handleSystemRequest(Request *req) {
 
     DynamicJsonDocument json_file(2048);
@@ -369,36 +352,20 @@ private:
         } else if (strcmp(req->getPath(), "smarthome/from/code") == 0) {
           code_remote->handleRequest(req);
         } else {
-          for (byte k = 0; k < remote_count; k++) {
-            remotes[k]->handleRequest(req);
-          }
+          gadget_remote->handleRequest(req);
         }
       }
     }
     logger.decIndent();
   }
 
-  void updateRemotes(const char *gadget_name, const char *service, const char *characteristic, int value) {
-    for (byte k = 0; k < remote_count; k++) {
-      remotes[k]->updateCharacteristic(gadget_name, service, characteristic, value);
-    }
+  void updateGadgetRemote(const char *gadget_name, const char *service, const char *characteristic, int value) {
+    gadget_remote->updateCharacteristic(gadget_name, service, characteristic, value);
   }
-
-//  void forwardRequest(REQUEST_TYPE type, const char *path, const char *body) {
-//    for (byte k = 0; k < remote_count; k++) {
-//      remotes[k]->handleRequest(type, path, body);
-//    }
-//  }
-//
-//  void forwardRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
-//    for (byte k = 0; k < remote_count; k++) {
-//      remotes[k]->handleRequest(type, path, body);
-//    }
-//  }
 
   void addRemote(GadgetRemote *new_remote) {
     if (remote_count < (REMOTE_MANAGER_MAX_REMOTES - 1)) {
-      remotes[remote_count] = new_remote;
+      gadget_remote = new_remote;
       remote_count++;
     }
   }
