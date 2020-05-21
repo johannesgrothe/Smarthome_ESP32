@@ -71,26 +71,7 @@ private:
     return false;
   };
 
-public:
-  SmarthomeRemote(MQTT_Gadget *new_mqtt_gadget, JsonObject data) :
-    GadgetRemote(data),
-    mqtt_gadget(new_mqtt_gadget) {};
-
-  void
-  updateCharacteristic(const char *gadget_name, const char *service, const char *characteristic, int value) override {
-    if (updatesAreLocked()) return;
-    SH_Gadget *target_gadget = gadgets.getGadget(gadget_name);
-    if (characteristic != nullptr && target_gadget != nullptr) {
-      char update_str[HOMEBRIDGE_UPDATE_STR_LEN_MAX]{};
-      sprintf(&update_str[0],
-              R"({"name":"%s","service":"%s","characteristic":"%s","value":%d})",
-              gadget_name,
-              service,
-              characteristic,
-              value);
-      mqtt_gadget->sendRequest("smarthome/to/gadget/update", update_str);
-    }
-  };
+protected:
 
   void handleRequest(REQUEST_TYPE type, const char *path, const char *body) override {
     logger.println(LOG_ERR, "Smarthome-Remote cannot handle String Bodys.");
@@ -118,6 +99,27 @@ public:
       }
     } else {
       logger.println("System / Homebridge-Remote", "Received uncomplete Request");
+    }
+  }
+
+public:
+  SmarthomeRemote(MQTT_Gadget *new_mqtt_gadget, JsonObject data) :
+    GadgetRemote(data),
+    mqtt_gadget(new_mqtt_gadget) {};
+
+  void
+  updateCharacteristic(const char *gadget_name, const char *service, const char *characteristic, int value) override {
+    if (updatesAreLocked()) return;
+    SH_Gadget *target_gadget = gadgets.getGadget(gadget_name);
+    if (characteristic != nullptr && target_gadget != nullptr) {
+      char update_str[HOMEBRIDGE_UPDATE_STR_LEN_MAX]{};
+      sprintf(&update_str[0],
+              R"({"name":"%s","service":"%s","characteristic":"%s","value":%d})",
+              gadget_name,
+              service,
+              characteristic,
+              value);
+      mqtt_gadget->sendRequest("smarthome/to/gadget/update", update_str);
     }
   }
 };

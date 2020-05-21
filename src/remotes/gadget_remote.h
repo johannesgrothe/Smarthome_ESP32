@@ -5,8 +5,6 @@
 #include "../connectors/request_gadget.h"
 
 #include "../system_settings.h"
-#include "../gadgets/sh_gadget.h"
-#include "../gadget_collection.h"
 #include "remote.h"
 
 class GadgetRemote: public Remote {
@@ -38,6 +36,7 @@ private:
       logger.println("Registering Gadget successfull.");
     else
       logger.println(LOG_ERR, "Failed to register Gadget.");
+    return true;
   }
 
 public:
