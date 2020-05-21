@@ -18,31 +18,31 @@ enum CodeType {
 
 class CodeCommand {
 private:
-  CodeType type;
-  unsigned long code;
-  unsigned long long timestamp;
+  const CodeType type_;
+  const unsigned long code_;
+  const unsigned long long timestamp_;
 
 public:
   CodeCommand() :
-      type(UNKNOWN_C),
-      code(0),
-      timestamp(0) {};
+      type_(UNKNOWN_C),
+      code_(0),
+      timestamp_(0) {};
 
-  CodeCommand(CodeType command_type, unsigned long code_type, unsigned long long code_timestamp) :
-      type(command_type),
-      code(code_type),
-      timestamp(code_timestamp) {};
+  CodeCommand(const CodeType command_type, const unsigned long code, const unsigned long long code_timestamp) :
+      type_(command_type),
+      code_(code),
+      timestamp_(code_timestamp) {};
 
-  CodeType getType() {
-    return type;
+  CodeType getType() const {
+    return type_;
   }
 
-  unsigned long getCode() {
-    return code;
+  unsigned long getCode() const {
+    return code_;
   }
 
-  unsigned long long getTimestamp() {
-    return timestamp;
+  unsigned long long getTimestamp() const {
+    return timestamp_;
   }
 };
 

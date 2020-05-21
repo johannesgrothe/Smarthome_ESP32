@@ -29,7 +29,7 @@ private:
     return false;
   }
 
-  bool handleNewGadget(SH_Gadget * new_gadget) {
+  bool handleNewGadget(SH_Gadget * new_gadget) override {
     char characteristic_str[HOMEBRIDGE_REGISTER_STR_MAX_LEN - 60];
     new_gadget->getCharacteristics(&characteristic_str[0]);
     if (registerGadgetOnRemote(new_gadget->getName(), new_gadget->getType(), characteristic_str))
@@ -40,7 +40,10 @@ private:
   }
 
 public:
-  explicit GadgetRemote(Request_Gadget *gadget, JsonObject data) :
+  explicit GadgetRemote(JsonObject data) :
+    Remote(data) {};
+
+  GadgetRemote(Request_Gadget *gadget, JsonObject data) :
     Remote(gadget, data) {};
 
   virtual void

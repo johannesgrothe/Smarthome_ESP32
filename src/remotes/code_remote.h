@@ -101,6 +101,7 @@ static void codeTypeToString(CodeType code, char *buf) {
 
 class CodeCommandBuffer {
 private:
+  // TODO: Durch C++-Standart-Datenstruktur ersetzen
   CodeCommand *code_list[CODE_BUFFER_SIZE]{};
   byte buffer_add_pointer{};
   byte buffer_get_pointer{};
@@ -129,6 +130,7 @@ public:
     }
   }
 
+  // TODO: Check if there's any better way
   bool hasNewCode() {
     return buffer_get_pointer != buffer_add_pointer;
   }
@@ -201,7 +203,7 @@ public:
     addCodeToBuffer(code);
     sendCodeToRemote(code);
   }
-
+  // TODO: Change how code gets from Remote to Gadget
   bool hasCode() {
     return codes.hasNewCode();
   }
