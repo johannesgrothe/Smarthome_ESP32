@@ -60,7 +60,7 @@ private:
 
   CodeRemote *code_remote;
 
-  Remote *remotes[REMOTE_MANAGER_MAX_REMOTES]{};
+  GadgetRemote *remotes[REMOTE_MANAGER_MAX_REMOTES]{};
 
   byte remote_count;
 
@@ -286,22 +286,22 @@ private:
     }
   }
 
-  void handleStringRequest(REQUEST_TYPE type, const char *path, const char *body) {
-    logger.println("Forwarding String-Request to Remotes:");
-    logger.incIndent();
-    forwardRequest(type, path, body);
-    logger.decIndent();
-  }
-
-  void handleJsonRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
-    std::string str_path = path;
-    logger.print("Forwarding Json-Request to ");
-    logger.add(remote_count);
-    logger.addln(" Remotes:");
-    logger.incIndent();
-    forwardRequest(type, path, body);
-    logger.decIndent();
-  }
+//  void handleStringRequest(REQUEST_TYPE type, const char *path, const char *body) {
+//    logger.println("Forwarding String-Request to Remotes:");
+//    logger.incIndent();
+//    forwardRequest(type, path, body);
+//    logger.decIndent();
+//  }
+//
+//  void handleJsonRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
+//    std::string str_path = path;
+//    logger.print("Forwarding Json-Request to ");
+//    logger.add(remote_count);
+//    logger.addln(" Remotes:");
+//    logger.incIndent();
+//    forwardRequest(type, path, body);
+//    logger.decIndent();
+//  }
 
   void handleSystemRequest(Request *req) {
 
@@ -369,13 +369,8 @@ private:
         } else if (strcmp(req->getPath(), "smarthome/from/code") == 0) {
           code_remote->handleRequest(req);
         } else {
-          if (validateJson(req->getBody())) {
-            DynamicJsonDocument json_file(2048);
-            deserializeJson(json_file, req->getBody());
-            JsonObject json_doc = json_file.as<JsonObject>();
-            handleJsonRequest(req->getType(), req->getPath(), json_doc);
-          } else {
-            handleStringRequest(req->getType(), req->getPath(), req->getBody());
+          for (byte k = 0; k < remote_count; k++) {
+            remotes[k]->handleRequest(req);
           }
         }
       }
@@ -389,19 +384,19 @@ private:
     }
   }
 
-  void forwardRequest(REQUEST_TYPE type, const char *path, const char *body) {
-    for (byte k = 0; k < remote_count; k++) {
-      remotes[k]->handleRequest(path, type, body);
-    }
-  }
+//  void forwardRequest(REQUEST_TYPE type, const char *path, const char *body) {
+//    for (byte k = 0; k < remote_count; k++) {
+//      remotes[k]->handleRequest(type, path, body);
+//    }
+//  }
+//
+//  void forwardRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
+//    for (byte k = 0; k < remote_count; k++) {
+//      remotes[k]->handleRequest(type, path, body);
+//    }
+//  }
 
-  void forwardRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
-    for (byte k = 0; k < remote_count; k++) {
-      remotes[k]->handleRequest(path, type, body);
-    }
-  }
-
-  void addRemote(Remote *new_remote) {
+  void addRemote(GadgetRemote *new_remote) {
     if (remote_count < (REMOTE_MANAGER_MAX_REMOTES - 1)) {
       remotes[remote_count] = new_remote;
       remote_count++;
@@ -417,7 +412,7 @@ private:
       if (gadget_list.size() > 0) {
         logger.println(LOG_DATA, "Smarthome");
         logger.incIndent();
-        auto *smarthome_remote = new SmarthomeRemote(mqtt_gadget);
+        auto *smarthome_remote = new SmarthomeRemote(mqtt_gadget, json);
         for (auto &&gadget_name_str : gadget_list) {
           const char *gadget_name = gadget_name_str.as<const char *>();
           SH_Gadget *gadget = gadgets.getGadget(gadget_name);

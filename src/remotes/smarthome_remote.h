@@ -2,10 +2,10 @@
 #define __Smarthome_Remote__
 
 #include "../connectors/mqtt_gadget.h"
-#include "remote.h"
+#include "gadget_remote.h"
 
 
-class SmarthomeRemote: public Remote {
+class SmarthomeRemote: public GadgetRemote {
 private:
   MQTT_Gadget *mqtt_gadget;
 
@@ -72,8 +72,8 @@ private:
   };
 
 public:
-  explicit SmarthomeRemote(MQTT_Gadget *new_mqtt_gadget) :
-    Remote(),
+  SmarthomeRemote(MQTT_Gadget *new_mqtt_gadget, JsonObject data) :
+    GadgetRemote(data),
     mqtt_gadget(new_mqtt_gadget) {};
 
   void
@@ -92,11 +92,11 @@ public:
     }
   };
 
-  void handleRequest(const char *path, REQUEST_TYPE type, const char *body) override {
+  void handleRequest(REQUEST_TYPE type, const char *path, const char *body) override {
     logger.println(LOG_ERR, "Smarthome-Remote cannot handle String Bodys.");
   };
 
-  void handleRequest(const char *path, REQUEST_TYPE type, JsonObject body) override {
+  void handleRequest(REQUEST_TYPE type, const char *path, JsonObject body) override {
     if (type == REQ_MQTT && strcmp(path, "smarthome/from/set") == 0) {
       if (body["name"] != nullptr && body["characteristic"] != nullptr && body["value"] != nullptr) {
         logger.print("System / Gadget-Remote", "Received valid Request: ");
