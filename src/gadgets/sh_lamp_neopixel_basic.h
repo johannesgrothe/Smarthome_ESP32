@@ -2,19 +2,21 @@
 #define __SH_Lamp_NeoPixel_Basic__
 
 #include "sh_lamp.h"
-//#include <Arduino.h>
+#include <Arduino.h>
 #include "Adafruit_NeoPixel.h"
-//#include <NeoPixelBus.h>
+#include <NeoPixelBus.h>
 
 #ifdef __AVR__
+
 #include <avr/power.h>
+
 #endif
 
 class SH_Lamp_NeoPixel_Basic : public SH_Lamp {
 private:
   uint8_t pin;
   uint16_t len;
-  Adafruit_NeoPixel *led_stripe;
+//  NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> *led_stripe;
 
 public:
 
@@ -29,18 +31,18 @@ public:
       logger.println(LOG_ERR, "No Length selected.");
     }
     if (gadget["pin"] != nullptr) {
-      pin = gadget["pin"].as<int>();
+      pin = gadget["pin"].as<uint8_t>();
       logger.print("Pin: ");
       logger.addln(pin);
 
-      led_stripe = new Adafruit_NeoPixel(len, pin, NEO_GRB + NEO_KHZ800);
-      led_stripe->begin();
-      setLEDColor(0, 0, 0xFF);
-      delay(1000);
-      setLEDColor(0, 0xFF, 0);
-      delay(1000);
-      setLEDColor(0xFF, 0, 0);
-      delay(1000);
+//      pinMode(pin, OUTPUT);
+//      led_stripe = new NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod>(len, pin);
+      setColor(0, 0, 0xFF);
+      delay(500);
+      setColor(0, 0xFF, 0);
+      delay(500);
+      setColor(0xFF, 0, 0);
+      delay(500);
       setLEDColor(0, 0, 0);
     } else {
       pin = 0;
@@ -50,36 +52,26 @@ public:
 
   void refresh() override {
     if (has_changed) {
-      logger.println(getName(), "has changed.");
-      logger.incIndent();
-//      uint8_t rgb[3];
-//      getColor(&rgb[0]);
-//      setLEDColor(rgb[0], rgb[1], rgb[2]);
+//      logger.print(name, "has changed.\n");
+      uint8_t rgb[3];
+      getColor(&rgb[0]);
+      setLEDColor(rgb[0], rgb[1], rgb[2]);
 
-      if (getStatus())
-        setLEDColor(0, 0, 240);
-      else
-        setLEDColor(240, 0, 0);
-
-      logger.decIndent();
+//      if (getStatus())
+//        setLEDColor(0xFF, 0xFF, 0xFF);
+//      else
+//        setLEDColor(0, 0, 0);
     }
     has_changed = false;
   };
 
-  void setLEDColor(int r, int g, int b) {
-    logger.print(getName(), "Applying Color: (");
-    logger.add(r);
-    logger.add(", ");
-    logger.add(g);
-    logger.add(", ");
-    logger.add(b);
-    logger.addln(")");
-
-    led_stripe->clear();
-    for (int k = 0; k < len; k++) {
-      led_stripe->setPixelColor(k, Adafruit_NeoPixel::Color(r, g, b));
+  void setLEDColor(uint8_t r, uint8_t g, uint8_t b) {
+    Serial.printf("[%s] Setting Color: (%d, %d, %d)\n", getName(), r, g, b);
+    RgbColor clr(r, g, b);
+    for (uint16_t k = 0; k < len; k++) {
+//      led_stripe->SetPixelColor(k, clr);
     }
-    led_stripe->show();
+//    led_stripe->Show();
   }
 };
 

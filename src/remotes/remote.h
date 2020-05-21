@@ -11,13 +11,42 @@
 class Remote {
 private:
 
+  virtual bool
+  registerGadget(const char *gadget_name, Gadget_Type gadget_type, const char *characteristics) { return false; };
+
+  virtual bool removeGadget(const char *gadget_name) { return false; };
+
+  bool registerGadgetOnRemote(const char *gadget_name, Gadget_Type gadget_type, const char *characteristics) {
+//    logger.println("Unregistering Gadget:");
+//    logger.incIndent();
+//    if (removeGadget(gadget_name)) {
+//      logger.println(LOG_INFO, "OK");
+//      logger.decIndent();
+//    } else {
+//      logger.println(LOG_ERR, "ERR");
+//      logger.decIndent();
+//    }
+
+    logger.println("Registering Gadget:");
+    logger.incIndent();
+    if (registerGadget(gadget_name, gadget_type, characteristics)) {
+      logger.println(LOG_INFO, "OK");
+      logger.decIndent();
+      return true;
+    } else {
+      logger.println(LOG_ERR, "ERR");
+      logger.decIndent();
+    }
+    return false;
+  }
+
   bool lock_updates;
 
 protected:
 
   Gadget_Collection gadgets;
 
-  bool updatesAreLocked() const { return lock_updates; }
+  bool updatesAreLocked() { return lock_updates; }
 
   void lockUpdates() {
     logger.println("Locking Updates");
@@ -29,27 +58,18 @@ protected:
     lock_updates = false;
   }
 
-  virtual void handleRequest(REQUEST_TYPE type, const char *path, const char *body) = 0;
-
-  virtual void handleRequest(REQUEST_TYPE type, const char *path, JsonObject body) = 0;
-
-  virtual bool handleNewGadget(SH_Gadget *new_gadget) = 0;
-
 public:
-  explicit Remote(JsonObject data) :
-    lock_updates(false),
-    gadgets() {};
-
-  void handleRequest(Request *req) {
-    DynamicJsonDocument body_json(2048);
-    DeserializationError err = deserializeJson(body_json, req->getBody());
-    if (err == DeserializationError::Ok) {
-      JsonObject body = body_json.as<JsonObject>();
-      handleRequest(req->getType(), req->getPath(), body);
-    } else {
-      handleRequest(req->getType(), req->getPath(), req->getBody());
-    }
+  Remote() :
+    lock_updates(false) {
+    gadgets = Gadget_Collection();
   };
+
+  virtual void
+  updateCharacteristic(const char *gadget_name, const char *service, const char *characteristic, int value) {};
+
+  virtual void handleRequest(const char *path, REQUEST_TYPE type, const char *body) {};
+
+  virtual void handleRequest(const char *path, REQUEST_TYPE type, JsonObject body) {};
 
   void addGadget(SH_Gadget *new_gadget) {
     if (gadgets.addGadget(new_gadget)) {
@@ -58,7 +78,12 @@ public:
       logger.addln("'");
 
       logger.incIndent();
-      handleNewGadget(new_gadget);
+      char characteristic_str[HOMEBRIDGE_REGISTER_STR_MAX_LEN - 60];
+      new_gadget->getCharacteristics(&characteristic_str[0]);
+      if (registerGadgetOnRemote(new_gadget->getName(), new_gadget->getType(), characteristic_str))
+        logger.println("Registering Gadget successfull.");
+      else
+        logger.println(LOG_ERR, "Failed to register Gadget.");
       logger.decIndent();
     } else {
       logger.print(LOG_ERR, "Unable to add '");
@@ -66,6 +91,7 @@ public:
       logger.addln("'");
     }
   }
+
 };
 
 #endif //__Remote__

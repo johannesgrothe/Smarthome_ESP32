@@ -60,7 +60,9 @@ private:
 
   CodeRemote *code_remote;
 
-  GadgetRemote *gadget_remote;
+  Remote *remotes[REMOTE_MANAGER_MAX_REMOTES]{};
+
+  byte remote_count;
 
   bool initGadgets(JsonArray gadget_json) {
     gadgets = Gadget_Collection();
@@ -77,7 +79,7 @@ private:
       using std::placeholders::_3;
       using std::placeholders::_4;
       if (buffergadget != nullptr) {
-        buffergadget->initRemoteUpdate(std::bind(&SH_Main::updateGadgetRemote, this, _1, _2, _3, _4));
+        buffergadget->initRemoteUpdate(std::bind(&SH_Main::updateRemotes, this, _1, _2, _3, _4));
         gadgets.addGadget(buffergadget);
       } else {
         everything_ok = false;
@@ -284,22 +286,22 @@ private:
     }
   }
 
-//  void handleStringRequest(REQUEST_TYPE type, const char *path, const char *body) {
-//    logger.println("Forwarding String-Request to Remotes:");
-//    logger.incIndent();
-//    forwardRequest(type, path, body);
-//    logger.decIndent();
-//  }
-//
-//  void handleJsonRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
-//    std::string str_path = path;
-//    logger.print("Forwarding Json-Request to ");
-//    logger.add(remote_count);
-//    logger.addln(" Remotes:");
-//    logger.incIndent();
-//    forwardRequest(type, path, body);
-//    logger.decIndent();
-//  }
+  void handleStringRequest(REQUEST_TYPE type, const char *path, const char *body) {
+    logger.println("Forwarding String-Request to Remotes:");
+    logger.incIndent();
+    forwardRequest(type, path, body);
+    logger.decIndent();
+  }
+
+  void handleJsonRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
+    std::string str_path = path;
+    logger.print("Forwarding Json-Request to ");
+    logger.add(remote_count);
+    logger.addln(" Remotes:");
+    logger.incIndent();
+    forwardRequest(type, path, body);
+    logger.decIndent();
+  }
 
   void handleSystemRequest(Request *req) {
 
@@ -367,139 +369,80 @@ private:
         } else if (strcmp(req->getPath(), "smarthome/from/code") == 0) {
           code_remote->handleRequest(req);
         } else {
-          gadget_remote->handleRequest(req);
+          if (validateJson(req->getBody())) {
+            DynamicJsonDocument json_file(2048);
+            deserializeJson(json_file, req->getBody());
+            JsonObject json_doc = json_file.as<JsonObject>();
+            handleJsonRequest(req->getType(), req->getPath(), json_doc);
+          } else {
+            handleStringRequest(req->getType(), req->getPath(), req->getBody());
+          }
         }
       }
     }
     logger.decIndent();
   }
 
-  void updateGadgetRemote(const char *gadget_name, const char *service, const char *characteristic, int value) {
-    gadget_remote->updateCharacteristic(gadget_name, service, characteristic, value);
+  void updateRemotes(const char *gadget_name, const char *service, const char *characteristic, int value) {
+    for (byte k = 0; k < remote_count; k++) {
+      remotes[k]->updateCharacteristic(gadget_name, service, characteristic, value);
+    }
   }
 
-//  void forwardRequest(REQUEST_TYPE type, const char *path, const char *body) {
-//    for (byte k = 0; k < remote_count; k++) {
-//      remotes[k]->handleRequest(path, type, body);
-//    }
-//  }
-//
-//  void forwardRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
-//    for (byte k = 0; k < remote_count; k++) {
-//      remotes[k]->handleRequest(path, type, body);
-//    }
-//  }
+  void forwardRequest(REQUEST_TYPE type, const char *path, const char *body) {
+    for (byte k = 0; k < remote_count; k++) {
+      remotes[k]->handleRequest(path, type, body);
+    }
+  }
 
-//  void addRemote(GadgetRemote *new_remote) {
-//    if (remote_count < (REMOTE_MANAGER_MAX_REMOTES - 1)) {
-//      remotes[remote_count] = new_remote;
-//      remote_count++;
-//    }
-//  }
+  void forwardRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
+    for (byte k = 0; k < remote_count; k++) {
+      remotes[k]->handleRequest(path, type, body);
+    }
+  }
 
-  bool initGadgetRemote(JsonObject json) {
-    logger.print("Initializing Gadget Remote: ");
+  void addRemote(Remote *new_remote) {
+    if (remote_count < (REMOTE_MANAGER_MAX_REMOTES - 1)) {
+      remotes[remote_count] = new_remote;
+      remote_count++;
+    }
+  }
+
+  bool initRemotes(JsonObject json) {
+    logger.println("Initializing Remotes");
     logger.incIndent();
 
-    if (json["type"] != nullptr && json["gadgets"] != nullptr) {
-      JsonArray gadget_list = json["gadgets"].as<JsonArray>();
+    if (json["smarthome"] != nullptr) {
+      JsonArray gadget_list = json["smarthome"].as<JsonArray>();
       if (gadget_list.size() > 0) {
-        if (strcmp(json["type"].as<const char *>(), "smarthome") == 0) {
-          gadget_remote = new SmarthomeRemote(mqtt_gadget, json["config"]);
-          logger.addln("Smarthome");
-        } else {
-          logger.addln("<unknown>");
-          logger.println(LOG_ERR, "Unknown Remote Type");
-          logger.decIndent();
-          return false;
-        }
+        logger.println(LOG_DATA, "Smarthome");
+        logger.incIndent();
+        auto *smarthome_remote = new SmarthomeRemote(mqtt_gadget);
         for (auto &&gadget_name_str : gadget_list) {
           const char *gadget_name = gadget_name_str.as<const char *>();
           SH_Gadget *gadget = gadgets.getGadget(gadget_name);
-          gadget_remote->addGadget(gadget);
+          smarthome_remote->addGadget(gadget);
         }
+        logger.decIndent();
+        addRemote(smarthome_remote);
       } else {
-        logger.println(LOG_DATA, "Gadget List is empty");
-      }
-    } else {
-      if (json["type"] == nullptr) {
-        logger.println(LOG_ERR, "No Gadget Remote Type defined");
-      }
-      if (json["gadgets"] == nullptr) {
-        logger.println(LOG_ERR, "No Gadget List in Gadget Remote");
+        logger.println(LOG_DATA, "Smarthome-Configuration is empty");
       }
     }
+
     logger.decIndent();
     return true;
   }
 
   bool initCodeRemote(JsonObject json) {
-    logger.print("Initializing Code Remote: ");
+    logger.println("Initializing Code Remote");
     logger.incIndent();
-
-    if (json["type"] != nullptr && json["gadgets"] != nullptr) {
-      JsonArray gadget_list = json["gadgets"].as<JsonArray>();
-      if (strcmp(json["type"].as<const char *>(), "smarthome") == 0) {
-        code_remote = new CodeRemote(json, mqtt_gadget);
-        logger.addln("Smarthome");
-      } else {
-        logger.addln("<unknown>");
-        logger.println(LOG_ERR, "Unknown Remote Type");
-        logger.decIndent();
-        return false;
-      }
-//      if (gadget_list.size() > 0) {
-//        for (auto &&gadget_name_str : gadget_list) {
-//          const char *gadget_name = gadget_name_str.as<const char *>();
-//          SH_Gadget *gadget = gadgets.getGadget(gadget_name);
-//          code_remote->addGadget(gadget);
-//        }
-//      } else {
-//        logger.println(LOG_DATA, "Gadget List is empty");
-//      }
+    if (json.size() > 0) {
+      auto *basic_remote = new CodeRemote(json, mqtt_gadget);
+      code_remote = basic_remote;
+      logger.println(LOG_INFO, "OK");
     } else {
-      if (json["type"] == nullptr) {
-        logger.println(LOG_ERR, "No Gadget Remote Type defined");
-      }
-      if (json["gadgets"] == nullptr) {
-        logger.println(LOG_ERR, "No Gadget List in Gadget Remote");
-      }
-    }
-    logger.decIndent();
-    return true;
-  }
-
-  bool initEventRemote(JsonObject json) {
-    logger.print("Initializing Event Remote");
-    logger.incIndent();
-    if (json["type"] != nullptr && json["gadgets"] != nullptr) {
-      JsonArray gadget_list = json["gadgets"].as<JsonArray>();
-      if (strcmp(json["type"].as<const char *>(), "smarthome") == 0) {
-//        event_remote = new CodeRemote(json, mqtt_gadget);
-        logger.addln("Smarthome");
-      } else {
-        logger.addln("<unknown>");
-        logger.println(LOG_ERR, "Unknown Remote Type");
-        logger.decIndent();
-        return false;
-      }
-      logger.println(LOG_WARN, "<not implemented>");
-//      if (gadget_list.size() > 0) {
-//        for (auto &&gadget_name_str : gadget_list) {
-//          const char *gadget_name = gadget_name_str.as<const char *>();
-//          SH_Gadget *gadget = gadgets.getGadget(gadget_name);
-//          code_remote->addGadget(gadget);
-//        }
-//      } else {
-//        logger.println(LOG_DATA, "Gadget List is empty");
-//      }
-    } else {
-      if (json["type"] == nullptr) {
-        logger.println(LOG_ERR, "No Event Remote Type defined");
-      }
-      if (json["gadgets"] == nullptr) {
-        logger.println(LOG_ERR, "No Gadget List in Event Remote");
-      }
+      logger.println(LOG_ERR, "Insufficient Configuration");
     }
     logger.decIndent();
     return true;
@@ -553,26 +496,20 @@ public:
     } else {
       logger.println(LOG_ERR, "No gadgets-configuration found");
     }
-
     if (json["connector-mapping"] != nullptr) {
       mapConnectors(json["connector-mapping"]);
     } else {
       logger.println(LOG_ERR, "No connector-mapping-configuration found");
     }
-    if (json["gadget-remote"] != nullptr) {
-      initGadgetRemote(json["gadget-remote"]);
+    if (json["remotes"] != nullptr) {
+      initRemotes(json["remotes"]);
     } else {
-      logger.println(LOG_ERR, "No configuration found for gadget remote");
+      logger.println(LOG_ERR, "No remotes-configuration found");
     }
     if (json["code-remote"] != nullptr) {
       initCodeRemote(json["code-remote"]);
     } else {
-      logger.println(LOG_ERR, "No configuration found for code remote");
-    }
-    if (json["event-remote"] != nullptr) {
-      initEventRemote(json["event-remote"]);
-    } else {
-      logger.println(LOG_ERR, "No configuration found for event remote");
+      logger.println(LOG_ERR, "No code-remote-configuration found");
     }
 
     testStuff();
@@ -607,8 +544,6 @@ public:
                 logger.println(LOG_ERR, "Registering Client failed");
               }
             }
-          } else {
-            logger.println(LOG_ERR, "Broken response body");
           }
         }
         delete resp;
