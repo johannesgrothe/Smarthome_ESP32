@@ -363,19 +363,20 @@ private:
     gadget_remote->updateCharacteristic(gadget_name, service, characteristic, value);
   }
 
-  void addRemote(GadgetRemote *new_remote) {
-    if (remote_count < (REMOTE_MANAGER_MAX_REMOTES - 1)) {
-      gadget_remote = new_remote;
-      remote_count++;
-    }
-  }
-
-  bool initRemotes(JsonObject json) {
-    logger.println("Initializing Remotes");
+  bool initGadgetRemote(JsonObject json) {
+    logger.println("Initializing Gadget Remote");
     logger.incIndent();
 
-    if (json["smarthome"] != nullptr) {
-      JsonArray gadget_list = json["smarthome"].as<JsonArray>();
+    if (json["type"] == nullptr) {
+      logger.println(LOG_ERR, "'type' missing in gadget remote config");
+    }
+    if (json["gadgets"] == nullptr) {
+      logger.println(LOG_ERR, "'gadgets' missing in gadget remote config");
+    }
+    auto remote_type = json["type"].as<const char *>();
+
+    if (strcmp(remote_type, "smarthome") == 0) {
+      JsonArray gadget_list = json["gadgets"].as<JsonArray>();
       if (gadget_list.size() > 0) {
         logger.println(LOG_DATA, "Smarthome");
         logger.incIndent();
@@ -386,9 +387,9 @@ private:
           smarthome_remote->addGadget(gadget);
         }
         logger.decIndent();
-        addRemote(smarthome_remote);
+        gadget_remote = smarthome_remote;
       } else {
-        logger.println(LOG_DATA, "Smarthome-Configuration is empty");
+        logger.println(LOG_DATA, "gadget-list is empty");
       }
     }
 
@@ -464,7 +465,7 @@ public:
       logger.println(LOG_ERR, "No connector-mapping-configuration found");
     }
     if (json["remotes"] != nullptr) {
-      initRemotes(json["remotes"]);
+      initGadgetRemote(json["remotes"]);
     } else {
       logger.println(LOG_ERR, "No remotes-configuration found");
     }

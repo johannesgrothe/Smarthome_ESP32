@@ -56,27 +56,6 @@ const char json_str[] = R"(
   "id" : "TestClientESP32",
   "gadgets": [
     {
-      "type": "sh_lamp_neopixel_basic",
-      "name": "Testlampe NP",
-      "lamp_type": 0,
-      "pin": 21,
-      "length": "1",
-      "mapping": {
-        "toggleStatus": [
-          1,
-          16
-        ],
-        "turnOn": [
-          2,
-          17
-        ],
-        "turnOff": [
-          3,
-          18
-        ]
-      }
-    },
-    {
       "type": "sh_lamp_basic",
       "name": "Testlampe 2",
       "lamp_type": 0,
@@ -147,15 +126,26 @@ const char json_str[] = R"(
     ],
     "radio": []
   },
-  "remotes": {
-    "smarthome": [
+  "gadget-remote": {
+    "type": "smarthome",
+    "gadgets": [
       "TestFan",
       "Testlampe 2"
     ]
   },
   "code-remote": {
-    "ip": "192.168.178.108",
-    "port": "3006"
+    "type": "smarthome",
+    "gadgets": [
+      "TestFan",
+      "Testlampe 2"
+    ]
+  },
+  "event-remote": {
+    "type": "smarthome",
+    "gadgets": [
+      "TestFan",
+      "Testlampe 2"
+    ]
   }
 }
 )";
