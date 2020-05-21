@@ -24,7 +24,8 @@
 #include "gadget_collection.h"
 #include "system_storage.h"
 
-#include "remotes/code_remote.h"
+#include "remotes/smarthome_code_remote.h"
+
 
 #include "color.h"
 
@@ -329,9 +330,8 @@ private:
           handleSystemRequest(req);
         } else if (strcmp(req->getPath(), "smarthome/from/response") == 0) {
           logger.println("Ignoring unhandled response");
-        } else if (strcmp(req->getPath(), "smarthome/from/code") == 0) {
-          code_remote->handleRequest(req);
         } else {
+          code_remote->handleRequest(req);
           gadget_remote->handleRequest(req);
         }
       }
@@ -381,7 +381,7 @@ private:
     logger.println("Initializing Code Remote");
     logger.incIndent();
     if (json.size() > 0) {
-      auto *basic_remote = new CodeRemote(json, mqtt_gadget);
+      auto *basic_remote = new SmarthomeCodeRemote(mqtt_gadget, json);
       code_remote = basic_remote;
       logger.println(LOG_INFO, "OK");
     } else {

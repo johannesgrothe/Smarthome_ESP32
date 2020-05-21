@@ -7,24 +7,13 @@
 
 #include "../system_settings.h"
 #include "../system_timer.h"
+#include "remote.h"
+#include "../connectors/code_command.h"
 
 #include <climits>
 #include <cstring>
 
-enum CodeType {
-  UNKNOWN_C,
-  SERIAL_C,
-  RADIO_C,
-  IR_UNKNOWN_C,
-  IR_NEC_C,
-  IR_SONY_C,
-  IR_RC5_C,
-  IR_RC6_C,
-  IR_SAMSUNG_C,
-  IR_LG_C,
-  IR_PANASONIC_C,
-  IR_DENON_C
-};
+
 
 static CodeType stringToCodeType(const char *input) {
   if (strcmp(input, "SERIAL") == 0) {
@@ -109,35 +98,6 @@ static void codeTypeToString(CodeType code, char *buf) {
   }
 }
 
-class CodeCommand {
-private:
-  CodeType type;
-  unsigned long code;
-  unsigned long long timestamp;
-
-public:
-  CodeCommand() :
-    type(UNKNOWN_C),
-    code(0),
-    timestamp(0) {};
-
-  CodeCommand(CodeType command_type, unsigned long code_type, unsigned long long code_timestamp) :
-    type(command_type),
-    code(code_type),
-    timestamp(code_timestamp) {};
-
-  CodeType getType() {
-    return type;
-  }
-
-  unsigned long getCode() {
-    return code;
-  }
-
-  unsigned long long getTimestamp() {
-    return timestamp;
-  }
-};
 
 class CodeCommandBuffer {
 private:
@@ -215,11 +175,9 @@ public:
 
 };
 
-class CodeRemote {
+class CodeRemote : public Remote {
 protected:
   CodeCommandBuffer codes;
-  MQTT_Gadget *mqtt_gadget;
-  bool network_initialized;
 
   void addCodeToBuffer(CodeCommand *code) {
     if (!codes.codeIsDoubled(code)) {
@@ -230,57 +188,14 @@ protected:
     }
   }
 
-  void sendCodeToRemote(CodeCommand *code) {
-    if (!network_initialized)
-      return;
-    if (code->getType() == IR_UNKNOWN_C || code->getType() == UNKNOWN_C) {
-      return;
-    }
-    char code_type[CODE_TYPE_NAME_LEN]{};
-    codeTypeToString(code->getType(), &code_type[0]);
-
-    char code_str[CODE_STR_LEN_MAX]{};
-    unsigned long ident = micros() % 7023;
-    snprintf(code_str, CODE_STR_LEN_MAX, R"({"request_id": %lu, "type": "%s", "code": "%lu", "timestamp": %llu})", ident, code_type, code->getCode(), code->getTimestamp());
-    mqtt_gadget->sendRequest(new Request("smarthome/to/code", code_str));
-  }
+  virtual void sendCodeToRemote(CodeCommand *code) = 0;
 
 public:
   explicit CodeRemote(JsonObject data) :
-    network_initialized(false) {};
+    Remote(data){};
 
-  CodeRemote(JsonObject data, MQTT_Gadget *gadget) :
-    mqtt_gadget(gadget),
-    network_initialized(true) {};
-
-  void handleRequest(Request *req) {
-    DynamicJsonDocument json_file(2048);
-    DeserializationError err = deserializeJson(json_file, req->getBody());
-    if (err != OK) {
-      logger.print(LOG_ERR, "Broken Code Request Received: Invalid JSON");
-      return;
-    }
-    JsonObject json_body = json_file.as<JsonObject>();
-
-    if (json_body["type"] == nullptr) {
-      logger.print(LOG_ERR, "Broken Code Request Received: 'type' missing");
-      return;
-    }
-
-    if (json_body["code"] == nullptr) {
-      logger.print(LOG_ERR, "Broken Code Request Received: 'code' missing");
-      return;
-    }
-
-    if (json_body["timestamp"] == nullptr) {
-      logger.print(LOG_ERR, "Broken Code Request Received: 'timestamp' missing");
-      return;
-    }
-
-    CodeCommand *newCode = new CodeCommand(stringToCodeType(json_body["type"].as<const char *>()), json_body["code"].as<unsigned long>(), json_body["timestamp"].as<unsigned long long>());
-    handleNewCode(newCode);
-
-  }
+  CodeRemote(Request_Gadget *gadget, JsonObject data) :
+    Remote(gadget, data) {};
 
   void handleNewCode(CodeCommand *code) {
     addCodeToBuffer(code);

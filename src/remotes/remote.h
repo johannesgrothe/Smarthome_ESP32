@@ -12,6 +12,8 @@ class Remote {
 private:
 
   bool lock_updates;
+  bool network_initialized;
+
 
 protected:
 
@@ -36,11 +38,22 @@ protected:
 
   virtual bool handleNewGadget(SH_Gadget *new_gadget) = 0;
 
+  bool isNetworkInitialised() {
+    return network_initialized;
+  }
+
 public:
-  explicit Remote(Request_Gadget *gadget, JsonObject data) :
+  explicit Remote(JsonObject data) :
     lock_updates(false),
-    req_gadget(gadget),
-    gadgets() {};
+    network_initialized(false),
+    req_gadget(nullptr),
+    gadgets(){};
+
+  explicit Remote(Request_Gadget *gadget, JsonObject data) :
+      lock_updates(false),
+      network_initialized(true),
+      req_gadget(gadget),
+      gadgets(){};
 
   void handleRequest(Request *req) {
     DynamicJsonDocument body_json(2048);

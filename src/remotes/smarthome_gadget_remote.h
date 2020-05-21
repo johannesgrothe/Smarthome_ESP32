@@ -2,6 +2,7 @@
 #define __Smarthome_Remote__
 
 #include "gadget_remote.h"
+#include "../connectors/smarthome_remote_helper.h"
 
 
 class SmarthomeGadgetRemote: public GadgetRemote {

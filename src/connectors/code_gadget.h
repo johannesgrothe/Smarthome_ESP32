@@ -5,7 +5,7 @@
 #include <ArduinoJson.h>
 #include "../console_logger.h"
 #include "../system_timer.h"
-#include "../remotes/code_remote.h"
+#include "code_command.h"
 
 class Code_Gadget {
 protected:
