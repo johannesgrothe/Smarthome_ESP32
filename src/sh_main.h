@@ -444,8 +444,8 @@ public:
     } else {
       logger.println(LOG_ERR, "No connector-mapping-configuration found");
     }
-    if (json["remotes"] != nullptr) {
-      initGadgetRemote(json["remotes"]);
+    if (json["gadget-remote"] != nullptr) {
+      initGadgetRemote(json["gadget-remote"]);
     } else {
       logger.println(LOG_ERR, "No remotes-configuration found");
     }
