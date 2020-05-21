@@ -1,14 +1,11 @@
 #ifndef __Smarthome_Remote__
 #define __Smarthome_Remote__
 
-#include "../connectors/mqtt_gadget.h"
 #include "gadget_remote.h"
 
 
-class SmarthomeRemote: public GadgetRemote {
+class SmarthomeGadgetRemote: public GadgetRemote {
 private:
-  MQTT_Gadget *mqtt_gadget;
-
   bool registerGadget(const char *gadget_name, Gadget_Type gadget_type, const char *characteristics) override {
     unsigned long ident = micros() % 7023;
     char reg_str[HOMEBRIDGE_REGISTER_STR_MAX_LEN]{};
@@ -32,13 +29,13 @@ private:
               gadget_name,
               service_name);
     }
-    mqtt_gadget->sendRequest("smarthome/to/gadget/add", &reg_str[0]);
+    req_gadget->sendRequest(new Request("smarthome/to/gadget/add", &reg_str[0]));
     unsigned long start_time = millis();
     while (start_time + 5000 > millis()) {
-      if (!mqtt_gadget->hasRequest()) {
-        mqtt_gadget->refresh();
+      if (!req_gadget->hasRequest()) {
+        req_gadget->refresh();
       } else {
-        Request *resp = mqtt_gadget->getRequest();
+        Request *resp = req_gadget->getRequest();
         if (strcmp(resp->getPath(), "smarthome/from/response") == 0 && getIdent(resp->getBody()) == ident) {
           delete resp;
           return getAck(resp->getBody());
@@ -54,13 +51,13 @@ private:
     unsigned long ident = micros() % 7023;
     snprintf(&buf_msg[0], HOMEBRIDGE_UNREGISTER_STR_MAX_LEN, R"({"request_id" : %lu, "name": "%s"})", ident,
              gadget_name);
-    mqtt_gadget->sendRequest("smarthome/to/gadget/remove", &buf_msg[0]);
+    req_gadget->sendRequest(new Request("smarthome/to/gadget/remove", &buf_msg[0]));
     unsigned long start_time = millis();
     while (start_time + 5000 > millis()) {
-      if (!mqtt_gadget->hasRequest()) {
-        mqtt_gadget->refresh();
+      if (!req_gadget->hasRequest()) {
+        req_gadget->refresh();
       } else {
-        Request *resp = mqtt_gadget->getRequest();
+        Request *resp = req_gadget->getRequest();
         if (strcmp(resp->getPath(), "smarthome/from/response") == 0 && getIdent(resp->getBody()) == ident) {
           delete resp;
           return getAck(resp->getBody());
@@ -73,12 +70,12 @@ private:
 
 protected:
 
-  void handleRequest(REQUEST_TYPE type, const char *path, const char *body) override {
+  void handleRequest(const char *path, const char *body) override {
     logger.println(LOG_ERR, "Smarthome-Remote cannot handle String Bodys.");
   };
 
-  void handleRequest(REQUEST_TYPE type, const char *path, JsonObject body) override {
-    if (type == REQ_MQTT && strcmp(path, "smarthome/from/set") == 0) {
+  void handleRequest(const char *path, JsonObject body) override {
+    if (strcmp(path, "smarthome/from/set") == 0) {
       if (body["name"] != nullptr && body["characteristic"] != nullptr && body["value"] != nullptr) {
         logger.print("System / Gadget-Remote", "Received valid Request: ");
         SH_Gadget *target_gadget = gadgets.getGadget(body["name"].as<const char *>());
@@ -103,9 +100,8 @@ protected:
   }
 
 public:
-  SmarthomeRemote(MQTT_Gadget *new_mqtt_gadget, JsonObject data) :
-    GadgetRemote(data),
-    mqtt_gadget(new_mqtt_gadget) {};
+  SmarthomeGadgetRemote(Request_Gadget *gadget, JsonObject data) :
+    GadgetRemote(gadget, data) {};
 
   void
   updateCharacteristic(const char *gadget_name, const char *service, const char *characteristic, int value) override {
@@ -119,7 +115,7 @@ public:
               service,
               characteristic,
               value);
-      mqtt_gadget->sendRequest("smarthome/to/gadget/update", update_str);
+      req_gadget->sendRequest(new Request("smarthome/to/gadget/update", update_str));
     }
   }
 };

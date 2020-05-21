@@ -242,7 +242,7 @@ protected:
     char code_str[CODE_STR_LEN_MAX]{};
     unsigned long ident = micros() % 7023;
     snprintf(code_str, CODE_STR_LEN_MAX, R"({"request_id": %lu, "type": "%s", "code": "%lu", "timestamp": %llu})", ident, code_type, code->getCode(), code->getTimestamp());
-    mqtt_gadget->sendRequest("smarthome/to/code", code_str);
+    mqtt_gadget->sendRequest(new Request("smarthome/to/code", code_str));
   }
 
 public:

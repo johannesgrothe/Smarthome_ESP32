@@ -40,8 +40,8 @@ private:
   }
 
 public:
-  explicit GadgetRemote(JsonObject data) :
-    Remote(data) {};
+  explicit GadgetRemote(Request_Gadget *gadget, JsonObject data) :
+    Remote(gadget, data) {};
 
   virtual void
   updateCharacteristic(const char *gadget_name, const char *service, const char *characteristic, int value) {};

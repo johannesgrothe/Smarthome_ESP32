@@ -20,7 +20,7 @@
 #include "ArduinoJson.h"
 
 //#include "remotes/homebridge_remote.h"
-#include "remotes/smarthome_remote.h"
+#include "remotes/smarthome_gadget_remote.h"
 #include "gadget_collection.h"
 #include "system_storage.h"
 
@@ -247,22 +247,10 @@ private:
     if (gadget->hasRequest()) {
       char type[REQUEST_TYPE_LEN_MAX]{};
       Request *req = gadget->getRequest();
-      REQUEST_TYPE req_type = req->getType();
-      if (req_type == REQ_UNKNOWN)
-        strncpy(type, "<unknown>", REQUEST_TYPE_LEN_MAX);
-      else if (req_type == REQ_HTTP_GET)
-        strncpy(type, "GET", REQUEST_TYPE_LEN_MAX);
-      else if (req_type == REQ_HTTP_POST)
-        strncpy(type, "POST", REQUEST_TYPE_LEN_MAX);
-      else if (req_type == REQ_HTTP_DELETE)
-        strncpy(type, "DELETE", REQUEST_TYPE_LEN_MAX);
-      else if (req_type == REQ_HTTP_PUT)
-        strncpy(type, "PUT", REQUEST_TYPE_LEN_MAX);
-      else if (req_type == REQ_HTTP_RESPONSE)
-        strncpy(type, "RESPONSE", REQUEST_TYPE_LEN_MAX);
-      else if (req_type == REQ_MQTT)
+      GADGET_TYPE g_type = gadget->getGadgetType();
+      if (g_type == MQTT_G)
         strncpy(type, "MQTT", REQUEST_TYPE_LEN_MAX);
-      else if (req_type == REQ_SERIAL)
+      else if (g_type == SERIAL_G)
         strncpy(type, "Serial", REQUEST_TYPE_LEN_MAX);
       else
         strncpy(type, "<o.O>", REQUEST_TYPE_LEN_MAX);
@@ -274,14 +262,6 @@ private:
       logger.add("' :");
       logger.addln(req->getBody());
       handleRequest(req);
-      if (req->needsResponse()) {
-        if (req->getType() == REQ_HTTP_GET || req->getType() == REQ_HTTP_POST || req->getType() == REQ_HTTP_DELETE ||
-            req->getType() == REQ_HTTP_DELETE) {
-          req->respond("404 GG", "unhandled");
-        } else {
-          req->respond("ERR", "unhandled");
-        }
-      }
       delete req;
     }
   }
@@ -380,7 +360,7 @@ private:
       if (gadget_list.size() > 0) {
         logger.println(LOG_DATA, "Smarthome");
         logger.incIndent();
-        auto *smarthome_remote = new SmarthomeRemote(mqtt_gadget, json);
+        auto *smarthome_remote = new SmarthomeGadgetRemote(mqtt_gadget, json);
         for (auto &&gadget_name_str : gadget_list) {
           const char *gadget_name = gadget_name_str.as<const char *>();
           SH_Gadget *gadget = gadgets.getGadget(gadget_name);
@@ -483,7 +463,7 @@ public:
     char client_str[50]{};
     unsigned long ident = micros() % 7023;
     snprintf(client_str, 50, R"({"request_id": %lu, "id": "%s"})", ident, client_name);
-    mqtt_gadget->sendRequest("smarthome/to/client/add", client_str);
+    mqtt_gadget->sendRequest(new Request("smarthome/to/client/add", client_str));
     unsigned long const start_time = millis();
     while (start_time + 5000 > millis()) {
       if (!mqtt_gadget->hasRequest()) {

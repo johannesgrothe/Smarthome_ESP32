@@ -35,26 +35,6 @@ static bool getAck(const char *json_str_input) {
 
 class MQTT_Gadget;
 
-class MQTTRequest : public Request {
-public:
-
-  MQTTRequest(REQUEST_TYPE req_type, const char *req_path, const char *req_body) :
-    Request(req_type, req_path, req_body) {
-  }
-
-  MQTTRequest(REQUEST_TYPE req_type, const char *req_path, const char *req_body, std::function<void(Request *request)> answer_method) :
-    Request(req_type, req_path, req_body, answer_method) {
-  }
-
-  ~MQTTRequest() override = default;
-
-  MQTTRequest *createResponse(const char *res_path, const char *res_body) override {
-    auto *res = new MQTTRequest(REQ_MQTT, res_path, res_body);
-    return res;
-  }
-
-};
-
 // Gadget to communicate with MQTT Endpoint
 class MQTT_Gadget : public Request_Gadget {
 protected:
@@ -113,7 +93,7 @@ protected:
       local_message[i] = (char) payload[i];
     }
     using std::placeholders::_1;
-    auto *req = new MQTTRequest(REQ_MQTT, topic, &local_message[0], std::bind(&Request_Gadget::sendRequest, this, _1));
+    auto *req = new Request(topic, &local_message[0], std::bind(&Request_Gadget::sendRequest, this, _1));
     // TODO: caused Exception -> Backtrace: 0x4008ea58:0x3ffd5540 0x4008ec89:0x3ffd5560 0x4014034b:0x3ffd5580 0x40140392:0x3ffd55a0 0x4014043f:0x3ffd55c0 0x401404be:0x3ffd55e0 0x400d3569:0x3ffd5600 0x4014dd49:0x3ffd5680 0x400de1cd:0x3ffd56a0 0x400d1ec1:0x3ffd56f0 0x400d1778:0x3ffd5710 0x4008b1a1:0x3ffd5730
     addIncomingRequest(req);
   }
@@ -149,7 +129,7 @@ public:
   };
 
   MQTT_Gadget(JsonObject data, WiFiClient *network_client) :
-    Request_Gadget(data) {
+    Request_Gadget(MQTT_G, data) {
     logger.println("Creating MQTT Gadget");
     networkClient = WiFiClient();
     logger.incIndent();
@@ -219,10 +199,6 @@ public:
     request_gadget_is_ready = everything_ok;
   };
 
-  void sendRequest(const char *path, const char *body) {
-    auto *req = new MQTTRequest(REQ_MQTT, path, body);
-    Request_Gadget::sendRequest(req);
-  }
 
   void refresh() override {
     if (!request_gadget_is_ready) {

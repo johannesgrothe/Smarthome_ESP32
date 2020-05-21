@@ -15,6 +15,7 @@ private:
 
 protected:
 
+  Request_Gadget *req_gadget;
   Gadget_Collection gadgets;
 
   bool updatesAreLocked() const { return lock_updates; }
@@ -29,15 +30,16 @@ protected:
     lock_updates = false;
   }
 
-  virtual void handleRequest(REQUEST_TYPE type, const char *path, const char *body) = 0;
+  virtual void handleRequest(const char *path, const char *body) = 0;
 
-  virtual void handleRequest(REQUEST_TYPE type, const char *path, JsonObject body) = 0;
+  virtual void handleRequest(const char *path, JsonObject body) = 0;
 
   virtual bool handleNewGadget(SH_Gadget *new_gadget) = 0;
 
 public:
-  explicit Remote(JsonObject data) :
+  explicit Remote(Request_Gadget *gadget, JsonObject data) :
     lock_updates(false),
+    req_gadget(gadget),
     gadgets() {};
 
   void handleRequest(Request *req) {
@@ -45,9 +47,9 @@ public:
     DeserializationError err = deserializeJson(body_json, req->getBody());
     if (err == DeserializationError::Ok) {
       JsonObject body = body_json.as<JsonObject>();
-      handleRequest(req->getType(), req->getPath(), body);
+      handleRequest(req->getPath(), body);
     } else {
-      handleRequest(req->getType(), req->getPath(), req->getBody());
+      handleRequest(req->getPath(), req->getBody());
     }
   };
 

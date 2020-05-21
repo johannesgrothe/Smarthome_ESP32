@@ -6,25 +6,6 @@
 #include "code_gadget.h"
 #include "request_gadget.h"
 
-class SerialRequest : public Request {
-public:
-  SerialRequest(REQUEST_TYPE req_type, const char *req_path, const char *req_body) :
-  Request(req_type, req_path, req_body) {
-  }
-
-  SerialRequest(REQUEST_TYPE req_type, const char *req_path, const char *req_body, std::function<void(Request *request)> answer_method) :
-    Request(req_type, req_path, req_body, answer_method) {
-  }
-
-  ~SerialRequest() override {
-  };
-
-  SerialRequest *createResponse(const char *res_path, const char *res_body) override {
-    auto *res = new SerialRequest(REQ_SERIAL, res_path, res_body);
-    return res;
-  }
-};
-
 class Serial_Gadget : public Code_Gadget, public Request_Gadget {
 protected:
 
@@ -49,7 +30,7 @@ public:
 
   explicit Serial_Gadget(JsonObject data) :
     Code_Gadget(data),
-    Request_Gadget(data) {
+    Request_Gadget(SERIAL_G, data) {
     logger.println("Creating Serial Gadget");
     logger.incIndent();
     logger.println(LOG_DATA, "Using default Serial Connection");
@@ -105,11 +86,11 @@ public:
             msg_pointer++;
           }
           using std::placeholders::_1;
-          auto *req = new SerialRequest(REQ_SERIAL, &message_path[0], &message_body[0], std::bind(&Request_Gadget::sendRequest, this, _1));
+          auto *req = new Request(&message_path[0], &message_body[0], std::bind(&Request_Gadget::sendRequest, this, _1));
           addIncomingRequest(req);
         } else {
           using std::placeholders::_1;
-          auto *req = new SerialRequest(REQ_SERIAL, "_unknown_", &incoming_message[0], std::bind(&Request_Gadget::sendRequest, this, _1));
+          auto *req = new Request("_unknown_", &incoming_message[0], std::bind(&Request_Gadget::sendRequest, this, _1));
           addIncomingRequest(req);
         }
       }
