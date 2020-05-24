@@ -137,11 +137,6 @@ public:
     xQueueSend(out_request_queue, &request, portMAX_DELAY);
   };
 
-//  void sendRequest(const char * path, const char *body) {
-//    auto *new_req = new Request(path, body);
-//    sendRequest(new_req);
-//  };
-
   virtual void refresh() = 0;
 };
 
