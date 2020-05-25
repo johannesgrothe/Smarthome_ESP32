@@ -16,7 +16,6 @@
 
 // External Dependencies
 #include "Client.h"
-#include <WiFi.h>
 #include "ArduinoJson.h"
 
 //#include "remotes/homebridge_remote.h"
@@ -51,19 +50,15 @@ private:
   char client_name[CLIENT_NAME_LEN_MAX]{};
 
   IR_Gadget *ir_gadget;
-  MQTT_Gadget *mqtt_gadget;
-  Serial_Gadget *serial_gadget;
   Radio_Gadget *radio_gadget;
 
-  WiFiClient network_client;
+  Request_Gadget *network_gadget;
 
   Gadget_Collection gadgets;
 
   CodeRemote *code_remote;
 
   GadgetRemote *gadget_remote;
-
-  byte remote_count;
 
   bool initGadgets(JsonArray gadget_json) {
     gadgets = Gadget_Collection();
@@ -143,20 +138,6 @@ private:
     } else {
       ir_gadget = new IR_Gadget();
     }
-
-    if (connectors_json["mqtt"] != nullptr) {
-      mqtt_gadget = new MQTT_Gadget(connectors_json["mqtt"].as<JsonObject>(), &network_client);
-    } else {
-      mqtt_gadget = new MQTT_Gadget();
-    }
-
-    if (connectors_json["serial"] != nullptr) {
-      serial_gadget = new Serial_Gadget(connectors_json["serial"].as<JsonObject>());
-    } else {
-      DynamicJsonDocument json_file(50);
-      JsonObject doc = json_file.as<JsonObject>();
-      serial_gadget = new Serial_Gadget(doc);
-    }
     logger.decIndent();
     return true;
   }
@@ -169,40 +150,10 @@ private:
     }
 
     // initialize Network
-    if (strcmp(json["type"].as<char *>(), "wifi") == 0) {
-      logger.println("Creating Network: WiFi");
-      logger.incIndent();
-      network_client = WiFiClient();
-
-      const char *ssid = json["config"]["ssid"].as<char *>();
-      const char *passwd = json["config"]["password"].as<char *>();
-
-      if (ssid == nullptr || passwd == nullptr) {
-        logger.println(LOG_ERR, "Missing Username or Password.");
-        return false;
-      }
-
-      logger.print(LOG_DATA, "");
-      logger.add("Connecting to ");
-      logger.add(ssid);
-
-      byte connection_tries = 0;
-
-      while (WiFiClass::status() != WL_CONNECTED && connection_tries < 6) {
-        WiFi.begin(ssid, passwd);
-        delay(1000);
-        logger.add(".");
-        connection_tries++;
-      }
-      logger.addln();
-      if (WiFiClass::status() != WL_CONNECTED) {
-        logger.println(LOG_DATA, "could not establish WiFi Connection...");
-      } else {
-        randomSeed(micros());
-        logger.println(LOG_DATA, "WiFi connected");
-        logger.print(LOG_DATA, "IP address: ");
-        logger.addln(WiFi.localIP());
-      }
+    if (strcmp(json["type"].as<char *>(), "mqtt") == 0) {
+      network_gadget = new MQTT_Gadget(json["config"].as<JsonObject>());
+    } else if (strcmp(json["type"].as<char *>(), "serial") == 0) {
+      network_gadget = new Serial_Gadget(json["config"].as<JsonObject>());
     } else {
       logger.println(LOG_ERR, "Unknown Network Settings");
       return false;
@@ -360,7 +311,7 @@ private:
       if (gadget_list.size() > 0) {
         logger.println(LOG_DATA, "Smarthome");
         logger.incIndent();
-        auto *smarthome_remote = new SmarthomeGadgetRemote(mqtt_gadget, json);
+        auto *smarthome_remote = new SmarthomeGadgetRemote(network_gadget, json);
         for (auto &&gadget_name_str : gadget_list) {
           const char *gadget_name = gadget_name_str.as<const char *>();
           SH_Gadget *gadget = gadgets.getGadget(gadget_name);
@@ -381,7 +332,7 @@ private:
     logger.println("Initializing Code Remote");
     logger.incIndent();
     if (json.size() > 0) {
-      auto *basic_remote = new SmarthomeCodeRemote(mqtt_gadget, json);
+      auto *basic_remote = new SmarthomeCodeRemote(network_gadget, json);
       code_remote = basic_remote;
       logger.println(LOG_INFO, "OK");
     } else {
@@ -463,13 +414,13 @@ public:
     char client_str[50]{};
     unsigned long ident = micros() % 7023;
     snprintf(client_str, 50, R"({"request_id": %lu, "id": "%s"})", ident, client_name);
-    mqtt_gadget->sendRequest(new Request("smarthome/to/client/add", client_str));
+    network_gadget->sendRequest(new Request("smarthome/to/client/add", client_str));
     unsigned long const start_time = millis();
     while (start_time + 5000 > millis()) {
-      if (!mqtt_gadget->hasRequest()) {
-        mqtt_gadget->refresh();
+      if (!network_gadget->hasRequest()) {
+        network_gadget->refresh();
       } else {
-        Request *resp = mqtt_gadget->getRequest();
+        Request *resp = network_gadget->getRequest();
         if (strcmp(resp->getPath(), "smarthome/from/response") == 0 && getIdent(resp->getBody()) == ident) {
           DynamicJsonDocument time_json(2048);
           DeserializationError err = deserializeJson(time_json, resp->getBody());
@@ -496,11 +447,7 @@ public:
   }
 
   void refresh() {
-    serial_gadget->refresh();
-    handleCodeConnector(serial_gadget);
-    handleRequestConnector(serial_gadget);
-
-    handleRequestConnector(mqtt_gadget);
+    handleRequestConnector(network_gadget);
 
     ir_gadget->refresh();
     handleCodeConnector(ir_gadget);
@@ -512,8 +459,8 @@ public:
     }
   }
 
-  void refreshMQTT() {
-    mqtt_gadget->refresh();
+  void refreshNetwork() {
+    network_gadget->refresh();
   }
 
 };
@@ -527,9 +474,9 @@ static void mainTask(void *args) {
   }
 }
 
-static void mqttTask(void *args) {
+static void networkTask(void *args) {
   while (true) {
-    smarthome_system.refreshMQTT();
+    smarthome_system.refreshNetwork();
     vTaskDelay(10 / portTICK_PERIOD_MS);
   }
 }
@@ -545,7 +492,7 @@ static void createTasks() {
     0);            /* Task handle. */
 
   xTaskCreatePinnedToCore(
-    mqttTask,     /* Task function. */
+    networkTask,     /* Task function. */
     "Smarthome_MQTT",       /* String with name of task. */
     10000,            /* Stack size in words. */
     NULL,             /* Parameter passed as input of the task */

@@ -111,8 +111,11 @@ public:
   explicit Request_Gadget(GADGET_TYPE t, JsonObject data) :
     type(t),
     request_gadget_is_ready(false) {
+    if (data.isNull()) {
+    }
     in_request_queue = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
     out_request_queue = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
+    request_gadget_is_ready = true;
   }
 
   bool requestGadgetIsReady() {

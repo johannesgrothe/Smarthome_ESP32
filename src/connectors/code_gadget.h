@@ -32,6 +32,8 @@ public:
     code_gadget_is_ready(false),
     com(nullptr),
     has_news(false) {
+    if (data.isNull()) {}
+    code_gadget_is_ready = true;
   };
 
   virtual void refresh() = 0;

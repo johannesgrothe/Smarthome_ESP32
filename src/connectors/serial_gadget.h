@@ -31,12 +31,11 @@ public:
   explicit Serial_Gadget(JsonObject data) :
     Code_Gadget(data),
     Request_Gadget(SERIAL_G, data) {
+    if (data.isNull()) {}
     logger.println("Creating Serial Gadget");
     logger.incIndent();
     logger.println(LOG_DATA, "Using default Serial Connection");
     logger.decIndent();
-    request_gadget_is_ready = true;
-    code_gadget_is_ready = true;
   };
 
   void refresh() override {

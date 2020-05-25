@@ -1,24 +1,19 @@
 #ifndef __MQTT_Gadget__
 #define __MQTT_Gadget__
 
-#include "Client.h"
-#include "WiFiClient.h"
 #include <PubSubClient.h>
 #include "request_gadget.h"
 #include <cstring>
 #include "smarthome_remote_helper.h"
-
-
+#include "wifi_gadget.h"
 
 class MQTT_Gadget;
 
 // Gadget to communicate with MQTT Endpoint
-class MQTT_Gadget : public Request_Gadget {
+class MQTT_Gadget : public WiFiGadget, public Request_Gadget {
 protected:
 
   IPAddress *mqttServer{};
-
-  WiFiClient networkClient{};
 
   PubSubClient *mqttClient{};
 
@@ -97,83 +92,88 @@ protected:
 
 public:
   MQTT_Gadget() :
+    WiFiGadget(),
     Request_Gadget() {};
 
-  MQTT_Gadget(IPAddress *broker_ip, WiFiClient *network_client) :
-    Request_Gadget(),
-    mqttServer(broker_ip) {
-    connect_mqtt();
-  };
-
-  MQTT_Gadget(JsonObject data, WiFiClient *network_client) :
+  explicit MQTT_Gadget(JsonObject data) :
+    WiFiGadget(data),
     Request_Gadget(MQTT_G, data) {
-    logger.println("Creating MQTT Gadget");
-    networkClient = WiFiClient();
-    logger.incIndent();
-    mqttClient = new PubSubClient(networkClient);
-    bool everything_ok = true;
-    // Reads the IP from the JSON
-    if (data["ip"] != nullptr) {
-      char ip_str[15]{};
-      strncpy(ip_str, data["ip"].as<const char *>(), 15);
-      unsigned int ip_arr[4];
-      uint8_t count = 0;
-      char *part;
-      part = strtok(ip_str, ".");
-      ip_arr[count] = atoi(part);
-      while (count < 3) {
-        part = strtok(nullptr, ".");
-        count++;
+    if (data.isNull()) {
+      logger.println(LOG_ERR, "No valid MQTT configuration.");
+      return;
+    }
+    if (wifiIsInitialized()) {
+      logger.println("Creating MQTT Gadget");
+      network_client_ = WiFiClient();
+      logger.incIndent();
+      mqttClient = new PubSubClient(network_client_);
+      bool everything_ok = true;
+      // Reads the IP from the JSON
+      if (data["ip"] != nullptr) {
+        char ip_str[15]{};
+        strncpy(ip_str, data["ip"].as<const char *>(), 15);
+        unsigned int ip_arr[4];
+        uint8_t count = 0;
+        char *part;
+        part = strtok(ip_str, ".");
         ip_arr[count] = atoi(part);
+        while (count < 3) {
+          part = strtok(nullptr, ".");
+          count++;
+          ip_arr[count] = atoi(part);
+        }
+        mqttServer = new IPAddress(ip_arr[0], ip_arr[1], ip_arr[2], ip_arr[3]);
+        logger.print(LOG_DATA, "IP: ");
+        logger.add(ip_arr[0]);
+        logger.add(".");
+        logger.add(ip_arr[1]);
+        logger.add(".");
+        logger.add(ip_arr[2]);
+        logger.add(".");
+        logger.addln(ip_arr[3]);
+      } else {
+        everything_ok = false;
+        logger.println(LOG_ERR, "'ip' missing in config.");
       }
-      mqttServer = new IPAddress(ip_arr[0], ip_arr[1], ip_arr[2], ip_arr[3]);
-      logger.print(LOG_DATA, "IP: ");
-      logger.add(ip_arr[0]);
-      logger.add(".");
-      logger.add(ip_arr[1]);
-      logger.add(".");
-      logger.add(ip_arr[2]);
-      logger.add(".");
-      logger.addln(ip_arr[3]);
+
+      // Reads the Port from the JSON
+      if (data["port"] != nullptr) {
+        mqtt_port = data["port"].as<unsigned int>();
+        logger.print(LOG_DATA, "Port: ");
+        logger.addln(mqtt_port);
+      } else {
+        everything_ok = false;
+        logger.println(LOG_ERR, "'port' missing in config.");
+      }
+
+      // Reads the Username from JSON
+      if (data["username"] != nullptr) {
+        strncpy(username, data["username"].as<const char *>(), MQTT_USERNAME_MAX_LEN);
+        logger.print(LOG_DATA, "Username: ");
+        logger.addln(username);
+      } else {
+        // everything_ok = false;
+        logger.println(LOG_ERR, "'username' missing in config.");
+      }
+
+      // Reads the Password from JSON
+      if (data["password"] != nullptr) {
+        strncpy(password, data["password"].as<const char *>(), MQTT_USERNAME_MAX_LEN);
+
+        logger.print(LOG_DATA, "Password: ");
+        logger.addln(username);
+      } else {
+        // everything_ok = false;
+        logger.println(LOG_ERR, "'password' missing in config.");
+      }
+
+      connect_mqtt();
+      logger.decIndent();
+      request_gadget_is_ready = everything_ok;
     } else {
-      everything_ok = false;
-      logger.println(LOG_ERR, "'ip' missing in config.");
+      logger.println(LOG_ERR, "Cannot initialize MQTT: WiFi not working.");
+      request_gadget_is_ready = false;
     }
-
-    // Reads the Port from the JSON
-    if (data["port"] != nullptr) {
-      mqtt_port = data["port"].as<unsigned int>();
-      logger.print(LOG_DATA, "Port: ");
-      logger.addln(mqtt_port);
-    } else {
-      everything_ok = false;
-      logger.println(LOG_ERR, "'port' missing in config.");
-    }
-
-    // Reads the Username from JSON
-    if (data["username"] != nullptr) {
-      strncpy(username, data["username"].as<const char *>(), MQTT_USERNAME_MAX_LEN);
-      logger.print(LOG_DATA, "Username: ");
-      logger.addln(username);
-    } else {
-      // everything_ok = false;
-      logger.println(LOG_ERR, "'username' missing in config.");
-    }
-
-    // Reads the Password from JSON
-    if (data["password"] != nullptr) {
-      strncpy(password, data["password"].as<const char *>(), MQTT_USERNAME_MAX_LEN);
-
-      logger.print(LOG_DATA, "Password: ");
-      logger.addln(username);
-    } else {
-      // everything_ok = false;
-      logger.println(LOG_ERR, "'password' missing in config.");
-    }
-
-    connect_mqtt();
-    logger.decIndent();
-    request_gadget_is_ready = everything_ok;
   };
 
 

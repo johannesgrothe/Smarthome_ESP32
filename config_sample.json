@@ -47,23 +47,21 @@
     }
   ],
   "network": {
-    "type": "wifi",
+    "type": "mqtt",
     "config": {
-      "ssid": "testwlan",
-      "password": "testpw"
+      "wifi_ssid": "testwlan",
+      "wifi_password": "testpw",
+      "ip": "192.168.178.111",
+      "port": "1883",
+      "mqtt_username": null,
+      "mqtt_password": null
     }
   },
   "connectors": {
     "ir": {
       "recv_pin": 22,
       "send_pin": 23
-    },
-    "mqtt": {
-      "ip": "192.168.178.111",
-      "port": "1883"
-    },
-    "rest": {},
-    "serial": {}
+    }
   },
   "connector-mapping": {
     "ir": [
