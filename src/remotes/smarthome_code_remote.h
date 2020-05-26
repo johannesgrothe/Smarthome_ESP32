@@ -4,8 +4,6 @@
 #include "code_remote.h"
 
 class SmarthomeCodeRemote : public CodeRemote {
-private:
-
 protected:
   void sendCodeToRemote(CodeCommand *code) override {
     if (!isNetworkInitialised())
@@ -18,15 +16,15 @@ protected:
 
     char code_str[CODE_STR_LEN_MAX]{};
     unsigned long ident = micros() % 7023;
-    snprintf(code_str, CODE_STR_LEN_MAX, R"({"request_id": %lu, "type": "%s", "code": "%lu", "timestamp": %llu})", ident, code_type, code->getCode(), code->getTimestamp());
+    snprintf(code_str, CODE_STR_LEN_MAX, R"({"request_id": %lu, "type": "%s", "code": "%lu", "timestamp": %llu})",
+             ident, code_type, code->getCode(), code->getTimestamp());
     req_gadget->sendRequest(new Request("smarthome/to/code", code_str));
   }
 
   void handleRequest(const char *path, const char *body) override {};
 
   void handleRequest(const char *path, JsonObject body) override {
-
-    if (strcmp(path, "smarthome/from/code") != 0){ return;}
+    if (strcmp(path, "smarthome/from/code") != 0) { return; }
 
     if (body["type"] == nullptr) {
       logger.print(LOG_ERR, "Broken Code Request Received: 'type' missing");
@@ -43,21 +41,20 @@ protected:
       return;
     }
 
-    CodeCommand *newCode = new CodeCommand(stringToCodeType(body["type"].as<const char *>()), body["code"].as<unsigned long>(), body["timestamp"].as<unsigned long long>());
-    handleNewCode(newCode);
-}
+    auto *newCode = new CodeCommand(stringToCodeType(body["type"].as<const char *>()), body["code"].as<unsigned long>(),
+                                    body["timestamp"].as<unsigned long long>());
+    handleNewCodeFromRequest(newCode);
+  }
 
-  bool handleNewGadget(SH_Gadget *new_gadget) override { return true;}
-
+  bool handleNewGadget(SH_Gadget *new_gadget) override { return true; }
 
 public:
+
   explicit SmarthomeCodeRemote(JsonObject data) :
-  CodeRemote(data){};
+    CodeRemote(data) {};
 
   SmarthomeCodeRemote(Request_Gadget *gadget, JsonObject data) :
-  CodeRemote(gadget, data) {};
-
-
+    CodeRemote(gadget, data) {};
 
 };
 

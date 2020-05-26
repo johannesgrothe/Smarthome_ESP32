@@ -162,14 +162,6 @@ private:
     return true;
   }
 
-  void forwardCode(CodeCommand *com) {
-    logger.incIndent();
-    for (byte c = 0; c < gadgets.getGadgetCount(); c++) {
-      gadgets.getGadget(c)->handleCodeUpdate(com->getCode());
-    }
-    logger.decIndent();
-  }
-
   void handleCodeConnector(Code_Gadget *gadget) {
     if (gadget->hasNewCommand()) {
       CodeCommand *com = gadget->getCommand();
@@ -178,20 +170,9 @@ private:
 
       if (code_remote != nullptr) {
         logger.incIndent();
-        code_remote->handleNewCode(com);
+        code_remote->handleNewCodeFromGadget(com);
         logger.decIndent();
-      } else {
-        forwardCode(com);
       }
-    }
-  }
-
-  void handleCodeRemote() {
-    if (code_remote == nullptr)
-      return;
-    if (code_remote->hasCode()) {
-      CodeCommand *com = code_remote->getCode();
-      forwardCode(com);
     }
   }
 
@@ -242,14 +223,7 @@ private:
     logger.addln(req->getPath());
     logger.incIndent();
 
-    if (strcmp(req->getPath(), "smarthome/from/sys/time") == 0) {
-      if (json_body["time"] != nullptr) {
-        unsigned long long new_time = json_body["time"].as<unsigned long long>();
-//        system_timer.setTime(new_time);
-      } else {
-        logger.print(LOG_ERR, "Broken System Command Received: 'time' missing");
-      }
-    } else if (strcmp(req->getPath(), "smarthome/from/sys/command") == 0) {
+    if (strcmp(req->getPath(), "smarthome/from/sys/command") == 0) {
       if (json_body["command"] != nullptr) {
         const char *com = json_body["time"].as<const char *>();
         if (strcmp(com, "reboot") == 0) {
@@ -285,6 +259,9 @@ private:
           code_remote->handleRequest(req);
           gadget_remote->handleRequest(req);
         }
+      } else {
+        // Requests asking for content could have empty bodies
+        logger.println(LOG_ERR, "Empty Request");
       }
     }
     logger.decIndent();
@@ -331,13 +308,33 @@ private:
   bool initCodeRemote(JsonObject json) {
     logger.println("Initializing Code Remote");
     logger.incIndent();
-    if (json.size() > 0) {
-      auto *basic_remote = new SmarthomeCodeRemote(network_gadget, json);
-      code_remote = basic_remote;
-      logger.println(LOG_INFO, "OK");
-    } else {
-      logger.println(LOG_ERR, "Insufficient Configuration");
+
+    if (json["type"] == nullptr) {
+      logger.println(LOG_ERR, "'type' missing in code remote config");
     }
+    if (json["gadgets"] == nullptr) {
+      logger.println(LOG_ERR, "'gadgets' missing in code remote config");
+    }
+    auto remote_type = json["type"].as<const char *>();
+
+    if (strcmp(remote_type, "smarthome") == 0) {
+      JsonArray gadget_list = json["gadgets"].as<JsonArray>();
+      if (gadget_list.size() > 0) {
+        logger.println(LOG_DATA, "Smarthome");
+        logger.incIndent();
+        auto *smarthome_remote = new SmarthomeCodeRemote(network_gadget, json);
+        for (auto &&gadget_name_str : gadget_list) {
+          const char *gadget_name = gadget_name_str.as<const char *>();
+          SH_Gadget *gadget = gadgets.getGadget(gadget_name);
+          smarthome_remote->addGadget(gadget);
+        }
+        logger.decIndent();
+        code_remote = smarthome_remote;
+      } else {
+        logger.println(LOG_DATA, "gadget-list is empty");
+      }
+    }
+
     logger.decIndent();
     return true;
   }
@@ -452,7 +449,7 @@ public:
     ir_gadget->refresh();
     handleCodeConnector(ir_gadget);
 
-    handleCodeRemote();
+//    handleCodeRemote();
 
     for (byte c = 0; c < gadgets.getGadgetCount(); c++) {
       gadgets.getGadget(c)->refresh();

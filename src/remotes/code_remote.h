@@ -159,18 +159,17 @@ public:
   void print() {
     for (byte k = 0; k < CODE_BUFFER_SIZE; k++) {
       if (code_list[k] != nullptr) {
-        Serial.print(k);
-        Serial.print(": ");
-        unsigned long first = code_list[k]->getTimestamp() / 1000000000;
-        unsigned long second = code_list[k]->getTimestamp() % 1000000000;
-        Serial.print(first);
-        Serial.print(second);
-        Serial.print(" -> ");
-        Serial.println(code_list[k]->getCode());
+        logger.print(LOG_DATA, "");
+        logger.add(k);
+        logger.add(": ");
+        logger.add(code_list[k]->getTimestamp());
+        logger.add(" -> ");
+        logger.addln(code_list[k]->getCode());
       } else {
-        Serial.print(k);
-        Serial.print(": ");
-        Serial.println("null");
+        logger.print(LOG_DATA, "");
+        logger.add(k);
+        logger.add(": ");
+        logger.addln("null");
       }
     }
   }
@@ -178,7 +177,8 @@ public:
 };
 
 class CodeRemote : public Remote {
-protected:
+private:
+
   CodeCommandBuffer codes;
 
   void addCodeToBuffer(CodeCommand *code) {
@@ -190,6 +190,25 @@ protected:
     }
   }
 
+  void forwardCodeToGadgets(CodeCommand *code) {
+    logger.print("Forwarding Code to ");
+    logger.add(gadgets.getGadgetCount());
+    logger.addln(" Gadgets:");
+    logger.incIndent();
+    for (int i = 0; i < gadgets.getGadgetCount(); i++) {
+      gadgets[i]->handleCodeUpdate(code->getCode());
+    }
+    logger.decIndent();
+  }
+
+  void forwardAllCodes() {
+    while (codes.hasNewCode()) {
+      forwardCodeToGadgets(codes.getCode());
+    }
+  }
+
+protected:
+
   virtual void sendCodeToRemote(CodeCommand *code) = 0;
 
 public:
@@ -199,17 +218,15 @@ public:
   CodeRemote(Request_Gadget *gadget, JsonObject data) :
     Remote(gadget, data) {};
 
-  void handleNewCode(CodeCommand *code) {
+  void handleNewCodeFromGadget(CodeCommand *code) {
     addCodeToBuffer(code);
     sendCodeToRemote(code);
-  }
-  // TODO: Change how code gets from Remote to Gadget
-  bool hasCode() {
-    return codes.hasNewCode();
+    forwardAllCodes();
   }
 
-  CodeCommand *getCode() {
-    return codes.getCode();
+  void handleNewCodeFromRequest(CodeCommand *code) {
+    addCodeToBuffer(code);
+    forwardAllCodes();
   }
 };
 
