@@ -59,8 +59,8 @@ public:
     } else {
       randomSeed(micros());
       logger.println(LOG_DATA, "WiFi connected");
-      logger.print(LOG_DATA, "IP address: ");
-      logger.addln(WiFi.localIP());
+      logger.print(LOG_DATA, "IP: ");
+      logger.addln(WiFi.localIP().toString().c_str());
     }
     wifi_initialized_ = true;
     logger.decIndent();

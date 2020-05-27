@@ -108,17 +108,8 @@ const char json_str[] = R"(
     }
   },
   "connectors": {
-    "ir": {
-      "recv_pin": 22,
-      "send_pin": 23
-    }
   },
   "connector-mapping": {
-    "ir": [
-      "TestFan",
-      "Deckenlampe"
-    ],
-    "radio": []
   },
   "gadget-remote": {
     "type": "smarthome",

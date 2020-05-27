@@ -130,14 +130,26 @@ private:
   }
 
   bool initConnectors(JsonObject connectors_json) {
-    logger.print("Initializing Connectors: ");
-    logger.addln(connectors_json.size());
+    logger.println("Initializing Connectors: ");
+    logger.incIndent();
+    logger.println("Creating IR-Gadget: ");
     logger.incIndent();
     if (connectors_json["ir"] != nullptr) {
       ir_gadget = new IR_Gadget(connectors_json["ir"].as<JsonObject>());
     } else {
       ir_gadget = new IR_Gadget();
     }
+    logger.decIndent();
+
+    logger.println("Creating IR-Gadget:");
+    logger.incIndent();
+    if (connectors_json["mqtt"] != nullptr) {
+      logger.println("Radio Configured bot not implemented");
+    } else {
+      logger.println("No Radio Configured");
+    }
+    logger.decIndent();
+
     logger.decIndent();
     return true;
   }

@@ -21,6 +21,9 @@ public:
 
   void setRadio(Radio_Gadget *new_radio_gadget) {
     if (new_radio_gadget != nullptr) {
+//      if (radio_gadget != nullptr) {
+//        delete radio_gadget;
+//      }
       radio_gadget = new_radio_gadget;
       has_radio = true;
     }
@@ -43,14 +46,14 @@ protected:
   bool sendRawIR(uint16_t raw_data[], uint8_t content_length) {
     if (has_ir)
       return ir_gadget->sendRawIR(raw_data, content_length);
-    logger.println(LOG_ERR, "Cannot send: no access.");
+    logger.println(LOG_ERR, "Cannot send IR: no access.");
     return false;
   }
 
   bool sendIR(unsigned long command, uint8_t com_type) {
     if (has_ir)
       return ir_gadget->sendIR(command, com_type);
-    logger.println(LOG_ERR, "Cannot send: no access.");
+    logger.println(LOG_ERR, "Cannot send IR: no access.");
     return false;
   }
 
@@ -62,6 +65,9 @@ public:
 
   void setIR(IR_Gadget *new_ir_gadget) {
     if (new_ir_gadget != nullptr) {
+//      if (ir_gadget != nullptr) {
+//        delete ir_gadget;
+//      }
       ir_gadget = new_ir_gadget;
       has_ir = true;
     }
