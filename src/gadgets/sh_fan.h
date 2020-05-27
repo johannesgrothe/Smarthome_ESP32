@@ -33,11 +33,11 @@ public:
     setStatus(!getStatus());
   };
 
-  bool getStatus() {
+  bool getStatus() const {
     return rotation_speed > 0;
   };
 
-  byte getLevel() {
+  byte getLevel() const {
     return (rotation_speed / (FAN_ROTATION_SPEED_MAX / levels));
   }
 
@@ -55,7 +55,7 @@ public:
     has_changed = true;
   };
 
-  byte getRotationSpeed() {
+  byte getRotationSpeed() const {
     return rotation_speed;
   }
 
@@ -104,7 +104,7 @@ public:
   // End of Homebridge-Connector
 
   // Code-Connector
-  virtual void handleMethodUpdate(const char *method) override {
+  void handleMethodUpdate(const char *method) override {
     if (method != nullptr) {
       if (strcmp(method, "toggleStatus") == 0) {
         toggleStatus();
