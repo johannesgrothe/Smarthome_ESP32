@@ -1,26 +1,26 @@
 #ifndef __color__
 #define __color__
 
-
+using byte = unsigned char;
 
 class RGBColor {
 private:
 
-  byte red;
-  byte green;
-  byte blue;
+  byte red{};
+  byte green{};
+  byte blue{};
 
 public:
 
-  byte getRed() {
+  byte getRed() const {
     return red;
   }
 
-  byte getGreen() {
+  byte getGreen() const {
     return green;
   }
 
-  byte getBlue() {
+  byte getBlue() const {
     return blue;
   }
 
@@ -35,23 +35,23 @@ public:
 class HSLColor {
 private:
 
-  unsigned int hue;
-  byte saturation;
-  byte lightness;
+  unsigned int hue{};
+  byte saturation{};
+  byte lightness{};
 
 public:
 
-  byte rgb[3];
+  byte rgb[3]{};
 
-  unsigned int getHue() {
+  unsigned int getHue() const {
     return hue;
   }
 
-  byte getSaturation() {
+  byte getSaturation() const {
     return saturation;
   }
 
-  byte getLightness() {
+  byte getLightness() const {
     return lightness;
   }
 
@@ -73,15 +73,15 @@ public:
   byte saturation;
   byte value;
 
-  unsigned int getHue() {
+  unsigned int getHue() const {
     return hue;
   }
 
-  byte getSaturation() {
+  byte getSaturation() const {
     return saturation;
   }
 
-  byte getValue() {
+  byte getValue() const {
     return value;
   }
 
@@ -100,7 +100,7 @@ private:
   HSVColor hsv_color;
 
   static void hsvToRgb(unsigned int h, byte s, byte v, byte rgb[]) {
-    double r, g, b;
+    double r = 0, g = 0, b = 0;
     double sat = s / 100.0;
     double val = v / 100.0;
 
@@ -171,7 +171,7 @@ private:
     return min(a, min(b, c));
   }
 
-  static void rgbToHsl(byte r, byte g, byte b, float hsl[]) {
+  static void rgbToHsl(byte r, byte g, byte b, double hsl[]) {
     double rd = (double) r / 255;
     double gd = (double) g / 255;
     double bd = (double) b / 255;
@@ -198,12 +198,12 @@ private:
     hsl[2] = l * 100;
   }
 
-  static void rgbToHsv(byte r, byte g, byte b, float hsv[]) {
-    double rd = (double) r / 255;
-    double gd = (double) g / 255;
-    double bd = (double) b / 255;
+  static void rgbToHsv(byte r, byte g, byte b, double hsv[]) {
+    double rd = (double) r / 255.0;
+    double gd = (double) g / 255.0;
+    double bd = (double) b / 255.0;
     double max = threeway_max(rd, gd, bd), min = threeway_min(rd, gd, bd);
-    double h, s, v = max;
+    double h = 0, s = 0, v = max;
 
     double d = max - min;
     s = max == 0 ? 0 : d / max;
@@ -263,33 +263,33 @@ public:
 
 
   void setRGB(byte red, byte green, byte blue) {
-    float hsl[3];
-    float hsv[3];
+    double hsl[3];
+    double hsv[3];
     rgb_color.setColor(red, green, blue);
     rgbToHsl(red, green, blue, hsl);
     rgbToHsv(red, green, blue, hsv);
-    hsl_color.setColor(hsl[0], hsl[1], hsl[2]);
-    hsv_color.setColor(hsv[0], hsv[1], hsv[2]);
+    hsl_color.setColor((unsigned int) hsl[0], (byte) hsl[1], (byte) hsl[2]);
+    hsv_color.setColor((unsigned int) hsv[0], (byte) hsv[1], (byte) hsv[2]);
   }
 
   void setHSL(unsigned int hue, byte saturation, byte lightness) {
-    float hsv[3];
+    double hsv[3];
     byte rgb[3];
     hsl_color.setColor(hue, saturation, lightness);
     hslToRgb(hue, saturation, lightness, rgb);
-    rgb_color.setColor(rgb[0], rgb[1], rgb[2]);
+    rgb_color.setColor((byte) rgb[0], (byte) rgb[1], (byte) rgb[2]);
     rgbToHsv(rgb[0], rgb[1], rgb[2], hsv);
-    hsv_color.setColor(hsv[0], hsv[1], hsv[2]);
+    hsv_color.setColor((unsigned int) hsv[0], (byte) hsv[1], (byte) hsv[2]);
   }
 
   void setHSV(unsigned int hue, byte saturation, byte value) {
-    float hsl[3];
+    double hsl[3];
     byte rgb[3];
     hsv_color.setColor(hue, saturation, value);
     hsvToRgb(hue, saturation, value, rgb);
     rgbToHsl(rgb[0], rgb[1], rgb[2], hsl);
-    rgb_color.setColor(rgb[0], rgb[1], rgb[2]);
-    hsl_color.setColor(hsl[0], hsl[1], hsl[2]);
+    rgb_color.setColor((byte) rgb[0], (byte) rgb[1], (byte) rgb[2]);
+    hsl_color.setColor((unsigned int) hsl[0], (byte) hsl[1], (byte) hsl[2]);
   }
 
   void setBrightness(byte brightness) {
@@ -299,8 +299,6 @@ public:
   void setHue(unsigned int hue) {
     setHSV(hue, hsv_color.getSaturation(), hsv_color.getValue());
   }
-
-
 };
 
 #endif //__color__
