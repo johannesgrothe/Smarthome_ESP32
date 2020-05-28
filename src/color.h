@@ -1,6 +1,8 @@
 #ifndef __color__
 #define __color__
 
+#include <algorithm>
+
 using byte = unsigned char;
 
 class RGBColor {
@@ -12,23 +14,13 @@ private:
 
 public:
 
-  byte getRed() const {
-    return red;
-  }
+  byte getRed() const;
 
-  byte getGreen() const {
-    return green;
-  }
+  byte getGreen() const;
 
-  byte getBlue() const {
-    return blue;
-  }
+  byte getBlue() const;
 
-  void setColor(byte new_red, byte new_green, byte new_blue) {
-    red = new_red;
-    green = new_green;
-    blue = new_blue;
-  }
+  void setColor(byte new_red, byte new_green, byte new_blue);
 
 };
 
@@ -41,25 +33,13 @@ private:
 
 public:
 
-  byte rgb[3]{};
+  unsigned int getHue() const;
 
-  unsigned int getHue() const {
-    return hue;
-  }
+  byte getSaturation() const;
 
-  byte getSaturation() const {
-    return saturation;
-  }
+  byte getLightness() const;
 
-  byte getLightness() const {
-    return lightness;
-  }
-
-  void setColor(unsigned int new_hue, byte new_saturation, byte new_lightness) {
-    hue = new_hue;
-    saturation = new_saturation;
-    lightness = new_lightness;
-  }
+  void setColor(unsigned int new_hue, byte new_saturation, byte new_lightness);
 
 };
 
@@ -73,23 +53,13 @@ public:
   byte saturation;
   byte value;
 
-  unsigned int getHue() const {
-    return hue;
-  }
+  unsigned int getHue() const;
 
-  byte getSaturation() const {
-    return saturation;
-  }
+  byte getSaturation() const;
 
-  byte getValue() const {
-    return value;
-  }
+  byte getValue() const;
 
-  void setColor(unsigned int new_hue, byte new_saturation, byte new_value) {
-    hue = new_hue;
-    saturation = new_saturation;
-    value = new_value;
-  }
+  void setColor(unsigned int new_hue, byte new_saturation, byte new_value);
 
 };
 
@@ -164,11 +134,11 @@ private:
   }
 
   static double threeway_max(double a, double b, double c) {
-    return max(a, max(b, c));
+    return std::max(a, std::max(b, c));
   }
 
   static double threeway_min(double a, double b, double c) {
-    return min(a, min(b, c));
+    return std::min(a, std::min(b, c));
   }
 
   static void rgbToHsl(byte r, byte g, byte b, double hsl[]) {
@@ -227,78 +197,29 @@ private:
   }
 
 public:
-  Color() :
-      rgb_color(),
-      hsl_color(),
-      hsv_color() {
-    setRGB(0, 0, 0);
-  };
+  Color();
 
-  Color(byte r, byte g, byte b) :
-      rgb_color(),
-      hsl_color(),
-      hsv_color() {
-    setRGB(r, g, b);
-  };
+  Color(byte r, byte g, byte b);
 
-  RGBColor *getRGB() {
-    return &rgb_color;
-  }
+  RGBColor *getRGB();
 
-  HSLColor *getHSL() {
-    return &hsl_color;
-  }
+  HSLColor *getHSL();
 
-  HSVColor *getHSV() {
-    return &hsv_color;
-  }
+  HSVColor *getHSV();
 
-  byte getBrightness() {
-    return hsv_color.getValue();
-  }
+  byte getBrightness();
 
-  unsigned int getHue() {
-    return hsv_color.getHue();
-  }
+  unsigned int getHue();
 
+  void setRGB(byte red, byte green, byte blue);
 
-  void setRGB(byte red, byte green, byte blue) {
-    double hsl[3];
-    double hsv[3];
-    rgb_color.setColor(red, green, blue);
-    rgbToHsl(red, green, blue, hsl);
-    rgbToHsv(red, green, blue, hsv);
-    hsl_color.setColor((unsigned int) hsl[0], (byte) hsl[1], (byte) hsl[2]);
-    hsv_color.setColor((unsigned int) hsv[0], (byte) hsv[1], (byte) hsv[2]);
-  }
+  void setHSL(unsigned int hue, byte saturation, byte lightness);
 
-  void setHSL(unsigned int hue, byte saturation, byte lightness) {
-    double hsv[3];
-    byte rgb[3];
-    hsl_color.setColor(hue, saturation, lightness);
-    hslToRgb(hue, saturation, lightness, rgb);
-    rgb_color.setColor((byte) rgb[0], (byte) rgb[1], (byte) rgb[2]);
-    rgbToHsv(rgb[0], rgb[1], rgb[2], hsv);
-    hsv_color.setColor((unsigned int) hsv[0], (byte) hsv[1], (byte) hsv[2]);
-  }
+  void setHSV(unsigned int hue, byte saturation, byte value);
 
-  void setHSV(unsigned int hue, byte saturation, byte value) {
-    double hsl[3];
-    byte rgb[3];
-    hsv_color.setColor(hue, saturation, value);
-    hsvToRgb(hue, saturation, value, rgb);
-    rgbToHsl(rgb[0], rgb[1], rgb[2], hsl);
-    rgb_color.setColor((byte) rgb[0], (byte) rgb[1], (byte) rgb[2]);
-    hsl_color.setColor((unsigned int) hsl[0], (byte) hsl[1], (byte) hsl[2]);
-  }
+  void setBrightness(byte brightness);
 
-  void setBrightness(byte brightness) {
-    setHSV(hsv_color.getHue(), hsv_color.getSaturation(), brightness);
-  }
-
-  void setHue(unsigned int hue) {
-    setHSV(hue, hsv_color.getSaturation(), hsv_color.getValue());
-  }
+  void setHue(unsigned int hue);
 };
 
 #endif //__color__
