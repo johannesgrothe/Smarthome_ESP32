@@ -4,7 +4,6 @@
 
 // Network Gadgets
 #include "connectors/ir_gadget.h"
-#include "connectors/rest_gadget.h"
 #include "connectors/serial_gadget.h"
 #include "connectors/radio_gadget.h"
 
@@ -13,15 +12,19 @@
 
 // Tools
 #include "console_logger.h"
+#include "system_timer.h"
 
 // External Dependencies
 #include "Client.h"
-#include <WiFi.h>
 #include "ArduinoJson.h"
 
-#include "remotes/homebridge_remote.h"
+//#include "remotes/homebridge_remote.h"
+#include "remotes/smarthome_gadget_remote.h"
 #include "gadget_collection.h"
 #include "system_storage.h"
+
+#include "remotes/smarthome_code_remote.h"
+
 
 #include "color.h"
 
@@ -44,21 +47,18 @@ static void rebootChip(const char *reason) {
 class SH_Main {
 private:
 
+  char client_name[CLIENT_NAME_LEN_MAX]{};
+
   IR_Gadget *ir_gadget;
-  MQTT_Gadget *mqtt_gadget;
-  REST_Gadget *rest_gadget;
-  Serial_Gadget *serial_gadget;
   Radio_Gadget *radio_gadget;
 
-  WiFiClient network_client;
+  Request_Gadget *network_gadget;
 
   Gadget_Collection gadgets;
 
-  Remote *remotes[REMOTE_MANAGER_MAX_REMOTES]{};
+  CodeRemote *code_remote;
 
-  byte remote_count;
-
-  unsigned long time_index = 0;
+  GadgetRemote *gadget_remote;
 
   bool initGadgets(JsonArray gadget_json) {
     gadgets = Gadget_Collection();
@@ -74,9 +74,12 @@ private:
       using std::placeholders::_2;
       using std::placeholders::_3;
       using std::placeholders::_4;
-      buffergadget->initRemoteUpdate(std::bind(&SH_Main::updateRemotes, this, _1, _2, _3, _4));
-      gadgets.addGadget(buffergadget);
-      delay(500);
+      if (buffergadget != nullptr) {
+        buffergadget->initRemoteUpdate(std::bind(&SH_Main::updateGadgetRemote, this, _1, _2, _3, _4));
+        gadgets.addGadget(buffergadget);
+      } else {
+        everything_ok = false;
+      }
     }
     logger.decIndent();
     return everything_ok;
@@ -127,34 +130,26 @@ private:
   }
 
   bool initConnectors(JsonObject connectors_json) {
-    logger.print("Initializing Connectors: ");
-    logger.addln(connectors_json.size());
+    logger.println("Initializing Connectors: ");
+    logger.incIndent();
+    logger.println("Creating IR-Gadget: ");
     logger.incIndent();
     if (connectors_json["ir"] != nullptr) {
       ir_gadget = new IR_Gadget(connectors_json["ir"].as<JsonObject>());
     } else {
       ir_gadget = new IR_Gadget();
     }
+    logger.decIndent();
 
+    logger.println("Creating IR-Gadget:");
+    logger.incIndent();
     if (connectors_json["mqtt"] != nullptr) {
-      mqtt_gadget = new MQTT_Gadget(connectors_json["mqtt"].as<JsonObject>(), &network_client);
+      logger.println("Radio Configured bot not implemented");
     } else {
-      mqtt_gadget = new MQTT_Gadget();
+      logger.println("No Radio Configured");
     }
+    logger.decIndent();
 
-    if (connectors_json["rest"] != nullptr) {
-      rest_gadget = new REST_Gadget(connectors_json["rest"].as<JsonObject>());
-    } else {
-      rest_gadget = new REST_Gadget();
-    }
-
-    if (connectors_json["serial"] != nullptr) {
-      serial_gadget = new Serial_Gadget(connectors_json["serial"].as<JsonObject>());
-    } else {
-      DynamicJsonDocument json_file(50);
-      JsonObject doc = json_file.as<JsonObject>();
-      serial_gadget = new Serial_Gadget(doc);
-    }
     logger.decIndent();
     return true;
   }
@@ -167,40 +162,10 @@ private:
     }
 
     // initialize Network
-    if (strcmp(json["type"].as<char *>(), "wifi") == 0) {
-      logger.println("Creating Network: WiFi");
-      logger.incIndent();
-      network_client = WiFiClient();
-
-      const char *ssid = json["config"]["ssid"].as<char *>();
-      const char *passwd = json["config"]["password"].as<char *>();
-
-      if (ssid == nullptr || passwd == nullptr) {
-        logger.println(LOG_ERR, "Missing Username or Password.");
-        return false;
-      }
-
-      logger.print(LOG_DATA, "");
-      logger.add("Connecting to ");
-      logger.add(ssid);
-
-      byte connection_tries = 0;
-
-      while (WiFiClass::status() != WL_CONNECTED && connection_tries < 6) {
-        WiFi.begin(ssid, passwd);
-        delay(1000);
-        logger.add(".");
-        connection_tries++;
-      }
-      logger.addln();
-      if (WiFiClass::status() != WL_CONNECTED) {
-        logger.println(LOG_DATA, "could not establish WiFi Connection...");
-      } else {
-        randomSeed(micros());
-        logger.println(LOG_DATA, "WiFi connected");
-        logger.print(LOG_DATA, "IP address: ");
-        logger.addln(WiFi.localIP());
-      }
+    if (strcmp(json["type"].as<char *>(), "mqtt") == 0) {
+      network_gadget = new MQTT_Gadget(json["config"].as<JsonObject>());
+    } else if (strcmp(json["type"].as<char *>(), "serial") == 0) {
+      network_gadget = new Serial_Gadget(json["config"].as<JsonObject>());
     } else {
       logger.println(LOG_ERR, "Unknown Network Settings");
       return false;
@@ -209,78 +174,17 @@ private:
     return true;
   }
 
-  void testStuff() {
-    logger.println("Testing Stuff");
-    logger.incIndent();
-
-    //    rest_gadget->sendRequest(REQ_HTTP_POST, "text/plain", IPAddress(192, 168, 178, 111), 3005, "/irgendein/scheiss",
-//                             "pennerus maximus schmongus");
-    Color test_color = Color();
-    test_color.setRGB(203, 80, 163);
-    RGBColor *rgb_color = test_color.getRGB();
-    HSLColor *hsl_color = test_color.getHSL();
-    HSVColor *hsv_color = test_color.getHSV();
-    Serial.println("\nsetRGB(203, 80, 163):");
-    Serial.printf("RGB: %d, %d, %d \n", rgb_color->getRed(), rgb_color->getGreen(), rgb_color->getBlue());
-    Serial.printf("HSL: %d, %d, %d \n", hsl_color->getHue(), hsl_color->getSaturation(), hsl_color->getLightness());
-    Serial.printf("HSV: %d, %d, %d \n", hsv_color->getHue(), hsv_color->getSaturation(), hsv_color->getValue());
-
-    Serial.println("\nsetHSL(126, 39, 29):");
-    test_color.setHSL(126, 39, 29);
-    rgb_color = test_color.getRGB();
-    hsl_color = test_color.getHSL();
-    hsv_color = test_color.getHSV();
-    Serial.printf("RGB: %d, %d, %d \n", rgb_color->getRed(), rgb_color->getGreen(), rgb_color->getBlue());
-    Serial.printf("HSL: %d, %d, %d \n", hsl_color->getHue(), hsl_color->getSaturation(), hsl_color->getLightness());
-    Serial.printf("HSV: %d, %d, %d \n", hsv_color->getHue(), hsv_color->getSaturation(), hsv_color->getValue());
-
-    Serial.println("\nsetHSV(0, 56, 80):");
-    test_color.setHSV(0, 56, 80);
-    rgb_color = test_color.getRGB();
-    hsl_color = test_color.getHSL();
-    hsv_color = test_color.getHSV();
-    Serial.printf("RGB: %d, %d, %d \n", rgb_color->getRed(), rgb_color->getGreen(), rgb_color->getBlue());
-    Serial.printf("HSL: %d, %d, %d \n", hsl_color->getHue(), hsl_color->getSaturation(), hsl_color->getLightness());
-    Serial.printf("HSV: %d, %d, %d \n", hsv_color->getHue(), hsv_color->getSaturation(), hsv_color->getValue());
-    Serial.println();
-
-    logger.decIndent();
-  }
-
-  void initTime() {
-    logger.println("Initializing Time");
-    auto *req = new RestRequest(REQ_HTTP_GET, "/time", "",
-                                3006, IPAddress(192, 168, 178, 108), "text/plain");
-    rest_gadget->sendRequest(req);
-    unsigned long start_time = millis();
-    bool found_time = false;
-    while (start_time + 3000 > millis() && !found_time) {
-      if (rest_gadget->hasRequest()) {
-        Request *res = rest_gadget->getRequest();
-        if (strcmp(res->getPath(), "200") == 0) {
-          found_time = true;
-          time_index = strtol(res->getBody(), NULL, 10);
-          logger.print("Got Time: ");
-          logger.add(BASE_TIME);
-          logger.addln(time_index);
-        } else {
-          logger.println("Received: ERR");
-        }
-      } else {
-        rest_gadget->refresh();
-      }
-    }
-    if (!found_time) {
-      logger.println(LOG_ERR, "Cannot Sync Time");
-    }
-  }
-
   void handleCodeConnector(Code_Gadget *gadget) {
     if (gadget->hasNewCommand()) {
-      unsigned long com = gadget->getCommand();
-      logger.print("[HEX] Hex-Com: 0x");
-      logger.addln(com, HEX);
-      forwardCommand(com);
+      CodeCommand *com = gadget->getCommand();
+      logger.print("Command: ");
+      logger.addln(com->getCode());
+
+      if (code_remote != nullptr) {
+        logger.incIndent();
+        code_remote->handleNewCodeFromGadget(com);
+        logger.decIndent();
+      }
     }
   }
 
@@ -288,22 +192,10 @@ private:
     if (gadget->hasRequest()) {
       char type[REQUEST_TYPE_LEN_MAX]{};
       Request *req = gadget->getRequest();
-      REQUEST_TYPE req_type = req->getType();
-      if (req_type == REQ_UNKNOWN)
-        strncpy(type, "<unknown>", REQUEST_TYPE_LEN_MAX);
-      else if (req_type == REQ_HTTP_GET)
-        strncpy(type, "GET", REQUEST_TYPE_LEN_MAX);
-      else if (req_type == REQ_HTTP_POST)
-        strncpy(type, "POST", REQUEST_TYPE_LEN_MAX);
-      else if (req_type == REQ_HTTP_DELETE)
-        strncpy(type, "DELETE", REQUEST_TYPE_LEN_MAX);
-      else if (req_type == REQ_HTTP_PUT)
-        strncpy(type, "PUT", REQUEST_TYPE_LEN_MAX);
-      else if (req_type == REQ_HTTP_RESPONSE)
-        strncpy(type, "RESPONSE", REQUEST_TYPE_LEN_MAX);
-      else if (req_type == REQ_MQTT)
+      GADGET_TYPE g_type = gadget->getGadgetType();
+      if (g_type == MQTT_G)
         strncpy(type, "MQTT", REQUEST_TYPE_LEN_MAX);
-      else if (req_type == REQ_SERIAL)
+      else if (g_type == SERIAL_G)
         strncpy(type, "Serial", REQUEST_TYPE_LEN_MAX);
       else
         strncpy(type, "<o.O>", REQUEST_TYPE_LEN_MAX);
@@ -315,100 +207,52 @@ private:
       logger.add("' :");
       logger.addln(req->getBody());
       handleRequest(req);
-      if (req->needsResponse()) {
-        if (req->getType() == REQ_HTTP_GET || req->getType() == REQ_HTTP_POST || req->getType() == REQ_HTTP_DELETE ||
-            req->getType() == REQ_HTTP_DELETE) {
-          req->respond("404 GG", "unhandled");
-        } else {
-          req->respond("ERR", "unhandled");
-        }
-      }
       delete req;
     }
   }
 
-  void forwardCommand(unsigned long code) {
-    logger.incIndent();
-    for (byte c = 0; c < gadgets.getGadgetCount(); c++) {
-      gadgets.getGadget(c)->handleCodeUpdate(code);
-    }
-    logger.decIndent();
-//    rest_gadget->sendRequest();
-  }
-
-  void handleStringRequest(REQUEST_TYPE type, const char *path, const char *body) {
-    logger.println("Forwarding String-Request to Remotes:");
-    logger.incIndent();
-    forwardRequest(type, path, body);
-    logger.decIndent();
-  }
-
-  void handleJsonRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
-    std::string str_path = path;
-    logger.print("Forwarding Json-Request to ");
-    logger.add(remote_count);
-    logger.addln(" Remotes:");
-    logger.incIndent();
-    forwardRequest(type, path, body);
-    logger.decIndent();
-  }
-
   void handleSystemRequest(Request *req) {
+
+    DynamicJsonDocument json_file(2048);
+    DeserializationError err = deserializeJson(json_file, req->getBody());
+    if (err != OK) {
+      logger.print(LOG_ERR, "Broken System Command Received: Invalid JSON");
+      return;
+    }
+    JsonObject json_body = json_file.as<JsonObject>();
+
+    if (json_body["client_name"] == nullptr) {
+      logger.print(LOG_ERR, "Broken System Command Received: 'client_name' missing");
+      return;
+    }
+
+    if (strcmp(client_name, json_body["client_name"]) != 0) {
+      // Command is not for me
+      return;
+    }
+
     logger.print("System Command Detected: ");
     logger.addln(req->getPath());
     logger.incIndent();
 
-    switch (req->getType()) {
-      case REQ_HTTP_GET:
-        logger.print("System / HTTP-GET", "");
-        if (strcmp(req->getPath(), "sys/gadgets/list") == 0) {
-          logger.addln("Asking for Gadget List");
-          req->respond("200 OK", "gadgetlist");
-        } else {
-          logger.addln("<unknown>");
-        }
-        break;
-
-      case REQ_HTTP_POST:
-        logger.print("System / HTTP-POST", "");
-        if (strcmp(req->getPath(), "sys/config/write") == 0) {
-          logger.addln("Write config");
-          if (System_Storage::writeConfig(req->getBody())) {
-            req->respond("200 OK", "Writing config successfull");
+    if (strcmp(req->getPath(), "smarthome/from/sys/command") == 0) {
+      if (json_body["command"] != nullptr) {
+        const char *com = json_body["time"].as<const char *>();
+        if (strcmp(com, "reboot") == 0) {
+          if (json_body["message"] != nullptr) {
+            const char *msg = json_body["message"].as<const char *>();
+            rebootChip(msg);
           } else {
-            req->respond("666 ERR", "Error Writing Config");
+            rebootChip("No Reason given");
           }
-        } else if (strcmp(req->getPath(), "sys/reboot") == 0) {
-          logger.addln("Reboot");
-          rebootChip(req->getBody());
-        } else {
-          logger.addln("<unknown>");
         }
-        break;
+      } else {
+        logger.print(LOG_ERR, "Broken System Command Received: 'command' missing");
+      }
+    } else if (strcmp(req->getPath(), "smarthome/from/sys/config/set") == 0) {
 
-      case REQ_MQTT:
-        logger.print("System / MQTT", "");
-        logger.addln("<unknown>");
-        break;
-
-      case REQ_SERIAL:
-        logger.print("System / Serial", "");
-        if (strcmp(req->getPath(), "sys/config/write") == 0) {
-          logger.addln("Write config");
-          if (System_Storage::writeConfig(req->getBody())) {
-            req->respond("OK", "Writing config successfull");
-          } else {
-            req->respond("ERR", "Error Writing Config");
-          }
-        } else if (strcmp(req->getPath(), "sys/gadgets/list") == 0) {
-          logger.addln("Asking for Gadget List");
-          req->respond("OK", "gadgetlist");
-        } else {
-          logger.addln("<unknown>");
-        }
-        break;
-      default:
-        logger.print("System / UNHANDLED", "Unknown Request");
+    } else {
+      logger.println("Unknown Command");
     }
     logger.decIndent();
   }
@@ -419,71 +263,99 @@ private:
       unsigned int last_pos = strlen(req->getBody()) - 1;
       if (last_pos > 0) {
         std::string str_path = req->getPath();
-        if (str_path.compare(0, 4, "sys/") == 0) {
+        if (str_path.compare(0, 4, "smarthome/from/sys/") == 0) {
           handleSystemRequest(req);
+        } else if (strcmp(req->getPath(), "smarthome/from/response") == 0) {
+          logger.println("Ignoring unhandled response");
         } else {
-          if (validateJson(req->getBody())) {
-            DynamicJsonDocument json_file(2048);
-            deserializeJson(json_file, req->getBody());
-            JsonObject json_doc = json_file.as<JsonObject>();
-            handleJsonRequest(req->getType(), req->getPath(), json_doc);
-          } else {
-            handleStringRequest(req->getType(), req->getPath(), req->getBody());
-          }
+          code_remote->handleRequest(req);
+          gadget_remote->handleRequest(req);
         }
+      } else {
+        // Requests asking for content could have empty bodies
+        logger.println(LOG_ERR, "Empty Request");
       }
     }
     logger.decIndent();
   }
 
-  bool initRemotes(JsonObject json) {
-    logger.println("Initializing Remotes");
+  void updateGadgetRemote(const char *gadget_name, const char *service, const char *characteristic, int value) {
+    gadget_remote->updateCharacteristic(gadget_name, service, characteristic, value);
+  }
+
+  bool initGadgetRemote(JsonObject json) {
+    logger.println("Initializing Gadget Remote");
     logger.incIndent();
 
-    if (json["homebridge"] != nullptr) {
-      JsonArray gadget_list = json["homebridge"].as<JsonArray>();
+    if (json["type"] == nullptr) {
+      logger.println(LOG_ERR, "'type' missing in gadget remote config");
+    }
+    if (json["gadgets"] == nullptr) {
+      logger.println(LOG_ERR, "'gadgets' missing in gadget remote config");
+    }
+    auto remote_type = json["type"].as<const char *>();
+
+    if (strcmp(remote_type, "smarthome") == 0) {
+      JsonArray gadget_list = json["gadgets"].as<JsonArray>();
       if (gadget_list.size() > 0) {
-        logger.println(LOG_DATA, "Homebridge");
+        logger.println(LOG_DATA, "Smarthome");
         logger.incIndent();
-        auto *homebridge_remote = new Homebridge_Remote(mqtt_gadget);
+        auto *smarthome_remote = new SmarthomeGadgetRemote(network_gadget, json);
         for (auto &&gadget_name_str : gadget_list) {
           const char *gadget_name = gadget_name_str.as<const char *>();
           SH_Gadget *gadget = gadgets.getGadget(gadget_name);
-          homebridge_remote->addGadget(gadget);
+          smarthome_remote->addGadget(gadget);
         }
         logger.decIndent();
-        addRemote(homebridge_remote);
+        gadget_remote = smarthome_remote;
       } else {
-        logger.println(LOG_DATA, "Homebridge-Configuration is empty");
+        logger.println(LOG_DATA, "gadget-list is empty");
       }
     }
+
     logger.decIndent();
     return true;
   }
 
-  void updateRemotes(const char *gadget_name, const char *service, const char *characteristic, int value) {
-    for (byte k = 0; k < remote_count; k++) {
-      remotes[k]->updateCharacteristic(gadget_name, service, characteristic, value);
+  bool initCodeRemote(JsonObject json) {
+    logger.println("Initializing Code Remote");
+    logger.incIndent();
+
+    if (json["type"] == nullptr) {
+      logger.println(LOG_ERR, "'type' missing in code remote config");
     }
+    if (json["gadgets"] == nullptr) {
+      logger.println(LOG_ERR, "'gadgets' missing in code remote config");
+    }
+    auto remote_type = json["type"].as<const char *>();
+
+    if (strcmp(remote_type, "smarthome") == 0) {
+      JsonArray gadget_list = json["gadgets"].as<JsonArray>();
+      if (gadget_list.size() > 0) {
+        logger.println(LOG_DATA, "Smarthome");
+        logger.incIndent();
+        auto *smarthome_remote = new SmarthomeCodeRemote(network_gadget, json);
+        for (auto &&gadget_name_str : gadget_list) {
+          const char *gadget_name = gadget_name_str.as<const char *>();
+          SH_Gadget *gadget = gadgets.getGadget(gadget_name);
+          smarthome_remote->addGadget(gadget);
+        }
+        logger.decIndent();
+        code_remote = smarthome_remote;
+      } else {
+        logger.println(LOG_DATA, "gadget-list is empty");
+      }
+    }
+
+    logger.decIndent();
+    return true;
   }
 
-  void forwardRequest(REQUEST_TYPE type, const char *path, const char *body) {
-    for (byte k = 0; k < remote_count; k++) {
-      remotes[k]->handleRequest(path, type, body);
-    }
-  }
+  void testStuff() {
+    logger.println("Testing Stuff");
+    logger.incIndent();
 
-  void forwardRequest(REQUEST_TYPE type, const char *path, JsonObject body) {
-    for (byte k = 0; k < remote_count; k++) {
-      remotes[k]->handleRequest(path, type, body);
-    }
-  }
-
-  void addRemote(Remote *new_remote) {
-    if (remote_count < (REMOTE_MANAGER_MAX_REMOTES - 1)) {
-      remotes[remote_count] = new_remote;
-      remote_count++;
-    }
+    logger.decIndent();
   }
 
 public:
@@ -515,6 +387,13 @@ public:
     initNetwork(json["network"]);
     initConnectors(json["connectors"]);
 
+    if (json["id"] != nullptr) {
+      strncpy(client_name, json["id"].as<const char *>(), CLIENT_NAME_LEN_MAX);
+    } else {
+      logger.println(LOG_ERR, "No Name defined");
+      strcpy(client_name, "TestClient");
+    }
+
     if (json["gadgets"] != nullptr) {
       initGadgets(json["gadgets"]);
     } else {
@@ -525,43 +404,72 @@ public:
     } else {
       logger.println(LOG_ERR, "No connector-mapping-configuration found");
     }
-    if (json["remotes"] != nullptr) {
-      initRemotes(json["remotes"]);
+    if (json["gadget-remote"] != nullptr) {
+      initGadgetRemote(json["gadget-remote"]);
     } else {
       logger.println(LOG_ERR, "No remotes-configuration found");
     }
-
-    //initTime();
+    if (json["code-remote"] != nullptr) {
+      initCodeRemote(json["code-remote"]);
+    } else {
+      logger.println(LOG_ERR, "No code-remote-configuration found");
+    }
 
     testStuff();
 
     logger.print("Free Heap: ");
-    logger.add(ESP.getFreeHeap());
+    logger.addln(ESP.getFreeHeap());
+
+    char client_str[50]{};
+    unsigned long ident = micros() % 7023;
+    snprintf(client_str, 50, R"({"request_id": %lu, "id": "%s"})", ident, client_name);
+    network_gadget->sendRequest(new Request("smarthome/to/client/add", client_str));
+    unsigned long const start_time = millis();
+    while (start_time + 5000 > millis()) {
+      if (!network_gadget->hasRequest()) {
+        network_gadget->refresh();
+      } else {
+        Request *resp = network_gadget->getRequest();
+        if (strcmp(resp->getPath(), "smarthome/from/response") == 0 && getIdent(resp->getBody()) == ident) {
+          DynamicJsonDocument time_json(2048);
+          DeserializationError err = deserializeJson(time_json, resp->getBody());
+          if (err == DeserializationError::Ok) {
+            unsigned long time_offset = (millis() - start_time) / 2;
+            JsonObject json_obj = time_json.as<JsonObject>();
+            if (json_obj["ack"] != nullptr) {
+              if (json_obj["ack"].as<bool>()) {
+                logger.println("Adding Gadget succesfull.");
+                if (json_obj["time"] != nullptr) {
+                  unsigned long long new_time = json_obj["time"].as<unsigned long long>();
+                  system_timer.setTime(new_time, time_offset);
+                }
+              } else {
+                logger.println(LOG_ERR, "Registering Client failed");
+              }
+            }
+          }
+        }
+        delete resp;
+      }
+    }
     logger.addln();
   }
 
   void refresh() {
-    serial_gadget->refresh();
-    handleCodeConnector(serial_gadget);
-    handleRequestConnector(serial_gadget);
+    handleRequestConnector(network_gadget);
 
     ir_gadget->refresh();
     handleCodeConnector(ir_gadget);
 
-    handleRequestConnector(mqtt_gadget);
-    handleRequestConnector(rest_gadget);
+//    handleCodeRemote();
 
     for (byte c = 0; c < gadgets.getGadgetCount(); c++) {
       gadgets.getGadget(c)->refresh();
     }
   }
 
-  void refreshMQTT() {
-    mqtt_gadget->refresh();
-  }
-
-  void refreshREST() {
-    rest_gadget->refresh();
+  void refreshNetwork() {
+    network_gadget->refresh();
   }
 
 };
@@ -575,16 +483,9 @@ static void mainTask(void *args) {
   }
 }
 
-static void mqttTask(void *args) {
+static void networkTask(void *args) {
   while (true) {
-    smarthome_system.refreshMQTT();
-    vTaskDelay(10 / portTICK_PERIOD_MS);
-  }
-}
-
-static void restTask(void *args) {
-  while (true) {
-    smarthome_system.refreshREST();
+    smarthome_system.refreshNetwork();
     vTaskDelay(10 / portTICK_PERIOD_MS);
   }
 }
@@ -600,17 +501,8 @@ static void createTasks() {
     0);            /* Task handle. */
 
   xTaskCreatePinnedToCore(
-    mqttTask,     /* Task function. */
+    networkTask,     /* Task function. */
     "Smarthome_MQTT",       /* String with name of task. */
-    10000,            /* Stack size in words. */
-    NULL,             /* Parameter passed as input of the task */
-    1,                /* Priority of the task. */
-    NULL,
-    1);            /* Task handle. */
-
-  xTaskCreatePinnedToCore(
-    restTask,     /* Task function. */
-    "Smarthome_REST",       /* String with name of task. */
     10000,            /* Stack size in words. */
     NULL,             /* Parameter passed as input of the task */
     1,                /* Priority of the task. */

@@ -4,7 +4,6 @@
 #include <cstring>
 #include <Arduino.h>
 #include "ArduinoJson.h"
-#include "../colors.h"
 #include "../helping_structures.h"
 #include "../system_settings.h"
 #include "../console_logger.h"
@@ -121,9 +120,17 @@ public:
 
   void handleCodeUpdate(unsigned long code) {
     const char *method_name = findMethodForCode(code);
-    logger.incIndent();
-    handleMethodUpdate(method_name);
-    logger.decIndent();
+    if (method_name != nullptr) {
+      logger.print(name, "Applying Method: ");
+      logger.addln(method_name);
+      logger.incIndent();
+      handleMethodUpdate(method_name);
+      logger.decIndent();
+    } else {
+      logger.print(name, "No Method for '");
+      logger.add(code);
+      logger.addln("' found.");
+    }
   }
 
   virtual void handleCharacteristicUpdate(const char *characteristic, int value) = 0;

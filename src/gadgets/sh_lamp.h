@@ -52,7 +52,7 @@ public:
   void setBrightness(byte new_brightness) {
     lamp_color.setBrightness(new_brightness);
     has_changed = true;
-    updateCharacteristic("Brightness", (int) new_brightness);
+    updateCharacteristic("brightness", (int) new_brightness);
   };
 
   float getBrightness() {
@@ -85,7 +85,7 @@ public:
   void setHue(unsigned int new_hue) {
     lamp_color.setHue(new_hue);
     has_changed = true;
-    updateCharacteristic("Hue", (int) new_hue);
+    updateCharacteristic("hue", (int) new_hue);
   }
 
   float getHue() {
@@ -112,16 +112,16 @@ public:
       }
     }
     has_changed = true;
-    updateCharacteristic("On", new_status);
+    updateCharacteristic("status", new_status);
   };
 
   void print() override {
-    Serial.printf("[%s] Status: %d", getName(), getStatus());
+    Serial.printf("[%s] status: %d", getName(), getStatus());
     if (lamp_type == CLR_BRI || lamp_type == CLR_ONLY) {
-      Serial.printf(", Hue: %.2f, Saturation: %.2f", lamp_color.getHue(), lamp_color.getHSV()->getSaturation());
+      Serial.printf(", hue: %d, saturation: %d", lamp_color.getHue(), lamp_color.getHSV()->getSaturation());
     }
     if (lamp_type == CLR_BRI || lamp_type == BRI_ONLY) {
-      Serial.printf(", Brightness: %.2f", lamp_color.getBrightness());
+      Serial.printf(", brightness: %d", lamp_color.getBrightness());
     }
     Serial.println("");
   }
@@ -130,11 +130,11 @@ public:
     logger.print(getName(), "Updating Characteristic: '");
     logger.add(characteristic);
     logger.addln("'");
-    if (strcmp(characteristic, "On") == 0) {
+    if (strcmp(characteristic, "status") == 0) {
       setStatus((bool) value);
-    } else if (strcmp(characteristic, "Brightness") == 0) {
+    } else if (strcmp(characteristic, "brightness") == 0) {
       setBrightness((byte) value);
-    } else if (strcmp(characteristic, "Hue") == 0) {
+    } else if (strcmp(characteristic, "hue") == 0) {
       setHue((unsigned int) value);
     }
   }
@@ -144,13 +144,13 @@ public:
       case ON_OFF :
         return false;
       case BRI_ONLY :
-        strcpy(characteristic_str, R"("Brightness": "default")");
+        strcpy(characteristic_str, R"("brightness": "default")");
         break;
       case CLR_ONLY :
-        strcpy(characteristic_str, R"("Hue": "default", "Saturation": "default")");
+        strcpy(characteristic_str, R"("hue": "default", "saturation": "default")");
         break;
       case CLR_BRI :
-        strcpy(characteristic_str, R"("Brightness": "default", "Hue": "default", "Saturation": "default")");
+        strcpy(characteristic_str, R"("brightness": "default", "hue": "default", "saturation": "default")");
         break;
       default :
         return false;

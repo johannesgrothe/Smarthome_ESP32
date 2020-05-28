@@ -46,8 +46,7 @@ public:
     logger.print(command_name);
     logger.add(": [");
     for (byte k = 0; k < code_count; k++) {
-      logger.add("0x");
-      logger.add(codes[k], HEX);
+      logger.add(codes[k]);
       if (k < code_count - 1) {
         logger.add(", ");
       }

@@ -31,13 +31,17 @@ public:
     return nullptr;
   }
 
-  SH_Gadget *getGadget(byte index) {
+  SH_Gadget *getGadget(byte index) const {
     if (index > gadget_count)
       return nullptr;
     return gadgets[index];
   }
 
-  byte getGadgetCount() {
+  SH_Gadget *operator[] (int index) const {
+    return getGadget(index);
+  }
+
+  byte getGadgetCount() const {
     return gadget_count;
   }
 };

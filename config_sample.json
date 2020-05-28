@@ -1,26 +1,6 @@
 {
+  "id" : "TestClientESP32",
   "gadgets": [
-    {
-      "type": "sh_lamp_neopixel_basic",
-      "name": "Testlampe NP",
-      "lamp_type": 0,
-      "pin": 21,
-      "length": "1",
-      "mapping": {
-        "toggleStatus": [
-          1,
-          16
-        ],
-        "turnOn": [
-          2,
-          17
-        ],
-        "turnOff": [
-          3,
-          18
-        ]
-      }
-    },
     {
       "type": "sh_lamp_basic",
       "name": "Testlampe 2",
@@ -67,23 +47,21 @@
     }
   ],
   "network": {
-    "type": "wifi",
+    "type": "mqtt",
     "config": {
-      "ssid": "testwlan",
-      "password": "testpw"
+      "wifi_ssid": "testwlan",
+      "wifi_password": "testpw",
+      "ip": "192.168.178.111",
+      "port": "1883",
+      "mqtt_username": null,
+      "mqtt_password": null
     }
   },
   "connectors": {
     "ir": {
       "recv_pin": 22,
       "send_pin": 23
-    },
-    "mqtt": {
-      "ip": "192.168.178.111",
-      "port": "1883"
-    },
-    "rest": {},
-    "serial": {}
+    }
   },
   "connector-mapping": {
     "ir": [
@@ -92,13 +70,25 @@
     ],
     "radio": []
   },
-  "remotes": {
-    "homebridge": [
-      "Testlampe NP",
-      "Testlampe 2",
+  "gadget-remote": {
+    "type": "smarthome",
+    "gadgets": [
       "TestFan",
-      "Deckenlampe"
-    ],
-    "rest": []
+      "Testlampe 2"
+    ]
+  },
+  "code-remote": {
+    "type": "smarthome",
+    "gadgets": [
+      "TestFan",
+      "Testlampe 2"
+    ]
+  },
+  "event-remote": {
+    "type": "smarthome",
+    "gadgets": [
+      "TestFan",
+      "Testlampe 2"
+    ]
   }
 }

@@ -12,13 +12,12 @@
 #include "../system_settings.h"
 #include "../console_logger.h"
 
-enum REQUEST_TYPE {
-  REQ_UNKNOWN, REQ_HTTP_GET, REQ_HTTP_POST, REQ_HTTP_PUT, REQ_HTTP_DELETE, REQ_HTTP_RESPONSE, REQ_MQTT, REQ_SERIAL
+enum GADGET_TYPE {
+  MQTT_G, SERIAL_G, NONE_G
 };
 
 class Request {
 private:
-  REQUEST_TYPE type;
   char body[REQUEST_BODY_LEN_MAX]{};
   char path[REQUEST_PATH_LEN_MAX]{};
   std::function<void(Request *)> send_answer;
@@ -28,19 +27,15 @@ protected:
   bool can_respond;
   bool needs_response;
 
-  virtual Request *createResponse(const char *res_path, const char *res_body) = 0;
-
 public:
-  Request(REQUEST_TYPE req_type, const char *req_path, const char *req_body) :
-    type(req_type),
+  Request(const char *req_path, const char *req_body) :
     can_respond(false),
     needs_response(false) {
     strncpy(path, req_path, REQUEST_PATH_LEN_MAX);
     strncpy(body, req_body, REQUEST_BODY_LEN_MAX);
   }
 
-  Request(REQUEST_TYPE req_type, const char *req_path, const char *req_body, std::function<void(Request *request)> answer_method) :
-    type(req_type),
+  Request(const char *req_path, const char *req_body, std::function<void(Request *request)> answer_method) :
     can_respond(true),
     needs_response(true) {
     strncpy(path, req_path, REQUEST_PATH_LEN_MAX);
@@ -48,25 +43,10 @@ public:
     send_answer = answer_method;
   }
 
-  virtual ~Request() = default;
-
-  bool respond(const char *res_path, const char *res_body) {
-    needs_response = false;
-    if (!can_respond) {
-      return false;
-    }
-    Request *req = createResponse(res_path, res_body);
-    send_answer(req);
-    return true;
-  }
-
-  bool dontRespond() {
-    needs_response = false;
-  }
-
-  REQUEST_TYPE getType() {
-    return type;
-  }
+  virtual ~Request() {
+    logger.print(LOG_WARN, "Deleting ");
+    logger.addln(path);
+  };
 
   const char *getPath() {
     return &path[0];
@@ -76,13 +56,26 @@ public:
     return &body[0];
   }
 
-  bool needsResponse() {
-    return needs_response;
+  bool respond(const char *res_path, const char *res_body) {
+    needs_response = false;
+    if (!can_respond) {
+      return false;
+    }
+    auto *req = new Request(res_path, res_body);
+    send_answer(req);
+    return true;
   }
+
+  void dontRespond() {
+    needs_response = false;
+  }
+
 };
 
 class Request_Gadget {
 protected:
+  GADGET_TYPE type;
+
   bool request_gadget_is_ready;
 
   QueueHandle_t in_request_queue;
@@ -103,25 +96,34 @@ protected:
       Request *buf_req;
       xQueueReceive(out_request_queue, &buf_req, portMAX_DELAY);
       executeRequestSending(buf_req);
-      delete buf_req;
+//      delete buf_req;  // crashes with LoadProhibited
     }
   }
 
 public:
   Request_Gadget() :
+    type(NONE_G),
     request_gadget_is_ready(false) {
     in_request_queue = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
     out_request_queue = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
   }
 
-  explicit Request_Gadget(JsonObject data) :
+  explicit Request_Gadget(GADGET_TYPE t, JsonObject data) :
+    type(t),
     request_gadget_is_ready(false) {
+    if (data.isNull()) {
+    }
     in_request_queue = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
     out_request_queue = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
+    request_gadget_is_ready = true;
   }
 
   bool requestGadgetIsReady() {
     return request_gadget_is_ready;
+  }
+
+  GADGET_TYPE getGadgetType() {
+    return type;
   }
 
   bool hasRequest() {
