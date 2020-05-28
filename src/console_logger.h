@@ -7,7 +7,6 @@
 #include "Arduino.h"
 #include "system_settings.h"
 
-#define PREF_LEN 6
 #define INTENT_LEN 3
 
 enum LOG_TYPE {
@@ -19,19 +18,20 @@ protected:
 
   char core_0_buffer[LOGGER_MAX_BUFFER_LEN]{};
   char core_0_name[LOGGER_MAX_NAME]{};
-  int core_0_buffer_ptr;
+  unsigned int core_0_buffer_ptr{};
   LOG_TYPE core_0_log_type;
-  bool core_0_has_name;
+  bool core_0_has_name{};
+  byte core_0_indent{};
 
 
   char core_1_buffer[LOGGER_MAX_BUFFER_LEN]{};
   char core_1_name[LOGGER_MAX_NAME]{};
-  int core_1_buffer_ptr;
+  unsigned int core_1_buffer_ptr{};
   LOG_TYPE core_1_log_type;
-  bool core_1_has_name;
+  bool core_1_has_name{};
+  byte core_1_indent{};
 
   char indent_char;
-  byte indent{};
   byte indent_len{};
   bool logging_active;
 
@@ -41,7 +41,15 @@ protected:
     } else {
       Serial.print("? | ");
     }
-    for (byte k = 0; k < indent; k++) {
+
+    byte local_indent;
+    if (xPortGetCoreID() == 0) {
+      local_indent = core_0_indent;
+    } else {
+      local_indent = core_1_indent;
+    }
+
+    for (byte k = 0; k < local_indent; k++) {
       for (byte j = 0; j < indent_len; j++) {
         Serial.print(indent_char);
       }
@@ -79,8 +87,11 @@ protected:
 
 public:
   Console_Logger() :
+    core_0_log_type(LOG_INFO),
+    core_0_indent(0),
+    core_1_log_type(LOG_INFO),
+    core_1_indent(0),
     indent_char(' '),
-    indent(0),
     indent_len(INTENT_LEN),
     logging_active(LOGGING_ACTIVE) {
   };
@@ -96,12 +107,21 @@ public:
   }
 
   void incIndent() {
-    indent++;
+    if (xPortGetCoreID() == 0) {
+      core_0_indent++;
+    } else {
+      core_1_indent++;
+    }
   };
 
   void decIndent() {
-    if (indent > 0)
-      indent--;
+    if (xPortGetCoreID() == 0) {
+      if (core_0_indent > 0)
+        core_0_indent--;
+    } else {
+      if (core_1_indent > 0)
+        core_1_indent--;
+    }
   };
 
   void setName(const char *name) {
@@ -124,12 +144,12 @@ public:
 
   void addToBuffer(const char *message) {
     if (xPortGetCoreID() == 0) {
-      int remaining_space = ((LOGGER_MAX_BUFFER_LEN - core_0_buffer_ptr) - 2);
-      int print_len = strlen(message) < remaining_space ? strlen(message) : remaining_space;
+      unsigned int remaining_space = ((LOGGER_MAX_BUFFER_LEN - core_0_buffer_ptr) - 2);
+      unsigned int print_len = strlen(message) < remaining_space ? strlen(message) : remaining_space;
       strcpy(&core_0_buffer[0] + core_0_buffer_ptr, message);
       core_0_buffer_ptr += print_len;
     } else {
-      int remaining_space = ((LOGGER_MAX_BUFFER_LEN - core_1_buffer_ptr) - 2);
+      unsigned int remaining_space = ((LOGGER_MAX_BUFFER_LEN - core_1_buffer_ptr) - 2);
       unsigned int print_len = strlen(message) < remaining_space ? strlen(message) : remaining_space;
       strcpy(&core_1_buffer[0] + core_1_buffer_ptr, message);
       core_1_buffer_ptr += (int) print_len;
@@ -183,7 +203,7 @@ public:
       }
     }
     setName(name);
-    setLogType(LOG_INFO);
+    setLogType(type);
     addToBuffer(message);
   }
 
@@ -198,7 +218,7 @@ public:
   void println(LOG_TYPE type, const char *name, const char *message) {
     if (!logging_active)
       return;
-    print(name, message);
+    print(type, name, message);
     flushBuffer();
   }
 
@@ -257,7 +277,7 @@ public:
 
     unsigned int pointer = num_len - 2;
     while (buf > 0) {
-      buffer[pointer] = int(buf % 10) + 48;
+      buffer[pointer] = char(int(buf % 10) + 48);
       buf = buf / 10;
       pointer--;
     }
@@ -309,7 +329,7 @@ public:
     flushBuffer();
   }
 
-} /*extern logger*/;
+};
 
 Console_Logger logger;
 
