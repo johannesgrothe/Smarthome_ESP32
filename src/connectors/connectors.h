@@ -29,7 +29,7 @@ public:
     }
   }
 
-  bool hasRadio() {
+  bool hasRadio() const {
     return has_radio;
   }
 
@@ -73,7 +73,7 @@ public:
     }
   }
 
-  bool hasIR() {
+  bool hasIR() const {
     return has_ir;
   }
 
