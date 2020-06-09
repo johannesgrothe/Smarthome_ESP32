@@ -22,7 +22,7 @@ public:
     receiver(nullptr),
     blaster(nullptr) {
     logger.println("No IR Configured");
-    code_gadget_is_ready = false;
+    code_gadget_is_ready_ = false;
   };
 
   explicit IR_Gadget(JsonObject data) :
@@ -48,11 +48,11 @@ public:
       everything_ok = false;
       logger.println(LOG_ERR, "'send_pin' nicht spezifiziert.");
     }
-    code_gadget_is_ready = everything_ok;
+    code_gadget_is_ready_ = everything_ok;
   };
 
   void refresh() override {
-    if (!code_gadget_is_ready) {
+    if (!code_gadget_is_ready_) {
       return;
     }
     decode_results results{};
@@ -119,7 +119,7 @@ public:
   };
 
   bool sendRawIR(uint16_t raw_data[], uint8_t content_length) {
-    if (!code_gadget_is_ready) {
+    if (!code_gadget_is_ready_) {
       return false;
     }
     logger.print("System / IR", "Sending Raw Command, 38kHz, ");
@@ -131,7 +131,7 @@ public:
   }
 
   bool sendIR(unsigned long command, uint8_t com_type) {
-    if (!code_gadget_is_ready) {
+    if (!code_gadget_is_ready_) {
       return false;
     }
     logger.print("System / IR", "Sending: ");

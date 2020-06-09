@@ -1,56 +1,34 @@
-#ifndef __CODE_CONNECTOR_H__
-#define __CODE_CONNECTOR_H__
+#ifndef __Code_Gadget__
+#define __Code_Gadget__
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
-#include "../console_logger.h"
+//#include "../console_logger.h"
 #include "../system_timer.h"
 #include "code_command.h"
 
 class Code_Gadget {
 protected:
-  bool code_gadget_is_ready;
+  bool code_gadget_is_ready_;
 
-  CodeCommand *com;
+  CodeCommand *com_;
 
-  bool has_news;
+  bool has_news_;
 
-  void setCommand(CodeType type, unsigned long new_command) {
-    has_news = true;
-    auto *buf_com(new CodeCommand(type, new_command, system_timer.getTime()));
-    com = buf_com;
-  }
+  void setCommand(CodeType, unsigned long);
 
 public:
-  Code_Gadget() :
-    code_gadget_is_ready(false),
-    com(nullptr),
-    has_news(false) {
-  };
+  Code_Gadget();
 
-  explicit Code_Gadget(JsonObject data) :
-    code_gadget_is_ready(false),
-    com(nullptr),
-    has_news(false) {
-    if (data.isNull()) {}
-    code_gadget_is_ready = true;
-  };
+  explicit Code_Gadget(JsonObject);
 
   virtual void refresh() = 0;
 
-  bool codeGadgetIsReady() {
-    return code_gadget_is_ready;
-  }
+  bool codeGadgetIsReady() const;
 
-  bool hasNewCommand() {
-    bool buffer = has_news;
-    has_news = false;
-    return buffer;
-  }
+  bool hasNewCommand();
 
-  CodeCommand *getCommand() {
-    return com;
-  }
+  CodeCommand *getCommand();
 };
 
-#endif //__CODE_CONNECTOR_H__
+#endif //__Code_Gadget__
