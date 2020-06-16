@@ -39,7 +39,7 @@ public:
   };
 
   void refresh() override {
-    if (!code_gadget_is_ready_ || !request_gadget_is_ready) {
+    if (!code_gadget_is_ready_ || !request_gadget_is_ready_) {
       return;
     }
     char incoming_message[REQUEST_BODY_LEN_MAX + REQUEST_PATH_LEN_MAX]{};

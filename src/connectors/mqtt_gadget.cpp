@@ -149,15 +149,15 @@ MQTT_Gadget::MQTT_Gadget(JsonObject data) :
 
     connect_mqtt();
     logger.decIndent();
-    request_gadget_is_ready = everything_ok;
+    request_gadget_is_ready_ = everything_ok;
   } else {
     logger.println(LOG_ERR, "Cannot initialize MQTT: WiFi not working.");
-    request_gadget_is_ready = false;
+    request_gadget_is_ready_ = false;
   }
 }
 
 void MQTT_Gadget::refresh() {
-  if (!request_gadget_is_ready) {
+  if (!request_gadget_is_ready_) {
     return;
   }
   if (!mqttClient_->connected()) {
