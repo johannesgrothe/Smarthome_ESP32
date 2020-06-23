@@ -4,7 +4,6 @@
 #include "sh_lamp.h"
 #include <Arduino.h>
 #include "Adafruit_NeoPixel.h"
-#include <NeoPixelBus.h>
 
 #ifdef __AVR__
 
@@ -67,7 +66,7 @@ public:
 
   void setLEDColor(uint8_t r, uint8_t g, uint8_t b) {
     Serial.printf("[%s] Setting Color: (%d, %d, %d)\n", getName(), r, g, b);
-    RgbColor clr(r, g, b);
+//    RGBColor clr(r, g, b);
     for (uint16_t k = 0; k < len; k++) {
 //      led_stripe->SetPixelColor(k, clr);
     }
