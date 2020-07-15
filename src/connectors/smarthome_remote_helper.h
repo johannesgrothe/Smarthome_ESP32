@@ -1,8 +1,6 @@
 #ifndef __Smarthome_Remote_Helper__
 #define __Smarthome_Remote_Helper__
 
-
-
 static unsigned long getIdent(const char *json_str_input) {
   DynamicJsonDocument json_file(2048);
   DeserializationError err = deserializeJson(json_file, json_str_input);
