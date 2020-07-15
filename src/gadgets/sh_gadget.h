@@ -2,6 +2,7 @@
 #define __SH_Gadget__
 
 #include <cstring>
+#include <functional>
 #include <Arduino.h>
 #include "ArduinoJson.h"
 #include "../helping_structures.h"
