@@ -43,16 +43,16 @@ protected:
 
   Gadget_Type type;
 
-  void updateCharacteristic(const char *characteristic, int value);
+  void updateCharacteristic(const char *, int);
 
-  const char *findMethodForCode(unsigned long code);
+  const char *findMethodForCode(unsigned long);
 
-  virtual void handleMethodUpdate(const char *method);
+  virtual void handleMethodUpdate(const char *);
 
 public:
   SH_Gadget();
 
-  explicit SH_Gadget(JsonObject gadget, Gadget_Type gadget_type);
+  explicit SH_Gadget(JsonObject, Gadget_Type);
 
   void initRemoteUpdate(std::function<void(const char *, const char *, const char *, int)> update_method);
 
@@ -64,7 +64,7 @@ public:
 
   bool isInitialized();
 
-  void handleCodeUpdate(unsigned long code);
+  void handleCodeUpdate(unsigned long);
 
   virtual void handleCharacteristicUpdate(const char *characteristic, int value) = 0;
 

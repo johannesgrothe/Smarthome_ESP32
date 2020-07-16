@@ -20,24 +20,24 @@ protected:
 
 public:
 
-  explicit SH_Lamp(JsonObject gadget);
+  explicit SH_Lamp(JsonObject);
 
-  SH_Lamp(JsonObject gadget, SH_LAMP_TYPE sh_lamp_type);
+  SH_Lamp(JsonObject, SH_LAMP_TYPE);
 
   // Lightness
-  void setBrightness(byte new_brightness);
+  void setBrightness(byte);
 
   float getBrightness();
 
   // Color (RGB)
-  void setColor(uint8_t r, uint8_t g, uint8_t b);
+  void setColor(uint8_t, uint8_t, uint8_t);
 
-  uint8_t getColor(uint8_t color_index);
+  uint8_t getColor(uint8_t);
 
-  void getColor(uint8_t color_buffer[]);
+  void getColor(uint8_t []);
 
   // Hue
-  void setHue(unsigned int new_hue);
+  void setHue(unsigned int);
 
   float getHue();
 
@@ -46,15 +46,15 @@ public:
 
   bool getStatus();
 
-  void setStatus(bool new_status);
+  void setStatus(bool);
 
   void print() override;
 
-  void handleCharacteristicUpdate(const char *characteristic, int value) override;
+  void handleCharacteristicUpdate(const char *, int) override;
 
-  bool getCharacteristics(char *characteristic_str) override;
+  bool getCharacteristics(char *) override;
 
-  void handleMethodUpdate(const char *method) override;
+  void handleMethodUpdate(const char *) override;
 };
 
 #endif //__SH_Lamp__

@@ -31,9 +31,9 @@ private:
 
 protected:
 
-  bool sendRawIR(uint16_t [], uint8_t);
+  bool sendRawIR(const uint16_t [], const uint8_t);
 
-  bool sendIR(unsigned long, uint8_t);
+  bool sendIR(const unsigned long, const uint8_t);
 
 public:
 

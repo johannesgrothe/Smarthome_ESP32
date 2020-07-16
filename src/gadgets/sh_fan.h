@@ -13,9 +13,9 @@ protected:
 
 public:
 
-  explicit SH_Fan(JsonObject gadget);
+  explicit SH_Fan(JsonObject);
 
-  explicit SH_Fan(JsonObject gadget, byte levels_count);
+  explicit SH_Fan(JsonObject, byte);
 
   // Status
   void toggleStatus();
@@ -24,7 +24,7 @@ public:
 
   byte getLevel() const;
 
-  void setStatus(bool new_status);
+  void setStatus(bool);
 
   byte getRotationSpeed() const;
 
@@ -32,18 +32,18 @@ public:
 
   void rotationSpeedDown();
 
-  void setRotationSpeed(byte new_speed);
+  void setRotationSpeed(byte);
 
   void print() override;
 
 //  Homebridge-Connector
-  void handleCharacteristicUpdate(const char *characteristic, int value) override;
+  void handleCharacteristicUpdate(const char *, int) override;
 
-  bool getCharacteristics(char *buffer) override;
+  bool getCharacteristics(char *) override;
   // End of Homebridge-Connector
 
   // Code-Connector
-  void handleMethodUpdate(const char *method) override;
+  void handleMethodUpdate(const char *) override;
   // End of Code-Connector
 };
 

@@ -38,7 +38,7 @@ public:
 
     void refresh();
 
-    bool init(uint8_t pin, bool default_pinstate);
+    bool init(uint8_t, bool);
 };
 
 #endif

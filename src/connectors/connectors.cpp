@@ -21,7 +21,7 @@ bool Radio_Connector::hasRadio() const {
 
 //IR Connector
 
-bool IR_Connector::sendRawIR(uint16_t raw_data[], const uint8_t content_length) {
+bool IR_Connector::sendRawIR(const uint16_t raw_data[], const uint8_t content_length) {
   if (has_ir_)
     return ir_gadget_->sendRawIR(raw_data, content_length);
   logger.println(LOG_ERR, "Cannot send IR: no access.");

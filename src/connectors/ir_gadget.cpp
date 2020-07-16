@@ -101,7 +101,7 @@ IR_Gadget::IR_Gadget(JsonObject data) :
     }
   }
 
-  bool IR_Gadget::sendRawIR(uint16_t raw_data[], uint8_t content_length) {
+  bool IR_Gadget::sendRawIR(const uint16_t raw_data[], const uint8_t content_length) {
     if (!code_gadget_is_ready_) {
       return false;
     }
@@ -113,7 +113,7 @@ IR_Gadget::IR_Gadget(JsonObject data) :
     return true;
   }
 
-  bool IR_Gadget::sendIR(unsigned long command, uint8_t com_type) {
+  bool IR_Gadget::sendIR(unsigned long command, const uint8_t com_type) {
     if (!code_gadget_is_ready_) {
       return false;
     }
