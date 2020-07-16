@@ -5,7 +5,7 @@
 #include <functional>
 #include <Arduino.h>
 #include "ArduinoJson.h"
-#include "../helping_structures.h"
+#include "../mapping_reference.h"
 #include "../system_settings.h"
 #include "../console_logger.h"
 #include "../connectors/connectors.h"
