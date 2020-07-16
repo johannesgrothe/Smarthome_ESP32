@@ -1,5 +1,4 @@
-#ifndef __SystemTimer__
-#define __SystemTimer__
+#pragma once
 
 #include "Arduino.h"
 #include "console_logger.h"
@@ -18,5 +17,3 @@ public:
 };
 
 static SystemTimer system_timer;
-
-#endif //__SystemTimer__

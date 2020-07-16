@@ -1,5 +1,4 @@
-#ifndef __WiFiGadget__
-#define __WiFiGadget__
+#pragma once
 
 #include <ArduinoJson.h>
 #include "console_logger.h"
@@ -24,4 +23,3 @@ public:
   bool wifiIsInitialized() const;
 
 };
-#endif //__WiFiGadget__

@@ -1,5 +1,4 @@
-#ifndef __SH_Lamp_Westinghouse_IR__
-#define __SH_Lamp_Westinghouse_IR__
+#pragma once
 
 #include "sh_lamp.h"
 
@@ -49,5 +48,3 @@ public:
 
   void refresh() override;
 };
-
-#endif //__SH_Lamp_Westinghouse_IR__

@@ -1,14 +1,11 @@
-#ifndef __SH_Lamp_NeoPixel_Basic__
-#define __SH_Lamp_NeoPixel_Basic__
+#pragma once
 
 #include "sh_lamp.h"
 #include <Arduino.h>
 #include "Adafruit_NeoPixel.h"
 
 #ifdef __AVR__
-
 #include <avr/power.h>
-
 #endif
 
 class SH_Lamp_NeoPixel_Basic : public SH_Lamp {
@@ -24,5 +21,3 @@ public:
 
   void setLEDColor(uint8_t, uint8_t, uint8_t);
 };
-
-#endif

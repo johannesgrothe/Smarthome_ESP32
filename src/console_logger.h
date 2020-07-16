@@ -1,5 +1,4 @@
-#ifndef __Console_Logger__
-#define __Console_Logger__
+#pragma once
 
 #include <cstring>
 #include "user_settings.h"
@@ -108,5 +107,3 @@ void Console_Logger::addln(T message) {
 }
 
 static Console_Logger logger;
-
-#endif //__Console_Logger__

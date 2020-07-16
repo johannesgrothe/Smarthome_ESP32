@@ -1,5 +1,4 @@
-#ifndef __Mapping_Reference__
-#define __Mapping_Reference__
+#pragma once
 
 #include <ArduinoJson.h>
 #include <cstring>
@@ -24,5 +23,3 @@ public:
 
   void printMapping();
 };
-
-#endif //__Mapping_Reference__

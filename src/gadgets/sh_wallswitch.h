@@ -1,5 +1,4 @@
-#ifndef __SH_Wallswitch__
-#define __SH_Wallswitch__
+#pragma once
 
 #define BOUNCE_DELAY 5
 #define MULTI_KLICK_TIME 200
@@ -40,5 +39,3 @@ public:
 
     bool init(uint8_t, bool);
 };
-
-#endif

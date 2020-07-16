@@ -1,3 +1,5 @@
+#pragma once
+
 // Settings
 #include "user_settings.h"
 #include "system_settings.h"
@@ -91,5 +93,4 @@ public:
   void refresh();
 
   void refreshNetwork();
-
 };

@@ -1,5 +1,4 @@
-#ifndef __SH_Doorbell__
-#define __SH_Doorbell__
+#pragma once
 
 #include "sh_gadget.h"
 
@@ -24,5 +23,3 @@ public:
   void handleMethodUpdate(const char *method) override;
   // End of Code-Connector
 };
-
-#endif //__SH_Doorbell__

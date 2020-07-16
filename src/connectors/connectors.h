@@ -1,5 +1,4 @@
-#ifndef __Connectors__
-#define __Connectors__
+#pragma once
 
 #include "ir_gadget.h"
 #include "radio_gadget.h"
@@ -44,5 +43,3 @@ public:
   bool hasIR() const;
 
 };
-
-#endif // __Connectors__

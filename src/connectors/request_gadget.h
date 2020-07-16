@@ -1,5 +1,4 @@
-#ifndef __Request_Gadget__
-#define __Request_Gadget__
+#pragma once
 
 // External Imports
 #include <ArduinoJson.h>
@@ -77,5 +76,3 @@ public:
 
   virtual void refresh() = 0;
 };
-
-#endif //__Request_Gadget__

@@ -1,5 +1,4 @@
-#ifndef __SYSTEM_SETTINGS__
-#define __SYSTEM_SETTINGS__
+#pragma once
 
 //general
 #define EEPROM_SIZE 64
@@ -138,5 +137,3 @@ const char json_str[] = R"(
 const char default_config[] = R"(
 {"gadgets": [],"network": {},"connectors": {},"connector-mapping": {},"remote-mapping": {}}
 )";
-
-#endif //__SYSTEM_SETTINGS__

@@ -1,5 +1,4 @@
-#ifndef __Smarthome_Remote__
-#define __Smarthome_Remote__
+#pragma once
 
 #include "gadget_remote.h"
 #include "../connectors/smarthome_remote_helper.h"
@@ -25,5 +24,3 @@ public:
   updateCharacteristic(const char *gadget_name, const char *service, const char *characteristic, int value) override;
 
 };
-
-#endif //__Smarthome_Remote__

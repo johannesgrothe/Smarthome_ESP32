@@ -1,5 +1,4 @@
-#ifndef __CodeRemote__
-#define __CodeRemote__
+#pragma once
 
 #include "ArduinoJson.h"
 #include "../connectors/request_gadget.h"
@@ -12,8 +11,6 @@
 
 #include <climits>
 #include <cstring>
-
-
 
 static CodeType stringToCodeType(const char *input) {
   if (strcmp(input, "SERIAL") == 0) {
@@ -152,5 +149,3 @@ public:
 
   void handleNewCodeFromRequest(CodeCommand *code);
 };
-
-#endif //__CodeRemote__

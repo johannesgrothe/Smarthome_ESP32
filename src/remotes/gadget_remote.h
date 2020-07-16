@@ -1,5 +1,4 @@
-#ifndef __GadgetRemote__
-#define __GadgetRemote__
+#pragma once
 
 #include "ArduinoJson.h"
 #include "../connectors/request_gadget.h"
@@ -28,5 +27,3 @@ public:
   updateCharacteristic(const char *gadget_name, const char *service, const char *characteristic, int value);
 
 };
-
-#endif //__GadgetRemote__

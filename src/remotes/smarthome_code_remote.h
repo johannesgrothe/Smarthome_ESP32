@@ -1,5 +1,4 @@
-#ifndef __Smarthome_Code_Remote__
-#define __Smarthome_Code_Remote__
+#pragma once
 
 #include "code_remote.h"
 
@@ -21,5 +20,3 @@ public:
   SmarthomeCodeRemote(Request_Gadget *gadget, JsonObject data);
 
 };
-
-#endif //__Smarthome_Code_Remote__

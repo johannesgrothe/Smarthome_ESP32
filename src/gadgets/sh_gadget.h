@@ -1,5 +1,4 @@
-#ifndef __SH_Gadget__
-#define __SH_Gadget__
+#pragma once
 
 #include <cstring>
 #include <functional>
@@ -75,5 +74,3 @@ public:
   void printMapping();
 
 };
-
-#endif //__SH_GAGDET__

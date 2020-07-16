@@ -1,5 +1,4 @@
-#ifndef __Code_Gadget__
-#define __Code_Gadget__
+#pragma once
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
@@ -30,5 +29,3 @@ public:
 
   CodeCommand *getCommand();
 };
-
-#endif //__Code_Gadget__

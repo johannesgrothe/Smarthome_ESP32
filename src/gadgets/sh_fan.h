@@ -1,5 +1,4 @@
-#ifndef __SH_FAN__
-#define __SH_FAN__
+#pragma once
 
 #include "sh_gadget.h"
 
@@ -46,5 +45,3 @@ public:
   void handleMethodUpdate(const char *) override;
   // End of Code-Connector
 };
-
-#endif //__SH_FAN__

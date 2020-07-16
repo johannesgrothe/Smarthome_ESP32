@@ -1,5 +1,4 @@
-#ifndef __SH_Fan_Westinghouse_IR__
-#define __SH_Fan_Westinghouse_IR__
+#pragma once
 
 #include "sh_fan.h"
 
@@ -86,5 +85,3 @@ public:
 
   void refresh() override;
 };
-
-#endif //__SH_Fan_Westinghouse_IR__

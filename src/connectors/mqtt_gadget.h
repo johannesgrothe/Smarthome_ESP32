@@ -1,5 +1,4 @@
-#ifndef __MQTT_Gadget__
-#define __MQTT_Gadget__
+#pragma once
 
 #include <PubSubClient.h>
 #include "request_gadget.h"
@@ -36,5 +35,3 @@ public:
 
   void refresh() override;
 };
-
-#endif //__MQTT_Gadget__

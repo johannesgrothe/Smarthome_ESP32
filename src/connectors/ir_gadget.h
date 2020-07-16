@@ -1,5 +1,4 @@
-#ifndef __IR_Connector__
-#define __IR_Connector__
+#pragma once
 
 #include <Arduino.h>
 #include <IRrecv.h>
@@ -27,5 +26,3 @@ public:
 
   bool sendIR(const unsigned long command, const uint8_t com_type);
 };
-
-#endif

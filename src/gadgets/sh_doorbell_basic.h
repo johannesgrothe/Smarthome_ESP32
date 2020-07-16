@@ -1,5 +1,4 @@
-#ifndef __SH_Doorbell_Basic__
-#define __SH_Doorbell_Basic__
+#pragma once
 
 #include "sh_doorbell.h"
 
@@ -16,5 +15,3 @@ public:
 
   void refresh() override;
 };
-
-#endif //__SH_Doorbell_Basic__

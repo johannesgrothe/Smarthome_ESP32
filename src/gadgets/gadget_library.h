@@ -1,3 +1,5 @@
+#pragma once
+
 //Normal Imports
 #include "ArduinoJson.h"
 #include "../console_logger.h"

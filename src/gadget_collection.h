@@ -1,5 +1,4 @@
-#ifndef __gadget_collection__
-#define __gadget_collection__
+#pragma once
 
 #include "gadgets/sh_gadget.h"
 #include "system_settings.h"
@@ -23,5 +22,3 @@ public:
 
   byte getGadgetCount() const;
 };
-
-#endif //__gadget_collection__

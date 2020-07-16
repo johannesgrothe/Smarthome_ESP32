@@ -1,5 +1,4 @@
-#ifndef __SH_Lamp__
-#define __SH_Lamp__
+#pragma once
 
 #include "sh_gadget.h"
 #include "../color.h"
@@ -56,5 +55,3 @@ public:
 
   void handleMethodUpdate(const char *) override;
 };
-
-#endif //__SH_Lamp__

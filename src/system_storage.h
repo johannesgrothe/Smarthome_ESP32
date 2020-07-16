@@ -1,5 +1,4 @@
-#ifndef __System_Storage__
-#define __System_Storage__
+#pragma once
 
 #include "ArduinoJson.h"
 #include <EEPROM.h>
@@ -143,5 +142,3 @@ public:
     return true;
   }
 };
-
-#endif //__System_Storage__

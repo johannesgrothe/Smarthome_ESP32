@@ -1,5 +1,4 @@
-#ifndef __Remote__
-#define __Remote__
+#pragma once
 
 #include "ArduinoJson.h"
 #include "../connectors/request_gadget.h"
@@ -42,5 +41,3 @@ public:
 
   void addGadget(SH_Gadget *new_gadget);
 };
-
-#endif //__Remote__

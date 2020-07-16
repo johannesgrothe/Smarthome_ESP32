@@ -1,5 +1,4 @@
-#ifndef __SH_Lamp_NeoPixel__
-#define __SH_Lamp_NeoPixel__
+#pragma once
 
 #include "sh_lamp.h"
 #include <Arduino.h>
@@ -18,5 +17,3 @@ public:
 
   void refresh() override;
 };
-
-#endif

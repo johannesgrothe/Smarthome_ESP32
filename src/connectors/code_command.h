@@ -1,5 +1,4 @@
-#ifndef __Code_Command__
-#define __Code_Command__
+#pragma once
 
 enum CodeType {
   UNKNOWN_C,
@@ -33,5 +32,3 @@ public:
 
   unsigned long long getTimestamp() const;
 };
-
-#endif // __Code_Command__

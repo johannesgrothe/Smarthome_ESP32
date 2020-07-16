@@ -1,5 +1,4 @@
-#ifndef __color__
-#define __color__
+#pragma once
 
 #include <algorithm>
 
@@ -221,5 +220,3 @@ public:
 
   void setHue(unsigned int hue);
 };
-
-#endif //__color__

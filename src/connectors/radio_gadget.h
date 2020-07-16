@@ -1,5 +1,4 @@
-#ifndef __Radio_Gadget__
-#define __Radio_Gadget__
+#pragma once
 
 #include "code_gadget.h"
 
@@ -13,5 +12,3 @@ public:
 
   void refresh() override;
 };
-
-#endif //__Radio_Gadget__

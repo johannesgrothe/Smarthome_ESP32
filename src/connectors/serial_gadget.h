@@ -1,5 +1,4 @@
-#ifndef __Serial_Gadget__
-#define __Serial_Gadget__
+#pragma once
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
@@ -28,5 +27,3 @@ public:
 
   void refresh() override;
 };
-
-#endif //__Serial_Gadget__
