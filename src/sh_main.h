@@ -94,7 +94,7 @@ public:
 
 };
 
-SH_Main smarthome_system;
+static SH_Main smarthome_system;
 
 static void mainTask(void *args) {
   while (true) {
