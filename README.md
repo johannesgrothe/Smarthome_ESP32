@@ -63,7 +63,7 @@ if you're using CLion IDE, open Project Root in Terminal (or use CLions own Term
 {
  "type": "sh_lamp_basic",
  "name": "Testlampe 2",
- "lamp_type": 0,
+ "lamp_type_": 0,
  "pin": 2,
  "default_state": 1,
  "mapping": {
@@ -79,7 +79,7 @@ if you're using CLion IDE, open Project Root in Terminal (or use CLions own Term
 {
   "type": "sh_lamp_neopixel_basic",
   "name": "Testlampe NP",
-  "lamp_type": 0,
+  "lamp_type_": 0,
   "pin": xx,
   "length": "xx",
   "mapping": {
