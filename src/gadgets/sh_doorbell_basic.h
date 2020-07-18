@@ -11,7 +11,7 @@ protected:
 
 public:
 
-  explicit SH_Doorbell_Basic(JsonObject gadget);
+  explicit SH_Doorbell_Basic(const JsonObject& gadget);
 
   void refresh() override;
 };

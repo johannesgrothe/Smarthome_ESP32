@@ -1,6 +1,6 @@
 #include "sh_doorbell_basic.h"
 
-SH_Doorbell_Basic::SH_Doorbell_Basic(JsonObject gadget) :
+SH_Doorbell_Basic::SH_Doorbell_Basic(const JsonObject& gadget) :
   SH_Doorbell(gadget) {
   if (gadget["pin"] != nullptr) {
     switch_pin = gadget["pin"].as<uint8_t>();

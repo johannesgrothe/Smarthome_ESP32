@@ -1,6 +1,6 @@
 #include "sh_fan_westinghouse_ir.h"
 
-SH_Fan_Westinghouse_IR::SH_Fan_Westinghouse_IR(JsonObject gadget) :
+SH_Fan_Westinghouse_IR::SH_Fan_Westinghouse_IR(const JsonObject& gadget) :
   SH_Fan(gadget, 3) {};
 
 void SH_Fan_Westinghouse_IR::refresh() {

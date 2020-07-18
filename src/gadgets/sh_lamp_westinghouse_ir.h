@@ -44,7 +44,7 @@ protected:
 
 public:
 
-  explicit SH_Lamp_Westinghouse_IR(JsonObject);
+  explicit SH_Lamp_Westinghouse_IR(const JsonObject&);
 
   void refresh() override;
 };

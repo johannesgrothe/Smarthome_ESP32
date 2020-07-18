@@ -1,6 +1,6 @@
 #include "sh_lamp_westinghouse_ir.h"
 
-SH_Lamp_Westinghouse_IR::SH_Lamp_Westinghouse_IR(JsonObject gadget) :
+SH_Lamp_Westinghouse_IR::SH_Lamp_Westinghouse_IR(const JsonObject& gadget) :
   SH_Lamp(gadget, ON_OFF) {
 }
 

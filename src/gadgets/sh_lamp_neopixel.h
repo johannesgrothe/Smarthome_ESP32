@@ -13,7 +13,7 @@ private:
   bool setLEDColor(uint8_t, uint8_t, uint8_t);
 
 public:
-  explicit SH_Lamp_NeoPixel(JsonObject);
+  explicit SH_Lamp_NeoPixel(const JsonObject&);
 
   void refresh() override;
 };

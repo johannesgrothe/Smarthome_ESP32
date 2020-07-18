@@ -19,9 +19,9 @@ protected:
 
 public:
 
-  explicit SH_Lamp(JsonObject);
+  explicit SH_Lamp(const JsonObject&);
 
-  SH_Lamp(JsonObject, SH_LAMP_TYPE);
+  SH_Lamp(const JsonObject&, const SH_LAMP_TYPE);
 
   // Lightness
   void setBrightness(byte);

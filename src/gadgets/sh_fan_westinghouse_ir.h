@@ -81,7 +81,7 @@ protected:
 
 public:
 
-  explicit SH_Fan_Westinghouse_IR(JsonObject);
+  explicit SH_Fan_Westinghouse_IR(const JsonObject&);
 
   void refresh() override;
 };

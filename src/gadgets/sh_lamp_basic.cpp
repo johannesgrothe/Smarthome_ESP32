@@ -1,6 +1,6 @@
 #include "sh_lamp_basic.h"
 
-SH_Lamp_Basic::SH_Lamp_Basic(JsonObject gadget) :
+SH_Lamp_Basic::SH_Lamp_Basic(const JsonObject& gadget) :
   SH_Lamp(gadget) {
   if (gadget["pin"] != nullptr) {
     pin = gadget["pin"].as<uint8_t>();

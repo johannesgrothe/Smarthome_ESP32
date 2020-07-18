@@ -1,6 +1,6 @@
 #include "sh_lamp.h"
 
-SH_Lamp::SH_Lamp(JsonObject gadget) :
+SH_Lamp::SH_Lamp(const JsonObject& gadget) :
   SH_Gadget(gadget, Lightbulb),
   lamp_color_(0, 0, 0),
   default_brightness_(75),
@@ -17,7 +17,7 @@ SH_Lamp::SH_Lamp(JsonObject gadget) :
     }
   };
 
-SH_Lamp::SH_Lamp(JsonObject gadget, SH_LAMP_TYPE sh_lamp_type) :
+SH_Lamp::SH_Lamp(const JsonObject& gadget, const SH_LAMP_TYPE sh_lamp_type) :
   SH_Gadget(gadget, Lightbulb),
   lamp_color_(0, 0, 0),
   default_brightness_(75),

@@ -12,7 +12,7 @@ private:
 
 public:
 
-  explicit SH_Lamp_Basic(JsonObject);
+  explicit SH_Lamp_Basic(const JsonObject&);
 
   void refresh() override;
 };

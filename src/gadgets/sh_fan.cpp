@@ -1,6 +1,6 @@
 #include "sh_fan.h"
 
-SH_Fan::SH_Fan(JsonObject gadget) :
+SH_Fan::SH_Fan(const JsonObject& gadget) :
   SH_Gadget(gadget, Fan),
   rotation_speed(0),
   last_rotation_speed(1) {
@@ -9,7 +9,7 @@ SH_Fan::SH_Fan(JsonObject gadget) :
   }
 };
 
-SH_Fan::SH_Fan(JsonObject gadget, byte levels_count) :
+SH_Fan::SH_Fan(const JsonObject& gadget, byte levels_count) :
   SH_Gadget(gadget, Fan),
   rotation_speed(0),
   last_rotation_speed(1),

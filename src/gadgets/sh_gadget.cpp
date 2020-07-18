@@ -27,7 +27,7 @@ SH_Gadget::SH_Gadget() :
   has_changed(true),
   type(None) {};
 
-SH_Gadget::SH_Gadget::SH_Gadget(JsonObject gadget, Gadget_Type gadget_type) :
+SH_Gadget::SH_Gadget::SH_Gadget(const JsonObject& gadget, const Gadget_Type gadget_type) :
   remoteInitialized(false),
   initialized(false),
   has_changed(true),

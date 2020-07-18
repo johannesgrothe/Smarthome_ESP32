@@ -6,6 +6,8 @@
 
 #include <Arduino.h>
 
+//TODO: Fix this mess
+
 class SH_Wallswitch {
 private:
     uint8_t status;
@@ -31,9 +33,9 @@ public:
 
     bool hasNewStatus();
 
-    byte getStatus();
+    byte getStatus() const;
 
-    bool getRawStatus();
+    bool getRawStatus() const;
 
     void refresh();
 

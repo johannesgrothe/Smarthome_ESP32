@@ -12,9 +12,9 @@ protected:
 
 public:
 
-  explicit SH_Fan(JsonObject);
+  explicit SH_Fan(const JsonObject&);
 
-  explicit SH_Fan(JsonObject, byte);
+  explicit SH_Fan(const JsonObject&, byte);
 
   // Status
   void toggleStatus();

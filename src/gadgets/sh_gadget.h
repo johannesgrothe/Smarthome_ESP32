@@ -51,7 +51,7 @@ protected:
 public:
   SH_Gadget();
 
-  explicit SH_Gadget(JsonObject, Gadget_Type);
+  explicit SH_Gadget(const JsonObject&, const Gadget_Type);
 
   void initRemoteUpdate(std::function<void(const char *, const char *, const char *, int)> update_method);
 

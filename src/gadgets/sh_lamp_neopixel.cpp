@@ -9,7 +9,7 @@ bool SH_Lamp_NeoPixel::setLEDColor(uint8_t r, uint8_t g, uint8_t b) {
   return true;
 }
 
-SH_Lamp_NeoPixel::SH_Lamp_NeoPixel(JsonObject gadget) :
+SH_Lamp_NeoPixel::SH_Lamp_NeoPixel(const JsonObject& gadget) :
   SH_Lamp(gadget) {
   if (gadget["pin"] != nullptr) {
     pin_ = gadget["pin"].as<uint8_t>();

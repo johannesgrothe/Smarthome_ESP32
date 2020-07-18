@@ -15,7 +15,7 @@ private:
 
 public:
 
-  explicit SH_Lamp_NeoPixel_Basic(JsonObject);
+  explicit SH_Lamp_NeoPixel_Basic(const JsonObject&);
 
   void refresh() override;
 

@@ -1,6 +1,6 @@
 #include "sh_lamp_neopixel_basic.h"
 
-SH_Lamp_NeoPixel_Basic::SH_Lamp_NeoPixel_Basic(JsonObject gadget) :
+SH_Lamp_NeoPixel_Basic::SH_Lamp_NeoPixel_Basic(const JsonObject& gadget) :
   SH_Lamp(gadget, CLR_BRI) {
   if (gadget["length"] != nullptr) {
     len_ = gadget["length"].as<uint16_t>();

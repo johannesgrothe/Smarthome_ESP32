@@ -1,6 +1,6 @@
 #include "sh_doorbell.h"
 
-SH_Doorbell::SH_Doorbell(JsonObject gadget) :
+SH_Doorbell::SH_Doorbell(const JsonObject& gadget) :
   SH_Gadget(gadget, Doorbell) {};
 
 void SH_Doorbell::triggerEvent() {

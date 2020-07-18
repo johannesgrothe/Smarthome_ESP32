@@ -7,7 +7,7 @@ protected:
 
 public:
 
-  explicit SH_Doorbell(JsonObject gadget);
+  explicit SH_Doorbell(const JsonObject& gadget);
 
   void triggerEvent();
 
