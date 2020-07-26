@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
-//#include "../console_logger.h"
+#include "../console_logger.h"
 #include "../system_timer.h"
 #include "code_command.h"
 

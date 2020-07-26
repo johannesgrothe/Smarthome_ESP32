@@ -2,6 +2,7 @@
 
 #include "ir_gadget.h"
 #include "radio_gadget.h"
+#include "console_logger.h"
 
 class Radio_Connector {
 private:
