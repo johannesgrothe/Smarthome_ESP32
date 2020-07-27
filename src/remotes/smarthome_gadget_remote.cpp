@@ -12,7 +12,7 @@ SmarthomeGadgetRemote::registerGadget(const char *gadget_name, Gadget_Type gadge
   else if (gadget_type == Doorbell)
     service_name = "doorbell";
   else {
-    logger.println(LOG_ERR, "Unknown Gadget Type");
+    logger.println(LOG_TYPE::ERR, "Unknown Gadget Type");
     return false;
   }
   if (characteristics != nullptr) {
@@ -64,7 +64,7 @@ bool SmarthomeGadgetRemote::removeGadget(const char *gadget_name) {
 }
 
 void SmarthomeGadgetRemote::handleRequest(const char *path, const char *body) {
-  logger.println(LOG_ERR, "Smarthome-Remote cannot handle String Bodys.");
+  logger.println(LOG_TYPE::ERR, "Smarthome-Remote cannot handle String Bodys.");
 }
 
 void SmarthomeGadgetRemote::handleRequest(const char *path, JsonObject body) {

@@ -8,7 +8,7 @@ SH_Lamp_NeoPixel_Basic::SH_Lamp_NeoPixel_Basic(const JsonObject& gadget) :
     logger.addln(len_);
   } else {
     len_ = 1;
-    logger.println(LOG_ERR, "No Length selected.");
+    logger.println(LOG_TYPE::ERR, "No Length selected.");
   }
   if (gadget["pin"] != nullptr) {
     pin_ = gadget["pin"].as<uint8_t>();
@@ -26,7 +26,7 @@ SH_Lamp_NeoPixel_Basic::SH_Lamp_NeoPixel_Basic(const JsonObject& gadget) :
     setLEDColor(0, 0, 0);
   } else {
     pin_ = 0;
-    logger.println(LOG_ERR, "No Pin selected.");
+    logger.println(LOG_TYPE::ERR, "No Pin selected.");
   }
 }
 

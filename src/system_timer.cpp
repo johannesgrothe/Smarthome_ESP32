@@ -14,9 +14,9 @@ void SystemTimer::setTime(const unsigned long long new_time, const unsigned long
   logger.add(time_offset);
   logger.addln(")");
   logger.incIndent();
-  logger.print(LOG_DATA, "System Launch Time: ");
+  logger.print(LOG_TYPE::DATA, "System Launch Time: ");
   logger.addln(time_);
-  logger.print(LOG_DATA, "Momentary System Time: ");
+  logger.print(LOG_TYPE::DATA, "Momentary System Time: ");
   logger.addln(getTime());
   logger.decIndent();
 }

@@ -6,10 +6,10 @@
 #include "Arduino.h"
 #include "system_settings.h"
 
-#define INTENT_LEN 3
+#define INDENT_LEN 3
 
-enum LOG_TYPE {
-  LOG_INFO, LOG_ERR, LOG_DATA, LOG_NONE, LOG_FATAL, LOG_WARN
+enum class LOG_TYPE {
+  INFO, ERR, DATA, NONE, FATAL, WARN
 };
 
 class Console_Logger {
@@ -21,7 +21,6 @@ protected:
   LOG_TYPE core_0_log_type_;
   bool core_0_has_name_{};
   byte core_0_indent_{};
-
 
   char core_1_buffer_[LOGGER_MAX_BUFFER_LEN]{};
   char core_1_name_[LOGGER_MAX_NAME]{};

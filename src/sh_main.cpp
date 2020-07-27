@@ -3,7 +3,7 @@
 bool SH_Main::initGadgets(JsonArray gadget_json) {
   gadgets = Gadget_Collection();
   byte new_gadget_count = gadget_json.size() < MAIN_MAX_GADGETS ? gadget_json.size() : MAIN_MAX_GADGETS;
-  logger.print(LOG_INFO, "Creating Gadgets: ");
+  logger.print(LOG_TYPE::INFO, "Creating Gadgets: ");
   logger.addln(new_gadget_count);
   logger.incIndent();
   bool everything_ok = true;
@@ -40,7 +40,7 @@ void SH_Main::mapConnectors(JsonObject connectors_json) {
       SH_Gadget *found_gadget = gadgets.getGadget(gadget_name);
       if (found_gadget != nullptr) {
         found_gadget->setIR(ir_gadget);
-        logger.println(LOG_DATA, gadget_name);
+        logger.println(LOG_TYPE::DATA, gadget_name);
       }
     }
     logger.decIndent();
@@ -59,7 +59,7 @@ void SH_Main::mapConnectors(JsonObject connectors_json) {
       SH_Gadget *found_gadget = gadgets.getGadget(gadget_name);
       if (found_gadget != nullptr) {
         found_gadget->setRadio(radio_gadget);
-        logger.println(LOG_DATA, gadget_name);
+        logger.println(LOG_TYPE::DATA, gadget_name);
       }
     }
     logger.decIndent();
@@ -97,7 +97,7 @@ bool SH_Main::initConnectors(JsonObject connectors_json) {
 bool SH_Main::initNetwork(JsonObject json) {
   // check if JSON is valid
   if (json.isNull() || !json.containsKey("type")) {
-    logger.println(LOG_ERR, "No valid network configuration.");
+    logger.println(LOG_TYPE::ERR, "No valid network configuration.");
     return false;
   }
 
@@ -107,7 +107,7 @@ bool SH_Main::initNetwork(JsonObject json) {
   } else if (strcmp(json["type"].as<char *>(), "serial") == 0) {
     network_gadget = new Serial_Gadget(json["config"].as<JsonObject>());
   } else {
-    logger.println(LOG_ERR, "Unknown Network Settings");
+    logger.println(LOG_TYPE::ERR, "Unknown Network Settings");
     return false;
   }
   logger.decIndent();
@@ -156,13 +156,13 @@ void SH_Main::handleSystemRequest(Request *req) {
   DynamicJsonDocument json_file(2048);
   DeserializationError err = deserializeJson(json_file, req->getBody());
   if (err != OK) {
-    logger.print(LOG_ERR, "Broken System Command Received: Invalid JSON");
+    logger.print(LOG_TYPE::ERR, "Broken System Command Received: Invalid JSON");
     return;
   }
   JsonObject json_body = json_file.as<JsonObject>();
 
   if (json_body["client_name"] == nullptr) {
-    logger.print(LOG_ERR, "Broken System Command Received: 'client_name' missing");
+    logger.print(LOG_TYPE::ERR, "Broken System Command Received: 'client_name' missing");
     return;
   }
 
@@ -187,7 +187,7 @@ void SH_Main::handleSystemRequest(Request *req) {
         }
       }
     } else {
-      logger.print(LOG_ERR, "Broken System Command Received: 'command' missing");
+      logger.print(LOG_TYPE::ERR, "Broken System Command Received: 'command' missing");
     }
   } else if (strcmp(req->getPath(), "smarthome/from/sys/config/set") == 0) {
 
@@ -213,7 +213,7 @@ void SH_Main::handleRequest(Request *req) {
       }
     } else {
       // Requests asking for content could have empty bodies
-      logger.println(LOG_ERR, "Empty Request");
+      logger.println(LOG_TYPE::ERR, "Empty Request");
     }
   }
   logger.decIndent();
@@ -228,17 +228,17 @@ bool SH_Main::initGadgetRemote(JsonObject json) {
   logger.incIndent();
 
   if (json["type"] == nullptr) {
-    logger.println(LOG_ERR, "'type' missing in gadget remote config");
+    logger.println(LOG_TYPE::ERR, "'type' missing in gadget remote config");
   }
   if (json["gadgets"] == nullptr) {
-    logger.println(LOG_ERR, "'gadgets' missing in gadget remote config");
+    logger.println(LOG_TYPE::ERR, "'gadgets' missing in gadget remote config");
   }
   auto remote_type = json["type"].as<const char *>();
 
   if (strcmp(remote_type, "smarthome") == 0) {
     JsonArray gadget_list = json["gadgets"].as<JsonArray>();
     if (gadget_list.size() > 0) {
-      logger.println(LOG_DATA, "Smarthome");
+      logger.println(LOG_TYPE::DATA, "Smarthome");
       logger.incIndent();
       auto *smarthome_remote = new SmarthomeGadgetRemote(network_gadget, json);
       for (auto &&gadget_name_str : gadget_list) {
@@ -249,7 +249,7 @@ bool SH_Main::initGadgetRemote(JsonObject json) {
       logger.decIndent();
       gadget_remote = smarthome_remote;
     } else {
-      logger.println(LOG_DATA, "gadget-list is empty");
+      logger.println(LOG_TYPE::DATA, "gadget-list is empty");
     }
   }
 
@@ -262,17 +262,17 @@ bool SH_Main::initCodeRemote(JsonObject json) {
   logger.incIndent();
 
   if (json["type"] == nullptr) {
-    logger.println(LOG_ERR, "'type' missing in code remote config");
+    logger.println(LOG_TYPE::ERR, "'type' missing in code remote config");
   }
   if (json["gadgets"] == nullptr) {
-    logger.println(LOG_ERR, "'gadgets' missing in code remote config");
+    logger.println(LOG_TYPE::ERR, "'gadgets' missing in code remote config");
   }
   auto remote_type = json["type"].as<const char *>();
 
   if (strcmp(remote_type, "smarthome") == 0) {
     JsonArray gadget_list = json["gadgets"].as<JsonArray>();
     if (gadget_list.size() > 0) {
-      logger.println(LOG_DATA, "Smarthome");
+      logger.println(LOG_TYPE::DATA, "Smarthome");
       logger.incIndent();
       auto *smarthome_remote = new SmarthomeCodeRemote(network_gadget, json);
       for (auto &&gadget_name_str : gadget_list) {
@@ -283,7 +283,7 @@ bool SH_Main::initCodeRemote(JsonObject json) {
       logger.decIndent();
       code_remote = smarthome_remote;
     } else {
-      logger.println(LOG_DATA, "gadget-list is empty");
+      logger.println(LOG_TYPE::DATA, "gadget-list is empty");
     }
   }
 
@@ -300,7 +300,7 @@ void SH_Main::testStuff() {
 
 void SH_Main::init() {
   Serial.begin(SERIAL_SPEED);
-  logger.println(LOG_INFO, "Launching...");
+  logger.println(LOG_TYPE::INFO, "Launching...");
   DynamicJsonDocument json_file(2048);
   bool eeprom_status = System_Storage::initEEPROM();
 
@@ -328,29 +328,29 @@ void SH_Main::init() {
   if (json["id"] != nullptr) {
     strncpy(client_name, json["id"].as<const char *>(), CLIENT_NAME_LEN_MAX);
   } else {
-    logger.println(LOG_ERR, "No Name defined");
+    logger.println(LOG_TYPE::ERR, "No Name defined");
     strcpy(client_name, "TestClient");
   }
 
   if (json["gadgets"] != nullptr) {
     initGadgets(json["gadgets"]);
   } else {
-    logger.println(LOG_ERR, "No gadgets-configuration found");
+    logger.println(LOG_TYPE::ERR, "No gadgets-configuration found");
   }
   if (json["connector-mapping"] != nullptr) {
     mapConnectors(json["connector-mapping"]);
   } else {
-    logger.println(LOG_ERR, "No connector-mapping-configuration found");
+    logger.println(LOG_TYPE::ERR, "No connector-mapping-configuration found");
   }
   if (json["gadget-remote"] != nullptr) {
     initGadgetRemote(json["gadget-remote"]);
   } else {
-    logger.println(LOG_ERR, "No remotes-configuration found");
+    logger.println(LOG_TYPE::ERR, "No remotes-configuration found");
   }
   if (json["code-remote"] != nullptr) {
     initCodeRemote(json["code-remote"]);
   } else {
-    logger.println(LOG_ERR, "No code-remote-configuration found");
+    logger.println(LOG_TYPE::ERR, "No code-remote-configuration found");
   }
 
   testStuff();
@@ -382,7 +382,7 @@ void SH_Main::init() {
                 system_timer.setTime(new_time, time_offset);
               }
             } else {
-              logger.println(LOG_ERR, "Registering Client failed");
+              logger.println(LOG_TYPE::ERR, "Registering Client failed");
             }
           }
         }

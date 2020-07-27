@@ -24,14 +24,14 @@ bool Radio_Connector::hasRadio() const {
 bool IR_Connector::sendRawIR(const uint16_t raw_data[], const uint8_t content_length) {
   if (has_ir_)
     return ir_gadget_->sendRawIR(raw_data, content_length);
-  logger.println(LOG_ERR, "Cannot send IR: no access.");
+  logger.println(LOG_TYPE::ERR, "Cannot send IR: no access.");
   return false;
 }
 
 bool IR_Connector::sendIR(const unsigned long command, const uint8_t com_type) {
   if (has_ir_)
     return ir_gadget_->sendIR(command, com_type);
-  logger.println(LOG_ERR, "Cannot send IR: no access.");
+  logger.println(LOG_TYPE::ERR, "Cannot send IR: no access.");
   return false;
 }
 

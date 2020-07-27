@@ -4,7 +4,7 @@ WiFiGadget::WiFiGadget() = default;
 
 WiFiGadget::WiFiGadget(JsonObject json) {
   if (json.isNull() || !json.containsKey("wifi_ssid") || !json.containsKey("wifi_password")) {
-    logger.println(LOG_ERR, "No valid wifi configuration.");
+    logger.println(LOG_TYPE::ERR, "No valid wifi configuration.");
     wifi_initialized_ = false;
     return;
   }
@@ -15,7 +15,7 @@ WiFiGadget::WiFiGadget(JsonObject json) {
   const char *passwd = json["wifi_password"].as<char *>();
 
   if (ssid == nullptr || passwd == nullptr) {
-    logger.println(LOG_ERR, "Missing Username or Password.");
+    logger.println(LOG_TYPE::ERR, "Missing Username or Password.");
     logger.decIndent();
     wifi_initialized_ = false;
     return;
@@ -24,7 +24,7 @@ WiFiGadget::WiFiGadget(JsonObject json) {
   strncpy(wifi_ssid_, ssid, WIFI_SSID_LEN_MAX);
   strncpy(wifi_password_, passwd, WIFI_PASSWORD_LEN_MAX);
 
-  logger.print(LOG_DATA, "");
+  logger.print(LOG_TYPE::DATA, "");
   logger.add("Connecting to ");
   logger.add(ssid);
 
@@ -38,11 +38,11 @@ WiFiGadget::WiFiGadget(JsonObject json) {
   }
   logger.addln();
   if (WiFiClass::status() != WL_CONNECTED) {
-    logger.println(LOG_DATA, "could not establish WiFi Connection...");
+    logger.println(LOG_TYPE::DATA, "could not establish WiFi Connection...");
   } else {
     randomSeed(micros());
-    logger.println(LOG_DATA, "WiFi connected");
-    logger.print(LOG_DATA, "IP: ");
+    logger.println(LOG_TYPE::DATA, "WiFi connected");
+    logger.print(LOG_TYPE::DATA, "IP: ");
     logger.addln(WiFi.localIP().toString().c_str());
   }
   wifi_initialized_ = true;

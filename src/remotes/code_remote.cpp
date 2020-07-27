@@ -48,14 +48,14 @@ bool CodeCommandBuffer::codeIsDoubled(CodeCommand *com) const {
 void CodeCommandBuffer::print() const {
   for (byte k = 0; k < CODE_BUFFER_SIZE; k++) {
     if (code_list_[k] != nullptr) {
-      logger.print(LOG_DATA, "");
+      logger.print(LOG_TYPE::DATA, "");
       logger.add(k);
       logger.add(": ");
       logger.add(code_list_[k]->getTimestamp());
       logger.add(" -> ");
       logger.addln(code_list_[k]->getCode());
     } else {
-      logger.print(LOG_DATA, "");
+      logger.print(LOG_TYPE::DATA, "");
       logger.add(k);
       logger.add(": ");
       logger.addln("null");
@@ -71,7 +71,7 @@ void CodeRemote::addCodeToBuffer(CodeCommand *code) {
     codes.addCode(code);
     codes.print();
   } else {
-    logger.println(LOG_ERR, "Ignoring: Double Code");
+    logger.println(LOG_TYPE::ERR, "Ignoring: Double Code");
   }
 }
 

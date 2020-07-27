@@ -51,7 +51,7 @@ static SH_Gadget *createGadget(JsonObject gadget_json) {
       new_gadget = new SH_Doorbell_Basic(gadget_json);
 
     } else {
-      logger.print(LOG_ERR, "Cannot find Type '");
+      logger.print(LOG_TYPE::ERR, "Cannot find Type '");
       logger.add(type);
       logger.addln("'");
       new_gadget = nullptr;
@@ -59,6 +59,6 @@ static SH_Gadget *createGadget(JsonObject gadget_json) {
     logger.decIndent();
     return new_gadget;
   }
-  logger.println(LOG_ERR, "Information incomplete.");
+  logger.println(LOG_TYPE::ERR, "Information incomplete.");
   return nullptr;
 }

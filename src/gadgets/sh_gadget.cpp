@@ -39,12 +39,12 @@ SH_Gadget::SH_Gadget::SH_Gadget(const JsonObject& gadget, const Gadget_Type gadg
     strncpy(name, gadget["name"].as<const char *>(), namelen);
   } else {
     strcpy(name, "Unknown");
-    logger.println(LOG_ERR, "No Name found!");
+    logger.println(LOG_TYPE::ERR, "No Name found!");
   }
   if (gadget["mapping"] != nullptr) {
     JsonObject local_mapping = gadget["mapping"].as<JsonObject>();
     mapping_count = local_mapping.size() < MAPPING_MAX_COMMANDS ? local_mapping.size() : MAPPING_MAX_COMMANDS;
-    logger.print(LOG_INFO, "Configuring Mapping, Commands: ");
+    logger.print(LOG_TYPE::INFO, "Configuring Mapping, Commands: ");
     logger.addln(mapping_count);
     logger.incIndent();
     byte j = 0;
@@ -59,7 +59,7 @@ SH_Gadget::SH_Gadget::SH_Gadget(const JsonObject& gadget, const Gadget_Type gadg
     logger.decIndent();
     logger.println("Method Mapping loaded.");
   } else {
-    logger.println(LOG_WARN, "No Mapping Found.");
+    logger.println(LOG_TYPE::WARN, "No Mapping Found.");
   }
 }
 

@@ -13,7 +13,7 @@ SH_Lamp::SH_Lamp(const JsonObject& gadget) :
       logger.addln(type);
     } else {
       lamp_type_ = ON_OFF;
-      logger.print(LOG_WARN, "No Type found.");
+      logger.print(LOG_TYPE::WARN, "No Type found.");
     }
   };
 

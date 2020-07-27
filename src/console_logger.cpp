@@ -27,21 +27,21 @@ void Console_Logger::printName(const char *name) const {
 
 void Console_Logger::printBeginning(const LOG_TYPE type, const bool complete = true) const {
   switch (type) {
-    case LOG_INFO:
+    case LOG_TYPE::INFO:
       if (complete)
         Serial.print("[i]");
       break;
-    case LOG_ERR:
+    case LOG_TYPE::ERR:
       Serial.print("[x]");
       break;
-    case LOG_DATA:
+    case LOG_TYPE::DATA:
       Serial.print("->");
       break;
-    case LOG_NONE:
+    case LOG_TYPE::NONE:
       break;
-    case LOG_FATAL:
+    case LOG_TYPE::FATAL:
       Serial.print("[:/]");
-    case LOG_WARN:
+    case LOG_TYPE::WARN:
       Serial.print("[!]");
       break;
     default:
@@ -51,12 +51,12 @@ void Console_Logger::printBeginning(const LOG_TYPE type, const bool complete = t
 }
 
 Console_Logger::Console_Logger() :
-  core_0_log_type_(LOG_INFO),
+  core_0_log_type_(LOG_TYPE::INFO),
   core_0_indent_(0),
-  core_1_log_type_(LOG_INFO),
+  core_1_log_type_(LOG_TYPE::INFO),
   core_1_indent_(0),
   indent_char_(' '),
-  indent_len_(INTENT_LEN),
+  indent_len_(INDENT_LEN),
   logging_active_(LOGGING_ACTIVE) {
 };
 
@@ -134,7 +134,7 @@ void Console_Logger::flushBuffer() {
     }
     core_0_has_name_ = false;
     core_0_buffer_ptr_ = 0;
-    core_0_log_type_ = LOG_NONE;
+    core_0_log_type_ = LOG_TYPE::NONE;
   } else {
     if (core_1_buffer_ptr_ != 0) {
       printIndent();
@@ -148,7 +148,7 @@ void Console_Logger::flushBuffer() {
     }
     core_1_has_name_ = false;
     core_1_buffer_ptr_ = 0;
-    core_1_log_type_ = LOG_NONE;
+    core_1_log_type_ = LOG_TYPE::NONE;
   }
 }
 
@@ -158,12 +158,12 @@ void Console_Logger::print(const LOG_TYPE type, const char *name, const char *me
   if (xPortGetCoreID() == 0) {
     if (core_0_buffer_ptr_ != 0) {
       flushBuffer();
-      println(LOG_ERR, "Logger Error: Buffer not flushed.");
+      println(LOG_TYPE::ERR, "Logger Error: Buffer not flushed.");
     }
   } else {
     if (core_1_buffer_ptr_ != 0) {
       flushBuffer();
-      println(LOG_ERR, "Logger Error: Buffer not flushed.");
+      println(LOG_TYPE::ERR, "Logger Error: Buffer not flushed.");
     }
   }
   setName(name);
@@ -172,11 +172,11 @@ void Console_Logger::print(const LOG_TYPE type, const char *name, const char *me
 }
 
 void Console_Logger::print(const char *name, const char *message) {
-  print(LOG_INFO, name, message);
+  print(LOG_TYPE::INFO, name, message);
 }
 
 void Console_Logger::println(const char *name, const char *message) {
-  println(LOG_INFO, name, message);
+  println(LOG_TYPE::INFO, name, message);
 }
 
 void Console_Logger::println(const LOG_TYPE type, const char *name, const char *message) {
@@ -189,7 +189,7 @@ void Console_Logger::println(const LOG_TYPE type, const char *name, const char *
 void Console_Logger::print(const char *message) {
   if (!logging_active_)
     return;
-  print(LOG_INFO, message);
+  print(LOG_TYPE::INFO, message);
 }
 
 void Console_Logger::print(const LOG_TYPE type, const char *message) {
@@ -202,7 +202,7 @@ void Console_Logger::print(const LOG_TYPE type, const char *message) {
 void Console_Logger::println(const char *message) {
   if (!logging_active_)
     return;
-  println(LOG_INFO, message);
+  println(LOG_TYPE::INFO, message);
 }
 
 void Console_Logger::println(const LOG_TYPE type, const char *message) {

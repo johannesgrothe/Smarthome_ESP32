@@ -14,7 +14,7 @@ Serial_Gadget::Serial_Gadget(JsonObject data) :
   if (data.isNull()) {}
   logger.println("Creating Serial Gadget");
   logger.incIndent();
-  logger.println(LOG_DATA, "Using default Serial Connection");
+  logger.println(LOG_TYPE::DATA, "Using default Serial Connection");
   logger.decIndent();
 }
 

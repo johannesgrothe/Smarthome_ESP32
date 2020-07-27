@@ -15,21 +15,21 @@ IR_Gadget::IR_Gadget(JsonObject data) :
       uint8_t r_pin = data["recv_pin"].as<int>();
       receiver_ = new IRrecv(r_pin);
       receiver_->enableIRIn();
-      logger.print(LOG_DATA, "Receiver-Pin: ");
+      logger.print(LOG_TYPE::DATA, "Receiver-Pin: ");
       logger.addln(r_pin);
     } else {
       everything_ok = false;
-      logger.println(LOG_ERR, "'recv_pin' nicht spezifiziert.");
+      logger.println(LOG_TYPE::ERR, "'recv_pin' nicht spezifiziert.");
     }
     if (data["send_pin"] != nullptr) {
       uint8_t b_pin = data["send_pin"].as<int>();
       blaster_ = new IRsend(b_pin);
       blaster_->begin();
-      logger.print(LOG_DATA, "Blaster-Pin: ");
+      logger.print(LOG_TYPE::DATA, "Blaster-Pin: ");
       logger.addln(b_pin);
     } else {
       everything_ok = false;
-      logger.println(LOG_ERR, "'send_pin' nicht spezifiziert.");
+      logger.println(LOG_TYPE::ERR, "'send_pin' nicht spezifiziert.");
     }
     code_gadget_is_ready_ = everything_ok;
   };

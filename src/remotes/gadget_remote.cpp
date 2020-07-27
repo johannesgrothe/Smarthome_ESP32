@@ -11,11 +11,11 @@ GadgetRemote::registerGadgetOnRemote(const char *gadget_name, Gadget_Type gadget
   logger.println("Registering Gadget:");
   logger.incIndent();
   if (registerGadget(gadget_name, gadget_type, characteristics)) {
-    logger.println(LOG_INFO, "OK");
+    logger.println(LOG_TYPE::INFO, "OK");
     logger.decIndent();
     return true;
   } else {
-    logger.println(LOG_ERR, "ERR");
+    logger.println(LOG_TYPE::ERR, "ERR");
     logger.decIndent();
   }
   return false;
@@ -28,7 +28,7 @@ bool GadgetRemote::handleNewGadget(SH_Gadget *new_gadget) {
   if (registerGadgetOnRemote(new_gadget->getName(), new_gadget->getType(), characteristic_str))
     logger.println("Registering Gadget successfull.");
   else
-    logger.println(LOG_ERR, "Failed to register Gadget.");
+    logger.println(LOG_TYPE::ERR, "Failed to register Gadget.");
   return true;
 }
 

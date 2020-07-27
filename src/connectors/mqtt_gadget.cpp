@@ -8,7 +8,7 @@ bool MQTT_Gadget::connect_mqtt() {
   using std::placeholders::_3;
   mqttClient_->setCallback(std::bind(&MQTT_Gadget::callback, this, _1, _2, _3));
 
-  logger.print(LOG_DATA, "Connecting to Broker ");
+  logger.print(LOG_TYPE::DATA, "Connecting to Broker ");
   uint8_t conn_count = 0;
   while (!mqttClient_->connected()) {
     if (mqttClient_->connect("esp32_test_client")) {
@@ -25,7 +25,7 @@ bool MQTT_Gadget::connect_mqtt() {
     } else {
       if (conn_count > 5) {
         logger.addln("Failed.");
-        logger.println(LOG_ERR, "No Connection to Broker could be established.");
+        logger.println(LOG_TYPE::ERR, "No Connection to Broker could be established.");
         break;
       }
       logger.add(".");
@@ -79,7 +79,7 @@ MQTT_Gadget::MQTT_Gadget(JsonObject data) :
   WiFiGadget(data),
   Request_Gadget(MQTT_G, data) {
   if (data.isNull()) {
-    logger.println(LOG_ERR, "No valid MQTT configuration.");
+    logger.println(LOG_TYPE::ERR, "No valid MQTT configuration.");
     return;
   }
   if (wifiIsInitialized()) {
@@ -103,7 +103,7 @@ MQTT_Gadget::MQTT_Gadget(JsonObject data) :
         ip_arr[count] = atoi(part);
       }
       mqttServer_ = new IPAddress(ip_arr[0], ip_arr[1], ip_arr[2], ip_arr[3]);
-      logger.print(LOG_DATA, "IP: ");
+      logger.print(LOG_TYPE::DATA, "IP: ");
       logger.add(ip_arr[0]);
       logger.add(".");
       logger.add(ip_arr[1]);
@@ -113,45 +113,45 @@ MQTT_Gadget::MQTT_Gadget(JsonObject data) :
       logger.addln(ip_arr[3]);
     } else {
       everything_ok = false;
-      logger.println(LOG_ERR, "'ip' missing in config.");
+      logger.println(LOG_TYPE::ERR, "'ip' missing in config.");
     }
 
     // Reads the Port from the JSON
     if (data["port"] != nullptr) {
       mqtt_port_ = data["port"].as<unsigned int>();
-      logger.print(LOG_DATA, "Port: ");
+      logger.print(LOG_TYPE::DATA, "Port: ");
       logger.addln(mqtt_port_);
     } else {
       everything_ok = false;
-      logger.println(LOG_ERR, "'port' missing in config.");
+      logger.println(LOG_TYPE::ERR, "'port' missing in config.");
     }
 
     // Reads the Username from JSON
     if (data["username"] != nullptr) {
       strncpy(username_, data["username"].as<const char *>(), MQTT_USERNAME_MAX_LEN);
-      logger.print(LOG_DATA, "Username: ");
+      logger.print(LOG_TYPE::DATA, "Username: ");
       logger.addln(username_);
     } else {
       // everything_ok = false;
-      logger.println(LOG_ERR, "'username' missing in config.");
+      logger.println(LOG_TYPE::ERR, "'username' missing in config.");
     }
 
     // Reads the Password from JSON
     if (data["password"] != nullptr) {
       strncpy(password_, data["password"].as<const char *>(), MQTT_USERNAME_MAX_LEN);
 
-      logger.print(LOG_DATA, "Password: ");
+      logger.print(LOG_TYPE::DATA, "Password: ");
       logger.addln(username_);
     } else {
       // everything_ok = false;
-      logger.println(LOG_ERR, "'password' missing in config.");
+      logger.println(LOG_TYPE::ERR, "'password' missing in config.");
     }
 
     connect_mqtt();
     logger.decIndent();
     request_gadget_is_ready_ = everything_ok;
   } else {
-    logger.println(LOG_ERR, "Cannot initialize MQTT: WiFi not working.");
+    logger.println(LOG_TYPE::ERR, "Cannot initialize MQTT: WiFi not working.");
     request_gadget_is_ready_ = false;
   }
 }

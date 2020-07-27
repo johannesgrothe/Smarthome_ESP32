@@ -22,17 +22,17 @@ void SmarthomeCodeRemote::handleRequest(const char *path, JsonObject body) {
   if (strcmp(path, "smarthome/from/code") != 0) { return; }
 
   if (body["type"] == nullptr) {
-    logger.print(LOG_ERR, "Broken Code Request Received: 'type' missing");
+    logger.print(LOG_TYPE::ERR, "Broken Code Request Received: 'type' missing");
     return;
   }
 
   if (body["code"] == nullptr) {
-    logger.print(LOG_ERR, "Broken Code Request Received: 'code' missing");
+    logger.print(LOG_TYPE::ERR, "Broken Code Request Received: 'code' missing");
     return;
   }
 
   if (body["timestamp"] == nullptr) {
-    logger.print(LOG_ERR, "Broken Code Request Received: 'timestamp' missing");
+    logger.print(LOG_TYPE::ERR, "Broken Code Request Received: 'timestamp' missing");
     return;
   }
 

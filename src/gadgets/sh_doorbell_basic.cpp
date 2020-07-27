@@ -9,7 +9,7 @@ SH_Doorbell_Basic::SH_Doorbell_Basic(const JsonObject& gadget) :
     pinMode(switch_pin, INPUT);
   } else {
     switch_pin = 0;
-    logger.println(LOG_ERR, "No Pin selected.");
+    logger.println(LOG_TYPE::ERR, "No Pin selected.");
   }
   if (gadget["default_state"] != nullptr) {
     default_state = gadget["default_state"].as<uint8_t>();
@@ -19,7 +19,7 @@ SH_Doorbell_Basic::SH_Doorbell_Basic(const JsonObject& gadget) :
       digitalWrite(switch_pin, default_state);
   } else {
     default_state = false;
-    logger.println(LOG_ERR, "No Default selected.");
+    logger.println(LOG_TYPE::ERR, "No Default selected.");
   }
 };
 
