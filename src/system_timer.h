@@ -16,4 +16,4 @@ public:
 
 };
 
-static SystemTimer system_timer;
+extern SystemTimer system_timer;

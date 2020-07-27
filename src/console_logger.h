@@ -106,4 +106,4 @@ void Console_Logger::addln(T message) {
   flushBuffer();
 }
 
-static Console_Logger logger;
+extern Console_Logger logger;

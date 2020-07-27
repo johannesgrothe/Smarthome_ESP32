@@ -20,3 +20,5 @@ void SystemTimer::setTime(const unsigned long long new_time, const unsigned long
   logger.addln(getTime());
   logger.decIndent();
 }
+
+SystemTimer system_timer;

@@ -284,3 +284,5 @@ void Console_Logger::addln() {
     return;
   flushBuffer();
 }
+
+Console_Logger logger;
