@@ -1,7 +1,8 @@
 # Smarthome_ESP32
 ## The Project
 This project implements a smarthome system to be used with the ESP32. You can run a wide array of different gadgets (lamps, doorbell, temperature sensors, light switches) being controlled by electrical signals or infrared signals, and control them using infrared, network or even other local gadgets (for example use a light switch to control a light running on the same chip without any network needed).
-Then goal is to create a great, customizable smarthome environment with a great bit of redundancy. Being able to control the same lightbulb by using an ir remote, siri or a lightswitch seems like a great alternative to just not having light when the router is down for some reason.
+
+The goal is to create a great, customizable smarthome environment with a great bit of redundancy. Being able to control the same lightbulb by using an ir remote, siri or a lightswitch seems like a great alternative to just not having light when the router is down for some reason.
 
 ## Documentation
 We try to create great documentation while developing to make everyone able to either build their own gadgets or even contribute to this project.
@@ -11,15 +12,21 @@ This readme will be updated as often as possible to contain starting instruction
 
 #### CLion
 ##### Best solution:
-First, install platformio core on your operating system.
-Download and install the PlatformIO plugin, right-click on the platformio.ini (which should have an platformio-icon now) and click re-init.
-To run, go to the build profile selection at the top, click "Edit Configurations..." and add any PlatformIO-Configuration you like.
+1. First, install platformio core on your operating system ([see here](https://docs.platformio.org/en/latest/core/installation.html#installation-methods)).
+2. Download and install the PlatformIO plugin, right-click on the platformio.ini (which should have an platformio-icon now) and click re-init.
+3. Goto CLion -> preferences -> Build, Execution, Deployment -> CMake and create a new Profile (refer to the More Help section)
+4. To run, go to the build profile selection at the top, click "Edit Configurations..." and add any PlatformIO-Configuration you like.
 
 ##### Alternative Solution:
-First, install platformio core on your operating system.
-Open project root in terminal (or use CLions own terminal tab which is on project root by default) and run `platformio init --ide clion`. To build use `platformio run` or `platformio run --target upload` to upload.
+1. First, install platformio core on your operating system ([see here](https://docs.platformio.org/en/latest/core/installation.html#installation-methods)).
+2. Open project root in terminal (or use CLions own terminal tab which is on project root by default) and run `platformio init --ide clion`. To build use `platformio run` or `platformio run --target upload` to upload.
 
-##### VS Code
+
+##### More Help:
+In case you encounter a problem while building the project, please refer to this site: [docs.platformio](https://docs.platformio.org/en/latest/integration/ide/clion.html#clion-does-not-load-project-build-environments-from-platformio-ini).
+
+
+#### VS Code
 Download and install the PlatformIO IDE plugin. To build the project open the PlatformIO Tab at the side of the window and click 'run'.
 
 ## Configuration
