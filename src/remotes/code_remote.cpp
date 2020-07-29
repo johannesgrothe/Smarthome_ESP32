@@ -63,9 +63,6 @@ void CodeCommandBuffer::print() const {
   }
 }
 
-
-CodeCommandBuffer codes;
-
 void CodeRemote::addCodeToBuffer(CodeCommand *code) {
   if (!codes.codeIsDoubled(code)) {
     codes.addCode(code);
