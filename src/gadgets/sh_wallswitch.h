@@ -1,11 +1,12 @@
-#ifndef __SH_Wallswitch__
-#define __SH_Wallswitch__
+#pragma once
 
 #define BOUNCE_DELAY 5
 #define MULTI_KLICK_TIME 200
 #define LONG_KLICK_TIME 1000
 
 #include <Arduino.h>
+
+//TODO: Fix this mess
 
 class SH_Wallswitch {
 private:
@@ -32,13 +33,11 @@ public:
 
     bool hasNewStatus();
 
-    byte getStatus();
+    byte getStatus() const;
 
-    bool getRawStatus();
+    bool getRawStatus() const;
 
     void refresh();
 
-    bool init(uint8_t pin, bool default_pinstate);
+    bool init(uint8_t, bool);
 };
-
-#endif

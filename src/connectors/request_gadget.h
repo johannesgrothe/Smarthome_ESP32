@@ -1,5 +1,4 @@
-#ifndef __Request_Gadget__
-#define __Request_Gadget__
+#pragma once
 
 // External Imports
 #include <ArduinoJson.h>
@@ -20,127 +19,60 @@ class Request {
 private:
   char body[REQUEST_BODY_LEN_MAX]{};
   char path[REQUEST_PATH_LEN_MAX]{};
-  std::function<void(Request *)> send_answer;
+  std::function<void(Request *)> send_answer_;
 
 protected:
 
-  bool can_respond;
-  bool needs_response;
+  bool can_respond_;
+  bool needs_response_;
 
 public:
-  Request(const char *req_path, const char *req_body) :
-    can_respond(false),
-    needs_response(false) {
-    strncpy(path, req_path, REQUEST_PATH_LEN_MAX);
-    strncpy(body, req_body, REQUEST_BODY_LEN_MAX);
-  }
+  Request(const char *req_path, const char *req_body);
 
-  Request(const char *req_path, const char *req_body, std::function<void(Request *request)> answer_method) :
-    can_respond(true),
-    needs_response(true) {
-    strncpy(path, req_path, REQUEST_PATH_LEN_MAX);
-    strncpy(body, req_body, REQUEST_BODY_LEN_MAX);
-    send_answer = answer_method;
-  }
+  Request(const char *req_path, const char *req_body, std::function<void(Request *request)> answer_method);
 
-  virtual ~Request() {
-    logger.print(LOG_WARN, "Deleting ");
-    logger.addln(path);
-  };
+  virtual ~Request();
 
-  const char *getPath() {
-    return &path[0];
-  }
+  const char *getPath();
 
-  const char *getBody() {
-    return &body[0];
-  }
+  const char *getBody();
 
-  bool respond(const char *res_path, const char *res_body) {
-    needs_response = false;
-    if (!can_respond) {
-      return false;
-    }
-    auto *req = new Request(res_path, res_body);
-    send_answer(req);
-    return true;
-  }
+  bool respond(const char *res_path, const char *res_body);
 
-  void dontRespond() {
-    needs_response = false;
-  }
+  void dontRespond();
 
 };
 
 class Request_Gadget {
 protected:
-  GADGET_TYPE type;
+  GADGET_TYPE type_;
 
-  bool request_gadget_is_ready;
+  bool request_gadget_is_ready_;
 
-  QueueHandle_t in_request_queue;
+  QueueHandle_t in_request_queue_;
 
-  QueueHandle_t out_request_queue;
+  QueueHandle_t out_request_queue_;
 
-  void addIncomingRequest(Request *request) {
-    xQueueSend(in_request_queue, &request, portMAX_DELAY);
-  };
+  void addIncomingRequest(Request *request);
 
   virtual void executeRequestSending(Request *req) = 0;
 
-  void sendQueuedItems() {
-    if (!request_gadget_is_ready) {
-      return;
-    }
-    if (uxQueueMessagesWaiting(out_request_queue) > 0) {
-      Request *buf_req;
-      xQueueReceive(out_request_queue, &buf_req, portMAX_DELAY);
-      executeRequestSending(buf_req);
-//      delete buf_req;  // crashes with LoadProhibited
-    }
-  }
+  void sendQueuedItems();
 
 public:
-  Request_Gadget() :
-    type(NONE_G),
-    request_gadget_is_ready(false) {
-    in_request_queue = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
-    out_request_queue = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
-  }
+  Request_Gadget();
 
-  explicit Request_Gadget(GADGET_TYPE t, JsonObject data) :
-    type(t),
-    request_gadget_is_ready(false) {
-    if (data.isNull()) {
-    }
-    in_request_queue = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
-    out_request_queue = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
-    request_gadget_is_ready = true;
-  }
+  explicit Request_Gadget(GADGET_TYPE t, JsonObject data);
 
-  bool requestGadgetIsReady() {
-    return request_gadget_is_ready;
-  }
+  bool requestGadgetIsReady();
 
-  GADGET_TYPE getGadgetType() {
-    return type;
-  }
+  GADGET_TYPE getGadgetType();
 
-  bool hasRequest() {
-    return uxQueueMessagesWaiting(in_request_queue) > 0;
-  }
+  bool hasRequest();
 
-  Request *getRequest() {
-    Request *buf_req;
-    xQueueReceive(in_request_queue, &buf_req, portMAX_DELAY);
-    return buf_req;
-  }
+  Request *getRequest();
 
-  void sendRequest(Request *request) {
-    xQueueSend(out_request_queue, &request, portMAX_DELAY);
-  };
+  void sendRequest(Request *request);
 
   virtual void refresh() = 0;
 };
-
-#endif //__Request_Gadget__

@@ -1,5 +1,4 @@
-#ifndef __gadget_collection__
-#define __gadget_collection__
+#pragma once
 
 #include "gadgets/sh_gadget.h"
 #include "system_settings.h"
@@ -13,37 +12,13 @@ private:
 
 public:
 
-  bool addGadget(SH_Gadget *new_gadget) {
-    if (gadget_count >= MAIN_MAX_GADGETS - 1)
-      return false;
-    gadgets[gadget_count] = new_gadget;
-    gadget_count += 1;
-    return true;
-  }
+  bool addGadget(SH_Gadget *new_gadget);
 
-  SH_Gadget *getGadget(const char *gadget_name) {
-    for (byte k = 0; k < gadget_count; k++) {
-      SH_Gadget *it_gadget = gadgets[k];
-      if (strcmp(it_gadget->getName(), gadget_name) == 0) {
-        return it_gadget;
-      }
-    }
-    return nullptr;
-  }
+  SH_Gadget *getGadget(const char *gadget_name);
 
-  SH_Gadget *getGadget(byte index) const {
-    if (index > gadget_count)
-      return nullptr;
-    return gadgets[index];
-  }
+  SH_Gadget *getGadget(byte index) const;
 
-  SH_Gadget *operator[] (int index) const {
-    return getGadget(index);
-  }
+  SH_Gadget *operator[](int index) const;
 
-  byte getGadgetCount() const {
-    return gadget_count;
-  }
+  byte getGadgetCount() const;
 };
-
-#endif //__gadget_collection__

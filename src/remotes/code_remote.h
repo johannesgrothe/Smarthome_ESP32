@@ -1,5 +1,4 @@
-#ifndef __CodeRemote__
-#define __CodeRemote__
+#pragma once
 
 #include "ArduinoJson.h"
 #include "../connectors/request_gadget.h"
@@ -12,8 +11,6 @@
 
 #include <climits>
 #include <cstring>
-
-
 
 static CodeType stringToCodeType(const char *input) {
   if (strcmp(input, "SERIAL") == 0) {
@@ -102,9 +99,9 @@ static void codeTypeToString(CodeType code, char *buf) {
 class CodeCommandBuffer {
 private:
   // TODO: Durch C++-Standart-Datenstruktur ersetzen
-  CodeCommand *code_list[CODE_BUFFER_SIZE]{};
-  byte buffer_add_pointer{};
-  byte buffer_get_pointer{};
+  CodeCommand *code_list_[CODE_BUFFER_SIZE]{};
+  byte buffer_add_pointer_{};
+  byte buffer_get_pointer_{};
 
   static byte nextPos(byte start) {
     start++;
@@ -114,65 +111,18 @@ private:
   }
 
 public:
-  CodeCommandBuffer() :
-    buffer_add_pointer(0),
-    buffer_get_pointer(0) {}
+  CodeCommandBuffer();
 
-  void addCode(CodeCommand *com) {
-    bool pointers_differ = hasNewCode();
-    if (code_list[buffer_add_pointer] != nullptr) {
-      delete code_list[buffer_add_pointer];
-    }
-    code_list[buffer_add_pointer] = com;
-    buffer_add_pointer = nextPos(buffer_add_pointer);
-    if (pointers_differ && !hasNewCode()) {
-      buffer_get_pointer++;
-    }
-  }
+  void addCode(CodeCommand *);
 
   // TODO: Check if there's any better way
-  bool hasNewCode() {
-    return buffer_get_pointer != buffer_add_pointer;
-  }
+  bool hasNewCode() const;
 
-  CodeCommand *getCode() {
-    if (!hasNewCode())
-      return nullptr;
-    CodeCommand *com = code_list[buffer_get_pointer];
-    buffer_get_pointer = nextPos(buffer_get_pointer);
-    return com;
-  }
+  CodeCommand *getCode();
 
-  bool codeIsDoubled(CodeCommand *com) {
-    for (byte k = 0; k < CODE_BUFFER_SIZE; k++) {
-      if (code_list[k] != nullptr) {
-        if (code_list[k]->getType() == com->getType() && code_list[k]->getCode() == com->getCode()) {
-          if (code_list[k]->getTimestamp() + CODE_TIME_GAP > com->getTimestamp()) {
-            return true;
-          }
-        }
-      }
-    }
-    return false;
-  }
+  bool codeIsDoubled(CodeCommand *com) const;
 
-  void print() {
-    for (byte k = 0; k < CODE_BUFFER_SIZE; k++) {
-      if (code_list[k] != nullptr) {
-        logger.print(LOG_DATA, "");
-        logger.add(k);
-        logger.add(": ");
-        logger.add(code_list[k]->getTimestamp());
-        logger.add(" -> ");
-        logger.addln(code_list[k]->getCode());
-      } else {
-        logger.print(LOG_DATA, "");
-        logger.add(k);
-        logger.add(": ");
-        logger.addln("null");
-      }
-    }
-  }
+  void print() const;
 
 };
 
@@ -181,53 +131,21 @@ private:
 
   CodeCommandBuffer codes;
 
-  void addCodeToBuffer(CodeCommand *code) {
-    if (!codes.codeIsDoubled(code)) {
-      codes.addCode(code);
-      codes.print();
-    } else {
-      logger.println(LOG_ERR, "Ignoring: Double Code");
-    }
-  }
+  void addCodeToBuffer(CodeCommand *);
 
-  void forwardCodeToGadgets(CodeCommand *code) {
-    logger.print("Forwarding Code to ");
-    logger.add(gadgets.getGadgetCount());
-    logger.addln(" Gadgets:");
-    logger.incIndent();
-    for (int i = 0; i < gadgets.getGadgetCount(); i++) {
-      gadgets[i]->handleCodeUpdate(code->getCode());
-    }
-    logger.decIndent();
-  }
+  void forwardCodeToGadgets( CodeCommand *) const;
 
-  void forwardAllCodes() {
-    while (codes.hasNewCode()) {
-      forwardCodeToGadgets(codes.getCode());
-    }
-  }
+  void forwardAllCodes();
 
-protected:
 
   virtual void sendCodeToRemote(CodeCommand *code) = 0;
 
 public:
-  explicit CodeRemote(JsonObject data) :
-    Remote(data){};
+  explicit CodeRemote(JsonObject);
 
-  CodeRemote(Request_Gadget *gadget, JsonObject data) :
-    Remote(gadget, data) {};
+  CodeRemote(Request_Gadget *, JsonObject);
 
-  void handleNewCodeFromGadget(CodeCommand *code) {
-    addCodeToBuffer(code);
-    sendCodeToRemote(code);
-    forwardAllCodes();
-  }
+  void handleNewCodeFromGadget(CodeCommand *code);
 
-  void handleNewCodeFromRequest(CodeCommand *code) {
-    addCodeToBuffer(code);
-    forwardAllCodes();
-  }
+  void handleNewCodeFromRequest(CodeCommand *code);
 };
-
-#endif //__CodeRemote__

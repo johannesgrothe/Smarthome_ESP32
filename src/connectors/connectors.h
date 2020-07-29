@@ -1,82 +1,46 @@
-#ifndef __Connectors__
-#define __Connectors__
+#pragma once
 
 #include "ir_gadget.h"
 #include "radio_gadget.h"
+#include "console_logger.h"
 
 class Radio_Connector {
 private:
 
-  Radio_Gadget *radio_gadget;
-  bool has_radio;
+  Radio_Gadget *radio_gadget_;
+  bool has_radio_;
 
 protected:
 
 
 public:
 
-  Radio_Connector() :
-    radio_gadget(nullptr),
-    has_radio(false) {};
+  Radio_Connector();
 
-  void setRadio(Radio_Gadget *new_radio_gadget) {
-    if (new_radio_gadget != nullptr) {
-//      if (radio_gadget != nullptr) {
-//        delete radio_gadget;
-//      }
-      radio_gadget = new_radio_gadget;
-      has_radio = true;
-    }
-  }
+  void setRadio(Radio_Gadget *);
 
-  bool hasRadio() const {
-    return has_radio;
-  }
+  bool hasRadio() const;
 
 };
 
 class IR_Connector {
 private:
 
-  IR_Gadget *ir_gadget;
-  bool has_ir;
+  IR_Gadget *ir_gadget_;
+  bool has_ir_;
 
 protected:
 
-  bool sendRawIR(uint16_t raw_data[], uint8_t content_length) {
-    if (has_ir)
-      return ir_gadget->sendRawIR(raw_data, content_length);
-    logger.println(LOG_ERR, "Cannot send IR: no access.");
-    return false;
-  }
+  bool sendRawIR(const uint16_t [], const uint8_t);
 
-  bool sendIR(unsigned long command, uint8_t com_type) {
-    if (has_ir)
-      return ir_gadget->sendIR(command, com_type);
-    logger.println(LOG_ERR, "Cannot send IR: no access.");
-    return false;
-  }
+  bool sendIR(const unsigned long, const uint8_t);
 
 public:
 
-  IR_Connector() :
-    ir_gadget(nullptr),
-    has_ir(false) {};
+  IR_Connector();
 
-  void setIR(IR_Gadget *new_ir_gadget) {
-    if (new_ir_gadget != nullptr) {
-//      if (ir_gadget != nullptr) {
-//        delete ir_gadget;
-//      }
-      ir_gadget = new_ir_gadget;
-      has_ir = true;
-    }
-  }
+  void setIR(IR_Gadget *);
 
-  bool hasIR() const {
-    return has_ir;
-  }
+  bool hasIR() const;
 
 };
-
-#endif // __Connectors__

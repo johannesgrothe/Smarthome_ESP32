@@ -1,5 +1,4 @@
-#ifndef __CONSOLE_LOGGER__
-#define __CONSOLE_LOGGER__
+#pragma once
 
 #include <cstring>
 #include "user_settings.h"
@@ -7,330 +6,103 @@
 #include "Arduino.h"
 #include "system_settings.h"
 
-#define INTENT_LEN 3
+#define INDENT_LEN 3
 
-enum LOG_TYPE {
-  LOG_INFO, LOG_ERR, LOG_DATA, LOG_NONE, LOG_FATAL, LOG_WARN
+enum class LOG_TYPE {
+  INFO, ERR, DATA, NONE, FATAL, WARN
 };
 
 class Console_Logger {
 protected:
 
-  char core_0_buffer[LOGGER_MAX_BUFFER_LEN]{};
-  char core_0_name[LOGGER_MAX_NAME]{};
-  unsigned int core_0_buffer_ptr{};
-  LOG_TYPE core_0_log_type;
-  bool core_0_has_name{};
-  byte core_0_indent{};
+  char core_0_buffer_[LOGGER_MAX_BUFFER_LEN]{};
+  char core_0_name_[LOGGER_MAX_NAME]{};
+  unsigned int core_0_buffer_ptr_{};
+  LOG_TYPE core_0_log_type_;
+  bool core_0_has_name_{};
+  byte core_0_indent_{};
 
+  char core_1_buffer_[LOGGER_MAX_BUFFER_LEN]{};
+  char core_1_name_[LOGGER_MAX_NAME]{};
+  unsigned int core_1_buffer_ptr_{};
+  LOG_TYPE core_1_log_type_;
+  bool core_1_has_name_{};
+  byte core_1_indent_{};
 
-  char core_1_buffer[LOGGER_MAX_BUFFER_LEN]{};
-  char core_1_name[LOGGER_MAX_NAME]{};
-  unsigned int core_1_buffer_ptr{};
-  LOG_TYPE core_1_log_type;
-  bool core_1_has_name{};
-  byte core_1_indent{};
+  char indent_char_;
+  byte indent_len_{};
+  bool logging_active_;
 
-  char indent_char;
-  byte indent_len{};
-  bool logging_active;
+  void printIndent() const;
 
-  void printIndent() const {
-    if (xPortGetCoreID() == 0 || xPortGetCoreID() == 1) {
-      Serial.printf("%d | ", xPortGetCoreID());
-    } else {
-      Serial.print("? | ");
-    }
+  void printName(const char *) const;
 
-    byte local_indent;
-    if (xPortGetCoreID() == 0) {
-      local_indent = core_0_indent;
-    } else {
-      local_indent = core_1_indent;
-    }
-
-    for (byte k = 0; k < local_indent; k++) {
-      for (byte j = 0; j < indent_len; j++) {
-        Serial.print(indent_char);
-      }
-    }
-  }
-
-  static void printName(const char *name) {
-    Serial.printf("[%s] ", name);
-  }
-
-  static void printBeginning(LOG_TYPE type, bool complete = true) {
-    switch (type) {
-      case LOG_INFO:
-        if (complete)
-          Serial.print("[i]");
-        break;
-      case LOG_ERR:
-        Serial.print("[x]");
-        break;
-      case LOG_DATA:
-        Serial.print("->");
-        break;
-      case LOG_NONE:
-        break;
-      case LOG_FATAL:
-        Serial.print("[:/]");
-      case LOG_WARN:
-        Serial.print("[!]");
-        break;
-      default:
-        break;
-    }
-    Serial.print(" ");
-  }
+  void printBeginning(LOG_TYPE, bool) const;
 
 public:
-  Console_Logger() :
-    core_0_log_type(LOG_INFO),
-    core_0_indent(0),
-    core_1_log_type(LOG_INFO),
-    core_1_indent(0),
-    indent_char(' '),
-    indent_len(INTENT_LEN),
-    logging_active(LOGGING_ACTIVE) {
-  };
+  Console_Logger();
 
-  void activateLogging() {
-    logging_active = true;
-    println("Activating Logger");
-  }
+  void activateLogging();
 
-  void deactivateLogging() {
-    println("Deactivating Logger");
-    logging_active = false;
-  }
+  void deactivateLogging();
 
-  void incIndent() {
-    if (xPortGetCoreID() == 0) {
-      core_0_indent++;
-    } else {
-      core_1_indent++;
-    }
-  };
+  void incIndent();
 
-  void decIndent() {
-    if (xPortGetCoreID() == 0) {
-      if (core_0_indent > 0)
-        core_0_indent--;
-    } else {
-      if (core_1_indent > 0)
-        core_1_indent--;
-    }
-  };
+  void decIndent();
 
-  void setName(const char *name) {
-    if (xPortGetCoreID() == 0) {
-      strncpy(core_0_name, name, LOGGER_MAX_NAME);
-      core_0_has_name = true;
-    } else {
-      strncpy(core_1_name, name, LOGGER_MAX_NAME);
-      core_0_has_name = true;
-    }
-  }
+  void setName(const char *);
 
-  void setLogType(LOG_TYPE type) {
-    if (xPortGetCoreID() == 0) {
-      core_0_log_type = type;
-    } else {
-      core_1_log_type = type;
-    }
-  }
+  void setLogType(LOG_TYPE);
 
-  void addToBuffer(const char *message) {
-    if (xPortGetCoreID() == 0) {
-      unsigned int remaining_space = ((LOGGER_MAX_BUFFER_LEN - core_0_buffer_ptr) - 2);
-      unsigned int print_len = strlen(message) < remaining_space ? strlen(message) : remaining_space;
-      strcpy(&core_0_buffer[0] + core_0_buffer_ptr, message);
-      core_0_buffer_ptr += print_len;
-    } else {
-      unsigned int remaining_space = ((LOGGER_MAX_BUFFER_LEN - core_1_buffer_ptr) - 2);
-      unsigned int print_len = strlen(message) < remaining_space ? strlen(message) : remaining_space;
-      strcpy(&core_1_buffer[0] + core_1_buffer_ptr, message);
-      core_1_buffer_ptr += (int) print_len;
-    }
-  }
+  void addToBuffer(const char *);
 
-  void flushBuffer() {
-    if (xPortGetCoreID() == 0) {
-      if (core_0_buffer_ptr != 0) {
-        printIndent();
-        if (core_0_has_name) {
-          printBeginning(core_0_log_type, false);
-          printName(&core_0_name[0]);
-        } else {
-          printBeginning(core_0_log_type, true);
-        }
-        Serial.println(core_0_buffer);
-      }
-      core_0_has_name = false;
-      core_0_buffer_ptr = 0;
-      core_0_log_type = LOG_NONE;
-    } else {
-      if (core_1_buffer_ptr != 0) {
-        printIndent();
-        if (core_1_has_name) {
-          printBeginning(core_1_log_type, false);
-          printName(&core_1_name[0]);
-        } else {
-          printBeginning(core_1_log_type, true);
-        }
-        Serial.println(core_1_buffer);
-      }
-      core_1_has_name = false;
-      core_1_buffer_ptr = 0;
-      core_1_log_type = LOG_NONE;
-    }
-  }
+  void flushBuffer();
 
-  void print(LOG_TYPE type, const char *name, const char *message) {
-    if (!logging_active)
-      return;
-    if (xPortGetCoreID() == 0) {
-      if (core_0_buffer_ptr != 0) {
-        flushBuffer();
-        println(LOG_ERR, "Logger Error: Buffer not flushed.");
-      }
-    } else {
-      if (core_1_buffer_ptr != 0) {
-        flushBuffer();
-        println(LOG_ERR, "Logger Error: Buffer not flushed.");
-      }
-    }
-    setName(name);
-    setLogType(type);
-    addToBuffer(message);
-  }
+  void print(LOG_TYPE, const char *, const char *);
 
-  void print(const char *name, const char *message) {
-    print(LOG_INFO, name, message);
-  }
+  void print(const char *, const char *);
 
-  void println(const char *name, const char *message) {
-    println(LOG_INFO, name, message);
-  }
+  void println(const char *, const char *);
 
-  void println(LOG_TYPE type, const char *name, const char *message) {
-    if (!logging_active)
-      return;
-    print(type, name, message);
-    flushBuffer();
-  }
+  void println(LOG_TYPE, const char *, const char *);
 
-  void print(const char *message) {
-    if (!logging_active)
-      return;
-    print(LOG_INFO, message);
-  }
+  void print(const char *);
 
-  void print(LOG_TYPE type, const char *message) {
-    if (!logging_active)
-      return;
-    setLogType(type);
-    addToBuffer(message);
-  }
+  void print(LOG_TYPE, const char *);
 
-  void println(const char *message) {
-    if (!logging_active)
-      return;
-    println(LOG_INFO, message);
-  }
+  void println(const char *);
 
-  void println(LOG_TYPE type, const char *message) {
-    if (!logging_active)
-      return;
-    print(type, message);
-    flushBuffer();
-  }
+  void println(LOG_TYPE, const char *);
 
-  void add(const char *message) {
-    addToBuffer(message);
-  }
+  void add(const char *);
 
-  void add(int message) {
-    char buffer[LOGGER_T_BUFFER_LEN]{};
-    sprintf(buffer, "%d", message);
-    addToBuffer(buffer);
-  }
+  void add(int);
 
-  void add(const unsigned long long message) {
-    unsigned long long len_count_buffer = message;
+  void add(unsigned long long);
 
-    unsigned int num_len;
-    if (message == 0) {
-      num_len = 2;
-    } else {
-      num_len = 1;
-      while (len_count_buffer > 0) {
-        num_len++;
-        len_count_buffer = len_count_buffer / 10;
-      }
-    }
+  void add(float);
 
-    unsigned long long buf = message;
-    char buffer[num_len];
+  void add(double);
 
-    unsigned int pointer = num_len - 2;
-    while (buf > 0) {
-      buffer[pointer] = char(int(buf % 10) + 48);
-      buf = buf / 10;
-      pointer--;
-    }
-    buffer[num_len - 1] = '\0';
-    addToBuffer(buffer);
-  }
+  void add(long);
 
-  void add(float message) {
-    char buffer[LOGGER_T_BUFFER_LEN]{};
-    sprintf(buffer, "%f", message);
-    addToBuffer(buffer);
-  }
+  void add(unsigned long);
 
-  void add(double message) {
-    char buffer[LOGGER_T_BUFFER_LEN]{};
-    sprintf(buffer, "%lf", message);
-    addToBuffer(buffer);
-  }
-
-  void add(long message) {
-    char buffer[LOGGER_T_BUFFER_LEN]{};
-    sprintf(buffer, "%ld", message);
-    addToBuffer(buffer);
-  }
-
-  void add(unsigned long message) {
-    char buffer[LOGGER_T_BUFFER_LEN]{};
-    sprintf(buffer, "%lu", message);
-    addToBuffer(buffer);
-  }
-
-  void add(unsigned int message) {
-    char buffer[LOGGER_T_BUFFER_LEN]{};
-    sprintf(buffer, "%u", message);
-    addToBuffer(buffer);
-  }
+  void add(unsigned int);
 
   template<class T>
-  void addln(T message) {
-    if (!logging_active)
-      return;
-    add(message);
-    flushBuffer();
-  }
+  void addln(T);
 
-  void addln() {
-    if (!logging_active)
-      return;
-    flushBuffer();
-  }
+  void addln();
 
 };
 
-Console_Logger logger;
+template<class T>
+void Console_Logger::addln(T message) {
+  if (!logging_active_)
+    return;
+  add(message);
+  flushBuffer();
+}
 
-#endif //__CONSOLE_LOGGER__
+extern Console_Logger logger;

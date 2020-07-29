@@ -1,5 +1,4 @@
-#ifndef __Code_Command__
-#define __Code_Command__
+#pragma once
 
 enum CodeType {
   UNKNOWN_C,
@@ -23,27 +22,13 @@ private:
   const unsigned long long timestamp_;
 
 public:
-  CodeCommand() :
-      type_(UNKNOWN_C),
-      code_(0),
-      timestamp_(0) {};
+  CodeCommand();
 
-  CodeCommand(const CodeType command_type, const unsigned long code, const unsigned long long code_timestamp) :
-      type_(command_type),
-      code_(code),
-      timestamp_(code_timestamp) {};
+  CodeCommand(CodeType, unsigned long, unsigned long long);
 
-  CodeType getType() const {
-    return type_;
-  }
+  CodeType getType() const;
 
-  unsigned long getCode() const {
-    return code_;
-  }
+  unsigned long getCode() const;
 
-  unsigned long long getTimestamp() const {
-    return timestamp_;
-  }
+  unsigned long long getTimestamp() const;
 };
-
-#endif // __Code_Command__

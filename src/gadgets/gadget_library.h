@@ -1,3 +1,5 @@
+#pragma once
+
 //Normal Imports
 #include "ArduinoJson.h"
 #include "../console_logger.h"
@@ -31,25 +33,31 @@ static SH_Gadget *createGadget(JsonObject gadget_json) {
     //sh_neopixel_basic.h
     if (strcmp(type, "sh_lamp_neopixel_basic") == 0) {
       new_gadget = new SH_Lamp_NeoPixel_Basic(gadget_json);
+    }
 
-      // sh_lamp_basic.h
-    } else if (strcmp(type, "sh_lamp_basic") == 0) {
+    // sh_lamp_basic.h
+    else if (strcmp(type, "sh_lamp_basic") == 0) {
       new_gadget = new SH_Lamp_Basic(gadget_json);
+    }
 
-      // sh_fan_westinghouse_ir.h
-    } else if (strcmp(type, "sh_fan_westinghouse_ir") == 0) {
+    // sh_fan_westinghouse_ir.h
+    else if (strcmp(type, "sh_fan_westinghouse_ir") == 0) {
       new_gadget = new SH_Fan_Westinghouse_IR(gadget_json);
+    }
 
-      // sh_lamp_westinghouse_ir.h
-    } else if (strcmp(type, "sh_lamp_westinghouse_ir") == 0) {
+    // sh_lamp_westinghouse_ir.h
+    else if (strcmp(type, "sh_lamp_westinghouse_ir") == 0) {
       new_gadget = new SH_Lamp_Westinghouse_IR(gadget_json);
+    }
 
-      // sh_fan_basic.h
-    } else if (strcmp(type, "sh_doorbell_basic") == 0) {
+    // sh_fan_basic.h
+    else if (strcmp(type, "sh_doorbell_basic") == 0) {
       new_gadget = new SH_Doorbell_Basic(gadget_json);
+    }
 
-    } else {
-      logger.print(LOG_ERR, "Cannot find Type '");
+    //unknown type
+    else {
+      logger.print(LOG_TYPE::ERR, "Cannot find Type '");
       logger.add(type);
       logger.addln("'");
       new_gadget = nullptr;
@@ -57,6 +65,6 @@ static SH_Gadget *createGadget(JsonObject gadget_json) {
     logger.decIndent();
     return new_gadget;
   }
-  logger.println(LOG_ERR, "Information incomplete.");
+  logger.println(LOG_TYPE::ERR, "Information incomplete.");
   return nullptr;
 }

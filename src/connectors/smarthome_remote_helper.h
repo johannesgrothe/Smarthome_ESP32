@@ -1,7 +1,4 @@
-#ifndef __Smarthome_Remote_Helper__
-#define __Smarthome_Remote_Helper__
-
-
+#pragma once
 
 static unsigned long getIdent(const char *json_str_input) {
   DynamicJsonDocument json_file(2048);
@@ -27,5 +24,3 @@ static bool getAck(const char *json_str_input) {
   }
   return false;
 }
-
-#endif //__Smarthome_Remote_Helper__

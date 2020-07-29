@@ -1,5 +1,4 @@
-#ifndef __SYSTEM_SETTINGS__
-#define __SYSTEM_SETTINGS__
+#pragma once
 
 //general
 #define EEPROM_SIZE 64
@@ -43,7 +42,7 @@
 #define HOMEBRIDGE_SERVICE_TYPE_LEN_MAX 25
 
 // Logger
-#define LOGGER_MAX_BUFFER_LEN 4000
+#define LOGGER_MAX_BUFFER_LEN 1000
 #define LOGGER_T_BUFFER_LEN 30
 #define LOGGER_MAX_NAME 50
 
@@ -138,5 +137,3 @@ const char json_str[] = R"(
 const char default_config[] = R"(
 {"gadgets": [],"network": {},"connectors": {},"connector-mapping": {},"remote-mapping": {}}
 )";
-
-#endif //__SYSTEM_SETTINGS__

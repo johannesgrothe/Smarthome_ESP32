@@ -38,11 +38,11 @@ void SH_Wallswitch::refresh()
   }
 }
 
-byte SH_Wallswitch::getStatus() {
+byte SH_Wallswitch::getStatus() const {
     return status;
 }
 
-bool SH_Wallswitch::getRawStatus() {
+bool SH_Wallswitch::getRawStatus() const {
     return digitalRead(switch_pin);
 //    return btn_status;
 }
