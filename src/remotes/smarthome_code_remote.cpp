@@ -18,7 +18,7 @@ void SmarthomeCodeRemote::sendCodeToRemote(CodeCommand *code) {
 
 void SmarthomeCodeRemote::handleRequest(const char *path, const char *body) {};
 
-void SmarthomeCodeRemote::handleRequest(const char *path, JsonObject body) {
+void SmarthomeCodeRemote::handleRequest(const char *path, const JsonObject& body) {
   if (strcmp(path, "smarthome/from/code") != 0) { return; }
 
   if (body["type"] == nullptr) {

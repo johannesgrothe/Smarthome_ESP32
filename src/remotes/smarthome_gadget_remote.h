@@ -14,7 +14,7 @@ protected:
 
   void handleRequest(const char *path, const char *body) override;
 
-  void handleRequest(const char *path, JsonObject body) override;
+  void handleRequest(const char *path, const JsonObject& body) override;
 
 public:
 

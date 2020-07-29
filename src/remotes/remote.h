@@ -26,7 +26,7 @@ protected:
 
   virtual void handleRequest(const char *path, const char *body) = 0;
 
-  virtual void handleRequest(const char *path, JsonObject body) = 0;
+  virtual void handleRequest(const char *path, const JsonObject& body) = 0;
 
   virtual bool handleNewGadget(SH_Gadget *new_gadget) = 0;
 

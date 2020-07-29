@@ -1,6 +1,6 @@
-<mxfile host="Electron" modified="2020-07-28T19:15:01.772Z" agent="5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/13.3.9 Chrome/83.0.4103.119 Electron/9.0.5 Safari/537.36" etag="Z7ot4sPbbNGX807MHZ6C" version="13.3.9" type="device" pages="2">
+<mxfile host="Electron" modified="2020-07-28T19:22:52.876Z" agent="5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/13.5.1 Chrome/83.0.4103.122 Electron/9.1.1 Safari/537.36" etag="bmKmDHcB9czQZCrxJiJB" version="13.5.1" type="device" pages="2">
   <diagram id="pNgccPxUqukRsGVhHA1t" name="UML Diagram">
-    <mxGraphModel dx="3706" dy="3544" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="2509" dy="2878" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -552,7 +552,7 @@
         <mxCell id="vfNDVRDWI49IqqNghzil-36" value="# virtual handleRequest(path: const char *, body: const char *): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=2" parent="vfNDVRDWI49IqqNghzil-1" vertex="1">
           <mxGeometry y="216" width="705" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="vfNDVRDWI49IqqNghzil-37" value="# virtual handleRequest(path: const char *, body: JsonObject): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=2" parent="vfNDVRDWI49IqqNghzil-1" vertex="1">
+        <mxCell id="vfNDVRDWI49IqqNghzil-37" value="# virtual handleRequest(path: const char *, body: const JsonObject&amp;): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=2" parent="vfNDVRDWI49IqqNghzil-1" vertex="1">
           <mxGeometry y="242" width="705" height="26" as="geometry" />
         </mxCell>
         <mxCell id="TxLPmFs_sCvqqsQRuhD0-2" value="# handleNewGadget(new_gadget: SH_Gadget *): bool" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=2" parent="vfNDVRDWI49IqqNghzil-1" vertex="1">
@@ -652,7 +652,7 @@
           <mxGeometry y="60" width="520" height="26" as="geometry" />
         </mxCell>
         <mxCell id="TxLPmFs_sCvqqsQRuhD0-49" value="SmarthomeCodeRemote" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;" parent="1" vertex="1">
-          <mxGeometry x="-1080" y="680" width="360" height="86" as="geometry" />
+          <mxGeometry x="-1080" y="680" width="360" height="138" as="geometry" />
         </mxCell>
         <mxCell id="TxLPmFs_sCvqqsQRuhD0-50" value="+ field: type" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="TxLPmFs_sCvqqsQRuhD0-49" vertex="1">
           <mxGeometry y="26" width="360" height="26" as="geometry" />
@@ -660,8 +660,14 @@
         <mxCell id="TxLPmFs_sCvqqsQRuhD0-51" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="TxLPmFs_sCvqqsQRuhD0-49" vertex="1">
           <mxGeometry y="52" width="360" height="8" as="geometry" />
         </mxCell>
-        <mxCell id="TxLPmFs_sCvqqsQRuhD0-52" value="+ method(type): type" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="TxLPmFs_sCvqqsQRuhD0-49" vertex="1">
+        <mxCell id="TxLPmFs_sCvqqsQRuhD0-52" value="+ sendCodeToRemote(CodeCommand *code): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="TxLPmFs_sCvqqsQRuhD0-49" vertex="1">
           <mxGeometry y="60" width="360" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="YChgCSYEAHnXzYRPr8Qq-1" value="+ handleRequest(const char *path, const char *body): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="TxLPmFs_sCvqqsQRuhD0-49">
+          <mxGeometry y="86" width="360" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="YChgCSYEAHnXzYRPr8Qq-2" value="+ handleRequest(const char *path, const char *body): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="TxLPmFs_sCvqqsQRuhD0-49">
+          <mxGeometry y="112" width="360" height="26" as="geometry" />
         </mxCell>
         <mxCell id="TxLPmFs_sCvqqsQRuhD0-53" value="SmarthomeGadgetRemote" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;" parent="1" vertex="1">
           <mxGeometry x="-580" y="680" width="420" height="86" as="geometry" />

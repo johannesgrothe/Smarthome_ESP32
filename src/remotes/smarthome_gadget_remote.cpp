@@ -67,7 +67,7 @@ void SmarthomeGadgetRemote::handleRequest(const char *path, const char *body) {
   logger.println(LOG_TYPE::ERR, "Smarthome-Remote cannot handle String Bodys.");
 }
 
-void SmarthomeGadgetRemote::handleRequest(const char *path, JsonObject body) {
+void SmarthomeGadgetRemote::handleRequest(const char *path, const JsonObject& body) {
   if (strcmp(path, "smarthome/from/set") == 0) {
     if (body["name"] != nullptr && body["characteristic"] != nullptr && body["value"] != nullptr) {
       logger.print("System / Gadget-Remote", "Received valid Request: ");
