@@ -115,7 +115,6 @@ public:
 
   void addCode(CodeCommand *);
 
-  // TODO: Check if there's any better way
   bool hasNewCode() const;
 
   CodeCommand *getCode();

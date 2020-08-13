@@ -14,8 +14,12 @@ This readme will be updated as often as possible to contain starting instruction
 ##### Best solution:
 1. First, install platformio core on your operating system ([see here](https://docs.platformio.org/en/latest/core/installation.html#installation-methods)).
 2. Download and install the PlatformIO plugin, right-click on the platformio.ini (which should have an platformio-icon now) and click re-init.
-3. Goto CLion -> preferences -> Build, Execution, Deployment -> CMake and create a new Profile (refer to the More Help section)
-4. To run, go to the build profile selection at the top, click "Edit Configurations..." and add any PlatformIO-Configuration you like.
+3. Open `CMakeLists.txt` and there should be a blue Banner at the top (in CLion) to Load the CMake Project, click on it.
+4. Goto CLion -> preferences -> Build, Execution, Deployment -> CMake and create a new Profile (refer to the More Help section). 
+   The profile should automatically have the name esp32cam.
+   Delete all the other profiles.
+5. To run, go to the build profile selection at the top, click "Edit Configurations..." and add any PlatformIO-Configuration you like.
+    Delete all the CMake build profiles.
 
 ##### Alternative Solution:
 1. First, install platformio core on your operating system ([see here](https://docs.platformio.org/en/latest/core/installation.html#installation-methods)).

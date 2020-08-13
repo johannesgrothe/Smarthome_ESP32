@@ -10,6 +10,7 @@ class Code_Gadget {
 protected:
   bool code_gadget_is_ready_;
 
+  // TODO: Use Queue
   CodeCommand *com_;
 
   bool has_news_;

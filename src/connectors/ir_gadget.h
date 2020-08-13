@@ -22,7 +22,7 @@ public:
 
   void refresh() override;
 
-  bool sendRawIR(const uint16_t raw_data[], const uint8_t content_length);
+  bool sendRawIR(const uint16_t raw_data[], uint8_t content_length);
 
-  bool sendIR(const unsigned long command, const uint8_t com_type);
+  bool sendIR(unsigned long command, uint8_t com_type);
 };
