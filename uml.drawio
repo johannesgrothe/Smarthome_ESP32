@@ -46,7 +46,7 @@
         <mxCell id="hCL2_98IulEtvZC8iI1a-56" value="# has_changed: bool" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-15" vertex="1">
           <mxGeometry y="156" width="740" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="hCL2_98IulEtvZC8iI1a-52" value="# service: Gadget_Type" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-15" vertex="1">
+        <mxCell id="hCL2_98IulEtvZC8iI1a-52" value="# service: GadgetType" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-15" vertex="1">
           <mxGeometry y="182" width="740" height="26" as="geometry" />
         </mxCell>
         <mxCell id="rAZSYZIJ4b-KAplYexjY-56" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-15" vertex="1">
@@ -58,10 +58,10 @@
         <mxCell id="hCL2_98IulEtvZC8iI1a-70" value="# findMethodForCode(code unsigned long): const char *" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-15" vertex="1">
           <mxGeometry y="242" width="740" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="hCL2_98IulEtvZC8iI1a-69" value="+ SH_Gadget(gadget: JsonObject, gadget_type: Gadget_Type)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-15" vertex="1">
+        <mxCell id="hCL2_98IulEtvZC8iI1a-69" value="+ SH_Gadget(gadget: JsonObject, gadget_type: GadgetType)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-15" vertex="1">
           <mxGeometry y="268" width="740" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="hCL2_98IulEtvZC8iI1a-66" value="+ getType(): Gadget_Type" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-15" vertex="1">
+        <mxCell id="hCL2_98IulEtvZC8iI1a-66" value="+ getType(): GadgetType" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-15" vertex="1">
           <mxGeometry y="294" width="740" height="26" as="geometry" />
         </mxCell>
         <mxCell id="hCL2_98IulEtvZC8iI1a-67" value="+ getName(): const char *" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-15" vertex="1">
@@ -624,7 +624,7 @@
         <mxCell id="rAZSYZIJ4b-KAplYexjY-35" value="- virtual removeGadget(gadget_name: const char *): bool" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=2" parent="tup9LoGHmV5f9MwEpz5L-3" vertex="1">
           <mxGeometry y="52" width="680" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="TxLPmFs_sCvqqsQRuhD0-9" value="+ registerGadgetOnRemote(gadget_name: const char *, gadget_type: Gadget_Type, characteristics: const char *): bool" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="tup9LoGHmV5f9MwEpz5L-3" vertex="1">
+        <mxCell id="TxLPmFs_sCvqqsQRuhD0-9" value="+ registerGadgetOnRemote(gadget_name: const char *, gadget_type: GadgetType, characteristics: const char *): bool" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="tup9LoGHmV5f9MwEpz5L-3" vertex="1">
           <mxGeometry y="78" width="680" height="26" as="geometry" />
         </mxCell>
         <mxCell id="TxLPmFs_sCvqqsQRuhD0-10" value="+ handleNewGadget(new_Gadget: SH_Gadget *): bool" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="tup9LoGHmV5f9MwEpz5L-3" vertex="1">

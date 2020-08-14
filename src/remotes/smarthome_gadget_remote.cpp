@@ -1,7 +1,7 @@
 #include "smarthome_gadget_remote.h"
 
 bool
-SmarthomeGadgetRemote::registerGadget(const char *gadget_name, Gadget_Type gadget_type, const char *characteristics) {
+SmarthomeGadgetRemote::registerGadget(const char *gadget_name, GadgetType gadget_type, const char *characteristics) {
   unsigned long ident = micros() % 7023;
   char reg_str[HOMEBRIDGE_REGISTER_STR_MAX_LEN]{};
   const char *service_name;

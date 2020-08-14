@@ -1,13 +1,13 @@
 #include "gadget_remote.h"
 
 bool
-GadgetRemote::registerGadget(const char *gadget_name, Gadget_Type gadget_type,
+GadgetRemote::registerGadget(const char *gadget_name, GadgetType gadget_type,
                              const char *characteristics) { return false; };
 
 bool GadgetRemote::removeGadget(const char *gadget_name) { return false; };
 
 bool
-GadgetRemote::registerGadgetOnRemote(const char *gadget_name, Gadget_Type gadget_type, const char *characteristics) {
+GadgetRemote::registerGadgetOnRemote(const char *gadget_name, GadgetType gadget_type, const char *characteristics) {
   logger.println("Registering Gadget:");
   logger.incIndent();
   if (registerGadget(gadget_name, gadget_type, characteristics)) {
