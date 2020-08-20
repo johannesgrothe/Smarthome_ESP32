@@ -77,7 +77,7 @@ MQTT_Gadget::MQTT_Gadget() :
 
 MQTT_Gadget::MQTT_Gadget(JsonObject data) :
   WiFiGadget(data),
-  Request_Gadget(MQTT_G, data) {
+  Request_Gadget(RequestGadgetType::MQTT_G, data) {
   if (data.isNull()) {
     logger.println(LOG_TYPE::ERR, "No valid MQTT configuration.");
     return;

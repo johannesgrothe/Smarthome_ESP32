@@ -75,7 +75,7 @@ The json has the following structure at root:
 }
 ```
    
-#### MQTT
+#### MQTT_G
 ```
 "mqtt": {
   "ip": "xxx.xxx.xxx.xxx",

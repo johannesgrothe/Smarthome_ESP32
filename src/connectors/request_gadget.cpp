@@ -61,13 +61,13 @@ void Request_Gadget::sendQueuedItems() {
 }
 
 Request_Gadget::Request_Gadget() :
-  type_(NONE_G),
+  type_(RequestGadgetType::NONE_G),
   request_gadget_is_ready_(false) {
   in_request_queue_ = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
   out_request_queue_ = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
 }
 
-Request_Gadget::Request_Gadget(GADGET_TYPE t, JsonObject data) :
+Request_Gadget::Request_Gadget(RequestGadgetType t, JsonObject data) :
   type_(t),
   request_gadget_is_ready_(false) {
   if (data.isNull()) {
@@ -81,7 +81,7 @@ bool Request_Gadget::requestGadgetIsReady() {
   return request_gadget_is_ready_;
 }
 
-GADGET_TYPE Request_Gadget::getGadgetType() {
+RequestGadgetType Request_Gadget::getGadgetType() {
   return type_;
 }
 

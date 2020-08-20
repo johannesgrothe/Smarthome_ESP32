@@ -10,7 +10,7 @@ Serial_Gadget::Serial_Gadget() :
 
 Serial_Gadget::Serial_Gadget(JsonObject data) :
   Code_Gadget(data),
-  Request_Gadget(SERIAL_G, data) {
+  Request_Gadget(RequestGadgetType::SERIAL_G, data) {
   if (data.isNull()) {}
   logger.println("Creating Serial Gadget");
   logger.incIndent();

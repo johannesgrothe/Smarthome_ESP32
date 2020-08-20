@@ -1,31 +1,31 @@
 #include "sh_lamp.h"
 
 SH_Lamp::SH_Lamp(const JsonObject& gadget) :
-  SH_Gadget(gadget, Lightbulb),
+  SH_Gadget(gadget, GadgetType::Lightbulb),
   lamp_color_(0, 0, 0),
   default_brightness_(75),
   min_brightness_(10),
   last_brightness_(75)
   {
     if (gadget["lamp_type"] != nullptr) {
-      lamp_type_ = (SH_LAMP_TYPE) gadget["lamp_type"].as<uint8_t>();
+      lamp_type_ = (SHLampType) gadget["lamp_type"].as<uint8_t>();
       logger.print("Type: ");
-      logger.addln(type);
+      logger.addln(int(type));
     } else {
-      lamp_type_ = ON_OFF;
+      lamp_type_ = SHLampType::ON_OFF;
       logger.print(LOG_TYPE::WARN, "No Type found.");
     }
   };
 
-SH_Lamp::SH_Lamp(const JsonObject& gadget, const SH_LAMP_TYPE sh_lamp_type) :
-  SH_Gadget(gadget, Lightbulb),
+SH_Lamp::SH_Lamp(const JsonObject& gadget, const SHLampType sh_lamp_type) :
+  SH_Gadget(gadget, GadgetType::Lightbulb),
   lamp_color_(0, 0, 0),
   default_brightness_(75),
   min_brightness_(10),
   last_brightness_(75),
   lamp_type_(sh_lamp_type) {
     logger.print("Type: ");
-    logger.addln(type);
+    logger.addln(int(type));
   };
 
   // Lightness
@@ -97,10 +97,10 @@ SH_Lamp::SH_Lamp(const JsonObject& gadget, const SH_LAMP_TYPE sh_lamp_type) :
 
   void SH_Lamp::print() {
     Serial.printf("[%s] status: %d", getName(), getStatus());
-    if (lamp_type_ == CLR_BRI || lamp_type_ == CLR_ONLY) {
+    if (lamp_type_ == SHLampType::CLR_BRI || lamp_type_ == SHLampType::CLR_ONLY) {
       Serial.printf(", hue: %d, saturation: %d", lamp_color_.getHue(), lamp_color_.getHSV()->getSaturation());
     }
-    if (lamp_type_ == CLR_BRI || lamp_type_ == BRI_ONLY) {
+    if (lamp_type_ == SHLampType::CLR_BRI || lamp_type_ == SHLampType::BRI_ONLY) {
       Serial.printf(", brightness: %d", lamp_color_.getBrightness());
     }
     Serial.println("");
@@ -120,16 +120,16 @@ SH_Lamp::SH_Lamp(const JsonObject& gadget, const SH_LAMP_TYPE sh_lamp_type) :
   }
 
   bool SH_Lamp::getCharacteristics(char *characteristic_str) {
-    switch (type) {
-      case ON_OFF :
+    switch (lamp_type_) {
+      case SHLampType::ON_OFF :
         return false;
-      case BRI_ONLY :
+      case SHLampType::BRI_ONLY :
         strcpy(characteristic_str, R"("brightness": "default")");
         break;
-      case CLR_ONLY :
+      case SHLampType::CLR_ONLY :
         strcpy(characteristic_str, R"("hue": "default", "saturation": "default")");
         break;
-      case CLR_BRI :
+      case SHLampType::CLR_BRI :
         strcpy(characteristic_str, R"("brightness": "default", "hue": "default", "saturation": "default")");
         break;
       default :

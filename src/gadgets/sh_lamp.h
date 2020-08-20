@@ -3,7 +3,7 @@
 #include "sh_gadget.h"
 #include "../color.h"
 
-enum SH_LAMP_TYPE {
+enum class SHLampType {
   ON_OFF, BRI_ONLY, CLR_ONLY, CLR_BRI
 };
 
@@ -15,13 +15,13 @@ protected:
   byte min_brightness_;
   byte last_brightness_;
 
-  SH_LAMP_TYPE lamp_type_;
+  SHLampType lamp_type_;
 
 public:
 
   explicit SH_Lamp(const JsonObject&);
 
-  SH_Lamp(const JsonObject&, const SH_LAMP_TYPE);
+  SH_Lamp(const JsonObject&, SHLampType);
 
   // Lightness
   void setBrightness(byte);
