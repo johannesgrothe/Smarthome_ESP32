@@ -9,7 +9,7 @@
 #include "../console_logger.h"
 #include "../connectors/connectors.h"
 
-enum GadgetType {
+enum class GadgetType {
   None, Lightbulb, Fan, Doorbell
 };
 

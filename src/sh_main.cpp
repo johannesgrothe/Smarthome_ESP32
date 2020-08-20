@@ -132,10 +132,10 @@ void SH_Main::handleRequestConnector(Request_Gadget *gadget) {
   if (gadget->hasRequest()) {
     char type[REQUEST_TYPE_LEN_MAX]{};
     Request *req = gadget->getRequest();
-    GADGET_TYPE g_type = gadget->getGadgetType();
-    if (g_type == MQTT_G)
+    RequestGadgetType g_type = gadget->getGadgetType();
+    if (g_type == RequestGadgetType::MQTT_G)
       strncpy(type, "MQTT", REQUEST_TYPE_LEN_MAX);
-    else if (g_type == SERIAL_G)
+    else if (g_type == RequestGadgetType::SERIAL_G)
       strncpy(type, "Serial", REQUEST_TYPE_LEN_MAX);
     else
       strncpy(type, "<o.O>", REQUEST_TYPE_LEN_MAX);

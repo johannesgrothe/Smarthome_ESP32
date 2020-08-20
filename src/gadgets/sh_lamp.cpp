@@ -1,7 +1,7 @@
 #include "sh_lamp.h"
 
 SH_Lamp::SH_Lamp(const JsonObject& gadget) :
-  SH_Gadget(gadget, Lightbulb),
+  SH_Gadget(gadget, GadgetType::Lightbulb),
   lamp_color_(0, 0, 0),
   default_brightness_(75),
   min_brightness_(10),
@@ -10,7 +10,7 @@ SH_Lamp::SH_Lamp(const JsonObject& gadget) :
     if (gadget["lamp_type"] != nullptr) {
       lamp_type_ = (SHLampType) gadget["lamp_type"].as<uint8_t>();
       logger.print("Type: ");
-      logger.addln(type);
+      logger.addln(int(type));
     } else {
       lamp_type_ = SHLampType::ON_OFF;
       logger.print(LOG_TYPE::WARN, "No Type found.");
@@ -18,14 +18,14 @@ SH_Lamp::SH_Lamp(const JsonObject& gadget) :
   };
 
 SH_Lamp::SH_Lamp(const JsonObject& gadget, const SHLampType sh_lamp_type) :
-  SH_Gadget(gadget, Lightbulb),
+  SH_Gadget(gadget, GadgetType::Lightbulb),
   lamp_color_(0, 0, 0),
   default_brightness_(75),
   min_brightness_(10),
   last_brightness_(75),
   lamp_type_(sh_lamp_type) {
     logger.print("Type: ");
-    logger.addln(type);
+    logger.addln(int(type));
   };
 
   // Lightness

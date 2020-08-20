@@ -1,7 +1,7 @@
 #include "sh_doorbell.h"
 
 SH_Doorbell::SH_Doorbell(const JsonObject& gadget) :
-  SH_Gadget(gadget, Doorbell) {};
+  SH_Gadget(gadget, GadgetType::Doorbell) {};
 
 void SH_Doorbell::triggerEvent() {
   has_changed = true;

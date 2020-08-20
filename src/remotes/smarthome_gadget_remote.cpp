@@ -5,11 +5,11 @@ SmarthomeGadgetRemote::registerGadget(const char *gadget_name, GadgetType gadget
   unsigned long ident = micros() % 7023;
   char reg_str[HOMEBRIDGE_REGISTER_STR_MAX_LEN]{};
   const char *service_name;
-  if (gadget_type == Lightbulb)
+  if (gadget_type == GadgetType::Lightbulb)
     service_name = "lightbulb";
-  else if (gadget_type == Fan)
+  else if (gadget_type == GadgetType::Fan)
     service_name = "fan";
-  else if (gadget_type == Doorbell)
+  else if (gadget_type == GadgetType::Doorbell)
     service_name = "doorbell";
   else {
     logger.println(LOG_TYPE::ERR, "Unknown Gadget Type");

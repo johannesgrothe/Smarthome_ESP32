@@ -11,7 +11,7 @@
 #include "../system_settings.h"
 #include "../console_logger.h"
 
-enum GADGET_TYPE {
+enum class RequestGadgetType {
   MQTT_G, SERIAL_G, NONE_G
 };
 
@@ -45,7 +45,7 @@ public:
 
 class Request_Gadget {
 protected:
-  GADGET_TYPE type_;
+  RequestGadgetType type_;
 
   bool request_gadget_is_ready_;
 
@@ -62,11 +62,11 @@ protected:
 public:
   Request_Gadget();
 
-  explicit Request_Gadget(GADGET_TYPE t, JsonObject data);
+  explicit Request_Gadget(RequestGadgetType t, JsonObject data);
 
   bool requestGadgetIsReady();
 
-  GADGET_TYPE getGadgetType();
+  RequestGadgetType getGadgetType();
 
   bool hasRequest();
 
