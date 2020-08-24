@@ -15,6 +15,8 @@
 // Tools
 #include "console_logger.h"
 #include "system_timer.h"
+#include "hardware_link.h"
+#include "boot_mode.h"
 
 // External Dependencies
 #include "Client.h"
@@ -27,7 +29,8 @@
 
 #include "remotes/smarthome_code_remote.h"
 
-
+#include "hardware_link.h"
+#include "pin_profile.h"
 #include "color.h"
 
 static void rebootChip(const char *reason) {

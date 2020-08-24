@@ -301,6 +301,23 @@ void SH_Main::testStuff() {
 void SH_Main::init() {
   Serial.begin(SERIAL_SPEED);
   logger.println(LOG_TYPE::INFO, "Launching...");
+  logger.print(LOG_TYPE::INFO, "Boot Mode: ");
+  BootMode boot_mode = getBootMode();
+  switch (boot_mode) {
+    case BootMode::Serial_Ony:
+      logger.addln("Serial Only");
+      break;
+    case BootMode::Network_Only:
+      logger.addln("Network Only");
+      break;
+    case BootMode::Full_Operation:
+      logger.addln("Full Operation");
+      break;
+    default:
+      logger.addln("Unknown Boot Mode");
+      break;
+  }
+
   DynamicJsonDocument json_file(2048);
   bool eeprom_status = System_Storage::initEEPROM();
 
