@@ -65,6 +65,8 @@ private:
 
   GadgetRemote *gadget_remote;
 
+  BootMode system_mode;
+
   bool initGadgets(JsonArray gadget_json);
 
   void mapConnectors(JsonObject connectors_json);
@@ -88,6 +90,18 @@ private:
   bool initCodeRemote(JsonObject json);
 
   void testStuff();
+
+  void refreshModeSerial();
+
+  void refreshModeNetwork();
+
+  void refreshModeComplete();
+
+  void initModeSerial();
+
+  void initModeNetwork();
+
+  void initModeComplete();
 
 public:
 

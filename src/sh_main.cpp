@@ -298,26 +298,7 @@ void SH_Main::testStuff() {
   logger.decIndent();
 }
 
-void SH_Main::init() {
-  Serial.begin(SERIAL_SPEED);
-  logger.println(LOG_TYPE::INFO, "Launching...");
-  logger.print(LOG_TYPE::INFO, "Boot Mode: ");
-  BootMode boot_mode = getBootMode();
-  switch (boot_mode) {
-    case BootMode::Serial_Ony:
-      logger.addln("Serial Only");
-      break;
-    case BootMode::Network_Only:
-      logger.addln("Network Only");
-      break;
-    case BootMode::Full_Operation:
-      logger.addln("Full Operation");
-      break;
-    default:
-      logger.addln("Unknown Boot Mode");
-      break;
-  }
-
+JsonObject loadConfig() {
   DynamicJsonDocument json_file(2048);
   bool eeprom_status = System_Storage::initEEPROM();
 
@@ -338,6 +319,48 @@ void SH_Main::init() {
   deserializeJson(json_file, json_str); // Loads file from system_storage.h
 #endif
   JsonObject json = json_file.as<JsonObject>();
+  return json;
+}
+
+void SH_Main::init() {
+  Serial.begin(SERIAL_SPEED);
+  logger.println(LOG_TYPE::INFO, "Launching...");
+  logger.print(LOG_TYPE::INFO, "Boot Mode: ");
+  system_mode = getBootMode();
+  switch (system_mode) {
+    case BootMode::Serial_Ony:
+      logger.addln("Serial Only");
+      initModeSerial();
+      break;
+    case BootMode::Network_Only:
+      logger.addln("Network Only");
+      initModeNetwork();
+      break;
+    case BootMode::Full_Operation:
+      logger.addln("Full Operation");
+      initModeComplete();
+      break;
+    default:
+      logger.addln("Unknown Boot Mode");
+      break;
+  }
+
+  logger.addln();
+}
+
+void SH_Main::initModeSerial() {
+  JsonObject config;
+  config["type"] = "serial";
+  initNetwork(config);
+}
+
+void SH_Main::initModeNetwork() {
+  JsonObject json = loadConfig();
+  initNetwork(json["network"]);
+}
+
+void SH_Main::initModeComplete() {
+  JsonObject json = loadConfig();
 
   initNetwork(json["network"]);
   initConnectors(json["connectors"]);
@@ -407,10 +430,35 @@ void SH_Main::init() {
       delete resp;
     }
   }
-  logger.addln();
 }
 
 void SH_Main::refresh() {
+  switch (system_mode) {
+    case BootMode::Serial_Ony:
+      refreshModeSerial();
+      break;
+    case BootMode::Network_Only:
+      refreshModeNetwork();
+      break;
+    case BootMode::Full_Operation:
+      refreshModeComplete();
+      break;
+    default:
+      delay(1000);
+      break;
+  }
+}
+
+void SH_Main::refreshModeSerial() {
+  handleRequestConnector(network_gadget);
+}
+
+void SH_Main::refreshModeNetwork() {
+  handleRequestConnector(network_gadget);
+}
+
+void SH_Main::refreshModeComplete() {
+
   handleRequestConnector(network_gadget);
 
   ir_gadget->refresh();
