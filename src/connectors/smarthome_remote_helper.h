@@ -1,6 +1,6 @@
 #pragma once
 
-static unsigned long getIdent(const char *json_str_input) {
+static unsigned long getIdent(std::string json_str_input) {
   DynamicJsonDocument json_file(2048);
   DeserializationError err = deserializeJson(json_file, json_str_input);
   if (err == DeserializationError::Ok) {
@@ -13,7 +13,7 @@ static unsigned long getIdent(const char *json_str_input) {
   return 0;
 }
 
-static bool getAck(const char *json_str_input) {
+static bool getAck(std::string json_str_input) {
   DynamicJsonDocument json_file(2048);
   DeserializationError err = deserializeJson(json_file, json_str_input);
   if (err == DeserializationError::Ok) {

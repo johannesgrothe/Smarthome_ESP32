@@ -94,7 +94,7 @@ bool SH_Main::initConnectors(JsonObject connectors_json) {
   return true;
 }
 
-bool SH_Main::initNetwork(JsonObject json) {
+bool SH_Main::initNetwork(const JsonObject &json) {
   // check if JSON is valid
   if (json.isNull() || !json.containsKey("type")) {
     logger.println(LOG_TYPE::ERR, "No valid network configuration.");
@@ -115,6 +115,9 @@ bool SH_Main::initNetwork(JsonObject json) {
 }
 
 void SH_Main::handleCodeConnector(Code_Gadget *gadget) {
+  if (gadget == nullptr) {
+    return;
+  }
   if (gadget->hasNewCommand()) {
     CodeCommand *com = gadget->getCommand();
     logger.print("Command: ");
@@ -129,6 +132,9 @@ void SH_Main::handleCodeConnector(Code_Gadget *gadget) {
 }
 
 void SH_Main::handleRequestConnector(Request_Gadget *gadget) {
+  if (gadget == nullptr) {
+    return;
+  }
   if (gadget->hasRequest()) {
     char type[REQUEST_TYPE_LEN_MAX]{};
     Request *req = gadget->getRequest();
@@ -143,9 +149,9 @@ void SH_Main::handleRequestConnector(Request_Gadget *gadget) {
     logger.print("[");
     logger.add(type);
     logger.add("] '");
-    logger.add(req->getPath());
+    logger.add(req->getPath().c_str());
     logger.add("' :");
-    logger.addln(req->getBody());
+    logger.addln(req->getBody().c_str());
     handleRequest(req);
     delete req;
   }
@@ -172,10 +178,10 @@ void SH_Main::handleSystemRequest(Request *req) {
   }
 
   logger.print("System Command Detected: ");
-  logger.addln(req->getPath());
+  logger.addln(req->getPath().c_str());
   logger.incIndent();
 
-  if (strcmp(req->getPath(), "smarthome/from/sys/command") == 0) {
+  if (req->getPath() == "smarthome/from/sys/command") {
     if (json_body["command"] != nullptr) {
       const char *com = json_body["time"].as<const char *>();
       if (strcmp(com, "reboot") == 0) {
@@ -189,7 +195,7 @@ void SH_Main::handleSystemRequest(Request *req) {
     } else {
       logger.print(LOG_TYPE::ERR, "Broken System Command Received: 'command' missing");
     }
-  } else if (strcmp(req->getPath(), "smarthome/from/sys/config/set") == 0) {
+  } else if (req->getPath() == "smarthome/from/sys/config/set") {
 
   } else {
     logger.println("Unknown Command");
@@ -199,22 +205,19 @@ void SH_Main::handleSystemRequest(Request *req) {
 
 void SH_Main::handleRequest(Request *req) {
   logger.incIndent();
-  if (req->getBody() != nullptr) {
-    unsigned int last_pos = strlen(req->getBody()) - 1;
-    if (last_pos > 0) {
-      std::string str_path = req->getPath();
-      if (str_path.compare(0, 4, "smarthome/from/sys/") == 0) {
-        handleSystemRequest(req);
-      } else if (strcmp(req->getPath(), "smarthome/from/response") == 0) {
-        logger.println("Ignoring unhandled response");
-      } else {
-        code_remote->handleRequest(req);
-        gadget_remote->handleRequest(req);
-      }
+  if (!req->getBody().empty()) {
+    std::string str_path = req->getPath();
+    if (str_path.compare(0, 4, "smarthome/from/sys/") == 0) {
+      handleSystemRequest(req);
+    } else if (req->getPath() == "smarthome/from/response") {
+      logger.println("Ignoring unhandled response");
     } else {
-      // Requests asking for content could have empty bodies
-      logger.println(LOG_TYPE::ERR, "Empty Request");
+      code_remote->handleRequest(req);
+      gadget_remote->handleRequest(req);
     }
+  } else {
+    // Requests asking for content could have empty bodies
+    logger.println(LOG_TYPE::ERR, "Empty Request");
   }
   logger.decIndent();
 }
@@ -349,9 +352,11 @@ void SH_Main::init() {
 }
 
 void SH_Main::initModeSerial() {
-  JsonObject config;
-  config["type"] = "serial";
-  initNetwork(config);
+//  JsonObject config;
+//  config["type"] = "serial";
+  DynamicJsonDocument json_file(2048);
+  deserializeJson(json_file, F("{\"type\":\"serial\",\"config\"{}}"));
+  initNetwork(json_file.as<JsonObject>());
 }
 
 void SH_Main::initModeNetwork() {
@@ -408,7 +413,7 @@ void SH_Main::initModeComplete() {
       network_gadget->refresh();
     } else {
       Request *resp = network_gadget->getRequest();
-      if (strcmp(resp->getPath(), "smarthome/from/response") == 0 && getIdent(resp->getBody()) == ident) {
+      if (resp->getPath() == "smarthome/from/response" && getIdent(resp->getBody()) == ident) {
         DynamicJsonDocument time_json(2048);
         DeserializationError err = deserializeJson(time_json, resp->getBody());
         if (err == DeserializationError::Ok) {
@@ -472,5 +477,17 @@ void SH_Main::refreshModeComplete() {
 }
 
 void SH_Main::refreshNetwork() {
+  if (network_gadget == nullptr) {
+    return;
+  }
   network_gadget->refresh();
+}
+
+SH_Main::SH_Main() :
+  ir_gadget(nullptr),
+  radio_gadget(nullptr),
+  network_gadget(nullptr),
+  code_remote(nullptr),
+  gadget_remote(nullptr),
+  system_mode(BootMode::Unknown_Mode) {
 }

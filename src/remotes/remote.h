@@ -24,9 +24,9 @@ protected:
 
   void unlockUpdates();
 
-  virtual void handleRequest(const char *path, const char *body) = 0;
+  virtual void handleRequest(std::string path, std::string body) = 0;
 
-  virtual void handleRequest(const char *path, const JsonObject& body) = 0;
+  virtual void handleRequest(std::string path, const JsonObject& body) = 0;
 
   virtual bool handleNewGadget(SH_Gadget *new_gadget) = 0;
 

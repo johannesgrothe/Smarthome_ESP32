@@ -48,15 +48,13 @@ void MQTT_Gadget::callback(char *topic, const byte *payload, const unsigned int 
 }
 
 void MQTT_Gadget::executeRequestSending(Request *req) {
-  const char *topic = req->getPath();
-  const char *body = req->getBody();
+  std::string topic = req->getPath();
+  std::string body = req->getBody();
   logger.print("System / MQTT", "publishing on '");
-  logger.
-    add(topic);
+  logger.add(topic.c_str());
   logger.add("'");
-  bool status = true;
-  uint16_t msg_len = strlen(body);
-  status = status && mqttClient_->beginPublish(topic, msg_len, false);
+  uint16_t msg_len = body.size();
+  bool status = mqttClient_->beginPublish(topic.c_str(), msg_len, false);
   uint16_t k;
   for (
     k = 0;

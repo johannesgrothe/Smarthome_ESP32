@@ -1,40 +1,39 @@
 #include "request_gadget.h"
 
-//Request
-Request::Request(const char *req_path, const char *req_body) :
-  can_respond_(false),
-  needs_response_(false) {
-  strncpy(path, req_path, REQUEST_PATH_LEN_MAX);
-  strncpy(body, req_body, REQUEST_BODY_LEN_MAX);
-}
+#include <utility>
 
-Request::Request(const char *req_path, const char *req_body, std::function<void(Request *request)> answer_method) :
+Request::Request(std::string req_path, std::string req_body) :
+  body_(std::move(req_body)),
+  path_(std::move(req_path)),
+  can_respond_(false),
+  needs_response_(false) {}
+
+Request::Request(std::string req_path, std::string req_body, std::function<void(Request *request)> answer_method) :
+  body_(std::move(req_body)),
+  path_(std::move(req_path)),
+  send_answer_(std::move(answer_method)),
   can_respond_(true),
-  needs_response_(true) {
-  strncpy(path, req_path, REQUEST_PATH_LEN_MAX);
-  strncpy(body, req_body, REQUEST_BODY_LEN_MAX);
-  send_answer_ = answer_method;
-}
+  needs_response_(true) {}
 
 Request::~Request() {
   logger.print(LOG_TYPE::WARN, "Deleting ");
-  logger.addln(path);
+  logger.addln(path_.c_str());
 }
 
-const char *Request::getPath() {
-  return &path[0];
+std::string Request::getPath() {
+  return path_;
 }
 
-const char *Request::getBody() {
-  return &body[0];
+std::string Request::getBody() {
+  return body_;
 }
 
-bool Request::respond(const char *res_path, const char *res_body) {
+bool Request::respond(std::string res_path, std::string res_body) {
   needs_response_ = false;
   if (!can_respond_) {
     return false;
   }
-  auto *req = new Request(res_path, res_body);
+  auto *req = new Request(std::move(res_path), std::move(res_body));
   send_answer_(req);
   return true;
 }
@@ -56,7 +55,6 @@ void Request_Gadget::sendQueuedItems() {
     Request *buf_req;
     xQueueReceive(out_request_queue_, &buf_req, portMAX_DELAY);
     executeRequestSending(buf_req);
-//      delete buf_req;  // crashes with LoadProhibited
   }
 }
 
@@ -77,7 +75,7 @@ Request_Gadget::Request_Gadget(RequestGadgetType t, JsonObject data) :
   request_gadget_is_ready_ = true;
 }
 
-bool Request_Gadget::requestGadgetIsReady() {
+bool Request_Gadget::requestGadgetIsReady() const {
   return request_gadget_is_ready_;
 }
 

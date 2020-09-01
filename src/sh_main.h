@@ -73,7 +73,7 @@ private:
 
   bool initConnectors(JsonObject connectors_json);
 
-  bool initNetwork(JsonObject json);
+  bool initNetwork(const JsonObject& json);
 
   void handleCodeConnector(Code_Gadget *gadget);
 
@@ -104,6 +104,8 @@ private:
   void initModeComplete();
 
 public:
+
+  SH_Main();
 
   void init();
 
