@@ -31,12 +31,12 @@ bool Mapping_Reference::containsCode(unsigned long in_code) {
 
 void Mapping_Reference::printMapping() {
   logger.print(command_name);
-  logger.add(": [");
+  logger.print(": [");
   for (byte k = 0; k < code_count; k++) {
-    logger.add(codes[k]);
+    logger.print(codes[k]);
     if (k < code_count - 1) {
-      logger.add(", ");
+      logger.print(", ");
     }
   }
-  logger.addln("]");
+  logger.println("]");
 }

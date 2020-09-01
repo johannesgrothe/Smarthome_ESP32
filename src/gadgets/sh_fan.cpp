@@ -72,8 +72,8 @@ void SH_Fan::print() {
 
 void SH_Fan::handleCharacteristicUpdate(const char *characteristic, int value) {
   logger.print(getName(), "Updating Characteristic: '");
-  logger.add(characteristic);
-  logger.addln("'");
+  logger.print(characteristic);
+  logger.println("'");
   if (strcmp(characteristic, "On") == 0) {
     setStatus((bool) value);
   } else if (strcmp(characteristic, "rotationspeed") == 0) {

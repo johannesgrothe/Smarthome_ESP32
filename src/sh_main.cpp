@@ -4,7 +4,7 @@ bool SH_Main::initGadgets(JsonArray gadget_json) {
   gadgets = Gadget_Collection();
   byte new_gadget_count = gadget_json.size() < MAIN_MAX_GADGETS ? gadget_json.size() : MAIN_MAX_GADGETS;
   logger.print(LOG_TYPE::INFO, "Creating Gadgets: ");
-  logger.addln(new_gadget_count);
+  logger.println(new_gadget_count);
   logger.incIndent();
   bool everything_ok = true;
   for (unsigned int pointer = 0; pointer < new_gadget_count; pointer++) {
@@ -32,7 +32,7 @@ void SH_Main::mapConnectors(JsonObject connectors_json) {
   // IR
   logger.print("IR:");
   if (connectors_json["ir"] != nullptr && connectors_json["ir"].as<JsonArray>().size() > 0) {
-    logger.addln();
+    logger.println();
     logger.incIndent();
     JsonArray map_gadgets = connectors_json["ir"].as<JsonArray>();
     for (auto &&map_gadget : map_gadgets) {
@@ -45,13 +45,13 @@ void SH_Main::mapConnectors(JsonObject connectors_json) {
     }
     logger.decIndent();
   } else {
-    logger.addln(" -");
+    logger.println(" -");
   }
 
   // Radio
   logger.print("Radio:");
   if (connectors_json["radio"] != nullptr && connectors_json["radio"].as<JsonArray>().size() > 0) {
-    logger.addln();
+    logger.println();
     logger.incIndent();
     JsonArray map_gadgets = connectors_json["radio"].as<JsonArray>();
     for (auto &&map_gadget : map_gadgets) {
@@ -64,7 +64,7 @@ void SH_Main::mapConnectors(JsonObject connectors_json) {
     }
     logger.decIndent();
   } else {
-    logger.addln(" -");
+    logger.println(" -");
   }
   logger.decIndent();
 }
@@ -118,7 +118,7 @@ void SH_Main::handleCodeConnector(Code_Gadget *gadget) {
   if (gadget->hasNewCommand()) {
     CodeCommand *com = gadget->getCommand();
     logger.print("Command: ");
-    logger.addln(com->getCode());
+    logger.println(com->getCode());
 
     if (code_remote != nullptr) {
       logger.incIndent();
@@ -141,11 +141,11 @@ void SH_Main::handleRequestConnector(Request_Gadget *gadget) {
       strncpy(type, "<o.O>", REQUEST_TYPE_LEN_MAX);
 
     logger.print("[");
-    logger.add(type);
-    logger.add("] '");
-    logger.add(req->getPath());
-    logger.add("' :");
-    logger.addln(req->getBody());
+    logger.print(type);
+    logger.print("] '");
+    logger.print(req->getPath());
+    logger.print("' :");
+    logger.println(req->getBody());
     handleRequest(req);
     delete req;
   }
@@ -172,7 +172,7 @@ void SH_Main::handleSystemRequest(Request *req) {
   }
 
   logger.print("System Command Detected: ");
-  logger.addln(req->getPath());
+  logger.println(req->getPath());
   logger.incIndent();
 
   if (strcmp(req->getPath(), "smarthome/from/sys/command") == 0) {
@@ -356,7 +356,7 @@ void SH_Main::init() {
   testStuff();
 
   logger.print("Free Heap: ");
-  logger.addln(ESP.getFreeHeap());
+  logger.println(ESP.getFreeHeap());
 
   char client_str[50]{};
   unsigned long ident = micros() % 7023;
@@ -390,7 +390,7 @@ void SH_Main::init() {
       delete resp;
     }
   }
-  logger.addln();
+  logger.println();
 }
 
 void SH_Main::refresh() {

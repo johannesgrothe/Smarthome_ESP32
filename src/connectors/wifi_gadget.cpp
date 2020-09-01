@@ -25,25 +25,25 @@ WiFiGadget::WiFiGadget(JsonObject json) {
   strncpy(wifi_password_, passwd, WIFI_PASSWORD_LEN_MAX);
 
   logger.print(LOG_TYPE::DATA, "");
-  logger.add("Connecting to ");
-  logger.add(ssid);
+  logger.print("Connecting to ");
+  logger.print(ssid);
 
   byte connection_tries = 0;
 
   while (WiFiClass::status() != WL_CONNECTED && connection_tries < 6) {
     WiFi.begin(ssid, passwd);
     delay(1000);
-    logger.add(".");
+    logger.print(".");
     connection_tries++;
   }
-  logger.addln();
+  logger.println();
   if (WiFiClass::status() != WL_CONNECTED) {
     logger.println(LOG_TYPE::DATA, "could not establish WiFi Connection...");
   } else {
     randomSeed(micros());
     logger.println(LOG_TYPE::DATA, "WiFi connected");
     logger.print(LOG_TYPE::DATA, "IP: ");
-    logger.addln(WiFi.localIP().toString().c_str());
+    logger.println(WiFi.localIP().toString().c_str());
   }
   wifi_initialized_ = true;
   logger.decIndent();

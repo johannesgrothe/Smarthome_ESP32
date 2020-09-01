@@ -12,7 +12,7 @@ bool MQTT_Gadget::connect_mqtt() {
   uint8_t conn_count = 0;
   while (!mqttClient_->connected()) {
     if (mqttClient_->connect("esp32_test_client")) {
-      logger.addln("OK");
+      logger.println("OK");
       mqttClient_->subscribe("debug/in");
       mqttClient_->subscribe("smarthome/from/sys/config/set");
       mqttClient_->subscribe("smarthome/from/sys/command");
@@ -24,11 +24,11 @@ bool MQTT_Gadget::connect_mqtt() {
       return true;
     } else {
       if (conn_count > 5) {
-        logger.addln("Failed.");
+        logger.println("Failed.");
         logger.println(LOG_TYPE::ERR, "No Connection to Broker could be established.");
         break;
       }
-      logger.add(".");
+      logger.print(".");
       delay(1000);
       conn_count++;
     }
@@ -52,8 +52,8 @@ void MQTT_Gadget::executeRequestSending(Request *req) {
   const char *body = req->getBody();
   logger.print("System / MQTT", "publishing on '");
   logger.
-    add(topic);
-  logger.add("'");
+    print(topic);
+  logger.print("'");
   bool status = true;
   uint16_t msg_len = strlen(body);
   status = status && mqttClient_->beginPublish(topic, msg_len, false);
@@ -66,9 +66,9 @@ void MQTT_Gadget::executeRequestSending(Request *req) {
   }
   status = status && mqttClient_->endPublish();
   if (status)
-    logger.addln("OK");
+    logger.println("OK");
   else
-    logger.addln("ERR");
+    logger.println("ERR");
 }
 
 MQTT_Gadget::MQTT_Gadget() :
@@ -104,13 +104,13 @@ MQTT_Gadget::MQTT_Gadget(JsonObject data) :
       }
       mqttServer_ = new IPAddress(ip_arr[0], ip_arr[1], ip_arr[2], ip_arr[3]);
       logger.print(LOG_TYPE::DATA, "IP: ");
-      logger.add(ip_arr[0]);
-      logger.add(".");
-      logger.add(ip_arr[1]);
-      logger.add(".");
-      logger.add(ip_arr[2]);
-      logger.add(".");
-      logger.addln(ip_arr[3]);
+      logger.print(ip_arr[0]);
+      logger.print(".");
+      logger.print(ip_arr[1]);
+      logger.print(".");
+      logger.print(ip_arr[2]);
+      logger.print(".");
+      logger.println(ip_arr[3]);
     } else {
       everything_ok = false;
       logger.println(LOG_TYPE::ERR, "'ip' missing in config.");
@@ -120,7 +120,7 @@ MQTT_Gadget::MQTT_Gadget(JsonObject data) :
     if (data["port"] != nullptr) {
       mqtt_port_ = data["port"].as<unsigned int>();
       logger.print(LOG_TYPE::DATA, "Port: ");
-      logger.addln(mqtt_port_);
+      logger.println(mqtt_port_);
     } else {
       everything_ok = false;
       logger.println(LOG_TYPE::ERR, "'port' missing in config.");
@@ -130,7 +130,7 @@ MQTT_Gadget::MQTT_Gadget(JsonObject data) :
     if (data["username"] != nullptr) {
       strncpy(username_, data["username"].as<const char *>(), MQTT_USERNAME_MAX_LEN);
       logger.print(LOG_TYPE::DATA, "Username: ");
-      logger.addln(username_);
+      logger.println(username_);
     } else {
       // everything_ok = false;
       logger.println(LOG_TYPE::ERR, "'username' missing in config.");
@@ -141,7 +141,7 @@ MQTT_Gadget::MQTT_Gadget(JsonObject data) :
       strncpy(password_, data["password"].as<const char *>(), MQTT_USERNAME_MAX_LEN);
 
       logger.print(LOG_TYPE::DATA, "Password: ");
-      logger.addln(username_);
+      logger.println(username_);
     } else {
       // everything_ok = false;
       logger.println(LOG_TYPE::ERR, "'password' missing in config.");

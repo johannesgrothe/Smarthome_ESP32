@@ -42,15 +42,15 @@ void Remote::handleRequest(Request *req) {
 void Remote::addGadget(SH_Gadget *new_gadget) {
   if (gadgets.addGadget(new_gadget)) {
     logger.print(LOG_TYPE::DATA, "Adding '");
-    logger.add(new_gadget->getName());
-    logger.addln("'");
+    logger.print(new_gadget->getName());
+    logger.println("'");
 
     logger.incIndent();
     handleNewGadget(new_gadget);
     logger.decIndent();
   } else {
     logger.print(LOG_TYPE::ERR, "Unable to add '");
-    logger.add(new_gadget->getName());
-    logger.addln("'");
+    logger.print(new_gadget->getName());
+    logger.println("'");
   }
 }

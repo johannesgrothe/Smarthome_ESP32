@@ -13,8 +13,8 @@ void SH_Doorbell::print() {};
 
 void SH_Doorbell::handleCharacteristicUpdate(const char *characteristic, int value) {
   logger.print(getName(), "Updating Characteristic: '");
-  logger.add(characteristic);
-  logger.addln("'");
+  logger.print(characteristic);
+  logger.println("'");
 }
 
 bool SH_Doorbell::getCharacteristics(char *buffer) { return false; };
