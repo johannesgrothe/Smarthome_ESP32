@@ -363,6 +363,7 @@ void SH_Main::initModeSerial() {
 }
 
 void SH_Main::initModeNetwork(bool use_eeprom) {
+  DynamicJsonDocument json_file(2048);
   JsonObject json;
   if (use_eeprom) {
     logger.println("Using EEPROM");
@@ -385,7 +386,6 @@ void SH_Main::initModeNetwork(bool use_eeprom) {
 #define MQTT_PORT "1883"
 #endif
 
-    DynamicJsonDocument json_file(2048);
     std::stringstream local_json_str;
 
     local_json_str << R"({"network":{"type":"mqtt","config":{"wifi_ssid":")" << std::string(WIFI_SSID)
@@ -395,20 +395,18 @@ void SH_Main::initModeNetwork(bool use_eeprom) {
                    #ifdef MQTT_USERNAME
                    << R"(","mqtt_username":")" << MQTT_USERNAME << R"(")"
                    #else
-                   << R"(,"mqtt_username": null)"
+                   << R"(,"mqtt_username":null)"
                    #endif
                    #ifdef MQTT_PW
                    << R"(,"mqtt_password":")" << MQTT_PW << R"(")"
                    #else
-                   << R"(,"mqtt_password": null)"
+                   << R"(,"mqtt_password":null)"
                    #endif
                    << R"(}}})";
 
     DeserializationError e = deserializeJson(json_file, local_json_str.str());
-    if (e == DeserializationError::Ok) {
-      logger.println("Deserialization successfull");
-    } else {
-      logger.println("Perror is back");
+    if (e != DeserializationError::Ok) {
+      logger.println(LOG_TYPE::ERR, "Couldn't deserialize temporary json string");
     }
     logger.println(local_json_str.str().c_str());
     json = json_file.as<JsonObject>();

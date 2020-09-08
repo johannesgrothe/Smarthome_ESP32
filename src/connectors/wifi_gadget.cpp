@@ -2,12 +2,25 @@
 
 WiFiGadget::WiFiGadget() = default;
 
-WiFiGadget::WiFiGadget(JsonObject json) {
+WiFiGadget::WiFiGadget(const JsonObject& json) {
   if (json.isNull() || !json.containsKey("wifi_ssid") || !json.containsKey("wifi_password")) {
     logger.println(LOG_TYPE::ERR, "No valid wifi configuration.");
+    logger.incIndent();
+    if (json.isNull()) {
+      logger.println(LOG_TYPE::DATA, "Config is null");
+    } else {
+      if (!json.containsKey("wifi_ssid")) {
+        logger.println(LOG_TYPE::DATA, "wifi_ssid is missing");
+      }
+      if (!json.containsKey("wifi_password")) {
+        logger.println(LOG_TYPE::DATA, "wifi_password is missing");
+      }
+    }
+    logger.decIndent();
     wifi_initialized_ = false;
     return;
   }
+  logger.decIndent();
   logger.println("Connecting to WiFi:");
   logger.incIndent();
   network_client_ = WiFiClient();
