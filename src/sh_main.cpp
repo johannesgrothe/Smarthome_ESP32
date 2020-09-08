@@ -1,3 +1,4 @@
+#include <sstream>
 #include "sh_main.h"
 
 bool SH_Main::initGadgets(JsonArray gadget_json) {
@@ -102,9 +103,9 @@ bool SH_Main::initNetwork(const JsonObject &json) {
   }
 
   // initialize Network
-  if (strcmp(json["type"].as<char *>(), "mqtt") == 0) {
+  if (json["type"].as<std::string>() == "mqtt") {
     network_gadget = new MQTT_Gadget(json["config"].as<JsonObject>());
-  } else if (strcmp(json["type"].as<char *>(), "serial") == 0) {
+  } else if (json["type"].as<std::string>() == "serial") {
     network_gadget = new Serial_Gadget(json["config"].as<JsonObject>());
   } else {
     logger.println(LOG_TYPE::ERR, "Unknown Network Settings");
@@ -303,9 +304,8 @@ void SH_Main::testStuff() {
 
 JsonObject loadConfig() {
   DynamicJsonDocument json_file(2048);
-  bool eeprom_status = System_Storage::initEEPROM();
-
 #ifndef USE_HARD_CONFIG
+  bool eeprom_status = System_Storage::initEEPROM();
   char buffer[EEPROM_CONFIG_LEN_MAX]{};
   bool config_status = false;
   if (eeprom_status && System_Storage::readConfig(&buffer[0])) {
@@ -335,9 +335,13 @@ void SH_Main::init() {
       logger.addln("Serial Only");
       initModeSerial();
       break;
-    case BootMode::Network_Only:
-      logger.addln("Network Only");
-      initModeNetwork();
+    case BootMode::Network_Only_FLASH:
+      logger.addln("Network Only: Flash");
+      initModeNetwork(false);
+      break;
+    case BootMode::Network_Only_EEPROM:
+      logger.addln("Network Only: EEPROM");
+      initModeNetwork(true);
       break;
     case BootMode::Full_Operation:
       logger.addln("Full Operation");
@@ -347,7 +351,6 @@ void SH_Main::init() {
       logger.addln("Unknown Boot Mode");
       break;
   }
-
   logger.addln();
 }
 
@@ -359,9 +362,62 @@ void SH_Main::initModeSerial() {
   initNetwork(json_file.as<JsonObject>());
 }
 
-void SH_Main::initModeNetwork() {
-  JsonObject json = loadConfig();
-  initNetwork(json["network"]);
+void SH_Main::initModeNetwork(bool use_eeprom) {
+  JsonObject json;
+  if (use_eeprom) {
+    logger.println("Using EEPROM");
+    json = loadConfig();
+  } else {
+    logger.println("Using FLASH");
+#ifndef WIFI_SSID
+#define WIFI_SSID "blub"
+#endif
+
+#ifndef WIFI_PW
+#define WIFI_PW "blub"
+#endif
+
+#ifndef MQTT_IP
+#define MQTT_IP "blub"
+#endif
+
+#ifndef MQTT_PORT
+#define MQTT_PORT "1883"
+#endif
+
+    DynamicJsonDocument json_file(2048);
+    std::stringstream local_json_str;
+
+    local_json_str << R"({"network":{"type":"mqtt","config":{"wifi_ssid":")" << std::string(WIFI_SSID)
+                   << R"(","wifi_password":")" << std::string(WIFI_PW)
+                   << R"(","ip":")" << std::string(MQTT_IP)
+                   << R"(","port":)" << std::string(MQTT_PORT)
+                   #ifdef MQTT_USERNAME
+                   << R"(","mqtt_username":")" << MQTT_USERNAME << R"(")"
+                   #else
+                   << R"(,"mqtt_username": null)"
+                   #endif
+                   #ifdef MQTT_PW
+                   << R"(,"mqtt_password":")" << MQTT_PW << R"(")"
+                   #else
+                   << R"(,"mqtt_password": null)"
+                   #endif
+                   << R"(}}})";
+
+    DeserializationError e = deserializeJson(json_file, local_json_str.str());
+    if (e == DeserializationError::Ok) {
+      logger.println("Deserialization successfull");
+    } else {
+      logger.println("Perror is back");
+    }
+    logger.println(local_json_str.str().c_str());
+    json = json_file.as<JsonObject>();
+  }
+  if (json.containsKey("network")) {
+    initNetwork(json["network"]);
+  } else {
+    logger.println(LOG_TYPE::ERR, "Invalid config: no 'network' setting.");
+  }
 }
 
 void SH_Main::initModeComplete() {
@@ -442,7 +498,8 @@ void SH_Main::refresh() {
     case BootMode::Serial_Ony:
       refreshModeSerial();
       break;
-    case BootMode::Network_Only:
+    case BootMode::Network_Only_EEPROM:
+    case BootMode::Network_Only_FLASH:
       refreshModeNetwork();
       break;
     case BootMode::Full_Operation:

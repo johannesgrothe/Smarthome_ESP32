@@ -99,7 +99,7 @@ private:
 
   void initModeSerial();
 
-  void initModeNetwork();
+  void initModeNetwork(bool);
 
   void initModeComplete();
 
