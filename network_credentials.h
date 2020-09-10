@@ -1,6 +1,0 @@
-#define WIFI_SSID "testwifi"
-#define WIFI_PW "testpw"
-#define MQTT_IP "192.168.178.111"
-#define MQTT_PORT "1883"
-//#define MQTT_USERNAME ""
-//#define MQTT_PW ""
