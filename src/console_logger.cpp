@@ -126,20 +126,6 @@ void Console_Logger::setLogType(const LOG_TYPE type) {
   }
 }
 
-//void Console_Logger::addToBuffer(const char *message) {
-//  if (xPortGetCoreID() == 0) {
-//    unsigned int remaining_space = ((LOGGER_MAX_BUFFER_LEN - core_0_buffer_ptr_) - 2);
-//    unsigned int print_len = strlen(message) < remaining_space ? strlen(message) : remaining_space;
-//    strcpy(&core_0_buffer_[0] + core_0_buffer_ptr_, message);
-//    core_0_buffer_ptr_ += print_len;
-//  } else {
-//    unsigned int remaining_space = ((LOGGER_MAX_BUFFER_LEN - core_1_buffer_ptr_) - 2);
-//    unsigned int print_len = strlen(message) < remaining_space ? strlen(message) : remaining_space;
-//    strcpy(&core_1_buffer_[0] + core_1_buffer_ptr_, message);
-//    core_1_buffer_ptr_ += (int) print_len;
-//  }
-//}
-
 void Console_Logger::addToBuffer(string s) {
   if (xPortGetCoreID() == 0) {
     for(char c:s) {

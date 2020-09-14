@@ -294,7 +294,11 @@ bool SH_Main::initCodeRemote(JsonObject json) {
 void SH_Main::testStuff() {
   logger.println("Testing Stuff");
   logger.incIndent();
-
+  logger.printf("This is %s, get rekt %d ", "spongo", 66);
+  logger.printfln("\n");
+  logger.printf(LOG_TYPE::ERR, "this is the %dth test", 666);
+  logger.printfln("spongom mon der %d.", 4);
+  logger.printfln(LOG_TYPE::NONE, "this is the %dth test", 667);
   logger.decIndent();
 }
 

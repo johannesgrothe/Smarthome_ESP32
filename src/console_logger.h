@@ -2,7 +2,9 @@
 
 #include <string>
 #include <iostream>
+#include <stdarg.h>
 #include <sstream>
+#include <vector>
 #include <functional>
 #include "user_settings.h"
 #include <cstdio>
@@ -93,10 +95,21 @@ public:
   template<class T>
   void print(LOG_TYPE, const string&, T);
 
+  template<class T, class ... Args>
+  void vprintf(T , va_list);
+
+  template<class T, class ... Args>
+  void printf(T, ...);
+
+  template<class T, class ... Args>
+  void printf(LOG_TYPE, T, ...);
+
   void println();
 
   template<class T>
   void println(T);
+
+  void printfln();
 
   template<class T>
   void println(LOG_TYPE, T);
@@ -107,45 +120,76 @@ public:
   template<class T>
   void println(LOG_TYPE, const string&, T);
 
+  template<class T, class ... Args>
+  void printfln(T, ...);
+
+  template<class T, class ...Args>
+  void printfln(LOG_TYPE, T, ...);
 
 };
 
 template<class T>
 void Console_Logger::print(T message){
+  setLogType(LOG_TYPE::INFO);
   stringstream ss;
-  ss << message << "\n";
+  ss << message;
   addToBuffer(ss.str());
 }
 
 template<class T>
 void Console_Logger::print(LOG_TYPE type , T message){
   setLogType(type);
-  stringstream ss;
-  ss << message << "\n";
-  addToBuffer(ss.str());
+  print(message);
 }
 
 template<class T>
 void Console_Logger::print(const string& name, T message){
   setName(name);
-  stringstream ss;
-  ss << message << "\n";
-  addToBuffer(ss.str());
+  print(message);
 }
 
 template<class T>
 void Console_Logger::print(LOG_TYPE type, const string& name, T message){
   setLogType(type);
   setName(name);
-  stringstream ss;
-  ss << message << "\n";
-  addToBuffer(ss.str());
+  print(message);
+}
+
+template<class T, class ... Args>
+void Console_Logger::vprintf(T message, va_list ap){
+  va_list args;
+  stringstream msg;
+  char format_string[500];
+  va_copy(args, ap);
+  vsprintf(&format_string[0], message, ap);
+  va_end(ap);
+  msg << format_string;
+  addToBuffer(msg.str());
+}
+
+template<class T, class ... Args>
+void Console_Logger::printf(T message, ...){
+  setLogType(LOG_TYPE::INFO);
+  va_list ap;
+  va_start(ap, message);
+  vprintf(message, ap);
+  va_end(ap);
+}
+
+template<class T, class ... Args>
+void Console_Logger::printf(LOG_TYPE type , T message, ...){
+  setLogType(type);
+  va_list ap;
+  va_start(ap, message);
+  vprintf(message, ap);
+  va_end(ap);
 }
 
 template<class T>
 void Console_Logger::println(T message) {
+  setLogType(LOG_TYPE::INFO);
   stringstream ss;
-  ss << message << "\n";
+  ss << message;
   addToBuffer(ss.str());
   flushBuffer();
 }
@@ -153,28 +197,44 @@ void Console_Logger::println(T message) {
 template<class T>
 void Console_Logger::println(LOG_TYPE type, T message){
   setLogType(type);
-  stringstream ss;
-  ss << message << "\n";
-  addToBuffer(ss.str());
-  flushBuffer();
+  println(message);
 }
 
 template<class T>
 void Console_Logger::println(const string& name, T message){
   setName(name);
-  stringstream ss;
-  ss << message << "\n";
-  addToBuffer(ss.str());
-  flushBuffer();
+  println(message);
+
 }
 
 template<class T>
 void Console_Logger::println(LOG_TYPE type, const string& name, T message){
   setLogType(type);
   setName(name);
-  stringstream ss;
-  ss << message << "\n";
-  addToBuffer(ss.str());
+  println(message);
+}
+
+void Console_Logger::printfln(){
+  flushBuffer();
+}
+
+template<class T, class ... Args>
+void Console_Logger::printfln(T message, ...){
+  setLogType(LOG_TYPE::INFO);
+  va_list ap;
+  va_start(ap, message);
+  vprintf(message, ap);
+  va_end(ap);
+  flushBuffer();
+}
+
+template<class T, class ... Args>
+void Console_Logger::printfln(LOG_TYPE type, T message, ...){
+  setLogType(type);
+  va_list ap;
+  va_start(ap, message);
+  vprintf(message, ap);
+  va_end(ap);
   flushBuffer();
 }
 
