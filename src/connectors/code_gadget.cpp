@@ -12,7 +12,7 @@ Code_Gadget::Code_Gadget() :
   has_news_(false) {
 };
 
-Code_Gadget::Code_Gadget(JsonObject data) :
+Code_Gadget::Code_Gadget(const JsonObject& data) :
   code_gadget_is_ready_(false),
   com_(nullptr),
   has_news_(false) {

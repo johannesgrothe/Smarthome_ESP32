@@ -1,5 +1,4 @@
 .DS_Store
-wifi_credentials.h
 .vscode
 .idea
 .pio
@@ -9,3 +8,4 @@ CMakeListsPrivate.txt
 CMakeLists.txt
 *.elf
 *.ino.cpp
+network_settings.h

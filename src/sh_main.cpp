@@ -1,3 +1,4 @@
+#include <sstream>
 #include "sh_main.h"
 
 bool SH_Main::initGadgets(JsonArray gadget_json) {
@@ -94,7 +95,7 @@ bool SH_Main::initConnectors(JsonObject connectors_json) {
   return true;
 }
 
-bool SH_Main::initNetwork(JsonObject json) {
+bool SH_Main::initNetwork(const JsonObject &json) {
   // check if JSON is valid
   if (json.isNull() || !json.containsKey("type")) {
     logger.println(LOG_TYPE::ERR, "No valid network configuration.");
@@ -102,9 +103,9 @@ bool SH_Main::initNetwork(JsonObject json) {
   }
 
   // initialize Network
-  if (strcmp(json["type"].as<char *>(), "mqtt") == 0) {
+  if (json["type"].as<std::string>() == "mqtt") {
     network_gadget = new MQTT_Gadget(json["config"].as<JsonObject>());
-  } else if (strcmp(json["type"].as<char *>(), "serial") == 0) {
+  } else if (json["type"].as<std::string>() == "serial") {
     network_gadget = new Serial_Gadget(json["config"].as<JsonObject>());
   } else {
     logger.println(LOG_TYPE::ERR, "Unknown Network Settings");
@@ -115,6 +116,9 @@ bool SH_Main::initNetwork(JsonObject json) {
 }
 
 void SH_Main::handleCodeConnector(Code_Gadget *gadget) {
+  if (gadget == nullptr) {
+    return;
+  }
   if (gadget->hasNewCommand()) {
     CodeCommand *com = gadget->getCommand();
     logger.print("Command: ");
@@ -129,6 +133,9 @@ void SH_Main::handleCodeConnector(Code_Gadget *gadget) {
 }
 
 void SH_Main::handleRequestConnector(Request_Gadget *gadget) {
+  if (gadget == nullptr) {
+    return;
+  }
   if (gadget->hasRequest()) {
     char type[REQUEST_TYPE_LEN_MAX]{};
     Request *req = gadget->getRequest();
@@ -143,9 +150,9 @@ void SH_Main::handleRequestConnector(Request_Gadget *gadget) {
     logger.print("[");
     logger.add(type);
     logger.add("] '");
-    logger.add(req->getPath());
+    logger.add(req->getPath().c_str());
     logger.add("' :");
-    logger.addln(req->getBody());
+    logger.addln(req->getBody().c_str());
     handleRequest(req);
     delete req;
   }
@@ -172,10 +179,10 @@ void SH_Main::handleSystemRequest(Request *req) {
   }
 
   logger.print("System Command Detected: ");
-  logger.addln(req->getPath());
+  logger.addln(req->getPath().c_str());
   logger.incIndent();
 
-  if (strcmp(req->getPath(), "smarthome/from/sys/command") == 0) {
+  if (req->getPath() == "smarthome/from/sys/command") {
     if (json_body["command"] != nullptr) {
       const char *com = json_body["time"].as<const char *>();
       if (strcmp(com, "reboot") == 0) {
@@ -189,7 +196,7 @@ void SH_Main::handleSystemRequest(Request *req) {
     } else {
       logger.print(LOG_TYPE::ERR, "Broken System Command Received: 'command' missing");
     }
-  } else if (strcmp(req->getPath(), "smarthome/from/sys/config/set") == 0) {
+  } else if (req->getPath() == "smarthome/from/sys/config/set") {
 
   } else {
     logger.println("Unknown Command");
@@ -199,22 +206,19 @@ void SH_Main::handleSystemRequest(Request *req) {
 
 void SH_Main::handleRequest(Request *req) {
   logger.incIndent();
-  if (req->getBody() != nullptr) {
-    unsigned int last_pos = strlen(req->getBody()) - 1;
-    if (last_pos > 0) {
-      std::string str_path = req->getPath();
-      if (str_path.compare(0, 4, "smarthome/from/sys/") == 0) {
-        handleSystemRequest(req);
-      } else if (strcmp(req->getPath(), "smarthome/from/response") == 0) {
-        logger.println("Ignoring unhandled response");
-      } else {
-        code_remote->handleRequest(req);
-        gadget_remote->handleRequest(req);
-      }
+  if (!req->getBody().empty()) {
+    std::string str_path = req->getPath();
+    if (str_path.compare(0, 4, "smarthome/from/sys/") == 0) {
+      handleSystemRequest(req);
+    } else if (req->getPath() == "smarthome/from/response") {
+      logger.println("Ignoring unhandled response");
     } else {
-      // Requests asking for content could have empty bodies
-      logger.println(LOG_TYPE::ERR, "Empty Request");
+      code_remote->handleRequest(req);
+      gadget_remote->handleRequest(req);
     }
+  } else {
+    // Requests asking for content could have empty bodies
+    logger.println(LOG_TYPE::ERR, "Empty Request");
   }
   logger.decIndent();
 }
@@ -298,13 +302,10 @@ void SH_Main::testStuff() {
   logger.decIndent();
 }
 
-void SH_Main::init() {
-  Serial.begin(SERIAL_SPEED);
-  logger.println(LOG_TYPE::INFO, "Launching...");
+JsonObject loadConfig() {
   DynamicJsonDocument json_file(2048);
-  bool eeprom_status = System_Storage::initEEPROM();
-
 #ifndef USE_HARD_CONFIG
+  bool eeprom_status = System_Storage::initEEPROM();
   char buffer[EEPROM_CONFIG_LEN_MAX]{};
   bool config_status = false;
   if (eeprom_status && System_Storage::readConfig(&buffer[0])) {
@@ -321,6 +322,104 @@ void SH_Main::init() {
   deserializeJson(json_file, json_str); // Loads file from system_storage.h
 #endif
   JsonObject json = json_file.as<JsonObject>();
+  return json;
+}
+
+void SH_Main::init() {
+  Serial.begin(SERIAL_SPEED);
+  logger.println(LOG_TYPE::INFO, "Launching...");
+  logger.print(LOG_TYPE::INFO, "Boot Mode: ");
+  system_mode = getBootMode();
+  switch (system_mode) {
+    case BootMode::Serial_Ony:
+      logger.addln("Serial Only");
+      initModeSerial();
+      break;
+    case BootMode::Network_Only_FLASH:
+      logger.addln("Network Only: Flash");
+      initModeNetwork(false);
+      break;
+    case BootMode::Network_Only_EEPROM:
+      logger.addln("Network Only: EEPROM");
+      initModeNetwork(true);
+      break;
+    case BootMode::Full_Operation:
+      logger.addln("Full Operation");
+      initModeComplete();
+      break;
+    default:
+      logger.addln("Unknown Boot Mode");
+      break;
+  }
+  logger.addln();
+}
+
+void SH_Main::initModeSerial() {
+//  JsonObject config;
+//  config["type"] = "serial";
+  DynamicJsonDocument json_file(2048);
+  deserializeJson(json_file, F("{\"type\":\"serial\",\"config\"{}}"));
+  initNetwork(json_file.as<JsonObject>());
+}
+
+void SH_Main::initModeNetwork(bool use_eeprom) {
+  DynamicJsonDocument json_file(2048);
+  JsonObject json;
+  if (use_eeprom) {
+    logger.println("Using EEPROM");
+    json = loadConfig();
+  } else {
+    logger.println("Using FLASH");
+#ifndef WIFI_SSID
+#define WIFI_SSID "blub"
+#endif
+
+#ifndef WIFI_PW
+#define WIFI_PW "blub"
+#endif
+
+#ifndef MQTT_IP
+#define MQTT_IP "blub"
+#endif
+
+#ifndef MQTT_PORT
+#define MQTT_PORT "1883"
+#endif
+
+    std::stringstream local_json_str;
+
+    local_json_str << R"({"network":{"type":"mqtt","config":{"wifi_ssid":")" << std::string(WIFI_SSID)
+                   << R"(","wifi_password":")" << std::string(WIFI_PW)
+                   << R"(","ip":")" << std::string(MQTT_IP)
+                   << R"(","port":)" << std::string(MQTT_PORT)
+                   #ifdef MQTT_USERNAME
+                   << R"(","mqtt_username":")" << MQTT_USERNAME << R"(")"
+                   #else
+                   << R"(,"mqtt_username":null)"
+                   #endif
+                   #ifdef MQTT_PW
+                   << R"(,"mqtt_password":")" << MQTT_PW << R"(")"
+                   #else
+                   << R"(,"mqtt_password":null)"
+                   #endif
+                   << R"(}}})";
+
+    DeserializationError e = deserializeJson(json_file, local_json_str.str());
+    if (e != DeserializationError::Ok) {
+      logger.println(LOG_TYPE::ERR, "Couldn't deserialize temporary json string");
+    }
+    logger.println(local_json_str.str().c_str());
+    json = json_file.as<JsonObject>();
+  }
+  if (json.containsKey("network")) {
+    initNetwork(json["network"]);
+  } else {
+    logger.println(LOG_TYPE::ERR, "Invalid config: no 'network' setting.");
+  }
+}
+
+void SH_Main::initModeComplete() {
+  JsonObject json = loadConfig();
 
   initNetwork(json["network"]);
   initConnectors(json["connectors"]);
@@ -368,7 +467,7 @@ void SH_Main::init() {
       network_gadget->refresh();
     } else {
       Request *resp = network_gadget->getRequest();
-      if (strcmp(resp->getPath(), "smarthome/from/response") == 0 && getIdent(resp->getBody()) == ident) {
+      if (resp->getPath() == "smarthome/from/response" && getIdent(resp->getBody()) == ident) {
         DynamicJsonDocument time_json(2048);
         DeserializationError err = deserializeJson(time_json, resp->getBody());
         if (err == DeserializationError::Ok) {
@@ -390,10 +489,36 @@ void SH_Main::init() {
       delete resp;
     }
   }
-  logger.addln();
 }
 
 void SH_Main::refresh() {
+  switch (system_mode) {
+    case BootMode::Serial_Ony:
+      refreshModeSerial();
+      break;
+    case BootMode::Network_Only_EEPROM:
+    case BootMode::Network_Only_FLASH:
+      refreshModeNetwork();
+      break;
+    case BootMode::Full_Operation:
+      refreshModeComplete();
+      break;
+    default:
+      delay(1000);
+      break;
+  }
+}
+
+void SH_Main::refreshModeSerial() {
+  handleRequestConnector(network_gadget);
+}
+
+void SH_Main::refreshModeNetwork() {
+  handleRequestConnector(network_gadget);
+}
+
+void SH_Main::refreshModeComplete() {
+
   handleRequestConnector(network_gadget);
 
   ir_gadget->refresh();
@@ -407,5 +532,17 @@ void SH_Main::refresh() {
 }
 
 void SH_Main::refreshNetwork() {
+  if (network_gadget == nullptr) {
+    return;
+  }
   network_gadget->refresh();
+}
+
+SH_Main::SH_Main() :
+  ir_gadget(nullptr),
+  radio_gadget(nullptr),
+  network_gadget(nullptr),
+  code_remote(nullptr),
+  gadget_remote(nullptr),
+  system_mode(BootMode::Unknown_Mode) {
 }

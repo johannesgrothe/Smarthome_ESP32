@@ -16,10 +16,10 @@ void SmarthomeCodeRemote::sendCodeToRemote(CodeCommand *code) {
   req_gadget->sendRequest(new Request("smarthome/to/code", code_str));
 }
 
-void SmarthomeCodeRemote::handleRequest(const char *path, const char *body) {};
+void SmarthomeCodeRemote::handleRequest(std::string path, std::string body) {};
 
-void SmarthomeCodeRemote::handleRequest(const char *path, const JsonObject& body) {
-  if (strcmp(path, "smarthome/from/code") != 0) { return; }
+void SmarthomeCodeRemote::handleRequest(std::string path, const JsonObject& body) {
+  if (path != "smarthome/from/code") { return; }
 
   if (body["type"] == nullptr) {
     logger.print(LOG_TYPE::ERR, "Broken Code Request Received: 'type' missing");

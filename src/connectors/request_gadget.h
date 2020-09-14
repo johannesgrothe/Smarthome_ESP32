@@ -17,8 +17,8 @@ enum class RequestGadgetType {
 
 class Request {
 private:
-  char body[REQUEST_BODY_LEN_MAX]{};
-  char path[REQUEST_PATH_LEN_MAX]{};
+  std::string body_;
+  std::string path_;
   std::function<void(Request *)> send_answer_;
 
 protected:
@@ -27,17 +27,19 @@ protected:
   bool needs_response_;
 
 public:
-  Request(const char *req_path, const char *req_body);
+  Request(std::string req_path, std::string req_body);
 
-  Request(const char *req_path, const char *req_body, std::function<void(Request *request)> answer_method);
+  Request(std::string req_path, std::string req_body, std::function<void(Request *request)> answer_method);
 
   virtual ~Request();
 
-  const char *getPath();
+  std::string getPath();
 
-  const char *getBody();
+  std::string getBody();
 
-  bool respond(const char *res_path, const char *res_body);
+//  bool respond(const char *res_path, const char *res_body);
+
+  bool respond(std::string res_path, std::string res_body);
 
   void dontRespond();
 
@@ -64,7 +66,7 @@ public:
 
   explicit Request_Gadget(RequestGadgetType t, JsonObject data);
 
-  bool requestGadgetIsReady();
+  bool requestGadgetIsReady() const;
 
   RequestGadgetType getGadgetType();
 

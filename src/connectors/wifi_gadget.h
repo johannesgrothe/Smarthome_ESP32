@@ -18,7 +18,7 @@ protected:
 public:
   WiFiGadget();
 
-  explicit WiFiGadget(JsonObject json);
+  explicit WiFiGadget(const JsonObject& json);
 
   bool wifiIsInitialized() const;
 
