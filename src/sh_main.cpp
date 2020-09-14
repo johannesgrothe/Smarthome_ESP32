@@ -302,14 +302,23 @@ void SH_Main::testStuff() {
   bool eeprom_status = System_Storage::initEEPROM();
   if (eeprom_status) {
     logger.println("testing eeprom:");
+
+    System_Storage::resetContentFlag();
     System_Storage::writeTestEEPROM();
     System_Storage::writeID("<blubbbb123456789>");
+    System_Storage::writeWifiSSID("<myWifiSSID>");
+    System_Storage::writeWifiPW("<mySuperLongStupidWifiPasswordYouKnowTheThingJoeBiden>");
     logger.println(LOG_TYPE::DATA, System_Storage::readWholeEEPROM().c_str());
+    Serial.println(System_Storage::hasValidID());
+    Serial.println(System_Storage::hasValidWifiSSID());
+    Serial.println(System_Storage::hasValidWifiPW());
   } else {
     logger.println(LOG_TYPE::FATAL, "error initializing eeprom");
   }
 
   logger.println(System_Storage::readID().c_str());
+  logger.println(System_Storage::readWifiSSID().c_str());
+  logger.println(System_Storage::readWifiPW().c_str());
 
   logger.decIndent();
 }
