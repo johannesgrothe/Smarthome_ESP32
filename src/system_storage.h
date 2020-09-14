@@ -4,7 +4,7 @@
 #include <EEPROM.h>
 #include <sstream>
 #include <utility>
-#include <math.h>
+#include <cmath>
 #include "system_settings.h"
 #include "console_logger.h"
 
@@ -23,12 +23,28 @@
 #define ID_MAX_LEN 35
 
 //wifi_ssid: bytes 41-90
-#define WIFI_SSID_POS 41
+#define WIFI_SSID_POS (ID_POS + ID_MAX_LEN)
 #define WIFI_SSID_MAX_LEN 50
 
 //wifi_pw: bytes 91-140
-#define WIFI_PW_POS 91
+#define WIFI_PW_POS (WIFI_SSID_POS + WIFI_SSID_MAX_LEN)
 #define WIFI_PW_MAX_LEN 50
+
+//wifi_pw: bytes 141-155
+#define MQTT_IP_POS (WIFI_PW_POS + WIFI_PW_MAX_LEN)
+#define MQTT_IP_MAX_LEN 15
+
+//wifi_port: bytes 156-162
+#define MQTT_PORT_POS (MQTT_IP_POS + MQTT_IP_MAX_LEN)
+#define MQTT_PORT_MAX_LEN 6
+
+//wifi_port: bytes 156-162
+#define MQTT_USER_POS (MQTT_PORT_POS + MQTT_PORT_MAX_LEN)
+#define MQTT_USER_MAX_LEN 50
+
+//wifi_port: bytes 156-162
+#define MQTT_PW_POS (MQTT_USER_POS + MQTT_USER_MAX_LEN)
+#define MQTT_PW_MAX_LEN 50
 
 static bool validateJson(const char *new_json_str) {
   DynamicJsonDocument json_file(2048);
@@ -217,6 +233,35 @@ public:
   static bool hasValidWifiSSID() {
     return getContentFlag(CONFIG_CHECK_INDEX_WIFI_SSID);
   }
+
+  /**
+   * Writes the MQTT port to the eeprom
+   * @param pw the port to be written
+   * @return whether writing was successful
+   */
+  static bool writeMQTTPort(std::string port) {
+    auto success = writeContent(MQTT_PORT_POS, MQTT_PORT_MAX_LEN, std::move(port));
+    setContentFlag(CONFIG_CHECK_INDEX_MQTT_PORT, success);
+    return success;
+  }
+
+  /**
+   * Reads the MQTT port from the eeprom
+   * @return the port
+   */
+  static std::string readMQTTPort() {
+    return readContent(MQTT_PORT_POS, MQTT_PORT_MAX_LEN);
+  }
+
+  /**
+   * Checks if the there is a valid MQTT port stored in the EEPROM
+   * @return whether there is a valid port
+   */
+  static bool hasValidMQTTPort() {
+    return getContentFlag(CONFIG_CHECK_INDEX_MQTT_PORT);
+  }
+
+
 
   /**
    * Writes the WIFI password to the eeprom

@@ -308,10 +308,12 @@ void SH_Main::testStuff() {
     System_Storage::writeID("<blubbbb123456789>");
     System_Storage::writeWifiSSID("<myWifiSSID>");
     System_Storage::writeWifiPW("<mySuperLongStupidWifiPasswordYouKnowTheThingJoeBiden>");
+    System_Storage::writeMQTTPort("1883");
     logger.println(LOG_TYPE::DATA, System_Storage::readWholeEEPROM().c_str());
     Serial.println(System_Storage::hasValidID());
     Serial.println(System_Storage::hasValidWifiSSID());
     Serial.println(System_Storage::hasValidWifiPW());
+    Serial.println(System_Storage::hasValidMQTTPort());
   } else {
     logger.println(LOG_TYPE::FATAL, "error initializing eeprom");
   }
@@ -319,6 +321,7 @@ void SH_Main::testStuff() {
   logger.println(System_Storage::readID().c_str());
   logger.println(System_Storage::readWifiSSID().c_str());
   logger.println(System_Storage::readWifiPW().c_str());
+  logger.println(System_Storage::readMQTTPort().c_str());
 
   logger.decIndent();
 }

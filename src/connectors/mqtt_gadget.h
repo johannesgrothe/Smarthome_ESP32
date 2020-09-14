@@ -20,7 +20,7 @@ protected:
 
   char username_[MQTT_USERNAME_MAX_LEN]{};
 
-  char password_[MQTT_PW_MAX_LEN]{};
+  char password_[MQTT_PW_MAX_LEN_OLD]{};
 
   bool connect_mqtt();
 

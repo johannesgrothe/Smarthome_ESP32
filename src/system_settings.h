@@ -21,7 +21,7 @@
 
 // MQTT
 #define MQTT_USERNAME_MAX_LEN 40
-#define MQTT_PW_MAX_LEN 40
+#define MQTT_PW_MAX_LEN_OLD 40
 
 // Reguests
 #define REQUEST_PATH_LEN_MAX 40
