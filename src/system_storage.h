@@ -2,8 +2,12 @@
 
 #include "ArduinoJson.h"
 #include <EEPROM.h>
+#include <sstream>
 #include "system_settings.h"
 #include "console_logger.h"
+
+#define ID_POS 5
+#define ID_MAX_LEN 35
 
 static bool validateJson(const char *new_json_str) {
   DynamicJsonDocument json_file(2048);
@@ -63,6 +67,11 @@ private:
 
 public:
 
+  // init eeprom
+  /**
+   * Initializes the sytem EEPROM
+   * @return whether the EEPROM was correctly initialized
+   */
   static bool initEEPROM() {
     logger.println("Initializing EEPROM...");
 
@@ -71,6 +80,41 @@ public:
       return false;
     }
     return true;
+  }
+
+  // read + write ID
+  /**
+   * Writes the chip identifier to the eeprom
+   * @param id the chip id to be written
+   * @return whether writing was successful
+   */
+  static bool writeID(std::string id) {
+    int id_length = id.size();
+    if (id_length > ID_MAX_LEN) {
+      logger.println(LOG_TYPE::ERR, "ID is too long");
+      id_length = ID_MAX_LEN;
+    }
+    for (int pos = 0; pos < id_length; pos++) {
+      EEPROM.writeChar(pos + ID_POS, id[pos]);
+    }
+    EEPROM.writeChar(id_length + ID_POS, '\0');
+    EEPROM.commit();
+  }
+
+  /**
+   * Reads the chip identifier from the eeprom
+   * @return the chip identifier
+   */
+  static std::string readID() {
+    std::stringstream ss;
+    for (int pos = 0; pos < ID_MAX_LEN; pos++) {
+      char c = EEPROM.readChar(pos + ID_POS);
+      if (c == '\n') {
+        return ss.str();
+      }
+      ss << c;
+    }
+    return ss.str();
   }
 
   static bool readConfig(char *buffer) {
@@ -141,4 +185,33 @@ public:
     strcpy(buffer, json_str);
     return true;
   }
+
+  /**
+   * Reads the content of the EEPROM
+   * @return the content of the first 500 cells of the EEPROM
+   */
+  static std::string readWholeEEPROM() {
+    std::stringstream ss;
+    for (int i = 0; i < 500; i++) {
+      char bufchar = EEPROM.readChar(i);
+      if (bufchar == 0) {
+        ss << "\\n";
+      } else {
+        ss << bufchar;
+      }
+    }
+    return ss.str();
+  }
+
+  /**
+   * Fills EEPROM with repeating '0123456789'-sequences
+   */
+  static void writeTestEEPROM() {
+    for (int i = 0; i < 500; i++) {
+      char k = (char) (48 + (i % 10));
+      EEPROM.writeChar(i, k);
+    }
+    EEPROM.commit();
+  }
+
 };

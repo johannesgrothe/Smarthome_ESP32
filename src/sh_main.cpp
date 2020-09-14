@@ -299,6 +299,18 @@ void SH_Main::testStuff() {
   logger.println("Testing Stuff");
   logger.incIndent();
 
+  bool eeprom_status = System_Storage::initEEPROM();
+  if (eeprom_status) {
+    logger.println("testing eeprom:");
+    System_Storage::writeTestEEPROM();
+    System_Storage::writeID("<blubbbb123456789>");
+    logger.println(LOG_TYPE::DATA, System_Storage::readWholeEEPROM().c_str());
+  } else {
+    logger.println(LOG_TYPE::FATAL, "error initializing eeprom");
+  }
+
+  logger.println(System_Storage::readID().c_str());
+
   logger.decIndent();
 }
 
@@ -328,8 +340,12 @@ JsonObject loadConfig() {
 void SH_Main::init() {
   Serial.begin(SERIAL_SPEED);
   logger.println(LOG_TYPE::INFO, "Launching...");
+
+  testStuff();
+
   logger.print(LOG_TYPE::INFO, "Boot Mode: ");
   system_mode = getBootMode();
+
   switch (system_mode) {
     case BootMode::Serial_Ony:
       logger.addln("Serial Only");
@@ -387,7 +403,6 @@ void SH_Main::initModeNetwork(bool use_eeprom) {
 #endif
 
     std::stringstream local_json_str;
-
     local_json_str << R"({"network":{"type":"mqtt","config":{"wifi_ssid":")" << std::string(WIFI_SSID)
                    << R"(","wifi_password":")" << std::string(WIFI_PW)
                    << R"(","ip":")" << std::string(MQTT_IP)
@@ -409,7 +424,13 @@ void SH_Main::initModeNetwork(bool use_eeprom) {
       logger.println(LOG_TYPE::ERR, "Couldn't deserialize temporary json string");
     }
     logger.println(local_json_str.str().c_str());
+
     json = json_file.as<JsonObject>();
+
+//    json_file["network"]["type"] = "mqtt";
+//    char buf[300]{};
+//    serializeJson(&buf[0], json_file);
+//    logger.println(buf);
   }
   if (json.containsKey("network")) {
     initNetwork(json["network"]);
