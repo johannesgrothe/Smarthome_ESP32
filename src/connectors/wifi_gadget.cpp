@@ -36,7 +36,7 @@ WiFiGadget::WiFiGadget(JsonObject json) {
     logger.print(".");
     connection_tries++;
   }
-  logger.println();
+  logger.printnl();
   if (WiFiClass::status() != WL_CONNECTED) {
     logger.println(LOG_TYPE::DATA, "could not establish WiFi Connection...");
   } else {

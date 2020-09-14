@@ -42,7 +42,7 @@ private:
     }
     EEPROM.commit();
 
-    logger.println();
+    logger.printnl();
     logger.print(LOG_TYPE::DATA, "Bytes written: ");
     logger.println(chars_written);
     logger.print(LOG_TYPE::DATA, "Bytes deleted: ");

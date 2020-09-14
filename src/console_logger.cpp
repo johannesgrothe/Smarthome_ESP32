@@ -10,10 +10,6 @@ void Console_Logger::printOut(char c) {
   printOut(ss.str());
 }
 
-void Console_Logger::println() {
-  addToBuffer("\n");
-}
-
 void Console_Logger::printIndent() {
   stringstream sstr;
   sstr << xPortGetCoreID();
@@ -67,6 +63,10 @@ void Console_Logger::printBeginning(const LOG_TYPE type, const bool complete = t
       break;
   }
   print(" ");
+}
+
+void Console_Logger::printnl() {
+  flushBuffer();
 }
 
 
@@ -151,6 +151,7 @@ void Console_Logger::flushBuffer(){
     printOut(core_0_buffer_.str());
     printOut('\n');
     core_0_buffer_.str(string());
+    setLogType(LOG_TYPE::INFO);
   } else {
     printIndent();
     printBeginning(core_1_log_type_);
@@ -161,6 +162,7 @@ void Console_Logger::flushBuffer(){
     printOut(core_1_buffer_.str());
     printOut('\n');
     core_1_buffer_.str(string());
+    setLogType(LOG_TYPE::INFO);
   }
 }
 

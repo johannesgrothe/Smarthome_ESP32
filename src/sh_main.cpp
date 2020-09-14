@@ -32,7 +32,7 @@ void SH_Main::mapConnectors(JsonObject connectors_json) {
   // IR
   logger.print("IR:");
   if (connectors_json["ir"] != nullptr && connectors_json["ir"].as<JsonArray>().size() > 0) {
-    logger.println();
+    logger.printnl();
     logger.incIndent();
     JsonArray map_gadgets = connectors_json["ir"].as<JsonArray>();
     for (auto &&map_gadget : map_gadgets) {
@@ -51,7 +51,7 @@ void SH_Main::mapConnectors(JsonObject connectors_json) {
   // Radio
   logger.print("Radio:");
   if (connectors_json["radio"] != nullptr && connectors_json["radio"].as<JsonArray>().size() > 0) {
-    logger.println();
+    logger.printnl();
     logger.incIndent();
     JsonArray map_gadgets = connectors_json["radio"].as<JsonArray>();
     for (auto &&map_gadget : map_gadgets) {
@@ -394,7 +394,7 @@ void SH_Main::init() {
       delete resp;
     }
   }
-  logger.println();
+  logger.printnl();
 }
 
 void SH_Main::refresh() {

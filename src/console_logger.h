@@ -104,12 +104,10 @@ public:
   template<class T, class ... Args>
   void printf(LOG_TYPE, T, ...);
 
-  void println();
+  void printnl();
 
   template<class T>
   void println(T);
-
-  void printfln();
 
   template<class T>
   void println(LOG_TYPE, T);
@@ -130,7 +128,6 @@ public:
 
 template<class T>
 void Console_Logger::print(T message){
-  setLogType(LOG_TYPE::INFO);
   stringstream ss;
   ss << message;
   addToBuffer(ss.str());
@@ -169,7 +166,6 @@ void Console_Logger::vprintf(T message, va_list ap){
 
 template<class T, class ... Args>
 void Console_Logger::printf(T message, ...){
-  setLogType(LOG_TYPE::INFO);
   va_list ap;
   va_start(ap, message);
   vprintf(message, ap);
@@ -187,7 +183,6 @@ void Console_Logger::printf(LOG_TYPE type , T message, ...){
 
 template<class T>
 void Console_Logger::println(T message) {
-  setLogType(LOG_TYPE::INFO);
   stringstream ss;
   ss << message;
   addToBuffer(ss.str());
@@ -214,13 +209,8 @@ void Console_Logger::println(LOG_TYPE type, const string& name, T message){
   println(message);
 }
 
-void Console_Logger::printfln(){
-  flushBuffer();
-}
-
 template<class T, class ... Args>
 void Console_Logger::printfln(T message, ...){
-  setLogType(LOG_TYPE::INFO);
   va_list ap;
   va_start(ap, message);
   vprintf(message, ap);
