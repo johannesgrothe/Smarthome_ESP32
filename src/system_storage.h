@@ -18,31 +18,31 @@
 #define CONFIG_CHECK_INDEX_MQTT_USER 5
 #define CONFIG_CHECK_INDEX_MQTT_PW 6
 
-// id: bytes 5-40
+// id
 #define ID_POS 5
 #define ID_MAX_LEN 35
 
-//wifi_ssid: bytes 41-90
-#define WIFI_SSID_POS (ID_POS + ID_MAX_LEN)
+//wifi_ssid
+#define WIFI_SSID_POS (ID_POS + ID_MAX_LEN + 1)
 #define WIFI_SSID_MAX_LEN 50
 
-//wifi_pw: bytes 91-140
-#define WIFI_PW_POS (WIFI_SSID_POS + WIFI_SSID_MAX_LEN)
+//wifi_pw
+#define WIFI_PW_POS (WIFI_SSID_POS + WIFI_SSID_MAX_LEN + 1)
 #define WIFI_PW_MAX_LEN 50
 
-//wifi_pw: bytes 141-155
-#define MQTT_IP_POS (WIFI_PW_POS + WIFI_PW_MAX_LEN)
+//wifi_pw
+#define MQTT_IP_POS (WIFI_PW_POS + WIFI_PW_MAX_LEN + 1)
 #define MQTT_IP_MAX_LEN 15
 
-//wifi_port: bytes 156-162
-#define MQTT_PORT_POS (MQTT_IP_POS + MQTT_IP_MAX_LEN)
+//wifi_port
+#define MQTT_PORT_POS (MQTT_IP_POS + MQTT_IP_MAX_LEN + 1)
 #define MQTT_PORT_MAX_LEN 6
 
-//wifi_port: bytes 156-162
-#define MQTT_USER_POS (MQTT_PORT_POS + MQTT_PORT_MAX_LEN)
+//wifi_port
+#define MQTT_USER_POS (MQTT_PORT_POS + MQTT_PORT_MAX_LEN + 1)
 #define MQTT_USER_MAX_LEN 50
 
-//wifi_port: bytes 156-162
+//wifi_port
 #define MQTT_PW_POS (MQTT_USER_POS + MQTT_USER_MAX_LEN)
 #define MQTT_PW_MAX_LEN 50
 
@@ -209,7 +209,7 @@ public:
 
   /**
    * Writes the WIFI SSID to the eeprom
-   * @param pw the ssid to be written
+   * @param ssid the ssid to be written
    * @return whether writing was successful
    */
   static bool writeWifiSSID(std::string ssid) {
@@ -232,6 +232,60 @@ public:
    */
   static bool hasValidWifiSSID() {
     return getContentFlag(CONFIG_CHECK_INDEX_WIFI_SSID);
+  }
+
+  /**
+ * Writes the WIFI password to the eeprom
+ * @param pw the password to be written
+ * @return whether writing was successful
+ */
+  static bool writeWifiPW(std::string pw) {
+    auto success = writeContent(WIFI_PW_POS, WIFI_PW_MAX_LEN, std::move(pw));
+    setContentFlag(CONFIG_CHECK_INDEX_WIFI_PW, success);
+    return success;
+  }
+
+  /**
+   * Reads the WIFI password from the eeprom
+   * @return the wifi password
+   */
+  static std::string readWifiPW() {
+    return readContent(WIFI_PW_POS, WIFI_PW_MAX_LEN);
+  }
+
+  /**
+   * Checks if the there is a valid WIFI password stored in the EEPROM
+   * @return whether there is a valid password
+   */
+  static bool hasValidWifiPW() {
+    return getContentFlag(CONFIG_CHECK_INDEX_WIFI_PW);
+  }
+
+  /**
+ * Writes the MQTT IP-Address to the eeprom
+ * @param ip the ip to be written
+ * @return whether writing was successful
+ */
+  static bool writeMQTTIP(std::string ip) {
+    auto success = writeContent(MQTT_IP_POS, MQTT_IP_MAX_LEN, std::move(ip));
+    setContentFlag(CONFIG_CHECK_INDEX_MQTT_IP, success);
+    return success;
+  }
+
+  /**
+   * Reads the MQTT IP-Address from the eeprom
+   * @return the port
+   */
+  static std::string readMQTTIP() {
+    return readContent(MQTT_IP_POS, MQTT_IP_MAX_LEN);
+  }
+
+  /**
+   * Checks if the there is a valid MQTT IP-Address stored in the EEPROM
+   * @return whether there is a valid ip
+   */
+  static bool hasValidMQTTIP() {
+    return getContentFlag(CONFIG_CHECK_INDEX_MQTT_IP);
   }
 
   /**
@@ -260,103 +314,13 @@ public:
   static bool hasValidMQTTPort() {
     return getContentFlag(CONFIG_CHECK_INDEX_MQTT_PORT);
   }
-
-
-
+  
   /**
-   * Writes the WIFI password to the eeprom
-   * @param pw the password to be written
-   * @return whether writing was successful
+   * Checks the EEPROM for valid wifi ssid + password and mqtt ip + port
+   * @return whether all of these four are valid
    */
-  static bool writeWifiPW(std::string pw) {
-    auto success = writeContent(WIFI_PW_POS, WIFI_PW_MAX_LEN, std::move(pw));
-    setContentFlag(CONFIG_CHECK_INDEX_WIFI_PW, success);
-    return success;
-  }
-
-  /**
-   * Reads the WIFI password from the eeprom
-   * @return the wifi password
-   */
-  static std::string readWifiPW() {
-    return readContent(WIFI_PW_POS, WIFI_PW_MAX_LEN);
-  }
-
-  /**
-   * Checks if the there is a valid WIFI password stored in the EEPROM
-   * @return whether there is a valid password
-   */
-  static bool hasValidWifiPW() {
-    return getContentFlag(CONFIG_CHECK_INDEX_WIFI_PW);
-  }
-
-  static bool readConfig(char *buffer) {
-    logger.println(LOG_TYPE::INFO, "Loading Config...");
-    logger.incIndent();
-
-    char first_char = char(EEPROM.read(0));
-    if (first_char == '{') {
-      byte json_level = 1;
-      buffer[0] = first_char;
-      for (int i = 1; i < EEPROM_CONFIG_LEN_MAX; i++) {
-        byte readValue = EEPROM.read(i);
-
-        char readValueChar = char(readValue);
-        buffer[i] = readValueChar;
-
-        if (readValueChar == '}')
-          json_level--;
-        else if (readValueChar == '{')
-          json_level++;
-
-        if (json_level == 0 || readValue == 0) {
-          break;
-        }
-      }
-    } else {
-      logger.println(LOG_TYPE::ERR, "Couldn't load: corrupted data.");
-      logger.decIndent();
-      return false;
-    }
-    if (!validateJson(buffer)) {
-      logger.println(LOG_TYPE::ERR, "Couldn't load: invalid Json.");
-      logger.decIndent();
-      return false;
-    }
-    logger.println(LOG_TYPE::INFO, "Loading successfull");
-    logger.decIndent();
-    return true;
-  };
-
-  static bool writeConfig(const char *config_str) {
-    logger.println(LOG_TYPE::INFO, "Validating...");
-    logger.incIndent();
-    if (strlen(config_str) > EEPROM_CONFIG_LEN_MAX) {
-      logger.println(LOG_TYPE::ERR, "Cannot write config: too long");
-      logger.decIndent();
-      return false;
-    }
-    if (!validateJson(config_str)) {
-      logger.println(LOG_TYPE::ERR, "Cannot write config: invalid JSON String");
-      logger.decIndent();
-      return false;
-    }
-    logger.println(LOG_TYPE::INFO, "Validation successfull");
-    logger.decIndent();
-
-    return writeConfigStr(config_str);
-  };
-
-  static bool readDefaultConfig(char *buffer) {
-    logger.println(LOG_TYPE::INFO, "Loading Default Config");
-    strcpy(buffer, default_config);
-    return true;
-  }
-
-  static bool readHardConfig(char *buffer) {
-    logger.println(LOG_TYPE::INFO, "Loading Hard Config");
-    strcpy(buffer, json_str);
-    return true;
+  static bool hasValidNetworkConfig() {
+    return (hasValidWifiSSID() && hasValidWifiPW() && hasValidMQTTIP() && hasValidMQTTPort());
   }
 
   /**
