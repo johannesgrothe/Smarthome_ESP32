@@ -166,7 +166,7 @@ public:
 
   // init eeprom
   /**
-   * Initializes the sytem EEPROM
+   * Initializes the system EEPROM
    * @return whether the EEPROM was correctly initialized
    */
   static bool initEEPROM() {
@@ -235,10 +235,10 @@ public:
   }
 
   /**
- * Writes the WIFI password to the eeprom
- * @param pw the password to be written
- * @return whether writing was successful
- */
+   * Writes the WIFI password to the eeprom
+   * @param pw the password to be written
+   * @return whether writing was successful
+   */
   static bool writeWifiPW(std::string pw) {
     auto success = writeContent(WIFI_PW_POS, WIFI_PW_MAX_LEN, std::move(pw));
     setContentFlag(CONFIG_CHECK_INDEX_WIFI_PW, success);
@@ -314,7 +314,7 @@ public:
   static bool hasValidMQTTPort() {
     return getContentFlag(CONFIG_CHECK_INDEX_MQTT_PORT);
   }
-  
+
   /**
    * Checks the EEPROM for valid wifi ssid + password and mqtt ip + port
    * @return whether all of these four are valid

@@ -1,4 +1,9 @@
 #include "serial_gadget.h"
+#include <sstream>
+//
+//static std::tuple<std::string, DynamicJsonDocument> decodeSerialRequest {
+//
+//};
 
 void Serial_Gadget::executeRequestSending(Request *req) {
   Serial.printf("_%s:%s\n", req->getPath().c_str(), req->getBody().c_str());
@@ -22,56 +27,54 @@ void Serial_Gadget::refresh() {
   if (!code_gadget_is_ready_ || !request_gadget_is_ready_) {
     return;
   }
-  char incoming_message[REQUEST_BODY_LEN_MAX + REQUEST_PATH_LEN_MAX]{};
-  unsigned int k = 0;
+  std::stringstream sstr;
   bool new_msg = false;
-  while (Serial.available() && k < REQUEST_BODY_LEN_MAX + REQUEST_PATH_LEN_MAX) {
-    char buf = Serial.read();
+  while (Serial.available()) {
+    char buf = (char) Serial.read();
     if (buf != '\n') {
-      incoming_message[k] = buf;
-      k++;
+      sstr << buf;
       new_msg = true;
     }
     delayMicroseconds(80);
   }
   if (new_msg) {
-    if (strContainsHEX(incoming_message)) {
-      setCommand(SERIAL_C, strtoul(incoming_message, NULL, 16));
+    if (strContainsHEX(sstr.str())) {
+      setCommand(SERIAL_C, strtoul(sstr.str().c_str(), NULL, 16));
     } else {
-      unsigned int msg_len = strlen(incoming_message);
-      if (incoming_message[0] == '_') {
-        int msg_pointer = 1;
-        char message_path[REQUEST_PATH_LEN_MAX]{};
-        char message_body[REQUEST_BODY_LEN_MAX]{};
-
-        int path_pointer = 0;
-        while (msg_pointer < msg_len) {
-          char buf_char = incoming_message[msg_pointer];
-          if (msg_pointer < REQUEST_PATH_LEN_MAX && buf_char != ':') {
-            message_path[path_pointer] = buf_char;
-            path_pointer++;
-          }
-          msg_pointer++;
-          if (buf_char == ':') {
-            break;
-          }
-        }
-
-        int body_pointer = 0;
-        while (msg_pointer < msg_len) {
-          char buf_char = incoming_message[msg_pointer];
-          message_body[body_pointer] = buf_char;
-          body_pointer++;
-          msg_pointer++;
-        }
-        using std::placeholders::_1;
-        auto *req = new Request(&message_path[0], &message_body[0], std::bind(&Request_Gadget::sendRequest, this, _1));
-        addIncomingRequest(req);
-      } else {
-        using std::placeholders::_1;
-        auto *req = new Request("_unknown_", &incoming_message[0], std::bind(&Request_Gadget::sendRequest, this, _1));
-        addIncomingRequest(req);
-      }
+//      unsigned int msg_len = strlen(incoming_message);
+//      if (incoming_message[0] == '_') {
+//        int msg_pointer = 1;
+//        char message_path[REQUEST_PATH_LEN_MAX]{};
+//        char message_body[REQUEST_BODY_LEN_MAX]{};
+//
+//        int path_pointer = 0;
+//        while (msg_pointer < msg_len) {
+//          char buf_char = incoming_message[msg_pointer];
+//          if (msg_pointer < REQUEST_PATH_LEN_MAX && buf_char != ':') {
+//            message_path[path_pointer] = buf_char;
+//            path_pointer++;
+//          }
+//          msg_pointer++;
+//          if (buf_char == ':') {
+//            break;
+//          }
+//        }
+//
+//        int body_pointer = 0;
+//        while (msg_pointer < msg_len) {
+//          char buf_char = incoming_message[msg_pointer];
+//          message_body[body_pointer] = buf_char;
+//          body_pointer++;
+//          msg_pointer++;
+//        }
+//        using std::placeholders::_1;
+//        auto *req = new Request(&message_path[0], &message_body[0], std::bind(&Request_Gadget::sendRequest, this, _1));
+//        addIncomingRequest(req);
+//      } else {
+//        using std::placeholders::_1;
+//        auto *req = new Request("_unknown_", &incoming_message[0], std::bind(&Request_Gadget::sendRequest, this, _1));
+//        addIncomingRequest(req);
+//      }
     }
   }
   sendQueuedItems();

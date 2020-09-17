@@ -299,6 +299,8 @@ void SH_Main::testStuff() {
   logger.println("Testing Stuff");
   logger.incIndent();
 
+  Serial.println(R"(!r{"test":135, "test2":"yolokopter"})");
+
   bool eeprom_status = System_Storage::initEEPROM();
   if (eeprom_status) {
     logger.println("testing eeprom:");
@@ -306,8 +308,8 @@ void SH_Main::testStuff() {
     System_Storage::resetContentFlag();
     System_Storage::writeTestEEPROM();
     System_Storage::writeID("<blubbbb123456789>");
-    System_Storage::writeWifiSSID("<myWifiSSID>");
     System_Storage::writeWifiPW("<mySuperLongStupidWifiPasswordYouKnowTheThing>");
+    System_Storage::writeWifiSSID("<myWifiSSID>");
     System_Storage::writeMQTTIP("192.168.178.111");
     System_Storage::writeMQTTPort("1883");
     logger.println(LOG_TYPE::DATA, System_Storage::readWholeEEPROM().c_str());
