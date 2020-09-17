@@ -9,7 +9,7 @@
 #include "../console_logger.h"
 #include "../connectors/connectors.h"
 
-enum Gadget_Type {
+enum class GadgetType {
   None, Lightbulb, Fan, Doorbell
 };
 
@@ -40,7 +40,7 @@ protected:
 
   bool has_changed;
 
-  Gadget_Type type;
+  GadgetType type;
 
   void updateCharacteristic(const char *, int);
 
@@ -51,11 +51,11 @@ protected:
 public:
   SH_Gadget();
 
-  explicit SH_Gadget(const JsonObject&, const Gadget_Type);
+  explicit SH_Gadget(const JsonObject&, const GadgetType);
 
   void initRemoteUpdate(std::function<void(const char *, const char *, const char *, int)> update_method);
 
-  Gadget_Type getType();
+  GadgetType getType();
 
   const char *getName();
 

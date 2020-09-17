@@ -25,9 +25,9 @@ SH_Gadget::SH_Gadget() :
   name("default"),
   initialized(false),
   has_changed(true),
-  type(None) {};
+  type(GadgetType::None) {};
 
-SH_Gadget::SH_Gadget::SH_Gadget(const JsonObject& gadget, const Gadget_Type gadget_type) :
+SH_Gadget::SH_Gadget::SH_Gadget(const JsonObject& gadget, const GadgetType gadget_type) :
   remoteInitialized(false),
   initialized(false),
   has_changed(true),
@@ -69,7 +69,7 @@ void SH_Gadget::initRemoteUpdate(std::function<void(const char *, const char *, 
   remoteInitialized = true;
 }
 
-Gadget_Type SH_Gadget::getType() {
+GadgetType SH_Gadget::getType() {
   return type;
 }
 

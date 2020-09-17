@@ -1,4 +1,5 @@
 #include "mqtt_gadget.h"
+#include <sstream>
 
 bool MQTT_Gadget::connect_mqtt() {
   mqttClient_->setServer(*mqttServer_, mqtt_port_);
@@ -37,26 +38,28 @@ bool MQTT_Gadget::connect_mqtt() {
 }
 
 void MQTT_Gadget::callback(char *topic, const byte *payload, const unsigned int length) {
-  char local_message[length + 1]{};
+  std::stringstream local_topic;
+  local_topic << topic;
+
+  std::stringstream local_message;
   for (unsigned int i = 0; i < length; i++) {
-    local_message[i] = (char) payload[i];
+    local_message << (char) payload[i];
   }
   using std::placeholders::_1;
-  auto *req = new Request(topic, &local_message[0], std::bind(&Request_Gadget::sendRequest, this, _1));
-  // TODO: caused Exception -> Backtrace: 0x4008ea58:0x3ffd5540 0x4008ec89:0x3ffd5560 0x4014034b:0x3ffd5580 0x40140392:0x3ffd55a0 0x4014043f:0x3ffd55c0 0x401404be:0x3ffd55e0 0x400d3569:0x3ffd5600 0x4014dd49:0x3ffd5680 0x400de1cd:0x3ffd56a0 0x400d1ec1:0x3ffd56f0 0x400d1778:0x3ffd5710 0x4008b1a1:0x3ffd5730
+  auto *req = new Request(topic, local_message.str(), std::bind(&Request_Gadget::sendRequest, this, _1));
   addIncomingRequest(req);
 }
 
 void MQTT_Gadget::executeRequestSending(Request *req) {
-  const char *topic = req->getPath();
-  const char *body = req->getBody();
+  std::string topic = req->getPath();
+  std::string body = req->getBody();
   logger.print("System / MQTT", "publishing on '");
   logger.
     print(topic);
   logger.print("'");
   bool status = true;
-  uint16_t msg_len = strlen(body);
-  status = status && mqttClient_->beginPublish(topic, msg_len, false);
+  uint16_t msg_len = body.size();
+  status = status && mqttClient_->beginPublish(topic.c_str(), msg_len, false);
   uint16_t k;
   for (
     k = 0;
@@ -77,7 +80,7 @@ MQTT_Gadget::MQTT_Gadget() :
 
 MQTT_Gadget::MQTT_Gadget(JsonObject data) :
   WiFiGadget(data),
-  Request_Gadget(MQTT_G, data) {
+  Request_Gadget(RequestGadgetType::MQTT_G, data) {
   if (data.isNull()) {
     logger.println(LOG_TYPE::ERR, "No valid MQTT configuration.");
     return;
@@ -89,7 +92,8 @@ MQTT_Gadget::MQTT_Gadget(JsonObject data) :
     mqttClient_ = new PubSubClient(network_client_);
     bool everything_ok = true;
     // Reads the IP from the JSON
-    if (data["ip"] != nullptr) {
+    if (data.containsKey("ip")) {
+//    if (data["ip"] != nullptr) {
       char ip_str[15]{};
       strncpy(ip_str, data["ip"].as<const char *>(), 15);
       unsigned int ip_arr[4];

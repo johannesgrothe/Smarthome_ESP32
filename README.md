@@ -75,7 +75,7 @@ The json has the following structure at root:
 }
 ```
    
-#### MQTT
+#### MQTT_G
 ```
 "mqtt": {
   "ip": "xxx.xxx.xxx.xxx",
@@ -130,3 +130,15 @@ else if (strcmp(type, "my_class") == 0) {
 ```
 
 And you're done.
+
+## Flash network settings with Code
+You can create a `network_settings.h` on project root level and define the following macros to access the network even with a completely broken EEPROM config via a special boot mode:
+#### Necessary:
+- `WIFI_SSID`
+- `WIFI_PW`
+- `MQTT_IP`
+
+#### Optional:
+- `MQTT_PORT`, defaults to 1883
+- `MQTT_USERNAME`, defaults to none
+- `MQTT_PASSWORD`, defaults to none

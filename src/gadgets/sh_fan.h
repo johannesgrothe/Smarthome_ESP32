@@ -6,9 +6,9 @@
 
 class SH_Fan : public SH_Gadget {
 protected:
-  byte rotation_speed;
-  byte last_rotation_speed;
-  byte levels;
+  byte rotation_speed_;
+  byte last_rotation_speed_;
+  byte levels_;
 
 public:
 

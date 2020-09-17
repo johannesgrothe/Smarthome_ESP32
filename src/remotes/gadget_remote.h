@@ -10,11 +10,11 @@ class GadgetRemote: public Remote {
 private:
 
   virtual bool
-  registerGadget(const char *gadget_name, Gadget_Type gadget_type, const char *characteristics);
+  registerGadget(const char *gadget_name, GadgetType gadget_type, const char *characteristics);
 
   virtual bool removeGadget(const char *gadget_name);
 
-  bool registerGadgetOnRemote(const char *gadget_name, Gadget_Type gadget_type, const char *characteristics);
+  bool registerGadgetOnRemote(const char *gadget_name, GadgetType gadget_type, const char *characteristics);
 
   bool handleNewGadget(SH_Gadget * new_gadget) override;
 

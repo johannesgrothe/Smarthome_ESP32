@@ -15,6 +15,8 @@
 // Tools
 #include "console_logger.h"
 #include "system_timer.h"
+#include "hardware_link.h"
+#include "boot_mode.h"
 
 // External Dependencies
 #include "Client.h"
@@ -27,7 +29,8 @@
 
 #include "remotes/smarthome_code_remote.h"
 
-
+#include "hardware_link.h"
+#include "pin_profile.h"
 #include "color.h"
 
 static void rebootChip(const char *reason) {
@@ -62,13 +65,15 @@ private:
 
   GadgetRemote *gadget_remote;
 
+  BootMode system_mode;
+
   bool initGadgets(JsonArray gadget_json);
 
   void mapConnectors(JsonObject connectors_json);
 
   bool initConnectors(JsonObject connectors_json);
 
-  bool initNetwork(JsonObject json);
+  bool initNetwork(const JsonObject& json);
 
   void handleCodeConnector(Code_Gadget *gadget);
 
@@ -86,7 +91,21 @@ private:
 
   void testStuff();
 
+  void refreshModeSerial();
+
+  void refreshModeNetwork();
+
+  void refreshModeComplete();
+
+  void initModeSerial();
+
+  void initModeNetwork(bool);
+
+  void initModeComplete();
+
 public:
+
+  SH_Main();
 
   void init();
 

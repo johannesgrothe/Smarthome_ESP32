@@ -1,7 +1,7 @@
 #include "serial_gadget.h"
 
 void Serial_Gadget::executeRequestSending(Request *req) {
-  Serial.printf("_%s:%s\n", req->getPath(), req->getBody());
+  Serial.printf("_%s:%s\n", req->getPath().c_str(), req->getBody().c_str());
 }
 
 Serial_Gadget::Serial_Gadget() :
@@ -10,7 +10,7 @@ Serial_Gadget::Serial_Gadget() :
 
 Serial_Gadget::Serial_Gadget(JsonObject data) :
   Code_Gadget(data),
-  Request_Gadget(SERIAL_G, data) {
+  Request_Gadget(RequestGadgetType::SERIAL_G, data) {
   if (data.isNull()) {}
   logger.println("Creating Serial Gadget");
   logger.incIndent();

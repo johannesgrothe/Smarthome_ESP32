@@ -20,7 +20,7 @@ protected:
 public:
   Code_Gadget();
 
-  explicit Code_Gadget(JsonObject);
+  explicit Code_Gadget(const JsonObject&);
 
   virtual void refresh() = 0;
 

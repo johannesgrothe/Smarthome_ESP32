@@ -1,15 +1,15 @@
 #include "smarthome_gadget_remote.h"
 
 bool
-SmarthomeGadgetRemote::registerGadget(const char *gadget_name, Gadget_Type gadget_type, const char *characteristics) {
+SmarthomeGadgetRemote::registerGadget(const char *gadget_name, GadgetType gadget_type, const char *characteristics) {
   unsigned long ident = micros() % 7023;
   char reg_str[HOMEBRIDGE_REGISTER_STR_MAX_LEN]{};
   const char *service_name;
-  if (gadget_type == Lightbulb)
+  if (gadget_type == GadgetType::Lightbulb)
     service_name = "lightbulb";
-  else if (gadget_type == Fan)
+  else if (gadget_type == GadgetType::Fan)
     service_name = "fan";
-  else if (gadget_type == Doorbell)
+  else if (gadget_type == GadgetType::Doorbell)
     service_name = "doorbell";
   else {
     logger.println(LOG_TYPE::ERR, "Unknown Gadget Type");
@@ -31,7 +31,7 @@ SmarthomeGadgetRemote::registerGadget(const char *gadget_name, Gadget_Type gadge
       req_gadget->refresh();
     } else {
       Request *resp = req_gadget->getRequest();
-      if (strcmp(resp->getPath(), "smarthome/from/response") == 0 && getIdent(resp->getBody()) == ident) {
+      if (resp->getPath() == "smarthome/from/response" && getIdent(resp->getBody()) == ident) {
         delete resp;
         return getAck(resp->getBody());
       }
@@ -53,9 +53,10 @@ bool SmarthomeGadgetRemote::removeGadget(const char *gadget_name) {
       req_gadget->refresh();
     } else {
       Request *resp = req_gadget->getRequest();
-      if (strcmp(resp->getPath(), "smarthome/from/response") == 0 && getIdent(resp->getBody()) == ident) {
+      if (resp->getPath() == "smarthome/from/response" && getIdent(resp->getBody()) == ident) {
+        bool buf_ack = getAck(resp->getBody());
         delete resp;
-        return getAck(resp->getBody());
+        return buf_ack;
       }
       delete resp;
     }
@@ -63,12 +64,12 @@ bool SmarthomeGadgetRemote::removeGadget(const char *gadget_name) {
   return false;
 }
 
-void SmarthomeGadgetRemote::handleRequest(const char *path, const char *body) {
+void SmarthomeGadgetRemote::handleRequest(std::string path, std::string body) {
   logger.println(LOG_TYPE::ERR, "Smarthome-Remote cannot handle String Bodys.");
 }
 
-void SmarthomeGadgetRemote::handleRequest(const char *path, const JsonObject& body) {
-  if (strcmp(path, "smarthome/from/set") == 0) {
+void SmarthomeGadgetRemote::handleRequest(std::string path, const JsonObject& body) {
+  if (path == "smarthome/from/set") {
     if (body["name"] != nullptr && body["characteristic"] != nullptr && body["value"] != nullptr) {
       logger.print("System / Gadget-Remote", "Received valid Request: ");
       SH_Gadget *target_gadget = gadgets.getGadget(body["name"].as<const char *>());

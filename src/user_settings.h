@@ -3,3 +3,5 @@
 #define LOGGING_ACTIVE 1
 
 #define USE_HARD_CONFIG
+
+#define STATIC_BOOTMODE 2
