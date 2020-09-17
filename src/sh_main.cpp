@@ -378,6 +378,8 @@ void SH_Main::initModeSerial() {
   DynamicJsonDocument json_file(2048);
   deserializeJson(json_file, F("{\"type\":\"serial\",\"config\"{}}"));
   initNetwork(json_file.as<JsonObject>());
+
+  network_gadget->sendRequest(new Request("broadcast", "{}"));
 }
 
 void SH_Main::initModeNetwork(bool use_eeprom) {

@@ -2,7 +2,7 @@
 #include <sstream>
 
 void Serial_Gadget::executeRequestSending(Request *req) {
-  Serial.printf("_%s:%s\n", req->getPath().c_str(), req->getBody().c_str());
+  Serial.printf("!r_p[%s]_b[%s]", req->getPath().c_str(), req->getBody().c_str());
 }
 
 Serial_Gadget::Serial_Gadget() :
