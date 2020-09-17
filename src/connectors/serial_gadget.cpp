@@ -1,9 +1,5 @@
 #include "serial_gadget.h"
 #include <sstream>
-//
-//static std::tuple<std::string, DynamicJsonDocument> decodeSerialRequest {
-//
-//};
 
 void Serial_Gadget::executeRequestSending(Request *req) {
   Serial.printf("_%s:%s\n", req->getPath().c_str(), req->getBody().c_str());
@@ -38,43 +34,71 @@ void Serial_Gadget::refresh() {
     delayMicroseconds(80);
   }
   if (new_msg) {
+    std::string req_str = sstr.str();
+    Serial.println(req_str.c_str());
     if (strContainsHEX(sstr.str())) {
-      setCommand(SERIAL_C, strtoul(sstr.str().c_str(), NULL, 16));
+      setCommand(SERIAL_C, strtoul(req_str.c_str(), NULL, 16));
     } else {
-//      unsigned int msg_len = strlen(incoming_message);
-//      if (incoming_message[0] == '_') {
-//        int msg_pointer = 1;
-//        char message_path[REQUEST_PATH_LEN_MAX]{};
-//        char message_body[REQUEST_BODY_LEN_MAX]{};
-//
-//        int path_pointer = 0;
-//        while (msg_pointer < msg_len) {
-//          char buf_char = incoming_message[msg_pointer];
-//          if (msg_pointer < REQUEST_PATH_LEN_MAX && buf_char != ':') {
-//            message_path[path_pointer] = buf_char;
-//            path_pointer++;
-//          }
-//          msg_pointer++;
-//          if (buf_char == ':') {
-//            break;
-//          }
-//        }
-//
-//        int body_pointer = 0;
-//        while (msg_pointer < msg_len) {
-//          char buf_char = incoming_message[msg_pointer];
-//          message_body[body_pointer] = buf_char;
-//          body_pointer++;
-//          msg_pointer++;
-//        }
-//        using std::placeholders::_1;
-//        auto *req = new Request(&message_path[0], &message_body[0], std::bind(&Request_Gadget::sendRequest, this, _1));
-//        addIncomingRequest(req);
-//      } else {
-//        using std::placeholders::_1;
-//        auto *req = new Request("_unknown_", &incoming_message[0], std::bind(&Request_Gadget::sendRequest, this, _1));
-//        addIncomingRequest(req);
-//      }
+      if (req_str[0] == '!' && req_str[1] == 'r') {
+        char c1 = 0;
+        char c2 = 0;
+        char c3 = 0;
+        bool in_part = false;
+        char current_ident = 0;
+        std::stringstream partstr;
+
+        std::string req_path;
+        bool gotpath = false;
+
+        std::string req_body;
+        bool gotbody = false;
+
+        for (int i = 2; i < req_str.size(); i++) {
+          const char it_char = req_str[i];
+          c1 = c2;
+          c2 = c3;
+          c3 = it_char;
+
+          if (in_part) {
+            if (c2 == ']' && c3 == '_') {
+              in_part = false;
+              Serial.println(partstr.str().c_str());
+              switch(current_ident) {
+                case 'p':
+                  logger.printfln("Type: '%c', Value: '%s'", current_ident, sstr.str().c_str());
+                  req_path = partstr.str();
+                  gotpath = true;
+                  break;
+                case 'b':
+                  logger.printfln("Type: '%c', Value: '%s'", current_ident, sstr.str().c_str());
+                  req_body = partstr.str();
+                  gotbody = true;
+                  break;
+                default:
+                  logger.printfln(LOG_TYPE::ERR, "Unknown type '%c'", current_ident);
+              }
+              partstr = stringstream();
+            } else {
+              if (c2 != 0) {
+                partstr << c2;
+              }
+            }
+          } else {
+            if (c1 == '_' && (int) c2 > 96 && (int) c2 < 123 && c3 == '[') {
+              in_part = true;
+              current_ident = c2;
+              c1 = 0;
+              c2 = 0;
+              c3 = 0;
+            }
+          }
+          if (gotpath && gotbody) {
+            using std::placeholders::_1;
+            auto *req = new Request(req_path, req_body, std::bind(&Request_Gadget::sendRequest, this, _1));
+            addIncomingRequest(req);
+          }
+        }
+      }
     }
   }
   sendQueuedItems();

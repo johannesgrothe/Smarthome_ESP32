@@ -4,4 +4,4 @@
 
 #define USE_HARD_CONFIG
 
-#define STATIC_BOOTMODE 2
+#define STATIC_BOOTMODE 0
