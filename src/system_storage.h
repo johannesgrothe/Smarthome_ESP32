@@ -102,7 +102,7 @@ private:
         chars_deleted++;
       } else {
         chars_written++;
-        logger.add(write_char);
+        logger.print(write_char);
         EEPROM.writeChar(write_index, config_str[i]);
         write_buffer[write_index] = config_str[i];
         write_index++;
@@ -110,11 +110,11 @@ private:
     }
     EEPROM.commit();
 
-    logger.addln();
+    logger.printnl();
     logger.print(LOG_TYPE::DATA, "Bytes written: ");
-    logger.addln(chars_written);
+    logger.println(chars_written);
     logger.print(LOG_TYPE::DATA, "Bytes deleted: ");
-    logger.addln(chars_deleted);
+    logger.println(chars_deleted);
     logger.decIndent();
     bool everything_ok = true;
     for (int i = 0; i < write_index; i++) {

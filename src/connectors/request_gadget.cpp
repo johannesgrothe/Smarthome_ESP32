@@ -17,7 +17,7 @@ Request::Request(std::string req_path, std::string req_body, std::function<void(
 
 Request::~Request() {
   logger.print(LOG_TYPE::WARN, "Deleting ");
-  logger.addln(path_.c_str());
+  logger.println(path_);
 }
 
 std::string Request::getPath() {

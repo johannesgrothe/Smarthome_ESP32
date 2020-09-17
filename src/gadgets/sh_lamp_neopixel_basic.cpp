@@ -5,7 +5,7 @@ SH_Lamp_NeoPixel_Basic::SH_Lamp_NeoPixel_Basic(const JsonObject& gadget) :
   if (gadget["length"] != nullptr) {
     len_ = gadget["length"].as<uint16_t>();
     logger.print("Length: ");
-    logger.addln(len_);
+    logger.println(len_);
   } else {
     len_ = 1;
     logger.println(LOG_TYPE::ERR, "No Length selected.");
@@ -13,7 +13,7 @@ SH_Lamp_NeoPixel_Basic::SH_Lamp_NeoPixel_Basic(const JsonObject& gadget) :
   if (gadget["pin"] != nullptr) {
     pin_ = gadget["pin"].as<uint8_t>();
     logger.print("Pin: ");
-    logger.addln(pin_);
+    logger.println(pin_);
 
 //      pinMode(pin, OUTPUT);
 //      led_stripe = new NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod>(len, pin);
