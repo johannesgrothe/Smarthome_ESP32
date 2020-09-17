@@ -33,6 +33,7 @@ protected:
   stringstream core_0_buffer_;
   LOG_TYPE core_0_log_type_;
   byte core_0_indent_{};
+  bool callback_status_[8]{false};
 
 //  char core_1_buffer_[LOGGER_MAX_BUFFER_LEN]{};
 //  char core_1_name_[LOGGER_MAX_NAME]{};
@@ -71,9 +72,15 @@ protected:
 
   void setLogType(LOG_TYPE);
 
+  void callCallback(LOG_TYPE ,string ,string ,int );
+
 
 public:
   Console_Logger();
+
+  void setCallback(std::function<void(LOG_TYPE ,string ,string ,int )>);
+
+  void setCallbackStatus(LOG_TYPE, bool );
 
   void activateLogging();
 
@@ -123,7 +130,6 @@ public:
 
   template<class T, class ...Args>
   void printfln(LOG_TYPE, T, ...);
-
 };
 
 template<class T>

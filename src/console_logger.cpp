@@ -1,5 +1,7 @@
 #include "console_logger.h"
 
+#include <utility>
+
 void Console_Logger::printOut(string str) {
   Serial.print(str.c_str());
 }
@@ -126,6 +128,21 @@ void Console_Logger::setLogType(const LOG_TYPE type) {
   }
 }
 
+void Console_Logger::setCallback(std::function<void(LOG_TYPE ,string ,string ,int )> new_callback){
+  callback_ = move(new_callback);
+}
+
+void Console_Logger::setCallbackStatus(LOG_TYPE type, bool status) {
+  callback_status_[(int )type] = status;
+}
+
+void Console_Logger::callCallback(LOG_TYPE type, string message, string name, int task_id){
+  if (callback_status_[(int) type]) {
+    callback_(type, move(message), move(name), task_id);
+  }
+}
+
+
 void Console_Logger::addToBuffer(string s) {
   if (xPortGetCoreID() == 0) {
     for(char c:s) {
@@ -150,6 +167,7 @@ void Console_Logger::flushBuffer(){
     }
     printOut(core_0_buffer_.str());
     printOut('\n');
+    callCallback(core_0_log_type_, core_0_buffer_.str(), core_0_name_, 0);
     core_0_buffer_.str(string());
     setLogType(LOG_TYPE::INFO);
   } else {
@@ -161,6 +179,7 @@ void Console_Logger::flushBuffer(){
     }
     printOut(core_1_buffer_.str());
     printOut('\n');
+    callCallback(core_1_log_type_, core_1_buffer_.str(), core_1_name_, 1);
     core_1_buffer_.str(string());
     setLogType(LOG_TYPE::INFO);
   }
