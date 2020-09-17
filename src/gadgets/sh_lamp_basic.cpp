@@ -6,7 +6,7 @@ SH_Lamp_Basic::SH_Lamp_Basic(const JsonObject& gadget) :
     pin = gadget["pin"].as<uint8_t>();
     logger.print("Pin: ");
     pinMode(pin, OUTPUT);
-    logger.addln(pin);
+    logger.println(pin);
   } else {
     pin = 0;
     logger.println(LOG_TYPE::ERR, "No Pin selected.");
@@ -14,7 +14,7 @@ SH_Lamp_Basic::SH_Lamp_Basic(const JsonObject& gadget) :
   if (gadget["default_state"] != nullptr) {
     default_state = gadget["default_state"].as<uint8_t>();
     logger.print("Default: ");
-    logger.addln(default_state);
+    logger.println(default_state);
     if (pin != 0)
       digitalWrite(pin, default_state);
   } else {

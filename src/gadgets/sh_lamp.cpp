@@ -10,7 +10,7 @@ SH_Lamp::SH_Lamp(const JsonObject& gadget) :
     if (gadget["lamp_type"] != nullptr) {
       lamp_type_ = (SHLampType) gadget["lamp_type"].as<uint8_t>();
       logger.print("Type: ");
-      logger.addln(int(type));
+      logger.println(int(type));
     } else {
       lamp_type_ = SHLampType::ON_OFF;
       logger.print(LOG_TYPE::WARN, "No Type found.");
@@ -25,7 +25,7 @@ SH_Lamp::SH_Lamp(const JsonObject& gadget, const SHLampType sh_lamp_type) :
   last_brightness_(75),
   lamp_type_(sh_lamp_type) {
     logger.print("Type: ");
-    logger.addln(int(type));
+    logger.println(int(type));
   };
 
   // Lightness
@@ -108,8 +108,8 @@ SH_Lamp::SH_Lamp(const JsonObject& gadget, const SHLampType sh_lamp_type) :
 
   void SH_Lamp::handleCharacteristicUpdate(const char *characteristic, int value) {
     logger.print(getName(), "Updating Characteristic: '");
-    logger.add(characteristic);
-    logger.addln("'");
+    logger.print(characteristic);
+    logger.println("'");
     if (strcmp(characteristic, "status") == 0) {
       setStatus((bool) value);
     } else if (strcmp(characteristic, "brightness") == 0) {

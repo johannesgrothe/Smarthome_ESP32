@@ -7,7 +7,7 @@ void SH_Fan_Westinghouse_IR::refresh() {
   if (has_changed) {
     byte level = getLevel();
     logger.print(getName(), "has changed: Level ");
-    logger.addln(level);
+    logger.println(level);
     logger.incIndent();
     if (level == 0) {
       sendRawIR(level_0, 95);

@@ -9,7 +9,7 @@ const char *SH_Gadget::findMethodForCode(unsigned long code) {
     if (mapping[k]->containsCode(code)) {
       const char *method_name = mapping[k]->getName();
       logger.print(name, "-> ");
-      logger.addln(method_name);
+      logger.println(method_name);
       return method_name;
     }
   }
@@ -45,7 +45,7 @@ SH_Gadget::SH_Gadget::SH_Gadget(const JsonObject& gadget, const GadgetType gadge
     JsonObject local_mapping = gadget["mapping"].as<JsonObject>();
     mapping_count = local_mapping.size() < MAPPING_MAX_COMMANDS ? local_mapping.size() : MAPPING_MAX_COMMANDS;
     logger.print(LOG_TYPE::INFO, "Configuring Mapping, Commands: ");
-    logger.addln(mapping_count);
+    logger.println(mapping_count);
     logger.incIndent();
     byte j = 0;
     for (auto &&com : local_mapping) {
@@ -85,20 +85,20 @@ void SH_Gadget::handleCodeUpdate(unsigned long code) {
   const char *method_name = findMethodForCode(code);
   if (method_name != nullptr) {
     logger.print(name, "Applying Method: ");
-    logger.addln(method_name);
+    logger.println(method_name);
     logger.incIndent();
     handleMethodUpdate(method_name);
     logger.decIndent();
   } else {
     logger.print(name, "No Method for '");
-    logger.add(code);
-    logger.addln("' found.");
+    logger.print(code);
+    logger.println("' found.");
   }
 }
 
 void SH_Gadget::printMapping() {
   logger.print(name, "Accessible Methods: ");
-  logger.addln(mapping_count);
+  logger.println(mapping_count);
   logger.incIndent();
   for (byte k = 0; k < mapping_count; k++) {
     mapping[k]->printMapping();

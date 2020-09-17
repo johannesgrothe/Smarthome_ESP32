@@ -49,16 +49,16 @@ void CodeCommandBuffer::print() const {
   for (byte k = 0; k < CODE_BUFFER_SIZE; k++) {
     if (code_list_[k] != nullptr) {
       logger.print(LOG_TYPE::DATA, "");
-      logger.add(k);
-      logger.add(": ");
-      logger.add(code_list_[k]->getTimestamp());
-      logger.add(" -> ");
-      logger.addln(code_list_[k]->getCode());
+      logger.print(k);
+      logger.print(": ");
+      logger.print(code_list_[k]->getTimestamp());
+      logger.print(" -> ");
+      logger.println(code_list_[k]->getCode());
     } else {
       logger.print(LOG_TYPE::DATA, "");
-      logger.add(k);
-      logger.add(": ");
-      logger.addln("null");
+      logger.print(k);
+      logger.print(": ");
+      logger.println("null");
     }
   }
 }
@@ -74,8 +74,8 @@ void CodeRemote::addCodeToBuffer(CodeCommand *code) {
 
 void CodeRemote::forwardCodeToGadgets(CodeCommand *code) const{
   logger.print("Forwarding Code to ");
-  logger.add(gadgets.getGadgetCount());
-  logger.addln(" Gadgets:");
+  logger.print(gadgets.getGadgetCount());
+  logger.println(" Gadgets:");
   logger.incIndent();
   for (int i = 0; i < gadgets.getGadgetCount(); i++) {
     gadgets[i]->handleCodeUpdate(code->getCode());

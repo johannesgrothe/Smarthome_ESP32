@@ -16,7 +16,7 @@ IR_Gadget::IR_Gadget(JsonObject data) :
       receiver_ = new IRrecv(r_pin);
       receiver_->enableIRIn();
       logger.print(LOG_TYPE::DATA, "Receiver-Pin: ");
-      logger.addln(r_pin);
+      logger.print(r_pin);
     } else {
       everything_ok = false;
       logger.println(LOG_TYPE::ERR, "'recv_pin' nicht spezifiziert.");
@@ -26,7 +26,7 @@ IR_Gadget::IR_Gadget(JsonObject data) :
       blaster_ = new IRsend(b_pin);
       blaster_->begin();
       logger.print(LOG_TYPE::DATA, "Blaster-Pin: ");
-      logger.addln(b_pin);
+      logger.print(b_pin);
     } else {
       everything_ok = false;
       logger.println(LOG_TYPE::ERR, "'send_pin' nicht spezifiziert.");
@@ -107,8 +107,8 @@ IR_Gadget::IR_Gadget(JsonObject data) :
     }
     logger.print("System / IR", "Sending Raw Command, 38kHz, ");
     blaster_->sendRaw(raw_data, content_length, 38);
-    logger.add(content_length);
-    logger.addln(" Blocks.");
+    logger.print(content_length);
+    logger.println(" Blocks.");
     receiver_->resume();
     return true;
   }
@@ -135,10 +135,10 @@ IR_Gadget::IR_Gadget(JsonObject data) :
         blaster_->sendDenon(command);
         break;
       default:
-        logger.addln("Unsupported Command.");
+        logger.println("Unsupported Command.");
         return false;
     }
-    logger.addln(command);
+    logger.println(command);
     receiver_->resume();
     return true;
   }

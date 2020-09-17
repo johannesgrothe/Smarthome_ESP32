@@ -26,8 +26,8 @@ static SH_Gadget *createGadget(JsonObject gadget_json) {
 
   if (name != nullptr && type != nullptr) {
     logger.print("Adding Gadget '");
-    logger.add(name);
-    logger.addln("'");
+    logger.print(name);
+    logger.println("'");
     logger.incIndent();
 
     //sh_neopixel_basic.h
@@ -58,8 +58,8 @@ static SH_Gadget *createGadget(JsonObject gadget_json) {
     //unknown type
     else {
       logger.print(LOG_TYPE::ERR, "Cannot find Type '");
-      logger.add(type);
-      logger.addln("'");
+      logger.print(type);
+      logger.println("'");
       new_gadget = nullptr;
     }
     logger.decIndent();

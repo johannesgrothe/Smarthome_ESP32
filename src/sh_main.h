@@ -36,14 +36,14 @@
 static void rebootChip(const char *reason) {
   if (reason != nullptr) {
     logger.print("Rebooting Chip because: '");
-    logger.add(reason);
-    logger.add("' in ");
+    logger.print(reason);
+    logger.print("' in ");
   } else {
     logger.println("Rebooting Chip in ");
   }
   for (byte k = 0; k < 5; k++) {
-    logger.add(5 - k);
-    logger.add(" ");
+    logger.print(5 - k);
+    logger.print(" ");
     delay(1000);
   }
   ESP.restart();

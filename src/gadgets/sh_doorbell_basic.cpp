@@ -5,7 +5,7 @@ SH_Doorbell_Basic::SH_Doorbell_Basic(const JsonObject& gadget) :
   if (gadget["pin"] != nullptr) {
     switch_pin_ = gadget["pin"].as<uint8_t>();
     logger.print("Pin: ");
-    logger.addln(switch_pin_);
+    logger.println(switch_pin_);
     pinMode(switch_pin_, INPUT);
   } else {
     switch_pin_ = 0;
@@ -14,7 +14,7 @@ SH_Doorbell_Basic::SH_Doorbell_Basic(const JsonObject& gadget) :
   if (gadget["default_state"] != nullptr) {
     default_state_ = gadget["default_state"].as<uint8_t>();
     logger.print("Default: ");
-    logger.addln(default_state_);
+    logger.println(default_state_);
     if (switch_pin_ != 0)
       digitalWrite(switch_pin_, default_state_);
   } else {

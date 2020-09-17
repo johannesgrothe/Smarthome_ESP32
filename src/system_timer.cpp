@@ -9,15 +9,15 @@ unsigned long long SystemTimer::getTime() const {
 void SystemTimer::setTime(const unsigned long long new_time, const unsigned long time_offset = 0) {
   time_ = new_time - millis() + time_offset;
   logger.print("Setting System Time: ");
-  logger.add(new_time);
-  logger.add(" (+");
-  logger.add(time_offset);
-  logger.addln(")");
+  logger.print(new_time);
+  logger.print(" (+");
+  logger.print(time_offset);
+  logger.println(")");
   logger.incIndent();
   logger.print(LOG_TYPE::DATA, "System Launch Time: ");
-  logger.addln(time_);
+  logger.println(time_);
   logger.print(LOG_TYPE::DATA, "Momentary System Time: ");
-  logger.addln(getTime());
+  logger.println(getTime());
   logger.decIndent();
 }
 
