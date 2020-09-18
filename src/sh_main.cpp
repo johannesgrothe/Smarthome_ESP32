@@ -137,22 +137,16 @@ void SH_Main::handleRequestConnector(Request_Gadget *gadget) {
     return;
   }
   if (gadget->hasRequest()) {
-    char type[REQUEST_TYPE_LEN_MAX]{};
+    std::string type;
     Request *req = gadget->getRequest();
     RequestGadgetType g_type = gadget->getGadgetType();
     if (g_type == RequestGadgetType::MQTT_G)
-      strncpy(type, "MQTT", REQUEST_TYPE_LEN_MAX);
+      type = "MQTT";
     else if (g_type == RequestGadgetType::SERIAL_G)
-      strncpy(type, "Serial", REQUEST_TYPE_LEN_MAX);
+      type = "Serial";
     else
-      strncpy(type, "<o.O>", REQUEST_TYPE_LEN_MAX);
-
-    logger.print("[");
-    logger.print(type);
-    logger.print("] '");
-    logger.print(req->getPath());
-    logger.print("' :");
-    logger.println(req->getBody());
+      type = "<o.O>";
+    logger.printfln("[%s] '%s': %s", type.c_str(), req->getPath().c_str(), req->getBody().c_str());
     handleRequest(req);
     delete req;
   }
@@ -168,13 +162,26 @@ void SH_Main::handleSystemRequest(Request *req) {
   }
   JsonObject json_body = json_file.as<JsonObject>();
 
-  if (json_body["client_name"] == nullptr) {
+  // Only initiate communication with FlashTool:
+  if (req->getPath() == "debug/register" && json_body.containsKey("session_id") and json_body.containsKey("pc_id")) {
+    if (json_body["session_id"].as<int>() == last_req_id_) {
+      logger.printfln(LOG_TYPE::INFO, "Connected to '%s'", json_body["pc_id"].as<const char *>());
+      std::stringstream sstr;
+      sstr << R"({"ack":true,"session_id":)" << json_body["session_id"].as<int>() << "}";
+      req->respond("debug/register", sstr.str());
+    } else {
+      logger.printfln(LOG_TYPE::ERR, "Couldn't connect to '%s': wrong session id", json_body["pc_id"].as<const char *>());
+      logger.println(json_body["session_id"].as<int>());
+    }
+    return;
+  }
+
+  if (!json_body.containsKey("client_name")) {
     logger.print(LOG_TYPE::ERR, "Broken System Command Received: 'client_name' missing");
     return;
   }
 
   if (strcmp(client_name, json_body["client_name"]) != 0) {
-    // Command is not for me
     return;
   }
 
@@ -212,9 +219,15 @@ void SH_Main::handleRequest(Request *req) {
       handleSystemRequest(req);
     } else if (req->getPath() == "smarthome/from/response") {
       logger.println("Ignoring unhandled response");
+    } else if (req->getPath() == "debug/register") {
+      handleSystemRequest(req);
     } else {
-      code_remote->handleRequest(req);
-      gadget_remote->handleRequest(req);
+      if (code_remote != nullptr) {
+        code_remote->handleRequest(req);
+      }
+      if (gadget_remote != nullptr) {
+        gadget_remote->handleRequest(req);
+      }
     }
   } else {
     // Requests asking for content could have empty bodies
@@ -298,35 +311,33 @@ bool SH_Main::initCodeRemote(JsonObject json) {
 void SH_Main::testStuff() {
   logger.println("Testing Stuff");
   logger.incIndent();
-
-  Serial.println(R"(!r{"test":135, "test2":"yolokopter"})");
-
-  bool eeprom_status = System_Storage::initEEPROM();
-  if (eeprom_status) {
-    logger.println("testing eeprom:");
-
-    System_Storage::resetContentFlag();
-    System_Storage::writeTestEEPROM();
-    System_Storage::writeID("<blubbbb123456789>");
-    System_Storage::writeWifiPW("<mySuperLongStupidWifiPasswordYouKnowTheThing>");
-    System_Storage::writeWifiSSID("<myWifiSSID>");
-    System_Storage::writeMQTTIP("192.168.178.111");
-    System_Storage::writeMQTTPort("1883");
-    logger.println(LOG_TYPE::DATA, System_Storage::readWholeEEPROM().c_str());
-    Serial.println(System_Storage::hasValidID());
-    Serial.println(System_Storage::hasValidWifiSSID());
-    Serial.println(System_Storage::hasValidWifiPW());
-    Serial.println(System_Storage::hasValidMQTTIP());
-    Serial.println(System_Storage::hasValidMQTTPort());
-  } else {
-    logger.println(LOG_TYPE::FATAL, "error initializing eeprom");
-  }
-
-  logger.println(System_Storage::readID().c_str());
-  logger.println(System_Storage::readWifiSSID().c_str());
-  logger.println(System_Storage::readWifiPW().c_str());
-  logger.println(System_Storage::readMQTTIP().c_str());
-  logger.println(System_Storage::readMQTTPort().c_str());
+//
+//  bool eeprom_status = System_Storage::initEEPROM();
+//  if (eeprom_status) {
+//    logger.println("testing eeprom:");
+//
+//    System_Storage::resetContentFlag();
+//    System_Storage::writeTestEEPROM();
+//    System_Storage::writeID("<blubbbb123456789>");
+//    System_Storage::writeWifiPW("<mySuperLongStupidWifiPasswordYouKnowTheThing>");
+//    System_Storage::writeWifiSSID("<myWifiSSID>");
+//    System_Storage::writeMQTTIP("192.168.178.111");
+//    System_Storage::writeMQTTPort("1883");
+//    logger.println(LOG_TYPE::DATA, System_Storage::readWholeEEPROM().c_str());
+//    Serial.println(System_Storage::hasValidID());
+//    Serial.println(System_Storage::hasValidWifiSSID());
+//    Serial.println(System_Storage::hasValidWifiPW());
+//    Serial.println(System_Storage::hasValidMQTTIP());
+//    Serial.println(System_Storage::hasValidMQTTPort());
+//  } else {
+//    logger.println(LOG_TYPE::FATAL, "error initializing eeprom");
+//  }
+//
+//  logger.println(System_Storage::readID().c_str());
+//  logger.println(System_Storage::readWifiSSID().c_str());
+//  logger.println(System_Storage::readWifiPW().c_str());
+//  logger.println(System_Storage::readMQTTIP().c_str());
+//  logger.println(System_Storage::readMQTTPort().c_str());
 
   logger.decIndent();
 }
@@ -373,13 +384,14 @@ void SH_Main::init() {
 }
 
 void SH_Main::initModeSerial() {
-//  JsonObject config;
-//  config["type"] = "serial";
   DynamicJsonDocument json_file(2048);
   deserializeJson(json_file, F("{\"type\":\"serial\",\"config\"{}}"));
   initNetwork(json_file.as<JsonObject>());
 
-  network_gadget->sendRequest(new Request("broadcast", "{}"));
+  last_req_id_ = micros() % 31;
+  std::stringstream body;
+  body << R"({"chip_id": ")" << "yolochip" << R"(", "session_id": )" << last_req_id_ << "}";
+  network_gadget->sendRequest(new Request("debug/register", body.str()));
 }
 
 void SH_Main::initModeNetwork(bool use_eeprom) {
@@ -569,5 +581,6 @@ SH_Main::SH_Main() :
   network_gadget(nullptr),
   code_remote(nullptr),
   gadget_remote(nullptr),
-  system_mode(BootMode::Unknown_Mode) {
+  system_mode(BootMode::Unknown_Mode),
+  last_req_id_(0) {
 }

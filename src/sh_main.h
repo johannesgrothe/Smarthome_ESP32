@@ -67,6 +67,8 @@ private:
 
   BootMode system_mode;
 
+  unsigned long last_req_id_;
+
   bool initGadgets(JsonArray gadget_json);
 
   void mapConnectors(JsonObject connectors_json);
