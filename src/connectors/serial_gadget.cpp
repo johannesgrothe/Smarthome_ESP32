@@ -35,7 +35,6 @@ void Serial_Gadget::refresh() {
   }
   if (new_msg) {
     std::string req_str = sstr.str();
-    Serial.println(req_str.c_str());
     if (strContainsHEX(sstr.str())) {
       setCommand(SERIAL_C, strtoul(req_str.c_str(), NULL, 16));
     } else {
@@ -62,20 +61,21 @@ void Serial_Gadget::refresh() {
           if (in_part) {
             if (c2 == ']' && c3 == '_') {
               in_part = false;
-              Serial.println(partstr.str().c_str());
+//              Serial.println(partstr.str().c_str());
               switch(current_ident) {
                 case 'p':
-                  logger.printfln("Type: '%c', Value: '%s'", current_ident, sstr.str().c_str());
+//                  logger.printfln("Type: '%c', Value: '%s'", current_ident, sstr.str().c_str());
                   req_path = partstr.str();
                   gotpath = true;
                   break;
                 case 'b':
-                  logger.printfln("Type: '%c', Value: '%s'", current_ident, sstr.str().c_str());
+//                  logger.printfln("Type: '%c', Value: '%s'", current_ident, sstr.str().c_str());
                   req_body = partstr.str();
                   gotbody = true;
                   break;
                 default:
-                  logger.printfln(LOG_TYPE::ERR, "Unknown type '%c'", current_ident);
+//                  logger.printfln(LOG_TYPE::ERR, "Unknown type '%c'", current_ident);
+                  break;
               }
               partstr = stringstream();
             } else {

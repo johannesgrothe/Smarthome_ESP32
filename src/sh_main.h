@@ -69,6 +69,8 @@ private:
 
   unsigned long last_req_id_;
 
+  bool eeprom_active_;
+
   bool initGadgets(JsonArray gadget_json);
 
   void mapConnectors(JsonObject connectors_json);

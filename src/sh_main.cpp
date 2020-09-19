@@ -157,70 +157,116 @@ void SH_Main::handleSystemRequest(Request *req) {
   DynamicJsonDocument json_file(2048);
   DeserializationError err = deserializeJson(json_file, req->getBody());
   if (err != OK) {
-    logger.print(LOG_TYPE::ERR, "Broken System Command Received: Invalid JSON");
+    logger.print(LOG_TYPE::ERR, "Broken system command received: invalid json");
     return;
   }
   JsonObject json_body = json_file.as<JsonObject>();
 
-  // Only initiate communication with FlashTool:
-  if (req->getPath() == "debug/register" && json_body.containsKey("session_id") and json_body.containsKey("pc_id")) {
-    if (json_body["session_id"].as<int>() == last_req_id_) {
-      logger.printfln(LOG_TYPE::INFO, "Connected to '%s'", json_body["pc_id"].as<const char *>());
+  if (!eeprom_active_) {
+    logger.print(LOG_TYPE::ERR, "EEPROM is broken, cannot deal with system requests.");
+    return;
+  }
+
+  const std::string chip_id = System_Storage::readID();
+
+  if (json_body.containsKey("receiver") && json_body["receiver"] != chip_id) {
+    // Request is not for me
+    return;
+  }
+  logger.println("System command received");
+
+  // React to broadcast
+  if (req->getPath() == "smarthome/broadcast/req" && json_body.containsKey("session_id")) {
+    std::stringstream sstr;
+    sstr << R"({"chip_id":")" << System_Storage::readID() << R"(", "session_id": )" << json_body["session_id"].as<int>() << "}";
+    req->respond("smarthome/broadcast/res", sstr.str());
+    return;
+  }
+
+  // All directed Requests
+  if (json_body.containsKey("receiver")) {
+    // Write ID
+    if (req->getPath() == "smarthome/config/write/id" && json_body.containsKey("value") && json_body.containsKey("session_id")) {
       std::stringstream sstr;
-      sstr << R"({"ack":true,"session_id":)" << json_body["session_id"].as<int>() << "}";
-      req->respond("debug/register", sstr.str());
-    } else {
-      logger.printfln(LOG_TYPE::ERR, "Couldn't connect to '%s': wrong session id", json_body["pc_id"].as<const char *>());
-      logger.println(json_body["session_id"].as<int>());
-    }
-    return;
-  }
-
-  if (!json_body.containsKey("client_name")) {
-    logger.print(LOG_TYPE::ERR, "Broken System Command Received: 'client_name' missing");
-    return;
-  }
-
-  if (strcmp(client_name, json_body["client_name"]) != 0) {
-    return;
-  }
-
-  logger.print("System Command Detected: ");
-  logger.println(req->getPath());
-  logger.incIndent();
-
-  if (req->getPath() == "smarthome/from/sys/command") {
-    if (json_body["command"] != nullptr) {
-      const char *com = json_body["time"].as<const char *>();
-      if (strcmp(com, "reboot") == 0) {
-        if (json_body["message"] != nullptr) {
-          const char *msg = json_body["message"].as<const char *>();
-          rebootChip(msg);
-        } else {
-          rebootChip("No Reason given");
-        }
+      sstr << R"({"ack":)";
+      if (System_Storage::writeID(json_body["value"])) {
+        sstr << "true";
+      } else {
+        sstr << "false";
       }
-    } else {
-      logger.print(LOG_TYPE::ERR, "Broken System Command Received: 'command' missing");
+      sstr << R"(, "session_id": )" << json_body["session_id"].as<int>() << "}";
+      req->respond("smarthome/config/write/id", sstr.str());
+      return;
     }
-  } else if (req->getPath() == "smarthome/from/sys/config/set") {
 
-  } else {
-    logger.println("Unknown Command");
+    // Write Wifi SSID
+    if (req->getPath() == "smarthome/config/write/wifi_ssid" && json_body.containsKey("value") && json_body.containsKey("session_id")) {
+      std::stringstream sstr;
+      sstr << R"({"ack":)";
+      if (System_Storage::writeWifiSSID(json_body["value"])) {
+        sstr << "true";
+      } else {
+        sstr << "false";
+      }
+      sstr << R"(, "session_id": )" << json_body["session_id"].as<int>() << "}";
+      req->respond("smarthome/config/write/wifi_ssid", sstr.str());
+      return;
+    }
+
+    // Write Wifi Password
+    if (req->getPath() == "smarthome/config/write/wifi_pw" && json_body.containsKey("value") && json_body.containsKey("session_id")) {
+      std::stringstream sstr;
+      sstr << R"({"ack":)";
+      if (System_Storage::writeWifiPW(json_body["value"])) {
+        sstr << "true";
+      } else {
+        sstr << "false";
+      }
+      sstr << R"(, "session_id": )" << json_body["session_id"].as<int>() << "}";
+      req->respond("smarthome/config/write/wifi_pw", sstr.str());
+      return;
+    }
+
+    // Write MQTT IP
+    if (req->getPath() == "smarthome/config/write/mqtt_ip" && json_body.containsKey("value") && json_body.containsKey("session_id")) {
+      std::stringstream sstr;
+      sstr << R"({"ack":)";
+      if (System_Storage::writeMQTTIP(json_body["value"])) {
+        sstr << "true";
+      } else {
+        sstr << "false";
+      }
+      sstr << R"(, "session_id": )" << json_body["session_id"].as<int>() << "}";
+      req->respond("smarthome/config/write/mqtt_ip", sstr.str());
+      return;
+    }
+
+    // Write MQTT Port
+    if (req->getPath() == "smarthome/config/write/mqtt_port" && json_body.containsKey("value") && json_body.containsKey("session_id")) {
+      std::stringstream sstr;
+      sstr << R"({"ack":)";
+      if (System_Storage::writeMQTTPort(json_body["value"])) {
+        sstr << "true";
+      } else {
+        sstr << "false";
+      }
+      sstr << R"(, "session_id": )" << json_body["session_id"].as<int>() << "}";
+      req->respond("smarthome/config/write/mqtt_port", sstr.str());
+      return;
+    }
   }
-  logger.decIndent();
 }
 
 void SH_Main::handleRequest(Request *req) {
   logger.incIndent();
   if (!req->getBody().empty()) {
     std::string str_path = req->getPath();
-    if (str_path.compare(0, 4, "smarthome/from/sys/") == 0) {
+    if (str_path.compare(0, 17,"smarthome/config/") == 0) {
       handleSystemRequest(req);
-    } else if (req->getPath() == "smarthome/from/response") {
-      logger.println("Ignoring unhandled response");
-    } else if (req->getPath() == "debug/register") {
+    } else if (str_path == "smarthome/broadcast/req") {
       handleSystemRequest(req);
+    } else if (str_path == "smarthome/broadcast/res") {
+      return; // cannot use broadcast responses
     } else {
       if (code_remote != nullptr) {
         code_remote->handleRequest(req);
@@ -311,9 +357,8 @@ bool SH_Main::initCodeRemote(JsonObject json) {
 void SH_Main::testStuff() {
   logger.println("Testing Stuff");
   logger.incIndent();
-//
-//  bool eeprom_status = System_Storage::initEEPROM();
-//  if (eeprom_status) {
+
+//  if (eeprom_active_) {
 //    logger.println("testing eeprom:");
 //
 //    System_Storage::resetContentFlag();
@@ -354,6 +399,11 @@ void SH_Main::init() {
   Serial.begin(SERIAL_SPEED);
   logger.println(LOG_TYPE::INFO, "Launching...");
 
+  eeprom_active_ = System_Storage::initEEPROM();
+  if (eeprom_active_) {
+    logger.printfln("Client ID: '%s'", System_Storage::readID().c_str());
+  }
+
   testStuff();
 
   logger.print(LOG_TYPE::INFO, "Boot Mode: ");
@@ -387,11 +437,6 @@ void SH_Main::initModeSerial() {
   DynamicJsonDocument json_file(2048);
   deserializeJson(json_file, F("{\"type\":\"serial\",\"config\"{}}"));
   initNetwork(json_file.as<JsonObject>());
-
-  last_req_id_ = micros() % 31;
-  std::stringstream body;
-  body << R"({"chip_id": ")" << "yolochip" << R"(", "session_id": )" << last_req_id_ << "}";
-  network_gadget->sendRequest(new Request("debug/register", body.str()));
 }
 
 void SH_Main::initModeNetwork(bool use_eeprom) {

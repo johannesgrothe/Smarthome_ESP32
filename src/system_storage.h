@@ -20,11 +20,11 @@
 
 // id
 #define ID_POS 5
-#define ID_MAX_LEN 35
+#define ID_MAX_LEN 20
 
 //wifi_ssid
 #define WIFI_SSID_POS (ID_POS + ID_MAX_LEN + 1)
-#define WIFI_SSID_MAX_LEN 50
+#define WIFI_SSID_MAX_LEN 25
 
 //wifi_pw
 #define WIFI_PW_POS (WIFI_SSID_POS + WIFI_SSID_MAX_LEN + 1)
@@ -34,11 +34,11 @@
 #define MQTT_IP_POS (WIFI_PW_POS + WIFI_PW_MAX_LEN + 1)
 #define MQTT_IP_MAX_LEN 15
 
-//wifi_port
+//mqtt port
 #define MQTT_PORT_POS (MQTT_IP_POS + MQTT_IP_MAX_LEN + 1)
 #define MQTT_PORT_MAX_LEN 6
 
-//wifi_port
+//mqtt username
 #define MQTT_USER_POS (MQTT_PORT_POS + MQTT_PORT_MAX_LEN + 1)
 #define MQTT_USER_MAX_LEN 50
 
@@ -81,60 +81,11 @@ private:
     return content_info != 0;
   }
 
-  // TODO: remove
-  static bool writeConfigStr(const char *config_str) {
-    logger.println(LOG_TYPE::INFO, "Writing...");
-    bool inside_string = false;
-    int write_index = 0;
-    int chars_deleted = 0;
-    int chars_written = 0;
-    logger.incIndent();
-    logger.print(LOG_TYPE::DATA, "");
-
-    char write_buffer[EEPROM_CONFIG_LEN_MAX]{};
-    for (int i = 0; i < strlen(config_str); i++) {
-      char write_char = char(config_str[i]);
-
-      if (write_char == '"')
-        inside_string = !inside_string;
-
-      if (write_char == '\n' || (write_char == ' ' && !inside_string)) {
-        chars_deleted++;
-      } else {
-        chars_written++;
-        logger.print(write_char);
-        EEPROM.writeChar(write_index, config_str[i]);
-        write_buffer[write_index] = config_str[i];
-        write_index++;
-      }
-    }
-    EEPROM.commit();
-
-    logger.printnl();
-    logger.print(LOG_TYPE::DATA, "Bytes written: ");
-    logger.println(chars_written);
-    logger.print(LOG_TYPE::DATA, "Bytes deleted: ");
-    logger.println(chars_deleted);
-    logger.decIndent();
-    bool everything_ok = true;
-    for (int i = 0; i < write_index; i++) {
-      everything_ok = everything_ok && EEPROM.readChar(i) == write_buffer[i];
-    }
-    logger.println(LOG_TYPE::INFO, "Validating written Bytes...");
-    logger.incIndent();
-    if (everything_ok)
-      logger.println(LOG_TYPE::INFO, "Successfull");
-    else
-      logger.println(LOG_TYPE::ERR, "Validation failed.");
-    return everything_ok;
-  }
-
   static bool writeContent(int start, int max_len, std::string content) {
     int id_length = content.size();
     if (id_length > max_len) {
       logger.println(LOG_TYPE::ERR, "written content is too long");
       return false;
-      id_length = max_len;
     }
     for (int pos = 0; pos < id_length; pos++) {
       EEPROM.writeChar(pos + start, content[pos]);
@@ -148,7 +99,7 @@ private:
     std::stringstream ss;
     for (int pos = 0; pos < max_len; pos++) {
       char c = EEPROM.readChar(pos + start);
-      if (c == '\n') {
+      if (c == '\n' || c == 0) {
         return ss.str();
       }
       ss << c;
@@ -196,6 +147,11 @@ public:
    * @return the chip identifier
    */
   static std::string readID() {
+    if (!hasValidID()) {
+      std::stringstream sstr;
+      sstr << "esp_" << (micros() % 17731776);
+      writeID(sstr.str());
+    }
     return readContent(ID_POS, ID_MAX_LEN);
   }
 
