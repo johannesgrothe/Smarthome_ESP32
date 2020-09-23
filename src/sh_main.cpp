@@ -185,6 +185,18 @@ void SH_Main::handleSystemRequest(Request *req) {
 
   // All directed Requests
   if (json_body.containsKey("receiver")) {
+
+    // Reset config
+    if (req->getPath() == "smarthome/config/reset" && json_body.containsKey("session_id")) {
+      System_Storage::writeTestEEPROM();
+      System_Storage::resetContentFlag();
+      std::stringstream sstr;
+      sstr << R"({"ack":true)";
+      sstr << R"(, "session_id": )" << json_body["session_id"].as<int>() << "}";
+      req->respond("smarthome/config/write/id", sstr.str());
+      return;
+    }
+
     // Write ID
     if (req->getPath() == "smarthome/config/write/id" && json_body.containsKey("value") && json_body.containsKey("session_id")) {
       std::stringstream sstr;
@@ -358,31 +370,26 @@ void SH_Main::testStuff() {
   logger.println("Testing Stuff");
   logger.incIndent();
 
-//  if (eeprom_active_) {
-//    logger.println("testing eeprom:");
-//
+  if (eeprom_active_) {
+    logger.println("testing eeprom:");
+
 //    System_Storage::resetContentFlag();
 //    System_Storage::writeTestEEPROM();
-//    System_Storage::writeID("<blubbbb123456789>");
-//    System_Storage::writeWifiPW("<mySuperLongStupidWifiPasswordYouKnowTheThing>");
-//    System_Storage::writeWifiSSID("<myWifiSSID>");
-//    System_Storage::writeMQTTIP("192.168.178.111");
-//    System_Storage::writeMQTTPort("1883");
-//    logger.println(LOG_TYPE::DATA, System_Storage::readWholeEEPROM().c_str());
-//    Serial.println(System_Storage::hasValidID());
-//    Serial.println(System_Storage::hasValidWifiSSID());
-//    Serial.println(System_Storage::hasValidWifiPW());
-//    Serial.println(System_Storage::hasValidMQTTIP());
-//    Serial.println(System_Storage::hasValidMQTTPort());
-//  } else {
-//    logger.println(LOG_TYPE::FATAL, "error initializing eeprom");
-//  }
-//
-//  logger.println(System_Storage::readID().c_str());
-//  logger.println(System_Storage::readWifiSSID().c_str());
-//  logger.println(System_Storage::readWifiPW().c_str());
-//  logger.println(System_Storage::readMQTTIP().c_str());
-//  logger.println(System_Storage::readMQTTPort().c_str());
+    logger.println(LOG_TYPE::DATA, System_Storage::readWholeEEPROM().c_str());
+    logger.println(System_Storage::hasValidID());
+    logger.println(System_Storage::hasValidWifiSSID());
+    logger.println(System_Storage::hasValidWifiPW());
+    logger.println(System_Storage::hasValidMQTTIP());
+    logger.println(System_Storage::hasValidMQTTPort());
+
+    logger.println(System_Storage::readID().c_str());
+    logger.println(System_Storage::readWifiSSID().c_str());
+    logger.println(System_Storage::readWifiPW().c_str());
+    logger.println(System_Storage::readMQTTIP().c_str());
+    logger.println(System_Storage::readMQTTPort().c_str());
+  } else {
+    logger.println(LOG_TYPE::FATAL, "eeprom isn't initialized");
+  }
 
   logger.decIndent();
 }
@@ -627,5 +634,6 @@ SH_Main::SH_Main() :
   code_remote(nullptr),
   gadget_remote(nullptr),
   system_mode(BootMode::Unknown_Mode),
-  last_req_id_(0) {
+  last_req_id_(0),
+  eeprom_active_(false){
 }
