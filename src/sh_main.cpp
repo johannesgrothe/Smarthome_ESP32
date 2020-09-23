@@ -197,73 +197,56 @@ void SH_Main::handleSystemRequest(Request *req) {
       return;
     }
 
-    // Write ID
-    if (req->getPath() == "smarthome/config/write/id" && json_body.containsKey("value") && json_body.containsKey("session_id")) {
+    // Write parameters
+    if (req->getPath() == "smarthome/config/write" && json_body.containsKey("param") && json_body.containsKey("value") && json_body.containsKey("session_id")) {
+      auto param_name = json_body["param"].as<std::string>();
+      auto param_val = json_body["value"].as<std::string>();
+      bool write_successful = false;
+
+      // write ID
+      if (param_name == "id") {
+        write_successful = System_Storage::writeID(param_val);
+      }
+
+      // Write Wifi SSID
+      else if (param_name == "wifi_ssid") {
+        write_successful = System_Storage::writeWifiSSID(param_val);
+      }
+
+      // Write Wifi PW
+      else if (param_name == "wifi_pw") {
+        write_successful = System_Storage::writeWifiPW(param_val);
+      }
+
+      // Write MQTT IP
+      else if (param_name == "mqtt_ip") {
+        write_successful = System_Storage::writeMQTTIP(param_val);
+      }
+
+      // Write MQTT Port
+      else if (param_name == "mqtt_port") {
+        write_successful = System_Storage::writeMQTTPort(param_val);
+      }
+
+      // Write MQTT User
+      else if (param_name == "mqtt_user") {
+//        write_successful = System_Storage::write(param_val);
+      }
+
+      // Write MQTT PW
+      else if (param_name == "mqtt_pw") {
+//        write_successful = System_Storage::write(param_val);
+      }
+
       std::stringstream sstr;
       sstr << R"({"ack":)";
-      if (System_Storage::writeID(json_body["value"])) {
+      if (write_successful) {
         sstr << "true";
       } else {
         sstr << "false";
       }
       sstr << R"(, "session_id": )" << json_body["session_id"].as<int>() << "}";
       req->respond("smarthome/config/write/id", sstr.str());
-      return;
-    }
-
-    // Write Wifi SSID
-    if (req->getPath() == "smarthome/config/write/wifi_ssid" && json_body.containsKey("value") && json_body.containsKey("session_id")) {
-      std::stringstream sstr;
-      sstr << R"({"ack":)";
-      if (System_Storage::writeWifiSSID(json_body["value"])) {
-        sstr << "true";
-      } else {
-        sstr << "false";
-      }
-      sstr << R"(, "session_id": )" << json_body["session_id"].as<int>() << "}";
-      req->respond("smarthome/config/write/wifi_ssid", sstr.str());
-      return;
-    }
-
-    // Write Wifi Password
-    if (req->getPath() == "smarthome/config/write/wifi_pw" && json_body.containsKey("value") && json_body.containsKey("session_id")) {
-      std::stringstream sstr;
-      sstr << R"({"ack":)";
-      if (System_Storage::writeWifiPW(json_body["value"])) {
-        sstr << "true";
-      } else {
-        sstr << "false";
-      }
-      sstr << R"(, "session_id": )" << json_body["session_id"].as<int>() << "}";
-      req->respond("smarthome/config/write/wifi_pw", sstr.str());
-      return;
-    }
-
-    // Write MQTT IP
-    if (req->getPath() == "smarthome/config/write/mqtt_ip" && json_body.containsKey("value") && json_body.containsKey("session_id")) {
-      std::stringstream sstr;
-      sstr << R"({"ack":)";
-      if (System_Storage::writeMQTTIP(json_body["value"])) {
-        sstr << "true";
-      } else {
-        sstr << "false";
-      }
-      sstr << R"(, "session_id": )" << json_body["session_id"].as<int>() << "}";
-      req->respond("smarthome/config/write/mqtt_ip", sstr.str());
-      return;
-    }
-
-    // Write MQTT Port
-    if (req->getPath() == "smarthome/config/write/mqtt_port" && json_body.containsKey("value") && json_body.containsKey("session_id")) {
-      std::stringstream sstr;
-      sstr << R"({"ack":)";
-      if (System_Storage::writeMQTTPort(json_body["value"])) {
-        sstr << "true";
-      } else {
-        sstr << "false";
-      }
-      sstr << R"(, "session_id": )" << json_body["session_id"].as<int>() << "}";
-      req->respond("smarthome/config/write/mqtt_port", sstr.str());
       return;
     }
   }
