@@ -6,8 +6,6 @@ This project implements a smarthome system to be used with the ESP32. You can ru
 
 The goal is to create a great, customizable smarthome environment with a great bit of redundancy. Being able to control the same lightbulb by using an ir remote, siri or a lightswitch seems like a great alternative to just not having light when the router is down for some reason.
 
-
-
 ## Documentation
 
 We try to create great documentation while developing to make everyone able to either build their own gadgets or even contribute to this project.
@@ -15,7 +13,7 @@ This readme will be updated as often as possible to contain starting instruction
 
 For a complete documentation of the networking processes visit [Smarthome_Tools/protocol.md](https://github.com/A20GameCo/Smarthome_Tools/blob/master/protocol.md).
 
-
+For a documentation of eeprom usage and its layout visit [eeprom_layout.md](eeprom_layout.md).
 
 ## Initialization:
 

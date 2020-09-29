@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ArduinoJson.h"
+#include <ArduinoJson.h>
 #include <EEPROM.h>
 #include <sstream>
 #include <utility>
@@ -10,7 +10,7 @@
 
 #define EEPROM_WRITE_ALWAYS
 
-// config flag
+// valid config bitfield
 #define CONFIG_CHECK_BYTE 0
 #define CONFIG_CHECK_INDEX_ID 0
 #define CONFIG_CHECK_INDEX_WIFI_SSID 1
@@ -19,6 +19,12 @@
 #define CONFIG_CHECK_INDEX_MQTT_PORT 4
 #define CONFIG_CHECK_INDEX_MQTT_USER 5
 #define CONFIG_CHECK_INDEX_MQTT_PW 6
+
+// valid gadget storage bitfield
+#define GADGET_STORE_BYTE 1
+
+// valid remote storage bitfield
+#define REMOTE_STORE_BYTE 2
 
 // id
 #define ID_POS 5
@@ -44,7 +50,11 @@
 #define MQTT_USER_POS (MQTT_PORT_POS + MQTT_PORT_MAX_LEN + 1)
 #define MQTT_USER_MAX_LEN 50
 
-//wifi_port
+//mqtt password
+#define MQTT_PW_POS (MQTT_USER_POS + MQTT_USER_MAX_LEN)
+#define MQTT_PW_MAX_LEN 50
+
+//gadget remote type
 #define MQTT_PW_POS (MQTT_USER_POS + MQTT_USER_MAX_LEN)
 #define MQTT_PW_MAX_LEN 50
 
@@ -111,6 +121,19 @@ private:
 
 public:
 
+  static void printEEPROMLayout() {
+    std::stringstream ss;
+    ss << "EEPROM config:";
+    ss << "\nid: " << ID_POS << " - " << ID_POS + ID_MAX_LEN;
+    ss << "\nwifi_ssid: " << WIFI_SSID_POS << " - " << WIFI_SSID_POS + WIFI_SSID_MAX_LEN;
+    ss << "\nwifi_pw: " << WIFI_PW_POS << " - " << WIFI_PW_POS + WIFI_PW_MAX_LEN;
+    ss << "\nmqtt_ip: " << MQTT_IP_POS << " - " << MQTT_IP_POS + MQTT_IP_MAX_LEN;
+    ss << "\nmqtt_port: " << MQTT_PORT_POS << " - " << MQTT_PORT_POS + MQTT_PORT_MAX_LEN;
+    ss << "\nmqtt_user: " << MQTT_USER_POS << " - " << MQTT_USER_POS + MQTT_USER_MAX_LEN;
+    ss << "\nmqtt_pw: " << MQTT_PW_POS << " - " << MQTT_PW_POS + MQTT_PW_MAX_LEN;
+    Serial.println(ss.str().c_str());
+  }
+
   static void resetContentFlag() {
     uint8_t content_flag = 0;
     EEPROM.writeByte(CONFIG_CHECK_BYTE, content_flag);
@@ -130,6 +153,16 @@ public:
       return false;
     }
     return true;
+  }
+
+  // read and write gadgets
+  /**
+   * Writes the gadget config in any free eeprom storage
+   * @param config gadget configuration information
+   * @return whether writing the info was successful
+   */
+  static bool writeGadget(const DynamicJsonDocument& config) {
+    return false;
   }
 
   // read + write ID
@@ -408,3 +441,4 @@ public:
   }
 
 };
+// TODO: split into declaration and implementation

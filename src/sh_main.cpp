@@ -381,12 +381,7 @@ void SH_Main::testStuff() {
   logger.println("Testing Stuff");
   logger.incIndent();
 
-  DynamicJsonDocument doc(2056);
-  deserializeJson(doc, "{\"blub\": 233}");
-
-  DynamicJsonDocument doc2(doc);
-
-  logger.println(doc == doc2);
+  System_Storage::printEEPROMLayout();
 
   if (eeprom_active_) {
     logger.println("testing eeprom:");
