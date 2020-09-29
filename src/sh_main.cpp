@@ -154,127 +154,155 @@ void SH_Main::handleRequestConnector(Request_Gadget *gadget) {
 
 void SH_Main::handleSystemRequest(Request *req) {
 
-  DynamicJsonDocument json_file(2048);
-  DeserializationError err = deserializeJson(json_file, req->getBody());
-  if (err != OK) {
-    logger.print(LOG_TYPE::ERR, "Broken system command received: invalid json");
-    return;
-  }
-  JsonObject json_body = json_file.as<JsonObject>();
+  DynamicJsonDocument json_body = req->getPayload();
 
   if (!eeprom_active_) {
     logger.print(LOG_TYPE::ERR, "EEPROM is broken, cannot deal with system requests.");
     return;
   }
 
-  const std::string chip_id = System_Storage::readID();
-
-  if (json_body.containsKey("receiver") && json_body["receiver"] != chip_id) {
-    // Request is not for me
-    return;
-  }
   logger.println("System command received");
 
   // React to broadcast
-  if (req->getPath() == "smarthome/broadcast/req" && json_body.containsKey("session_id")) {
-    std::stringstream sstr;
-    sstr << R"({"chip_id":")" << System_Storage::readID() << R"(", "session_id": )" << json_body["session_id"].as<int>() << "}";
-    req->respond("smarthome/broadcast/res", sstr.str());
+  if (req->getPath() == "smarthome/broadcast/req") {
+    logger.println("Broadcast");
+    DynamicJsonDocument doc(10);
+    req->respond("smarthome/broadcast/res", doc);
     return;
   }
 
   // All directed Requests
-  if (json_body.containsKey("receiver")) {
+  logger.println("Directed Request");
 
-    // Reset config
-    if (req->getPath() == "smarthome/config/reset" && json_body.containsKey("session_id")) {
-      System_Storage::writeTestEEPROM();
-      System_Storage::resetContentFlag();
-      std::stringstream sstr;
-      sstr << R"({"ack":true)";
-      sstr << R"(, "session_id": )" << json_body["session_id"].as<int>() << "}";
-      req->respond("smarthome/config/write/id", sstr.str());
-      return;
+  // Reset config
+  if (req->getPath() == "smarthome/config/reset") {
+    System_Storage::writeTestEEPROM();
+    System_Storage::resetContentFlag();
+    req->respond(true);
+    return;
+  }
+
+  // Write parameters
+  if (req->getPath() == "smarthome/config/write" && json_body.containsKey("param") && json_body.containsKey("value")) {
+    auto param_name = json_body["param"].as<std::string>();
+    auto param_val = json_body["value"].as<std::string>();
+
+    logger.printfln("Write param '%s'", param_name.c_str());
+    bool write_successful = false;
+
+    // write ID
+    if (param_name == "id") {
+      write_successful = System_Storage::writeID(param_val);
+      if (write_successful) {
+        client_id_ = param_val;
+      }
     }
 
-    // Write parameters
-    if (req->getPath() == "smarthome/config/write" && json_body.containsKey("param") && json_body.containsKey("value") && json_body.containsKey("session_id")) {
-      auto param_name = json_body["param"].as<std::string>();
-      auto param_val = json_body["value"].as<std::string>();
-      bool write_successful = false;
+    // Write Wifi SSID
+    else if (param_name == "wifi_ssid") {
+      write_successful = System_Storage::writeWifiSSID(param_val);
+    }
 
-      // write ID
-      if (param_name == "id") {
-        write_successful = System_Storage::writeID(param_val);
-      }
+    // Write Wifi PW
+    else if (param_name == "wifi_pw") {
+      write_successful = System_Storage::writeWifiPW(param_val);
+    }
 
-      // Write Wifi SSID
-      else if (param_name == "wifi_ssid") {
-        write_successful = System_Storage::writeWifiSSID(param_val);
-      }
+    // Write MQTT IP
+    else if (param_name == "mqtt_ip") {
+      write_successful = System_Storage::writeMQTTIP(param_val);
+    }
 
-      // Write Wifi PW
-      else if (param_name == "wifi_pw") {
-        write_successful = System_Storage::writeWifiPW(param_val);
-      }
+    // Write MQTT Port
+    else if (param_name == "mqtt_port") {
+      write_successful = System_Storage::writeMQTTPort(param_val);
+    }
 
-      // Write MQTT IP
-      else if (param_name == "mqtt_ip") {
-        write_successful = System_Storage::writeMQTTIP(param_val);
-      }
-
-      // Write MQTT Port
-      else if (param_name == "mqtt_port") {
-        write_successful = System_Storage::writeMQTTPort(param_val);
-      }
-
-      // Write MQTT User
-      else if (param_name == "mqtt_user") {
-//        write_successful = System_Storage::write(param_val);
-      }
+    // Write MQTT User
+    else if (param_name == "mqtt_user") {
+      write_successful = System_Storage::writeMQTTUsername(param_val);
+    }
 
       // Write MQTT PW
-      else if (param_name == "mqtt_pw") {
-//        write_successful = System_Storage::write(param_val);
-      }
-
-      std::stringstream sstr;
-      sstr << R"({"ack":)";
-      if (write_successful) {
-        sstr << "true";
-      } else {
-        sstr << "false";
-      }
-      sstr << R"(, "session_id": )" << json_body["session_id"].as<int>() << "}";
-      req->respond("smarthome/config/write/id", sstr.str());
-      return;
+    else if (param_name == "mqtt_pw") {
+      write_successful = System_Storage::writeMQTTPassword(param_val);
     }
+
+    req->respond(write_successful);
+
+    if (param_name == "id" && write_successful) {
+      client_id_ = param_val;
+    }
+    return;
   }
+
+  // Read parameters
+  if (req->getPath() == "smarthome/config/read" && json_body.containsKey("param")) {
+    auto param_name = json_body["param"].as<std::string>();
+    bool read_successful = false;
+    std::string read_val;
+
+    logger.printfln("Read param '%s'", param_name.c_str());
+
+    // read wifi ssid
+    if (param_name == "wifi_ssid") {
+      read_successful = true;
+      read_val = System_Storage::readWifiSSID();
+    }
+
+    // read mqtt ip
+    if (param_name == "mqtt_ip") {
+      read_successful = true;
+      read_val = System_Storage::readMQTTIP();
+    }
+
+    // read mqtt port
+    if (param_name == "mqtt_port") {
+      read_successful = true;
+      read_val = System_Storage::readMQTTPort();
+    }
+
+    // read mqtt username
+    if (param_name == "mqtt_user") {
+      read_successful = true;
+      read_val = System_Storage::readMQTTUsername();
+    }
+
+    if (read_successful) {
+      DynamicJsonDocument doc(100);
+      doc["value"] = read_val;
+      req->respond(doc);
+    }
+    return;
+  }
+  req->dontRespond();
 }
 
 void SH_Main::handleRequest(Request *req) {
-  logger.incIndent();
-  if (!req->getBody().empty()) {
-    std::string str_path = req->getPath();
-    if (str_path.compare(0, 17,"smarthome/config/") == 0) {
+  std::string req_path = req->getPath();
+  if (!req->hasReceiver()) {
+    req->updateReceiver(client_id_);
+    if (req_path == "smarthome/broadcast/req") {
+      // Handle broadcasts which do not have an receiver
       handleSystemRequest(req);
-    } else if (str_path == "smarthome/broadcast/req") {
-      handleSystemRequest(req);
-    } else if (str_path == "smarthome/broadcast/res") {
-      return; // cannot use broadcast responses
-    } else {
-      if (code_remote != nullptr) {
-        code_remote->handleRequest(req);
-      }
-      if (gadget_remote != nullptr) {
-        gadget_remote->handleRequest(req);
-      }
     }
-  } else {
-    // Requests asking for content could have empty bodies
-    logger.println(LOG_TYPE::ERR, "Empty Request");
+    return;
+  } else if (req->hasReceiver() &&  client_id_ != req->getReceiver()) {
+    // Return if the client is not the receiver of the message
+    return;
   }
-  logger.decIndent();
+
+  if (req_path.compare(0, 17,"smarthome/config/") == 0) {
+    handleSystemRequest(req);
+    return;
+  }
+
+  if (code_remote != nullptr) {
+    code_remote->handleRequest(req);
+  }
+  if (gadget_remote != nullptr) {
+    gadget_remote->handleRequest(req);
+  }
 }
 
 void SH_Main::updateGadgetRemote(const char *gadget_name, const char *service, const char *characteristic, int value) {
@@ -353,6 +381,13 @@ void SH_Main::testStuff() {
   logger.println("Testing Stuff");
   logger.incIndent();
 
+  DynamicJsonDocument doc(2056);
+  deserializeJson(doc, "{\"blub\": 233}");
+
+  DynamicJsonDocument doc2(doc);
+
+  logger.println(doc == doc2);
+
   if (eeprom_active_) {
     logger.println("testing eeprom:");
 
@@ -364,12 +399,16 @@ void SH_Main::testStuff() {
     logger.println(System_Storage::hasValidWifiPW());
     logger.println(System_Storage::hasValidMQTTIP());
     logger.println(System_Storage::hasValidMQTTPort());
+    logger.println(System_Storage::hasValidMQTTUsername());
+    logger.println(System_Storage::hasValidMQTTPassword());
 
     logger.println(System_Storage::readID().c_str());
     logger.println(System_Storage::readWifiSSID().c_str());
     logger.println(System_Storage::readWifiPW().c_str());
     logger.println(System_Storage::readMQTTIP().c_str());
     logger.println(System_Storage::readMQTTPort().c_str());
+    logger.println(System_Storage::readMQTTUsername().c_str());
+    logger.println(System_Storage::readMQTTPassword().c_str());
   } else {
     logger.println(LOG_TYPE::FATAL, "eeprom isn't initialized");
   }
@@ -391,7 +430,8 @@ void SH_Main::init() {
 
   eeprom_active_ = System_Storage::initEEPROM();
   if (eeprom_active_) {
-    logger.printfln("Client ID: '%s'", System_Storage::readID().c_str());
+    client_id_ = System_Storage::readID();
+    logger.printfln("Client ID: '%s'", client_id_.c_str());
   }
 
   testStuff();
@@ -496,13 +536,6 @@ void SH_Main::initModeComplete() {
   initNetwork(json["network"]);
   initConnectors(json["connectors"]);
 
-  if (json["id"] != nullptr) {
-    strncpy(client_name, json["id"].as<const char *>(), CLIENT_NAME_LEN_MAX);
-  } else {
-    logger.println(LOG_TYPE::ERR, "No Name defined");
-    strcpy(client_name, "TestClient");
-  }
-
   if (json["gadgets"] != nullptr) {
     initGadgets(json["gadgets"]);
   } else {
@@ -531,36 +564,36 @@ void SH_Main::initModeComplete() {
 
   char client_str[50]{};
   unsigned long ident = micros() % 7023;
-  snprintf(client_str, 50, R"({"request_id": %lu, "id": "%s"})", ident, client_name);
-  network_gadget->sendRequest(new Request("smarthome/to/client/add", client_str));
+//  snprintf(client_str, 50, R"({"request_id": %lu, "id": "%s"})", ident, client_name);
+//  network_gadget->sendRequest(new Request("smarthome/to/client/add", client_str));
   unsigned long const start_time = millis();
-  while (start_time + 5000 > millis()) {
-    if (!network_gadget->hasRequest()) {
-      network_gadget->refresh();
-    } else {
-      Request *resp = network_gadget->getRequest();
-      if (resp->getPath() == "smarthome/from/response" && getIdent(resp->getBody()) == ident) {
-        DynamicJsonDocument time_json(2048);
-        DeserializationError err = deserializeJson(time_json, resp->getBody());
-        if (err == DeserializationError::Ok) {
-          unsigned long time_offset = (millis() - start_time) / 2;
-          JsonObject json_obj = time_json.as<JsonObject>();
-          if (json_obj["ack"] != nullptr) {
-            if (json_obj["ack"].as<bool>()) {
-              logger.println("Adding Gadget succesfull.");
-              if (json_obj["time"] != nullptr) {
-                unsigned long long new_time = json_obj["time"].as<unsigned long long>();
-                system_timer.setTime(new_time, time_offset);
-              }
-            } else {
-              logger.println(LOG_TYPE::ERR, "Registering Client failed");
-            }
-          }
-        }
-      }
-      delete resp;
-    }
-  }
+//  while (start_time + 5000 > millis()) {
+//    if (!network_gadget->hasRequest()) {
+//      network_gadget->refresh();
+//    } else {
+//      Request *resp = network_gadget->getRequest();
+//      if (resp->getPath() == "smarthome/from/response" && getIdent(resp->getPayload()) == ident) {
+//        DynamicJsonDocument time_json(2048);
+//        DeserializationError err = deserializeJson(time_json, resp->getPayload());
+//        if (err == DeserializationError::Ok) {
+//          unsigned long time_offset = (millis() - start_time) / 2;
+//          JsonObject json_obj = time_json.as<JsonObject>();
+//          if (json_obj["ack"] != nullptr) {
+//            if (json_obj["ack"].as<bool>()) {
+//              logger.println("Adding Gadget succesfull.");
+//              if (json_obj["time"] != nullptr) {
+//                unsigned long long new_time = json_obj["time"].as<unsigned long long>();
+//                system_timer.setTime(new_time, time_offset);
+//              }
+//            } else {
+//              logger.println(LOG_TYPE::ERR, "Registering Client failed");
+//            }
+//          }
+//        }
+//      }
+//      delete resp;
+//    }
+//  }
 }
 
 void SH_Main::refresh() {
@@ -611,6 +644,7 @@ void SH_Main::refreshNetwork() {
 }
 
 SH_Main::SH_Main() :
+  client_id_("null"),
   ir_gadget(nullptr),
   radio_gadget(nullptr),
   network_gadget(nullptr),

@@ -45,8 +45,31 @@ void MQTT_Gadget::callback(char *topic, const byte *payload, const unsigned int 
   for (unsigned int i = 0; i < length; i++) {
     local_message << (char) payload[i];
   }
+
+  auto req_path = local_topic.str();
+  auto req_body = local_message.str();
+
+  DynamicJsonDocument doc(2056);
+  deserializeJson(doc, req_body);
+  if (!doc.containsKey("session_id")) {
+    return;
+  }
+  if (!doc.containsKey("sender")) {
+    return;
+  }
+  if (!doc.containsKey("receiver")) {
+    return;
+  }
+  if (!doc.containsKey("payload")) {
+    return;
+  }
   using std::placeholders::_1;
-  auto *req = new Request(topic, local_message.str(), std::bind(&Request_Gadget::sendRequest, this, _1));
+  auto *req = new Request(req_path,
+                          doc["session_id"].as<int>(),
+                          doc["sender"].as<std::string>(),
+                          doc["receiver"].as<std::string>(),
+                          doc["payload"],
+                          std::bind(&Request_Gadget::sendRequest, this, _1));
   addIncomingRequest(req);
 }
 
@@ -54,8 +77,7 @@ void MQTT_Gadget::executeRequestSending(Request *req) {
   std::string topic = req->getPath();
   std::string body = req->getBody();
   logger.print("System / MQTT", "publishing on '");
-  logger.
-    print(topic);
+  logger.print(topic);
   logger.print("'");
   bool status = true;
   uint16_t msg_len = body.size();

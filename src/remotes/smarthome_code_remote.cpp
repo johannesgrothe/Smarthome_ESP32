@@ -13,7 +13,7 @@ void SmarthomeCodeRemote::sendCodeToRemote(CodeCommand *code) {
   unsigned long ident = micros() % 7023;
   snprintf(code_str, CODE_STR_LEN_MAX, R"({"request_id": %lu, "type": "%s", "code": "%lu", "timestamp": %llu})",
            ident, code_type, code->getCode(), code->getTimestamp());
-  req_gadget->sendRequest(new Request("smarthome/to/code", code_str));
+//  req_gadget->sendRequest(new Request("smarthome/to/code", code_str));  // TODO: fix
 }
 
 void SmarthomeCodeRemote::handleRequest(std::string path, std::string body) {};

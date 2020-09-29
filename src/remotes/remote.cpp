@@ -28,15 +28,9 @@ Remote::Remote(Request_Gadget *gadget, JsonObject data) :
   req_gadget(gadget),
   gadgets() {};
 
-void Remote::handleRequest(Request *req) {
-  DynamicJsonDocument body_json(2048);
-  DeserializationError err = deserializeJson(body_json, req->getBody());
-  if (err == DeserializationError::Ok) {
-    JsonObject body = body_json.as<JsonObject>();
-    handleRequest(req->getPath(), body);
-  } else {
-    handleRequest(req->getPath(), req->getBody());
-  }
+void Remote::handleRequest(Request *req) {  // TODO: unneeded
+  JsonObject body = req->getPayload().as<JsonObject>();
+  handleRequest(req->getPath(), body);
 }
 
 void Remote::addGadget(SH_Gadget *new_gadget) {

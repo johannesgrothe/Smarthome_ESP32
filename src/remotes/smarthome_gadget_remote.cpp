@@ -24,43 +24,45 @@ SmarthomeGadgetRemote::registerGadget(const char *gadget_name, GadgetType gadget
             gadget_name,
             service_name);
   }
-  req_gadget->sendRequest(new Request("smarthome/to/gadget/add", &reg_str[0]));
-  unsigned long start_time = millis();
-  while (start_time + 5000 > millis()) {
-    if (!req_gadget->hasRequest()) {
-      req_gadget->refresh();
-    } else {
-      Request *resp = req_gadget->getRequest();
-      if (resp->getPath() == "smarthome/from/response" && getIdent(resp->getBody()) == ident) {
-        delete resp;
-        return getAck(resp->getBody());
-      }
-      delete resp;
-    }
-  }
+//  req_gadget->sendRequest(new Request("smarthome/to/gadget/add", &reg_str[0]));  // TODO: fix
+//  unsigned long start_time = millis();
+//  while (start_time + 5000 > millis()) {
+//    if (!req_gadget->hasRequest()) {
+//      req_gadget->refresh();
+//    } else {
+//      Request *resp = req_gadget->getRequest();
+////      if (resp->getPath() == "smarthome/from/response" && getIdent(resp->getPayload()) == ident) {
+//      if (resp->getPath() == "smarthome/from/response") {  // TODO: fix
+//          delete resp;
+//          return getAck(resp->getPayload());
+//        }
+//      }
+//      delete resp;
+//    }
+//  }
   return false;
 }
 
-bool SmarthomeGadgetRemote::removeGadget(const char *gadget_name) {
-  char buf_msg[HOMEBRIDGE_UNREGISTER_STR_MAX_LEN]{};
-  unsigned long ident = micros() % 7023;
-  snprintf(&buf_msg[0], HOMEBRIDGE_UNREGISTER_STR_MAX_LEN, R"({"request_id" : %lu, "name": "%s"})", ident,
-           gadget_name);
-  req_gadget->sendRequest(new Request("smarthome/to/gadget/remove", &buf_msg[0]));
-  unsigned long start_time = millis();
-  while (start_time + 5000 > millis()) {
-    if (!req_gadget->hasRequest()) {
-      req_gadget->refresh();
-    } else {
-      Request *resp = req_gadget->getRequest();
-      if (resp->getPath() == "smarthome/from/response" && getIdent(resp->getBody()) == ident) {
-        bool buf_ack = getAck(resp->getBody());
-        delete resp;
-        return buf_ack;
-      }
-      delete resp;
-    }
-  }
+bool SmarthomeGadgetRemote::removeGadget(const char *gadget_name) {  // TODO: fix
+//  char buf_msg[HOMEBRIDGE_UNREGISTER_STR_MAX_LEN]{};
+//  unsigned long ident = micros() % 7023;
+//  snprintf(&buf_msg[0], HOMEBRIDGE_UNREGISTER_STR_MAX_LEN, R"({"request_id" : %lu, "name": "%s"})", ident,
+//           gadget_name);
+//  req_gadget->sendRequest(new Request("smarthome/to/gadget/remove", &buf_msg[0]));
+//  unsigned long start_time = millis();
+//  while (start_time + 5000 > millis()) {
+//    if (!req_gadget->hasRequest()) {
+//      req_gadget->refresh();
+//    } else {
+//      Request *resp = req_gadget->getRequest();
+//      if (resp->getPath() == "smarthome/from/response" && getIdent(resp->getPayload()) == ident) {
+//        bool buf_ack = getAck(resp->getPayload());
+//        delete resp;
+//        return buf_ack;
+//      }
+//      delete resp;
+//    }
+//  }
   return false;
 }
 
@@ -109,6 +111,6 @@ SmarthomeGadgetRemote::updateCharacteristic(const char *gadget_name, const char 
             service,
             characteristic,
             value);
-    req_gadget->sendRequest(new Request("smarthome/to/gadget/update", update_str));
+//    req_gadget->sendRequest(new Request("smarthome/to/gadget/update", update_str));  // TODO: fix
   }
 }

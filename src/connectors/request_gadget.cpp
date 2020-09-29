@@ -2,46 +2,6 @@
 
 #include <utility>
 
-Request::Request(std::string req_path, std::string req_body) :
-  body_(std::move(req_body)),
-  path_(std::move(req_path)),
-  can_respond_(false),
-  needs_response_(false) {}
-
-Request::Request(std::string req_path, std::string req_body, std::function<void(Request *request)> answer_method) :
-  body_(std::move(req_body)),
-  path_(std::move(req_path)),
-  send_answer_(std::move(answer_method)),
-  can_respond_(true),
-  needs_response_(true) {}
-
-Request::~Request() {
-  logger.print(LOG_TYPE::WARN, "Deleting ");
-  logger.println(path_);
-}
-
-std::string Request::getPath() {
-  return path_;
-}
-
-std::string Request::getBody() {
-  return body_;
-}
-
-bool Request::respond(std::string res_path, std::string res_body) {
-  needs_response_ = false;
-  if (!can_respond_) {
-    return false;
-  }
-  auto *req = new Request(std::move(res_path), std::move(res_body));
-  send_answer_(req);
-  return true;
-}
-
-void Request::dontRespond() {
-  needs_response_ = false;
-}
-
 // Request_Gadget
 void Request_Gadget::addIncomingRequest(Request *request) {
   xQueueSend(in_request_queue_, &request, portMAX_DELAY);

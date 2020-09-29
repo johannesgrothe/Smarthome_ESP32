@@ -10,39 +10,10 @@
 // Other Imports
 #include "../system_settings.h"
 #include "../console_logger.h"
+#include "request.h"
 
 enum class RequestGadgetType {
   MQTT_G, SERIAL_G, NONE_G
-};
-
-class Request {
-private:
-  std::string body_;
-  std::string path_;
-  std::function<void(Request *)> send_answer_;
-
-protected:
-
-  bool can_respond_;
-  bool needs_response_;
-
-public:
-  Request(std::string req_path, std::string req_body);
-
-  Request(std::string req_path, std::string req_body, std::function<void(Request *request)> answer_method);
-
-  virtual ~Request();
-
-  std::string getPath();
-
-  std::string getBody();
-
-//  bool respond(const char *res_path, const char *res_body);
-
-  bool respond(std::string res_path, std::string res_body);
-
-  void dontRespond();
-
 };
 
 class Request_Gadget {

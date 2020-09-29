@@ -52,7 +52,9 @@ static void rebootChip(const char *reason) {
 class SH_Main {
 private:
 
-  char client_name[CLIENT_NAME_LEN_MAX]{};
+//  char client_name[CLIENT_NAME_LEN_MAX]{};
+
+  std::string client_id_;
 
   IR_Gadget *ir_gadget;
   Radio_Gadget *radio_gadget;

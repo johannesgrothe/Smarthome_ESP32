@@ -93,8 +93,27 @@ void Serial_Gadget::refresh() {
             }
           }
           if (gotpath && gotbody) {
+            DynamicJsonDocument doc(2056);
+            deserializeJson(doc, req_body);
+            if (!doc.containsKey("session_id")) {
+              return;
+            }
+            if (!doc.containsKey("sender")) {
+              return;
+            }
+            if (!doc.containsKey("receiver")) {
+              return;
+            }
+            if (!doc.containsKey("payload")) {
+              return;
+            }
             using std::placeholders::_1;
-            auto *req = new Request(req_path, req_body, std::bind(&Request_Gadget::sendRequest, this, _1));
+            auto *req = new Request(req_path,
+                                    doc["session_id"].as<int>(),
+                                    doc["sender"].as<std::string>(),
+                                    doc["receiver"].as<std::string>(),
+                                    doc["payload"],
+                                    std::bind(&Request_Gadget::sendRequest, this, _1));
             addIncomingRequest(req);
           }
         }

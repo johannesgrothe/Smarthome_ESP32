@@ -8,6 +8,8 @@
 #include "system_settings.h"
 #include "console_logger.h"
 
+#define EEPROM_WRITE_ALWAYS
+
 // config flag
 #define CONFIG_CHECK_BYTE 0
 #define CONFIG_CHECK_INDEX_ID 0
@@ -223,8 +225,19 @@ public:
  * @return whether writing was successful
  */
   static bool writeMQTTIP(std::string ip) {
-    auto success = writeContent(MQTT_IP_POS, MQTT_IP_MAX_LEN, std::move(ip));
-    setContentFlag(CONFIG_CHECK_INDEX_MQTT_IP, success);
+    bool success;
+#ifdef EEPROM_WRITE_ALWAYS
+    success = writeContent(MQTT_IP_POS, MQTT_IP_MAX_LEN, ip);
+#endif
+    if (ip == "null") {
+      setContentFlag(CONFIG_CHECK_INDEX_MQTT_PW, false);
+      success = true;
+    } else {
+#ifndef EEPROM_WRITE_ALWAYS
+      success = writeContent(MQTT_PW_POS, MQTT_PW_MAX_LEN, ip);
+#endif
+      setContentFlag(CONFIG_CHECK_INDEX_MQTT_PW, success);
+    }
     return success;
   }
 
@@ -246,12 +259,23 @@ public:
 
   /**
    * Writes the MQTT port to the eeprom
-   * @param pw the port to be written
+   * @param port the port to be written
    * @return whether writing was successful
    */
-  static bool writeMQTTPort(std::string port) {
-    auto success = writeContent(MQTT_PORT_POS, MQTT_PORT_MAX_LEN, std::move(port));
-    setContentFlag(CONFIG_CHECK_INDEX_MQTT_PORT, success);
+  static bool writeMQTTPort(const std::string& port) {
+    bool success;
+#ifdef EEPROM_WRITE_ALWAYS
+    success = writeContent(MQTT_PORT_POS, MQTT_PORT_MAX_LEN, port);
+#endif
+    if (port == "null") {
+      setContentFlag(CONFIG_CHECK_INDEX_MQTT_PORT, false);
+      success = true;
+    } else {
+#ifndef EEPROM_WRITE_ALWAYS
+      success = writeContent(MQTT_PORT_POS, MQTT_PORT_MAX_LEN, port);
+#endif
+      setContentFlag(CONFIG_CHECK_INDEX_MQTT_PORT, success);
+    }
     return success;
   }
 
@@ -269,6 +293,82 @@ public:
    */
   static bool hasValidMQTTPort() {
     return getContentFlag(CONFIG_CHECK_INDEX_MQTT_PORT);
+  }
+
+  /**
+   * Writes the MQTT username to the eeprom
+   * @param username the username to be written
+   * @return whether writing was successful
+   */
+  static bool writeMQTTUsername(const std::string &username) {
+    bool success;
+#ifdef EEPROM_WRITE_ALWAYS
+    success = writeContent(MQTT_USER_POS, MQTT_USER_MAX_LEN, username);
+#endif
+    if (username == "null") {
+      setContentFlag(CONFIG_CHECK_INDEX_MQTT_USER, false);
+      success = true;
+    } else {
+#ifndef EEPROM_WRITE_ALWAYS
+      success = writeContent(MQTT_USER_POS, MQTT_USER_MAX_LEN, username);
+#endif
+      setContentFlag(CONFIG_CHECK_INDEX_MQTT_USER, success);
+    }
+    return success;
+  }
+
+  /**
+   * Reads the MQTT username from the eeprom
+   * @return the username
+   */
+  static std::string readMQTTUsername() {
+    return readContent(MQTT_USER_POS, MQTT_USER_MAX_LEN);
+  }
+
+  /**
+   * Checks if the there is a valid MQTT username stored in the EEPROM
+   * @return whether there is a valid username
+   */
+  static bool hasValidMQTTUsername() {
+    return getContentFlag(CONFIG_CHECK_INDEX_MQTT_USER);
+  }
+
+  /**
+  * Writes the MQTT password to the eeprom
+  * @param pw the password to be written
+  * @return whether writing was successful
+  */
+  static bool writeMQTTPassword(const std::string &pw) {
+    bool success;
+#ifdef EEPROM_WRITE_ALWAYS
+    success = writeContent(MQTT_PW_POS, MQTT_PW_MAX_LEN, pw);
+#endif
+    if (pw == "null") {
+      setContentFlag(CONFIG_CHECK_INDEX_MQTT_PW, false);
+      success = true;
+    } else {
+#ifndef EEPROM_WRITE_ALWAYS
+      success = writeContent(MQTT_PW_POS, MQTT_PW_MAX_LEN, pw);
+#endif
+      setContentFlag(CONFIG_CHECK_INDEX_MQTT_PW, success);
+    }
+    return success;
+  }
+
+  /**
+   * Reads the MQTT password from the eeprom
+   * @return the password
+   */
+  static std::string readMQTTPassword() {
+    return readContent(MQTT_PW_POS, MQTT_PW_MAX_LEN);
+  }
+
+  /**
+   * Checks if the there is a valid MQTT password stored in the EEPROM
+   * @return whether there is a valid password
+   */
+  static bool hasValidMQTTPassword() {
+    return getContentFlag(CONFIG_CHECK_INDEX_MQTT_PW);
   }
 
   /**
