@@ -93,6 +93,11 @@ const char json_str[] = R"(
       "type": "sh_lamp_westinghouse_ir",
       "name": "Deckenlampe",
       "mapping": {}
+    },
+    {
+      "type": "sh_sensor_motion",
+      "name": "MotionSensor",
+      "pin": 4
     }
   ],
   "network": {

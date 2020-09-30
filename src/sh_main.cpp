@@ -298,6 +298,12 @@ bool SH_Main::initCodeRemote(JsonObject json) {
 void SH_Main::testStuff() {
   logger.println("Testing Stuff");
   logger.incIndent();
+  DynamicJsonDocument doc(300);
+  deserializeJson(doc, R"({"type": "sh_sensor_motion","name": "MotionSensor","pin": 4,"mapping": {}})");
+  auto sensor = SH_Sensor_Motion_HR501(doc.as<JsonObject>());
+  logger.println("gadget initialized");
+  while (true)
+    sensor.refresh();
   logger.decIndent();
 }
 
@@ -351,6 +357,7 @@ void SH_Main::init() {
       break;
   }
   logger.printnl();
+  testStuff();
 }
 
 void SH_Main::initModeSerial() {
