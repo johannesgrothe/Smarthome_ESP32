@@ -10,7 +10,7 @@
 #include "../connectors/connectors.h"
 
 enum class GadgetType {
-  None, Lightbulb, Fan, Doorbell
+  None, Lightbulb, Fan, Doorbell, Temp_Humm_Sensor
 };
 
 enum SH_RGB_Color {

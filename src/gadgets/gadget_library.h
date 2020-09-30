@@ -13,10 +13,13 @@
 #include "sh_lamp_basic.h"
 #include "sh_doorbell_basic.h"
 
-//Fan
+//Fans
 #include "sh_fan_westinghouse_ir.h"
 #include "sh_lamp_westinghouse_ir.h"
 
+//Temperature Sensors
+#include "sh_sensor_temperature.h"
+#include "sh_sensor_temperature_DHT.h"
 
 static SH_Gadget *createGadget(JsonObject gadget_json) {
   const char *name = gadget_json["name"].as<const char *>();
@@ -53,6 +56,11 @@ static SH_Gadget *createGadget(JsonObject gadget_json) {
     // sh_fan_basic.h
     else if (strcmp(type, "sh_doorbell_basic") == 0) {
       new_gadget = new SH_Doorbell_Basic(gadget_json);
+    }
+
+    // sh_sensor_temperature_DHT.h
+    else if (strcmp(type, "sh_sensor_temperature_DHT") == 0) {
+      new_gadget = new SH_Sensor_Temperature_DHT(gadget_json);
     }
 
     //unknown type
