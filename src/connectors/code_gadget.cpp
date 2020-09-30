@@ -7,17 +7,9 @@ void Code_Gadget::setCommand(CodeType type, unsigned long new_command) {
 }
 
 Code_Gadget::Code_Gadget() :
-  code_gadget_is_ready_(false),
+  code_gadget_is_ready_(true),
   com_(nullptr),
   has_news_(false) {
-};
-
-Code_Gadget::Code_Gadget(const JsonObject& data) :
-  code_gadget_is_ready_(false),
-  com_(nullptr),
-  has_news_(false) {
-  if (data.isNull()) {}
-  code_gadget_is_ready_ = true;
 };
 
 bool Code_Gadget::codeGadgetIsReady() const {

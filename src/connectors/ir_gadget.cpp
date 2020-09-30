@@ -1,32 +1,20 @@
 #include "ir_gadget.h"
 
-IR_Gadget::IR_Gadget() :
-  Code_Gadget(),
-  receiver_(nullptr),
-  blaster_(nullptr) {
-    logger.println("No IR Configured");
-    code_gadget_is_ready_ = false;
-  };
-
-IR_Gadget::IR_Gadget(JsonObject data) :
-    Code_Gadget(data) {
+IR_Gadget::IR_Gadget(int ir_recv_pin, int ir_send_pin) :
+    Code_Gadget() {
     bool everything_ok = true;
-    if (data["recv_pin"] != nullptr) {
-      uint8_t r_pin = data["recv_pin"].as<int>();
-      receiver_ = new IRrecv(r_pin);
+    if (ir_recv_pin != 0) {
+      receiver_ = new IRrecv(ir_recv_pin);
       receiver_->enableIRIn();
-      logger.print(LOG_TYPE::DATA, "Receiver-Pin: ");
-      logger.print(r_pin);
+      logger.printf(LOG_TYPE::DATA, "Receiver-Pin: %d", ir_recv_pin);
     } else {
       everything_ok = false;
       logger.println(LOG_TYPE::ERR, "'recv_pin' nicht spezifiziert.");
     }
-    if (data["send_pin"] != nullptr) {
-      uint8_t b_pin = data["send_pin"].as<int>();
-      blaster_ = new IRsend(b_pin);
+    if (ir_send_pin != 0) {
+      blaster_ = new IRsend(ir_send_pin);
       blaster_->begin();
-      logger.print(LOG_TYPE::DATA, "Blaster-Pin: ");
-      logger.print(b_pin);
+      logger.printf(LOG_TYPE::DATA, "Blaster-Pin: %d", ir_send_pin);
     } else {
       everything_ok = false;
       logger.println(LOG_TYPE::ERR, "'send_pin' nicht spezifiziert.");

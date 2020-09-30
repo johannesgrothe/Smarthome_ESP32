@@ -20,8 +20,6 @@ protected:
 public:
   Code_Gadget();
 
-  explicit Code_Gadget(const JsonObject&);
-
   virtual void refresh() = 0;
 
   bool codeGadgetIsReady() const;

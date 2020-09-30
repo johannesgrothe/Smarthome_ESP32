@@ -70,24 +70,30 @@ void SH_Main::mapConnectors(JsonObject connectors_json) {
   logger.decIndent();
 }
 
-bool SH_Main::initConnectors(JsonObject connectors_json) {
+bool SH_Main::initConnectors() {
   logger.println("Initializing Connectors: ");
-  logger.incIndent();
+
+  int ir_recv = System_Storage::readIRrecvPin();
+  int ir_send = System_Storage::readIRsendPin();
+  int radio = 0;
+
   logger.println("Creating IR-Gadget: ");
   logger.incIndent();
-  if (connectors_json["ir"] != nullptr) {
-    ir_gadget = new IR_Gadget(connectors_json["ir"].as<JsonObject>());
+  if (ir_recv || ir_send) {
+    ir_gadget = new IR_Gadget(ir_recv, ir_send);
   } else {
-    ir_gadget = new IR_Gadget();
+    logger.println("No IR Configured");
+    ir_gadget = nullptr;
   }
   logger.decIndent();
 
-  logger.println("Creating IR-Gadget:");
+  logger.println("Creating Radio-Gadget:");
   logger.incIndent();
-  if (connectors_json["mqtt"] != nullptr) {
+  if (radio) {
     logger.println("Radio Configured bot not implemented");
   } else {
     logger.println("No Radio Configured");
+    radio_gadget = nullptr;
   }
   logger.decIndent();
 
@@ -95,7 +101,7 @@ bool SH_Main::initConnectors(JsonObject connectors_json) {
   return true;
 }
 
-bool SH_Main::initNetwork(const JsonObject &json) {
+bool SH_Main::initNetwork(JsonObject json) {
   // check if JSON is valid
   if (json.isNull() || !json.containsKey("type")) {
     logger.println(LOG_TYPE::ERR, "No valid network configuration.");
@@ -186,6 +192,7 @@ void SH_Main::handleSystemRequest(Request *req) {
   if (req->getPath() == "smarthome/config/write" && json_body.containsKey("param") && json_body.containsKey("value")) {
     auto param_name = json_body["param"].as<std::string>();
     auto param_val = json_body["value"].as<std::string>();
+    auto param_val_uint = json_body["value"].as<uint8_t>();
 
     logger.printfln("Write param '%s'", param_name.c_str());
     bool write_successful = false;
@@ -228,6 +235,41 @@ void SH_Main::handleSystemRequest(Request *req) {
       write_successful = System_Storage::writeMQTTPassword(param_val);
     }
 
+    // Write IR recv
+    else if (param_name == "irrecv_pin") {
+      write_successful = System_Storage::writeIRrecvPin(param_val_uint);
+    }
+
+    // Write IR send
+    else if (param_name == "irsend_pin") {
+      write_successful = System_Storage::writeIRsendPin(param_val_uint);
+    }
+
+    // Write radio pin
+    else if (param_name == "radio_pin") {
+      write_successful = System_Storage::writeRadioPin(param_val_uint);
+    }
+
+    // Write network mode
+    else if (param_name == "network_mode") {
+      write_successful = System_Storage::writeNetworkMode(param_val_uint);
+    }
+
+    // Write gadget remote
+    else if (param_name == "gadget_remote") {
+      write_successful = System_Storage::writeGadgetRemote(param_val_uint);
+    }
+
+    // Write code remote
+    else if (param_name == "code_remote") {
+      write_successful = System_Storage::writeCodeRemote(param_val_uint);
+    }
+
+    // Write event remote
+    else if (param_name == "event_remote") {
+      write_successful = System_Storage::writeEventRemote(param_val_uint);
+    }
+
     req->respond(write_successful);
 
     if (param_name == "id" && write_successful) {
@@ -240,40 +282,93 @@ void SH_Main::handleSystemRequest(Request *req) {
   if (req->getPath() == "smarthome/config/read" && json_body.containsKey("param")) {
     auto param_name = json_body["param"].as<std::string>();
     bool read_successful = false;
-    std::string read_val;
+    std::string read_val_str;
+    uint8_t read_val_uint;
 
     logger.printfln("Read param '%s'", param_name.c_str());
 
     // read wifi ssid
     if (param_name == "wifi_ssid") {
       read_successful = true;
-      read_val = System_Storage::readWifiSSID();
+      read_val_str = System_Storage::readWifiSSID();
     }
 
     // read mqtt ip
     if (param_name == "mqtt_ip") {
       read_successful = true;
-      read_val = System_Storage::readMQTTIP();
+      read_val_str = System_Storage::readMQTTIP();
     }
 
     // read mqtt port
     if (param_name == "mqtt_port") {
       read_successful = true;
-      read_val = System_Storage::readMQTTPort();
+      read_val_str = System_Storage::readMQTTPort();
     }
 
     // read mqtt username
     if (param_name == "mqtt_user") {
       read_successful = true;
-      read_val = System_Storage::readMQTTUsername();
+      read_val_str = System_Storage::readMQTTUsername();
     }
 
+    // send response if read was successful
     if (read_successful) {
       DynamicJsonDocument doc(100);
-      doc["value"] = read_val;
+      doc["value"] = read_val_str;
       req->respond(doc);
+      return;
     }
-    return;
+
+    // read irrecv pin
+    if (param_name == "irrecv_pin") {
+      read_successful = true;
+      read_val_uint = System_Storage::readIRrecvPin();
+    }
+
+    // read irsend pin
+    else if (param_name == "irsend_pin") {
+      read_successful = true;
+      read_val_uint = System_Storage::readIRsendPin();
+    }
+
+    // read radio pin
+    else if (param_name == "radio_pin") {
+      read_successful = true;
+      read_val_uint = System_Storage::readRadioPin();
+    }
+
+    // read network mode
+    else if (param_name == "network_mode") {
+      read_successful = true;
+      read_val_uint = System_Storage::readNetworkMode();
+    }
+
+    // read gadget remote
+    else if (param_name == "gadget_remote") {
+      read_successful = true;
+      read_val_uint = System_Storage::readGadgetRemote();
+    }
+
+    // read code remote
+    else if (param_name == "code_remote") {
+      read_successful = true;
+      read_val_uint = System_Storage::readCodeRemote();
+    }
+
+    // read event_remote
+    else if (param_name == "event_remote") {
+      read_successful = true;
+      read_val_uint = System_Storage::readEventRemote();
+    }
+
+    // send response if read was successful
+    if (read_successful) {
+      DynamicJsonDocument doc(100);
+      doc["value"] = read_val_uint;
+      req->respond(doc);
+      return;
+    }
+
   }
   req->dontRespond();
 }
@@ -397,6 +492,12 @@ void SH_Main::testStuff() {
     logger.println(System_Storage::hasValidMQTTUsername());
     logger.println(System_Storage::hasValidMQTTPassword());
 
+    logger.println((int) System_Storage::readIRrecvPin());
+    logger.println((int) System_Storage::readIRsendPin());
+    logger.println((int) System_Storage::readNetworkMode());
+    logger.println((int) System_Storage::readGadgetRemote());
+    logger.println((int) System_Storage::readCodeRemote());
+    logger.println((int) System_Storage::readEventRemote());
     logger.println(System_Storage::readID().c_str());
     logger.println(System_Storage::readWifiSSID().c_str());
     logger.println(System_Storage::readWifiPW().c_str());
@@ -529,7 +630,8 @@ void SH_Main::initModeComplete() {
   JsonObject json = loadConfig();
 
   initNetwork(json["network"]);
-  initConnectors(json["connectors"]);
+
+  initConnectors();
 
   if (json["gadgets"] != nullptr) {
     initGadgets(json["gadgets"]);

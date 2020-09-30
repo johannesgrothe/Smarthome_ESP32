@@ -16,9 +16,7 @@ protected:
 
 public:
 
-  IR_Gadget();
-
-  explicit IR_Gadget(JsonObject data);
+  explicit IR_Gadget(int ir_recv_pin, int ir_send_pin);
 
   void refresh() override;
 

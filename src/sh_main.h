@@ -77,9 +77,9 @@ private:
 
   void mapConnectors(JsonObject connectors_json);
 
-  bool initConnectors(JsonObject connectors_json);
+  bool initConnectors();
 
-  bool initNetwork(const JsonObject& json);
+  bool initNetwork(JsonObject json);
 
   void handleCodeConnector(Code_Gadget *gadget);
 

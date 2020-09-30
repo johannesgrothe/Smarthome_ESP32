@@ -8,16 +8,21 @@ This document has all the Information about the eeprom layout.
 |:---------- |:--------:| ----------------------------:|
 | 0          | 0        | valid configuration bitfield |
 | 1          | 1        | valid gadget bitfield        |
-| 2          | 2        | valid remote bitfield        |
+| 2          | 2        | system settings bitfield     |
 | 3          | 3        | ir_recv pin                  |
 | 4          | 4        | ir_send pin                  |
-| 5          | 25       | id                           |
-| 26         | 51       | wifi_ssid                    |
-| 52         | 102      | wifi_pw                      |
-| 103        | 118      | mqtt_ip                      |
-| 119        | 125      | mqtt_port                    |
-| 126        | 176      | mqtt_user                    |
-| 176        | 226      | mqtt_pw                      |
+| 5          | 5        | radio_pin_                   |
+| 6          | 6        | network_mode                 |
+| 7          | 7        | gadget_remote                |
+| 8          | 8        | code_remote                  |
+| 9          | 9        | event_remote                 |
+| 10         | 30       | id                           |
+| 31         | 56       | wifi_ssid                    |
+| 57         | 107      | wifi_pw                      |
+| 108        | 123      | mqtt_ip                      |
+| 124        | 130      | mqtt_port                    |
+| 131        | 181      | mqtt_user                    |
+| 182        | 232      | mqtt_pw                      |
 
 ## Valid Configuration Bitfield
 
@@ -49,9 +54,9 @@ Stores whether an eeprom section contains valid gadget configuration info
 | 6   |         |
 | 7   |         |
 
-## Valid Remote Bitfield
+## System Settings Bitfield
 
-Stores whether an eeprom section contains valid remote configuration info
+Stores information about the system status
 
 | Bit | Content |
 |:--- |:-------:|
