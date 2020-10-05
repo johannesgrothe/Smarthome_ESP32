@@ -8,14 +8,35 @@ private:
   int temperature_;
 
 protected:
-  void setHumidity(int);
-  void setTemperature(int);
+  /**
+   * method sets the Humidity and updates Remote
+   * @param hummiditiy
+   */
+  void setHumidity(int new_humiditiy);
+
+  /**
+   * method sets the Temperature and updates Remote
+   * @param temperature
+   */
+  void setTemperature(int new_temperature);
 
 public:
-  explicit SH_Sensor_Temperature(const JsonObject&);
+  /**
+   * constructor for class SH_Sensor_Temperature
+   * @param gadget
+   */
+  explicit SH_Sensor_Temperature(const JsonObject &gadget);
 
-  int getHummidity();
+  /**
+   * method to return humidity
+   * @return hummidity
+   */
+  int getHumidity();
 
+  /**
+   * method returns temperature
+   * @return temperature
+   */
   int getTemperature();
 
   void print() override;

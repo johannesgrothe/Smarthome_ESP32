@@ -6,29 +6,26 @@ SH_Sensor_Temperature::SH_Sensor_Temperature(const JsonObject &gadget) :
     temperature_(0) {}
 
 
-void SH_Sensor_Temperature::setHumidity(int new_hummiditiy) {
-  if (new_hummiditiy != humidity_) {
-    humidity_ = new_hummiditiy;
-//    updateCharacteristic("humidity", new_hummiditiy);
+void SH_Sensor_Temperature::setHumidity(int new_humiditiy) {
+  if (new_humiditiy != humidity_) {
+    humidity_ = new_humiditiy;
+    updateCharacteristic("humidity", new_humiditiy);
   }
 }
 
 void SH_Sensor_Temperature::setTemperature(int new_temperature) {
   if (new_temperature != temperature_) {
     temperature_ = new_temperature;
-//    updateCharacteristic("temperature", new_temperature);
+    updateCharacteristic("temperature", new_temperature);
   }
 }
 
-int SH_Sensor_Temperature::getHummidity() {
+int SH_Sensor_Temperature::getHumidity() {
   return humidity_;
 }
 
 int SH_Sensor_Temperature::getTemperature() {
   return temperature_;
-}
-
-void SH_Sensor_Temperature::print() {
 }
 
 //  Homebridge-Connector
@@ -51,4 +48,8 @@ bool SH_Sensor_Temperature::getCharacteristics(char *buffer) {
 
 // Code-Connector
 void SH_Sensor_Temperature::handleMethodUpdate(const char *) {
+}
+
+void SH_Sensor_Temperature::print() {
+
 }

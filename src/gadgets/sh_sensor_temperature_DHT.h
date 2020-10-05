@@ -9,7 +9,11 @@ private:
   DHT *sensor_;
 
 public:
-  explicit SH_Sensor_Temperature_DHT(const JsonObject&);
+  /**
+   * constructor for class SH_Sensor_Temperature_DHT
+   * @param gadget
+   */
+  explicit SH_Sensor_Temperature_DHT(const JsonObject &gadget);
 
   void refresh() override;
 };
