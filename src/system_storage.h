@@ -34,7 +34,7 @@
 #define IR_SEND_PIN_POS 4
 
 // radio
-#define RADIO_PIN_POS 4
+#define RADIO_PIN_POS 5
 
 // network mode
 #define NETWORK_MODE_POS 6
@@ -292,7 +292,7 @@ public:
    */
   static NetworkMode readNetworkMode() {
     uint8_t mode = readByte(NETWORK_MODE_POS);
-    if (mode > NetworkModeCount) {
+    if (mode < NetworkModeCount) {
       return (NetworkMode) mode;
     }
     return NetworkMode::None;
