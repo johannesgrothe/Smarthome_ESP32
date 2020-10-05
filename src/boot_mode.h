@@ -7,10 +7,9 @@
 enum class BootMode {
   Serial_Ony = 0,
   Network_Only_EEPROM = 1,
-  Network_Only_FLASH = 2,
-  Full_Operation = 3,
-  Unknown_Mode = 4,
-  Unbooted = 5
+  Full_Operation = 2,
+  Unknown_Mode = 3,
+  Unbooted = 4
 };
 
 static BootMode getBootMode() {
@@ -39,8 +38,6 @@ static BootMode getBootMode() {
     mode = BootMode::Serial_Ony;
   } else if (!reg0 && reg1 && !reg2) {
     mode = BootMode::Network_Only_EEPROM;
-  } else if (reg0 && reg1 && !reg2) {
-    mode = BootMode::Network_Only_FLASH;
   } else if (reg0 && reg1 && reg2) {
     mode = BootMode::Full_Operation;
   }

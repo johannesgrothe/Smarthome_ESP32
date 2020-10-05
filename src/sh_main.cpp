@@ -101,18 +101,57 @@ bool SH_Main::initConnectors() {
   return true;
 }
 
-bool SH_Main::initNetwork(JsonObject json) {
-  // check if JSON is valid
-  if (json.isNull() || !json.containsKey("type")) {
-    logger.println(LOG_TYPE::ERR, "No valid network configuration.");
+/**
+ * Initialized network to the given mode
+ * @param mode
+ * @return
+ */
+bool SH_Main::initNetwork(NetworkMode mode) {
+  if (mode == NetworkMode::None) {
+    logger.println(LOG_TYPE::ERR, "No network configured.");
     return false;
   }
 
   // initialize Network
-  if (json["type"].as<std::string>() == "mqtt") {
-    network_gadget = new MQTT_Gadget(json["config"].as<JsonObject>());
-  } else if (json["type"].as<std::string>() == "serial") {
-    network_gadget = new Serial_Gadget(json["config"].as<JsonObject>());
+  if (mode == NetworkMode::MQTT) {
+
+    if (!System_Storage::hasValidWifiSSID()) {
+      logger.println(LOG_TYPE::ERR, "Config has no valid wifi ssid");
+      return false;
+    }
+
+    if (!System_Storage::hasValidWifiPW()) {
+      logger.println(LOG_TYPE::ERR, "Config has no valid wifi password");
+      return false;
+    }
+
+    if (!System_Storage::hasValidMQTTIP()) {
+      logger.println(LOG_TYPE::ERR, "Config has no valid mqtt ip");
+      return false;
+    }
+
+    if (!System_Storage::hasValidMQTTPort()) {
+      logger.println(LOG_TYPE::ERR, "Config has no valid mqtt port");
+      return false;
+    }
+
+    std::string ssid = System_Storage::readWifiSSID();
+    std::string wifi_pw = System_Storage::readWifiPW();
+    uint16_t port = System_Storage::readMQTTPort();
+    IPAddress ip = System_Storage::readMQTTIP();
+    std::string user = System_Storage::readMQTTUsername();
+    std::string mqtt_pw = System_Storage::readMQTTPassword();
+
+    network_gadget = new MQTT_Gadget(client_id_,
+                                     ssid,
+                                     wifi_pw,
+                                     ip,
+                                     port,
+                                     user,
+                                     mqtt_pw);
+
+  } else if (mode == NetworkMode::Serial) {
+    network_gadget = new Serial_Gadget();
   } else {
     logger.println(LOG_TYPE::ERR, "Unknown Network Settings");
     return false;
@@ -205,27 +244,34 @@ void SH_Main::handleSystemRequest(Request *req) {
       }
     }
 
-    // Write Wifi SSID
+      // Write Wifi SSID
     else if (param_name == "wifi_ssid") {
       write_successful = System_Storage::writeWifiSSID(param_val);
     }
 
-    // Write Wifi PW
+      // Write Wifi PW
     else if (param_name == "wifi_pw") {
       write_successful = System_Storage::writeWifiPW(param_val);
     }
 
-    // Write MQTT IP
+      // Write MQTT IP
     else if (param_name == "mqtt_ip") {
-      write_successful = System_Storage::writeMQTTIP(param_val);
+      if (param_val == "null") {
+        write_successful = System_Storage::writeMQTTIP(IPAddress(0, 0, 0, 0));
+      } else {
+        IPAddress buf_ip;
+        buf_ip.fromString(param_val.c_str());
+        write_successful = System_Storage::writeMQTTIP(buf_ip);
+      }
     }
 
-    // Write MQTT Port
+      // Write MQTT Port
     else if (param_name == "mqtt_port") {
-      write_successful = System_Storage::writeMQTTPort(param_val);
+
+      write_successful = System_Storage::writeMQTTPort((uint16_t) atoi(param_val.c_str()));
     }
 
-    // Write MQTT User
+      // Write MQTT User
     else if (param_name == "mqtt_user") {
       write_successful = System_Storage::writeMQTTUsername(param_val);
     }
@@ -235,39 +281,55 @@ void SH_Main::handleSystemRequest(Request *req) {
       write_successful = System_Storage::writeMQTTPassword(param_val);
     }
 
-    // Write IR recv
+      // Write IR recv
     else if (param_name == "irrecv_pin") {
       write_successful = System_Storage::writeIRrecvPin(param_val_uint);
     }
 
-    // Write IR send
+      // Write IR send
     else if (param_name == "irsend_pin") {
       write_successful = System_Storage::writeIRsendPin(param_val_uint);
     }
 
-    // Write radio pin
+      // Write radio pin
     else if (param_name == "radio_pin") {
       write_successful = System_Storage::writeRadioPin(param_val_uint);
     }
 
-    // Write network mode
+      // Write network mode
     else if (param_name == "network_mode") {
-      write_successful = System_Storage::writeNetworkMode(param_val_uint);
+      if (param_val_uint < NetworkModeCount) {
+        write_successful = System_Storage::writeNetworkMode((NetworkMode) param_val_uint);
+      } else {
+        write_successful = false;
+      }
     }
 
-    // Write gadget remote
+      // Write gadget remote
     else if (param_name == "gadget_remote") {
-      write_successful = System_Storage::writeGadgetRemote(param_val_uint);
+      if (param_val_uint < GadgetRemoteModeCount) {
+        write_successful = System_Storage::writeGadgetRemote((GadgetRemoteMode) param_val_uint);
+      } else {
+        write_successful = false;
+      }
     }
 
-    // Write code remote
+      // Write code remote
     else if (param_name == "code_remote") {
-      write_successful = System_Storage::writeCodeRemote(param_val_uint);
+      if (param_val_uint < CodeRemoteModeCount) {
+        write_successful = System_Storage::writeCodeRemote((CodeRemoteMode) param_val_uint);
+      } else {
+        write_successful = false;
+      }
     }
 
-    // Write event remote
+      // Write event remote
     else if (param_name == "event_remote") {
-      write_successful = System_Storage::writeEventRemote(param_val_uint);
+      if (param_val_uint < EventRemoteModeCount) {
+        write_successful = System_Storage::writeEventRemote((EventRemoteMode) param_val_uint);
+      } else {
+        write_successful = false;
+      }
     }
 
     req->respond(write_successful);
@@ -296,13 +358,17 @@ void SH_Main::handleSystemRequest(Request *req) {
     // read mqtt ip
     if (param_name == "mqtt_ip") {
       read_successful = true;
-      read_val_str = System_Storage::readMQTTIP();
+      std::stringstream sstr;
+      sstr << System_Storage::readMQTTIP().toString().c_str();
+      read_val_str = sstr.str();
     }
 
     // read mqtt port
     if (param_name == "mqtt_port") {
       read_successful = true;
-      read_val_str = System_Storage::readMQTTPort();
+      std::stringstream sstr;
+      sstr << System_Storage::readMQTTPort();
+      read_val_str = sstr.str();
     }
 
     // read mqtt username
@@ -325,40 +391,40 @@ void SH_Main::handleSystemRequest(Request *req) {
       read_val_uint = System_Storage::readIRrecvPin();
     }
 
-    // read irsend pin
+      // read irsend pin
     else if (param_name == "irsend_pin") {
       read_successful = true;
       read_val_uint = System_Storage::readIRsendPin();
     }
 
-    // read radio pin
+      // read radio pin
     else if (param_name == "radio_pin") {
       read_successful = true;
       read_val_uint = System_Storage::readRadioPin();
     }
 
-    // read network mode
+      // read network mode
     else if (param_name == "network_mode") {
       read_successful = true;
-      read_val_uint = System_Storage::readNetworkMode();
+      read_val_uint = (uint8_t) System_Storage::readNetworkMode();
     }
 
-    // read gadget remote
+      // read gadget remote
     else if (param_name == "gadget_remote") {
       read_successful = true;
-      read_val_uint = System_Storage::readGadgetRemote();
+      read_val_uint = (uint8_t) System_Storage::readGadgetRemote();
     }
 
-    // read code remote
+      // read code remote
     else if (param_name == "code_remote") {
       read_successful = true;
-      read_val_uint = System_Storage::readCodeRemote();
+      read_val_uint = (uint8_t) System_Storage::readCodeRemote();
     }
 
-    // read event_remote
+      // read event_remote
     else if (param_name == "event_remote") {
       read_successful = true;
-      read_val_uint = System_Storage::readEventRemote();
+      read_val_uint = (uint8_t) System_Storage::readEventRemote();
     }
 
     // send response if read was successful
@@ -382,12 +448,12 @@ void SH_Main::handleRequest(Request *req) {
       handleSystemRequest(req);
     }
     return;
-  } else if (req->hasReceiver() &&  client_id_ != req->getReceiver()) {
+  } else if (req->hasReceiver() && client_id_ != req->getReceiver()) {
     // Return if the client is not the receiver of the message
     return;
   }
 
-  if (req_path.compare(0, 17,"smarthome/config/") == 0) {
+  if (req_path.compare(0, 17, "smarthome/config/") == 0) {
     handleSystemRequest(req);
     return;
   }
@@ -484,6 +550,7 @@ void SH_Main::testStuff() {
 //    System_Storage::resetContentFlag();
 //    System_Storage::writeTestEEPROM();
     logger.println(LOG_TYPE::DATA, System_Storage::readWholeEEPROM().c_str());
+    logger.println("Status-Byte:");
     logger.println(System_Storage::hasValidID());
     logger.println(System_Storage::hasValidWifiSSID());
     logger.println(System_Storage::hasValidWifiPW());
@@ -491,18 +558,21 @@ void SH_Main::testStuff() {
     logger.println(System_Storage::hasValidMQTTPort());
     logger.println(System_Storage::hasValidMQTTUsername());
     logger.println(System_Storage::hasValidMQTTPassword());
-
+    logger.println("IR:");
     logger.println((int) System_Storage::readIRrecvPin());
     logger.println((int) System_Storage::readIRsendPin());
+    logger.println("NetworkMode:");
     logger.println((int) System_Storage::readNetworkMode());
+    logger.println("Remotes:");
     logger.println((int) System_Storage::readGadgetRemote());
     logger.println((int) System_Storage::readCodeRemote());
     logger.println((int) System_Storage::readEventRemote());
+    logger.println("Config:");
     logger.println(System_Storage::readID().c_str());
     logger.println(System_Storage::readWifiSSID().c_str());
     logger.println(System_Storage::readWifiPW().c_str());
-    logger.println(System_Storage::readMQTTIP().c_str());
-    logger.println(System_Storage::readMQTTPort().c_str());
+    logger.println(System_Storage::readMQTTIP().toString().c_str());
+    logger.println(System_Storage::readMQTTPort());
     logger.println(System_Storage::readMQTTUsername().c_str());
     logger.println(System_Storage::readMQTTPassword().c_str());
   } else {
@@ -510,14 +580,6 @@ void SH_Main::testStuff() {
   }
 
   logger.decIndent();
-}
-
-// TODO: deprecated, only load the parts of config that are needed
-JsonObject loadConfig() {
-  DynamicJsonDocument json_file(2048);
-  deserializeJson(json_file, json_str); // Loads file from system_storage.h
-  JsonObject json = json_file.as<JsonObject>();
-  return json;
 }
 
 void SH_Main::init() {
@@ -540,13 +602,9 @@ void SH_Main::init() {
       logger.println("Serial Only");
       initModeSerial();
       break;
-    case BootMode::Network_Only_FLASH:
-      logger.println("Network Only: Flash");
-      initModeNetwork(false);
-      break;
     case BootMode::Network_Only_EEPROM:
       logger.println("Network Only: EEPROM");
-      initModeNetwork(true);
+      initModeNetwork();
       break;
     case BootMode::Full_Operation:
       logger.println("Full Operation");
@@ -557,107 +615,68 @@ void SH_Main::init() {
       break;
   }
   logger.printnl();
-}
-
-void SH_Main::initModeSerial() {
-  DynamicJsonDocument json_file(2048);
-  deserializeJson(json_file, F("{\"type\":\"serial\",\"config\"{}}"));
-  initNetwork(json_file.as<JsonObject>());
-}
-
-void SH_Main::initModeNetwork(bool use_eeprom) {
-  DynamicJsonDocument json_file(2048);
-  JsonObject json;
-  if (use_eeprom) {
-    logger.println("Using EEPROM");
-    json = loadConfig();
-  } else {
-    logger.println("Using FLASH");
-#ifndef WIFI_SSID
-#define WIFI_SSID "blub"
-#endif
-
-#ifndef WIFI_PW
-#define WIFI_PW "blub"
-#endif
-
-#ifndef MQTT_IP
-#define MQTT_IP "blub"
-#endif
-
-#ifndef MQTT_PORT
-#define MQTT_PORT "1883"
-#endif
-
-    std::stringstream local_json_str;
-    local_json_str << R"({"network":{"type":"mqtt","config":{"wifi_ssid":")" << std::string(WIFI_SSID)
-                   << R"(","wifi_password":")" << std::string(WIFI_PW)
-                   << R"(","ip":")" << std::string(MQTT_IP)
-                   << R"(","port":)" << std::string(MQTT_PORT)
-                   #ifdef MQTT_USERNAME
-                   << R"(","mqtt_username":")" << MQTT_USERNAME << R"(")"
-                   #else
-                   << R"(,"mqtt_username":null)"
-                   #endif
-                   #ifdef MQTT_PW
-                   << R"(,"mqtt_password":")" << MQTT_PW << R"(")"
-                   #else
-                   << R"(,"mqtt_password":null)"
-                   #endif
-                   << R"(}}})";
-
-    DeserializationError e = deserializeJson(json_file, local_json_str.str());
-    if (e != DeserializationError::Ok) {
-      logger.println(LOG_TYPE::ERR, "Couldn't deserialize temporary json string");
-    }
-    logger.println(local_json_str.str().c_str());
-
-    json = json_file.as<JsonObject>();
-
-//    json_file["network"]["type"] = "mqtt";
-//    char buf[300]{};
-//    serializeJson(&buf[0], json_file);
-//    logger.println(buf);
-  }
-  if (json.containsKey("network")) {
-    initNetwork(json["network"]);
-  } else {
-    logger.println(LOG_TYPE::ERR, "Invalid config: no 'network' setting.");
-  }
-}
-
-void SH_Main::initModeComplete() {
-  JsonObject json = loadConfig();
-
-  initNetwork(json["network"]);
-
-  initConnectors();
-
-  if (json["gadgets"] != nullptr) {
-    initGadgets(json["gadgets"]);
-  } else {
-    logger.println(LOG_TYPE::ERR, "No gadgets-configuration found");
-  }
-  if (json["connector-mapping"] != nullptr) {
-    mapConnectors(json["connector-mapping"]);
-  } else {
-    logger.println(LOG_TYPE::ERR, "No connector-mapping-configuration found");
-  }
-  if (json["gadget-remote"] != nullptr) {
-    initGadgetRemote(json["gadget-remote"]);
-  } else {
-    logger.println(LOG_TYPE::ERR, "No remotes-configuration found");
-  }
-  if (json["code-remote"] != nullptr) {
-    initCodeRemote(json["code-remote"]);
-  } else {
-    logger.println(LOG_TYPE::ERR, "No code-remote-configuration found");
-  }
-
-  testStuff();
 
   logger.print("Free Heap: ");
   logger.println(ESP.getFreeHeap());
+}
+
+/**
+ * Initializes the chip in network only mode using the serial network
+ */
+void SH_Main::initModeSerial() {
+  bool status = initNetwork(NetworkMode::Serial);
+  if (status) {
+    logger.println("Serial network initialized");
+  } else {
+    logger.println(LOG_TYPE::ERR, "serial network was not initialized");
+  }
+}
+
+/**
+ * Initializes the chip in network only mode using the network mode loaded from eeprom
+ */
+void SH_Main::initModeNetwork() {
+  if (eeprom_active_) {
+    auto mode = System_Storage::readNetworkMode();
+    initNetwork(mode);
+  } else {
+    logger.println(LOG_TYPE::ERR, "network type could not be loaded");
+  }
+}
+
+/**
+ * Initializes the chip with all gadgets and connectors loaded
+ */
+void SH_Main::initModeComplete() {
+  if (eeprom_active_) {
+    auto mode = System_Storage::readNetworkMode();
+    initNetwork(mode);
+  } else {
+    logger.println(LOG_TYPE::ERR, "network type could not be loaded");
+  }
+
+  initConnectors();
+
+//  if (json["gadgets"] != nullptr) {
+//    initGadgets(json["gadgets"]);
+//  } else {
+//    logger.println(LOG_TYPE::ERR, "No gadgets-configuration found");
+//  }
+//  if (json["connector-mapping"] != nullptr) {
+//    mapConnectors(json["connector-mapping"]);
+//  } else {
+//    logger.println(LOG_TYPE::ERR, "No connector-mapping-configuration found");
+//  }
+//  if (json["gadget-remote"] != nullptr) {
+//    initGadgetRemote(json["gadget-remote"]);
+//  } else {
+//    logger.println(LOG_TYPE::ERR, "No remotes-configuration found");
+//  }
+//  if (json["code-remote"] != nullptr) {
+//    initCodeRemote(json["code-remote"]);
+//  } else {
+//    logger.println(LOG_TYPE::ERR, "No code-remote-configuration found");
+//  }
 
   char client_str[50]{};
   unsigned long ident = micros() % 7023;
@@ -699,7 +718,6 @@ void SH_Main::refresh() {
       refreshModeSerial();
       break;
     case BootMode::Network_Only_EEPROM:
-    case BootMode::Network_Only_FLASH:
       refreshModeNetwork();
       break;
     case BootMode::Full_Operation:
@@ -749,5 +767,5 @@ SH_Main::SH_Main() :
   gadget_remote(nullptr),
   system_mode(BootMode::Unknown_Mode),
   last_req_id_(0),
-  eeprom_active_(false){
+  eeprom_active_(false) {
 }

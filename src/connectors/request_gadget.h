@@ -35,7 +35,7 @@ protected:
 public:
   Request_Gadget();
 
-  explicit Request_Gadget(RequestGadgetType t, JsonObject data);
+  explicit Request_Gadget(RequestGadgetType t);
 
   bool requestGadgetIsReady() const;
 

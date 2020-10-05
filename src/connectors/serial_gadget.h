@@ -20,9 +20,8 @@ protected:
   void executeRequestSending(Request *req) override;
 
 public:
-  Serial_Gadget();
 
-  explicit Serial_Gadget(JsonObject data);
+  explicit Serial_Gadget();
 
   void refresh() override;
 };

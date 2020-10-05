@@ -25,11 +25,9 @@ Request_Gadget::Request_Gadget() :
   out_request_queue_ = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
 }
 
-Request_Gadget::Request_Gadget(RequestGadgetType t, JsonObject data) :
+Request_Gadget::Request_Gadget(RequestGadgetType t) :
   type_(t),
   request_gadget_is_ready_(false) {
-  if (data.isNull()) {
-  }
   in_request_queue_ = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
   out_request_queue_ = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
   request_gadget_is_ready_ = true;

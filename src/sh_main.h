@@ -5,9 +5,7 @@
 #include "system_settings.h"
 
 // Network Gadgets
-#include "connectors/ir_gadget.h"
-#include "connectors/serial_gadget.h"
-#include "connectors/radio_gadget.h"
+#include "network_library.h"
 
 // Gadget-Lib
 #include "gadgets/gadget_library.h"
@@ -22,12 +20,11 @@
 #include "Client.h"
 #include "ArduinoJson.h"
 
-//#include "remotes/homebridge_remote.h"
-#include "remotes/smarthome_gadget_remote.h"
+// Remotes
+#include "remote_library.h"
+
 #include "gadget_collection.h"
 #include "system_storage.h"
-
-#include "remotes/smarthome_code_remote.h"
 
 #include "hardware_link.h"
 #include "pin_profile.h"
@@ -79,7 +76,9 @@ private:
 
   bool initConnectors();
 
-  bool initNetwork(JsonObject json);
+  bool initNetwork();
+
+  bool initNetwork(NetworkMode);
 
   void handleCodeConnector(Code_Gadget *gadget);
 
@@ -105,7 +104,7 @@ private:
 
   void initModeSerial();
 
-  void initModeNetwork(bool);
+  void initModeNetwork();
 
   void initModeComplete();
 

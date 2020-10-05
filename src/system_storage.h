@@ -5,10 +5,12 @@
 #include <sstream>
 #include <utility>
 #include <cmath>
+#include <string>
 #include "system_settings.h"
 #include "console_logger.h"
 
-#define EEPROM_WRITE_ALWAYS
+#include "network_library.h"
+#include "remote_library.h"
 
 // valid config bitfield
 #define VALID_CONFIG_BITFIELD_BYTE 0
@@ -74,6 +76,30 @@ static bool validateJson(const char *new_json_str) {
   DynamicJsonDocument json_file(2048);
   DeserializationError err = deserializeJson(json_file, new_json_str);
   return err == DeserializationError::Ok;
+}
+
+static IPAddress stringToIP(const std::string& ip) {
+  char ip_str[15]{};
+  strncpy(ip_str, ip.c_str(), 15);
+  unsigned int ip_arr[4];
+  uint8_t count = 0;
+  char *part;
+  part = strtok(ip_str, ".");
+  ip_arr[count] = atoi(part);
+  while (count < 3) {
+    part = strtok(nullptr, ".");
+    count++;
+    ip_arr[count] = atoi(part);
+  }
+  if (count < 3) {
+    return IPAddress(0,0,0,0);
+  }
+  for (unsigned int octlet: ip_arr) {
+    if (octlet > 0xFF) {
+      return IPAddress(0, 0, 0, 0);
+    }
+  }
+  return IPAddress(ip_arr[0], ip_arr[1], ip_arr[2], ip_arr[3]);
 }
 
 class System_Storage {
@@ -256,16 +282,20 @@ public:
    * @param mode the mode the network should use
    * @return whether writing was successful
    */
-  static bool writeNetworkMode(uint8_t mode) {
-    return writeByte(NETWORK_MODE_POS, mode);
+  static bool writeNetworkMode(NetworkMode mode) {
+    return writeByte(NETWORK_MODE_POS, (uint8_t) mode);
   }
 
   /**
    * Reads the network mode from the eeprom
    * @return the network mode
    */
-  static uint8_t readNetworkMode() {
-    return readByte(NETWORK_MODE_POS);
+  static NetworkMode readNetworkMode() {
+    uint8_t mode = readByte(NETWORK_MODE_POS);
+    if (mode > NetworkModeCount) {
+      return (NetworkMode) mode;
+    }
+    return NetworkMode::None;
   }
 
   // read + write gadget remote
@@ -275,16 +305,20 @@ public:
    * @param mode the mode used for the gadget remote
    * @return whether writing was successful
    */
-  static bool writeGadgetRemote(uint8_t mode) {
-    return writeByte(GADGET_REMOTE_POS, mode);
+  static bool writeGadgetRemote(GadgetRemoteMode mode) {
+    return writeByte(GADGET_REMOTE_POS, (uint8_t) mode);
   }
 
   /**
    * Reads the gadget remote mode from the eeprom
    * @return the gadget remote mode
    */
-  static uint8_t readGadgetRemote() {
-    return readByte(GADGET_REMOTE_POS);
+  static GadgetRemoteMode readGadgetRemote() {
+    uint8_t mode = readByte(GADGET_REMOTE_POS);
+    if (mode < GadgetRemoteModeCount) {
+      return (GadgetRemoteMode) mode;
+    }
+    return GadgetRemoteMode::None;
   }
 
   // read + write code remote
@@ -294,16 +328,20 @@ public:
    * @param mode the mode used for the code remote
    * @return whether writing was successful
    */
-  static bool writeCodeRemote(uint8_t mode) {
-    return writeByte(CODE_REMOTE_POS, mode);
+  static bool writeCodeRemote(CodeRemoteMode mode) {
+    return writeByte(CODE_REMOTE_POS, (uint8_t) mode);
   }
 
   /**
    * Reads the code remote mode from the eeprom
    * @return the code remote mode
    */
-  static uint8_t readCodeRemote() {
-    return readByte(CODE_REMOTE_POS);
+  static CodeRemoteMode readCodeRemote() {
+    uint8_t mode =  readByte(CODE_REMOTE_POS);
+    if (mode < CodeRemoteModeCount) {
+      return (CodeRemoteMode) mode;
+    }
+    return CodeRemoteMode::None;
   }
 
   // read + write event remote
@@ -313,16 +351,20 @@ public:
    * @param mode the mode used for the event remote
    * @return whether writing was successful
    */
-  static bool writeEventRemote(uint8_t mode) {
-    return writeByte(EVENT_REMOTE_POS, mode);
+  static bool writeEventRemote(EventRemoteMode mode) {
+    return writeByte(EVENT_REMOTE_POS, (uint8_t) mode);
   }
 
   /**
    * Reads the event remote mode from the eeprom
    * @return the gadget remote mode
    */
-  static uint8_t readEventRemote() {
-    return readByte(EVENT_REMOTE_POS);
+  static EventRemoteMode readEventRemote() {
+    uint8_t mode = readByte(EVENT_REMOTE_POS);
+    if (mode < EventRemoteModeCount) {
+      return (EventRemoteMode) mode;
+    }
+    return EventRemoteMode::None;
   }
 
   // read + write ID
@@ -431,17 +473,18 @@ public:
   }
 
   /**
- * Writes the MQTT IP-Address to the eeprom
- * @param ip the ip to be written
- * @return whether writing was successful
- */
-  static bool writeMQTTIP(const std::string& ip) {
-    bool success;
-    if (ip == "null") {
+   * Writes the MQTT IP-Address to the eeprom.
+   * Write 0.0.0.0 to set ip to 'no valid ip'
+   * @param ip the ip to be written
+   * @return whether writing was successful
+   */
+  static bool writeMQTTIP(const IPAddress& ip) {
+    auto ip_str = ip.toString().c_str();
+    bool success = writeContent(MQTT_IP_POS, MQTT_IP_MAX_LEN, ip_str);
+    if (ip == IPAddress(0, 0, 0, 0)) {
       setContentFlag(CONFIG_CHECK_INDEX_MQTT_PW, false);
       success = true;
     } else {
-      success = writeContent(MQTT_PW_POS, MQTT_PW_MAX_LEN, ip);
       setContentFlag(CONFIG_CHECK_INDEX_MQTT_PW, success);
     }
     return success;
@@ -449,10 +492,13 @@ public:
 
   /**
    * Reads the MQTT IP-Address from the eeprom
-   * @return the port
+   * @return the ip
    */
-  static std::string readMQTTIP() {
-    return readContent(MQTT_IP_POS, MQTT_IP_MAX_LEN);
+  static IPAddress readMQTTIP() {
+    std::string ip_str = readContent(MQTT_IP_POS, MQTT_IP_MAX_LEN);
+    IPAddress ip;
+    ip.fromString(ip_str.c_str());
+    return ip;
   }
 
   /**
@@ -464,22 +510,20 @@ public:
   }
 
   /**
-   * Writes the MQTT port to the eeprom
+   * Writes the MQTT port to the eeprom.
+   * Write 0 to set port to 'no valid port'
    * @param port the port to be written
    * @return whether writing was successful
    */
-  static bool writeMQTTPort(const std::string& port) {
+  static bool writeMQTTPort(uint16_t port) {
     bool success;
-#ifdef EEPROM_WRITE_ALWAYS
-    success = writeContent(MQTT_PORT_POS, MQTT_PORT_MAX_LEN, port);
-#endif
-    if (port == "null") {
+    std::stringstream sstr;
+    sstr << port;
+    success = writeContent(MQTT_PORT_POS, MQTT_PORT_MAX_LEN, sstr.str());
+    if (port == 0) {
       setContentFlag(CONFIG_CHECK_INDEX_MQTT_PORT, false);
       success = true;
     } else {
-#ifndef EEPROM_WRITE_ALWAYS
-      success = writeContent(MQTT_PORT_POS, MQTT_PORT_MAX_LEN, port);
-#endif
       setContentFlag(CONFIG_CHECK_INDEX_MQTT_PORT, success);
     }
     return success;
@@ -489,8 +533,9 @@ public:
    * Reads the MQTT port from the eeprom
    * @return the port
    */
-  static std::string readMQTTPort() {
-    return readContent(MQTT_PORT_POS, MQTT_PORT_MAX_LEN);
+  static uint16_t readMQTTPort() {
+    auto port_str = readContent(MQTT_PORT_POS, MQTT_PORT_MAX_LEN);
+    return (uint16_t) atoi(port_str.c_str());
   }
 
   /**
@@ -508,16 +553,11 @@ public:
    */
   static bool writeMQTTUsername(const std::string &username) {
     bool success;
-#ifdef EEPROM_WRITE_ALWAYS
     success = writeContent(MQTT_USER_POS, MQTT_USER_MAX_LEN, username);
-#endif
     if (username == "null") {
       setContentFlag(CONFIG_CHECK_INDEX_MQTT_USER, false);
       success = true;
     } else {
-#ifndef EEPROM_WRITE_ALWAYS
-      success = writeContent(MQTT_USER_POS, MQTT_USER_MAX_LEN, username);
-#endif
       setContentFlag(CONFIG_CHECK_INDEX_MQTT_USER, success);
     }
     return success;
@@ -546,16 +586,11 @@ public:
   */
   static bool writeMQTTPassword(const std::string &pw) {
     bool success;
-#ifdef EEPROM_WRITE_ALWAYS
     success = writeContent(MQTT_PW_POS, MQTT_PW_MAX_LEN, pw);
-#endif
     if (pw == "null") {
       setContentFlag(CONFIG_CHECK_INDEX_MQTT_PW, false);
       success = true;
     } else {
-#ifndef EEPROM_WRITE_ALWAYS
-      success = writeContent(MQTT_PW_POS, MQTT_PW_MAX_LEN, pw);
-#endif
       setContentFlag(CONFIG_CHECK_INDEX_MQTT_PW, success);
     }
     return success;

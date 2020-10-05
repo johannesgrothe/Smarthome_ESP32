@@ -7,12 +7,7 @@ void Serial_Gadget::executeRequestSending(Request *req) {
 
 Serial_Gadget::Serial_Gadget() :
   Code_Gadget(),
-  Request_Gadget() {};
-
-Serial_Gadget::Serial_Gadget(JsonObject data) :
-  Code_Gadget(),
-  Request_Gadget(RequestGadgetType::SERIAL_G, data) {
-  if (data.isNull()) {}
+  Request_Gadget(RequestGadgetType::SERIAL_G) {
   logger.println("Creating Serial Gadget");
   logger.incIndent();
   logger.println(LOG_TYPE::DATA, "Using default Serial Connection");

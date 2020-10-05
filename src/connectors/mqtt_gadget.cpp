@@ -1,8 +1,9 @@
 #include "mqtt_gadget.h"
 #include <sstream>
+#include <utility>
 
 bool MQTT_Gadget::connect_mqtt() {
-  mqttClient_->setServer(*mqttServer_, mqtt_port_);
+  mqttClient_->setServer(mqttServer_, mqtt_port_);
 
   using std::placeholders::_1;
   using std::placeholders::_2;
@@ -12,7 +13,14 @@ bool MQTT_Gadget::connect_mqtt() {
   logger.print(LOG_TYPE::DATA, "Connecting to Broker ");
   uint8_t conn_count = 0;
   while (!mqttClient_->connected()) {
-    if (mqttClient_->connect("esp32_test_client")) {
+    bool connected = false;
+    if (has_credentials_) {
+      connected = mqttClient_->connect(client_name_.c_str(), username_.c_str(), password_.c_str());
+    } else {
+      connected = mqttClient_->connect(client_name_.c_str());
+    }
+
+    if (connected) {
       logger.println("OK");
       mqttClient_->subscribe("debug/in");
       mqttClient_->subscribe("smarthome/from/sys/config/set");
@@ -81,7 +89,7 @@ void MQTT_Gadget::executeRequestSending(Request *req) {
   logger.print("'");
   bool status = true;
   uint16_t msg_len = body.size();
-  status = status && mqttClient_->beginPublish(topic.c_str(), msg_len, false);
+  status = mqttClient_->beginPublish(topic.c_str(), msg_len, false);
   uint16_t k;
   for (
     k = 0;
@@ -96,81 +104,62 @@ void MQTT_Gadget::executeRequestSending(Request *req) {
     logger.println("ERR");
 }
 
-MQTT_Gadget::MQTT_Gadget() :
-  WiFiGadget(),
-  Request_Gadget() {};
-
-MQTT_Gadget::MQTT_Gadget(JsonObject data) :
-  WiFiGadget(data),
-  Request_Gadget(RequestGadgetType::MQTT_G, data) {
-  if (data.isNull()) {
-    logger.println(LOG_TYPE::ERR, "No valid MQTT configuration.");
-    return;
-  }
+MQTT_Gadget::MQTT_Gadget(const std::string& client_name,
+                         std::string wifi_ssid,
+                         std::string wifi_pw,
+                         const IPAddress& mqtt_ip,
+                         uint16_t mqtt_port,
+                         const std::string& mqtt_username,
+                         const std::string& mqtt_pw) :
+  WiFiGadget(std::move(wifi_ssid), std::move(wifi_pw)),
+  Request_Gadget(RequestGadgetType::MQTT_G),
+  mqttServer_(mqtt_ip),
+  mqtt_port_(mqtt_port),
+  has_credentials_(true),
+  client_name_(client_name) {
   if (wifiIsInitialized()) {
     logger.println("Creating MQTT Gadget");
-    network_client_ = WiFiClient();
+//    network_client_ = WiFiClient();
     logger.incIndent();
     mqttClient_ = new PubSubClient(network_client_);
     bool everything_ok = true;
+
     // Reads the IP from the JSON
-    if (data.containsKey("ip")) {
-//    if (data["ip"] != nullptr) {
-      char ip_str[15]{};
-      strncpy(ip_str, data["ip"].as<const char *>(), 15);
-      unsigned int ip_arr[4];
-      uint8_t count = 0;
-      char *part;
-      part = strtok(ip_str, ".");
-      ip_arr[count] = atoi(part);
-      while (count < 3) {
-        part = strtok(nullptr, ".");
-        count++;
-        ip_arr[count] = atoi(part);
-      }
-      mqttServer_ = new IPAddress(ip_arr[0], ip_arr[1], ip_arr[2], ip_arr[3]);
-      logger.print(LOG_TYPE::DATA, "IP: ");
-      logger.print(ip_arr[0]);
-      logger.print(".");
-      logger.print(ip_arr[1]);
-      logger.print(".");
-      logger.print(ip_arr[2]);
-      logger.print(".");
-      logger.println(ip_arr[3]);
-    } else {
+    if (mqtt_ip == IPAddress(0, 0, 0, 0)) {
       everything_ok = false;
-      logger.println(LOG_TYPE::ERR, "'ip' missing in config.");
+      logger.println(LOG_TYPE::ERR, "'ip' is null");
     }
 
     // Reads the Port from the JSON
-    if (data["port"] != nullptr) {
-      mqtt_port_ = data["port"].as<unsigned int>();
+    if (mqtt_port != 0) {
+      mqtt_port_ = mqtt_port;
       logger.print(LOG_TYPE::DATA, "Port: ");
       logger.println(mqtt_port_);
     } else {
       everything_ok = false;
-      logger.println(LOG_TYPE::ERR, "'port' missing in config.");
+      logger.println(LOG_TYPE::ERR, "'port' is 0");
     }
 
     // Reads the Username from JSON
-    if (data["username"] != nullptr) {
-      strncpy(username_, data["username"].as<const char *>(), MQTT_USERNAME_MAX_LEN);
+    if (mqtt_username != "null") {
+      username_ = mqtt_username;
       logger.print(LOG_TYPE::DATA, "Username: ");
       logger.println(username_);
     } else {
       // everything_ok = false;
-      logger.println(LOG_TYPE::ERR, "'username' missing in config.");
+      has_credentials_ = false;
+      logger.println(LOG_TYPE::WARN, "no 'username' configured.");
     }
 
-    // Reads the Password from JSON
-    if (data["password"] != nullptr) {
-      strncpy(password_, data["password"].as<const char *>(), MQTT_USERNAME_MAX_LEN);
-
+    // Reads the Username from JSON
+    if (mqtt_pw != "null") {
+      password_ = mqtt_pw;
       logger.print(LOG_TYPE::DATA, "Password: ");
-      logger.println(username_);
+      logger.println(password_);
     } else {
       // everything_ok = false;
-      logger.println(LOG_TYPE::ERR, "'password' missing in config.");
+      has_credentials_ = false;
+      logger.println(LOG_TYPE::WARN, "no 'password' configured.");
     }
 
     connect_mqtt();

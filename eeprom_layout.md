@@ -11,7 +11,7 @@ This document has all the Information about the eeprom layout.
 | 2          | 2        | system settings bitfield     |
 | 3          | 3        | ir_recv pin                  |
 | 4          | 4        | ir_send pin                  |
-| 5          | 5        | radio_pin_                   |
+| 5          | 5        | radio_pin                    |
 | 6          | 6        | network_mode                 |
 | 7          | 7        | gadget_remote                |
 | 8          | 8        | code_remote                  |

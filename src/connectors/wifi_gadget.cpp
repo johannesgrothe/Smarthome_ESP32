@@ -1,50 +1,30 @@
 #include "wifi_gadget.h"
 
+#include <utility>
+
 WiFiGadget::WiFiGadget() = default;
 
-WiFiGadget::WiFiGadget(const JsonObject& json) {
-  if (json.isNull() || !json.containsKey("wifi_ssid") || !json.containsKey("wifi_password")) {
-    logger.println(LOG_TYPE::ERR, "No valid wifi configuration.");
-    logger.incIndent();
-    if (json.isNull()) {
-      logger.println(LOG_TYPE::DATA, "Config is null");
-    } else {
-      if (!json.containsKey("wifi_ssid")) {
-        logger.println(LOG_TYPE::DATA, "wifi_ssid is missing");
-      }
-      if (!json.containsKey("wifi_password")) {
-        logger.println(LOG_TYPE::DATA, "wifi_password is missing");
-      }
-    }
-    logger.decIndent();
-    wifi_initialized_ = false;
-    return;
-  }
-  logger.decIndent();
+WiFiGadget::WiFiGadget(std::string ssid, std::string pw):
+wifi_ssid_(std::move(ssid)),
+wifi_password_(std::move(pw)) {
   logger.println("Connecting to WiFi:");
   logger.incIndent();
   network_client_ = WiFiClient();
-  const char *ssid = json["wifi_ssid"].as<char *>();
-  const char *passwd = json["wifi_password"].as<char *>();
 
-  if (ssid == nullptr || passwd == nullptr) {
+  if (wifi_ssid_ == "null" || wifi_password_ == "null") {
     logger.println(LOG_TYPE::ERR, "Missing Username or Password.");
     logger.decIndent();
     wifi_initialized_ = false;
     return;
   }
 
-  strncpy(wifi_ssid_, ssid, WIFI_SSID_LEN_MAX);
-  strncpy(wifi_password_, passwd, WIFI_PASSWORD_LEN_MAX);
-
   logger.print(LOG_TYPE::DATA, "");
-  logger.print("Connecting to ");
-  logger.print(ssid);
+  logger.printf("Connecting to %s", wifi_ssid_.c_str());
 
   byte connection_tries = 0;
 
   while (WiFiClass::status() != WL_CONNECTED && connection_tries < 6) {
-    WiFi.begin(ssid, passwd);
+    WiFi.begin(wifi_ssid_.c_str(), wifi_password_.c_str());
     delay(1000);
     logger.print(".");
     connection_tries++;
