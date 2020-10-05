@@ -5,15 +5,17 @@ SH_Sensor_Motion::SH_Sensor_Motion(const JsonObject &gadget) :
     sensor_status_(false) {}
 
 void SH_Sensor_Motion::setStatus(bool status) {
+  if (status != sensor_status_) {
+    updateCharacteristic("status", (int) status);
+    sensor_status_ = status;
+  }
   if (status) {
     if (!sensor_status_){
       logger.println("movement detected!");
-      sensor_status_ = true;
     }
   } else {
     if (sensor_status_) {
       logger.println("no further movement detected");
-      sensor_status_ = false;
     }
   }
 }
