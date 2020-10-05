@@ -7,20 +7,28 @@ private:
   bool sensor_status_;
 
 protected:
-  void setStatus(bool);
+  /**
+   * updates local attribute sensor_status, if necessary.
+   * also updates Remote
+   * @param status new status
+   */
+  void setStatus(bool status);
 
 public:
-  explicit SH_Sensor_Motion(const JsonObject&);
-
-  void print();
+  /**
+   * Constructor for class SH_Sensor_Motion
+   * @param gadget
+   */
+  explicit SH_Sensor_Motion(const JsonObject &gadget);
 
   //  Homebridge-Connector
-  void handleCharacteristicUpdate(const char *, int) override;
+  void handleCharacteristicUpdate(const char *characteristic, int value) override;
 
-  bool getCharacteristics(char *) override;
+  bool getCharacteristics(char *characteristic) override;
   // End of Homebridge-Connector
 
   // Code-Connector
+
   void handleMethodUpdate(const char *) override;
   // End of Code-Connector
 };
