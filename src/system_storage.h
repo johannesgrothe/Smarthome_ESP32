@@ -34,18 +34,19 @@
 #define IR_SEND_PIN_POS 4
 
 // radio
-#define RADIO_PIN_POS 5
+#define RADIO_RECV_POS 5
+#define RADIO_SEND_POS 6
 
 // network mode
-#define NETWORK_MODE_POS 6
+#define NETWORK_MODE_POS 7
 
 // remotes
-#define GADGET_REMOTE_POS 7
+#define GADGET_REMOTE_POS 8
 #define CODE_REMOTE_POS GADGET_REMOTE_POS + 1
 #define EVENT_REMOTE_POS CODE_REMOTE_POS + 1
 
 // id
-#define ID_POS 10
+#define ID_POS 15
 #define ID_MAX_LEN 20
 
 //wifi_ssid
@@ -58,11 +59,11 @@
 
 //wifi_pw
 #define MQTT_IP_POS (WIFI_PW_POS + WIFI_PW_MAX_LEN + 1)
-#define MQTT_IP_MAX_LEN 15
+#define MQTT_IP_MAX_LEN 4
 
 //mqtt port
 #define MQTT_PORT_POS (MQTT_IP_POS + MQTT_IP_MAX_LEN + 1)
-#define MQTT_PORT_MAX_LEN 6
+#define MQTT_PORT_MAX_LEN 2
 
 //mqtt username
 #define MQTT_USER_POS (MQTT_PORT_POS + MQTT_PORT_MAX_LEN + 1)
@@ -76,30 +77,6 @@ static bool validateJson(const char *new_json_str) {
   DynamicJsonDocument json_file(2048);
   DeserializationError err = deserializeJson(json_file, new_json_str);
   return err == DeserializationError::Ok;
-}
-
-static IPAddress stringToIP(const std::string& ip) {
-  char ip_str[15]{};
-  strncpy(ip_str, ip.c_str(), 15);
-  unsigned int ip_arr[4];
-  uint8_t count = 0;
-  char *part;
-  part = strtok(ip_str, ".");
-  ip_arr[count] = atoi(part);
-  while (count < 3) {
-    part = strtok(nullptr, ".");
-    count++;
-    ip_arr[count] = atoi(part);
-  }
-  if (count < 3) {
-    return IPAddress(0,0,0,0);
-  }
-  for (unsigned int octlet: ip_arr) {
-    if (octlet > 0xFF) {
-      return IPAddress(0, 0, 0, 0);
-    }
-  }
-  return IPAddress(ip_arr[0], ip_arr[1], ip_arr[2], ip_arr[3]);
 }
 
 class System_Storage {
@@ -177,7 +154,8 @@ public:
     ss << "\nsystem settings bitfield: " << SYSTEM_SETTINGS_BITFIELD_BYTE;
     ss << "\nir_recv pin: " << IR_RECV_PIN_POS;
     ss << "\nir_send pin: " << IR_SEND_PIN_POS;
-    ss << "\nradio pin: " << RADIO_PIN_POS;
+    ss << "\nradio_recv pin: " << RADIO_RECV_POS;
+    ss << "\nradio_send pin: " << RADIO_SEND_POS;
     ss << "\nnetwork mode: " << NETWORK_MODE_POS;
     ss << "\ngadget remote: " << GADGET_REMOTE_POS;
     ss << "\ncode remote: " << CODE_REMOTE_POS;
@@ -258,22 +236,39 @@ public:
     return readByte(IR_SEND_PIN_POS);
   }
 
-  // read + write radio pin
+  // read + write radio pins
   /**
- * Writes the radio pin to the eeprom
- * @param pin the pin used for radio
- * @return whether writing was successful
- */
-  static bool writeRadioPin(uint8_t pin) {
-    return writeByte(RADIO_PIN_POS, pin);
+   * Writes the radio receiver pin to the eeprom
+   * @param pin the pin used for receiving radio
+   * @return whether writing radio was successful
+   */
+  static bool writeRadioRecvPin(uint8_t pin) {
+    return writeByte(RADIO_RECV_POS, pin);
   }
 
   /**
-   * Reads the radio pin from the eeprom
-   * @return the radio pin
+   * Reads the radio receiver pin from the eeprom
+   * @return the radio receiver pin
    */
-  static uint8_t readRadioPin() {
-    return readByte(RADIO_PIN_POS);
+  static uint8_t readRadioRecvPin() {
+    return readByte(RADIO_RECV_POS);
+  }
+
+  /**
+  * Writes the radio send pin to the eeprom
+  * @param pin the pin used for radio sending
+  * @return whether writing was successful
+  */
+  static bool writeRadioSendPin(uint8_t pin) {
+    return writeByte(RADIO_SEND_POS, pin);
+  }
+
+  /**
+   * Reads the radio send pin from the eeprom
+   * @return the radio send pin
+   */
+  static uint8_t readRadioSendPin() {
+    return readByte(RADIO_SEND_POS);
   }
 
   // read + write network mode
@@ -479,8 +474,10 @@ public:
    * @return whether writing was successful
    */
   static bool writeMQTTIP(const IPAddress& ip) {
-    auto ip_str = ip.toString().c_str();
-    bool success = writeContent(MQTT_IP_POS, MQTT_IP_MAX_LEN, ip_str);
+    bool success = true;
+    for (int i = 0; i < 4; i++) {
+      success = success && writeByte(MQTT_IP_POS + i, ip[i]);
+    }
     if (ip == IPAddress(0, 0, 0, 0)) {
       setContentFlag(CONFIG_CHECK_INDEX_MQTT_PW, false);
       success = true;
@@ -495,9 +492,10 @@ public:
    * @return the ip
    */
   static IPAddress readMQTTIP() {
-    std::string ip_str = readContent(MQTT_IP_POS, MQTT_IP_MAX_LEN);
     IPAddress ip;
-    ip.fromString(ip_str.c_str());
+    for (int i = 0; i < 4; i++) {
+      ip[i] = readByte(MQTT_IP_POS + i);
+    }
     return ip;
   }
 
@@ -516,10 +514,13 @@ public:
    * @return whether writing was successful
    */
   static bool writeMQTTPort(uint16_t port) {
-    bool success;
-    std::stringstream sstr;
-    sstr << port;
-    success = writeContent(MQTT_PORT_POS, MQTT_PORT_MAX_LEN, sstr.str());
+    unsigned int u_ff = 0xFF;
+    uint8_t second = port & u_ff;
+    uint8_t first = port / u_ff;
+
+    bool success = writeByte(MQTT_PORT_POS, first);
+    success = success & writeByte(MQTT_PORT_POS + 1, second);
+
     if (port == 0) {
       setContentFlag(CONFIG_CHECK_INDEX_MQTT_PORT, false);
       success = true;
@@ -534,8 +535,9 @@ public:
    * @return the port
    */
   static uint16_t readMQTTPort() {
-    auto port_str = readContent(MQTT_PORT_POS, MQTT_PORT_MAX_LEN);
-    return (uint16_t) atoi(port_str.c_str());
+    auto first = readByte(MQTT_PORT_POS);
+    auto second = readByte(MQTT_PORT_POS + 1);
+    return (uint16_t) ((first * (0xFF + 1)) + second);
   }
 
   /**
@@ -638,12 +640,17 @@ public:
   }
 
   /**
-   * Fills EEPROM with repeating '0123456789'-sequences
+   * Fills EEPROM with repeating '-_-_-_'-sequences
    */
   static void writeTestEEPROM() {
-    for (int i = 0; i < 500; i++) {
-      char k = (char) (48 + (i % 10));
-      EEPROM.writeChar(i, k);
+    for (int i = 0; i < 750; i++) {
+      if (i % 2) {
+        EEPROM.writeChar(i, '-');
+      } else {
+        EEPROM.writeChar(i, '_');
+      }
+//      char k = (char) (48 + (i % 10));
+//      EEPROM.writeChar(i, k);
     }
     EEPROM.commit();
   }

@@ -229,8 +229,11 @@ void SH_Main::handleSystemRequest(Request *req) {
 
   // Write parameters
   if (req->getPath() == "smarthome/config/write" && json_body.containsKey("param") && json_body.containsKey("value")) {
+    // Parameter to write
     auto param_name = json_body["param"].as<std::string>();
+    // Value to write as std::string
     auto param_val = json_body["value"].as<std::string>();
+    // Value to write as uint8_t
     auto param_val_uint = json_body["value"].as<uint8_t>();
 
     logger.printfln("Write param '%s'", param_name.c_str());
@@ -267,7 +270,6 @@ void SH_Main::handleSystemRequest(Request *req) {
 
       // Write MQTT Port
     else if (param_name == "mqtt_port") {
-
       write_successful = System_Storage::writeMQTTPort((uint16_t) atoi(param_val.c_str()));
     }
 
@@ -291,9 +293,14 @@ void SH_Main::handleSystemRequest(Request *req) {
       write_successful = System_Storage::writeIRsendPin(param_val_uint);
     }
 
-      // Write radio pin
-    else if (param_name == "radio_pin") {
-      write_successful = System_Storage::writeRadioPin(param_val_uint);
+      // Write radio receiver pin
+    else if (param_name == "radio_recv_pin") {
+      write_successful = System_Storage::writeRadioRecvPin(param_val_uint);
+    }
+
+      // Write radio sender pin
+    else if (param_name == "radio_send_pin") {
+      write_successful = System_Storage::writeRadioSendPin(param_val_uint);
     }
 
       // Write network mode
@@ -397,10 +404,16 @@ void SH_Main::handleSystemRequest(Request *req) {
       read_val_uint = System_Storage::readIRsendPin();
     }
 
-      // read radio pin
-    else if (param_name == "radio_pin") {
+      // read radio recv pin
+    else if (param_name == "radio_recv_pin") {
       read_successful = true;
-      read_val_uint = System_Storage::readRadioPin();
+      read_val_uint = System_Storage::readRadioRecvPin();
+    }
+
+      // read radio send pin
+    else if (param_name == "radio_send_pin") {
+      read_successful = true;
+      read_val_uint = System_Storage::readRadioSendPin();
     }
 
       // read network mode
