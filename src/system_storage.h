@@ -78,6 +78,7 @@
 #define GADGET_MAX_COUNT 8
 #define GADGET_BLOCK_START (GADGET_POS_START + ((GADGET_MAX_COUNT + 1) * 2))
 
+using gadget_tuple = std::tuple<uint8_t, uint8_t, std::string, std::string>;
 
 static bool validateJson(const char *new_json_str) {
   DynamicJsonDocument json_file(2048);
@@ -367,8 +368,6 @@ public:
   static bool writeGadget(uint8_t config_bf, uint8_t gadget_type, const std::string& gadget_json, const std::string& code_json) {
     auto gadget_index = readByte(GADGET_COUNT_POS);
 
-    Serial.printf("gadget_index: %d\n", gadget_index);
-
     if (gadget_index >= GADGET_MAX_COUNT) {
       logger.println(LOG_TYPE::ERR, "Cannot save gadget: maximum count of gadgets reached");
       return false;
@@ -379,12 +378,6 @@ public:
     uint16_t code_json_len = code_json.length();
     uint16_t complete_len = 1 + 1 + 2 + gadget_json_len + code_json_len;
     uint16_t end_index = addr + complete_len;
-
-    Serial.printf("addr: %d\n", addr);
-    Serial.printf("gadget_json_len: %d\n", gadget_json_len);
-    Serial.printf("code_json_len: %d\n", code_json_len);
-    Serial.printf("complete_len: %d\n", complete_len);
-    Serial.printf("end_index: %d\n", end_index);
 
     if (end_index > EEPROM_CONFIG_LEN_MAX) {
       logger.println(LOG_TYPE::ERR, "Cannot save gadget: missing space in eeprom");
@@ -419,12 +412,10 @@ public:
    * @param gadget_index the position of the gadget
    * @return the data for the gadget
    */
-  static std::tuple<uint8_t, uint8_t, std::string, std::string> readGadget(uint8_t gadget_index) {
+  static gadget_tuple readGadget(uint8_t gadget_index) {
     auto addr = getGadgetMemoryStart(gadget_index);
     auto addr_end = getGadgetMemoryEnd(gadget_index);
     auto stored_gadgets = readByte(GADGET_COUNT_POS);
-
-    Serial.printf("%d - %d\n", gadget_index, stored_gadgets);
 
     if (!addr || !addr_end || gadget_index >= stored_gadgets) {
       return std::tuple<uint8_t, uint8_t, std::string, std::string>(0, 0, "", "");
@@ -443,7 +434,50 @@ public:
    * @return whether the process of deleting was successful
    */
   static bool deleteGadget(uint8_t gadget_index) {
-    // TODO: implement
+    uint8_t gadget_count = getGadgetCount();
+
+    if (gadget_count == 0) {
+      logger.println(LOG_TYPE::ERR, "Cannot delete gadget: no gadget saved");
+      return false;
+    }
+
+    if (gadget_index > gadget_count -1) {
+      logger.println(LOG_TYPE::ERR, "Cannot delete gadget: index does not exist");
+      return false;
+    }
+
+    if (gadget_index == gadget_count -1) {
+      return writeGadgetCount(gadget_count - 1);
+    }
+
+    std::vector<gadget_tuple> gadgets;
+
+    for (uint8_t i = gadget_index + 1; i < gadget_count; i++) {
+      auto buf_gadget = readGadget(i);
+      gadgets.push_back(buf_gadget);
+    }
+
+    if (!writeGadgetCount(gadget_index)) {
+      logger.println(LOG_TYPE::ERR, "Error in deleting process while updating gadget count");
+      return false;
+    }
+
+    auto copy_gadget_count = (uint8_t) gadgets.size();
+
+    for (uint8_t i = 0; i < copy_gadget_count; i++) {
+      auto buf_gadget = gadgets[i];
+
+      auto e1 = std::get<0>(buf_gadget);
+      auto e2 = std::get<1>(buf_gadget);
+      auto e3 = std::get<2>(buf_gadget);
+      auto e4 = std::get<3>(buf_gadget);
+
+      if (!writeGadget(e1, e2, e3, e4)) {
+        logger.println(LOG_TYPE::ERR, "Error in in deletion process: moving gadgets failed");
+        return false;
+      }
+    }
+    return true;
   }
 
   // read + write IR pins

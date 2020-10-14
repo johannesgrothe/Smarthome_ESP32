@@ -618,6 +618,83 @@ void SH_Main::testStuff() {
     logger.println(std::get<2>(g3));
     logger.println(std::get<3>(g3));
 
+    logger.println("Testing gadget deletion:");
+
+    System_Storage::deleteGadget(1);
+
+    g1 = System_Storage::readGadget(0);
+    g2 = System_Storage::readGadget(1);
+    g3 = System_Storage::readGadget(2);
+    g4 = System_Storage::readGadget(3);
+
+    Serial.println(int(std::get<0>(g1)));
+    Serial.println(int(std::get<1>(g1)));
+    logger.println(std::get<2>(g1));
+    logger.println(std::get<3>(g1));
+
+    Serial.println(int(std::get<0>(g2)));
+    Serial.println(int(std::get<1>(g2)));
+    logger.println(std::get<2>(g2));
+    logger.println(std::get<3>(g2));
+
+    Serial.println(int(std::get<0>(g3)));
+    Serial.println(int(std::get<1>(g3)));
+    logger.println(std::get<2>(g3));
+    logger.println(std::get<3>(g3));
+
+    logger.println(LOG_TYPE::DATA, System_Storage::readWholeEEPROM().c_str());
+
+    System_Storage::deleteGadget(1);
+
+    g1 = System_Storage::readGadget(0);
+    g2 = System_Storage::readGadget(1);
+    g3 = System_Storage::readGadget(2);
+    g4 = System_Storage::readGadget(3);
+
+    Serial.println(int(std::get<0>(g1)));
+    Serial.println(int(std::get<1>(g1)));
+    logger.println(std::get<2>(g1));
+    logger.println(std::get<3>(g1));
+
+    Serial.println(int(std::get<0>(g2)));
+    Serial.println(int(std::get<1>(g2)));
+    logger.println(std::get<2>(g2));
+    logger.println(std::get<3>(g2));
+
+    Serial.println(int(std::get<0>(g3)));
+    Serial.println(int(std::get<1>(g3)));
+    logger.println(std::get<2>(g3));
+    logger.println(std::get<3>(g3));
+
+    logger.println(LOG_TYPE::DATA, System_Storage::readWholeEEPROM().c_str());
+
+    System_Storage::deleteGadget(1);
+    System_Storage::deleteGadget(0);
+
+    g1 = System_Storage::readGadget(0);
+    g2 = System_Storage::readGadget(1);
+    g3 = System_Storage::readGadget(2);
+    g4 = System_Storage::readGadget(3);
+
+    Serial.println(int(std::get<0>(g1)));
+    Serial.println(int(std::get<1>(g1)));
+    logger.println(std::get<2>(g1));
+    logger.println(std::get<3>(g1));
+
+    Serial.println(int(std::get<0>(g2)));
+    Serial.println(int(std::get<1>(g2)));
+    logger.println(std::get<2>(g2));
+    logger.println(std::get<3>(g2));
+
+    Serial.println(int(std::get<0>(g3)));
+    Serial.println(int(std::get<1>(g3)));
+    logger.println(std::get<2>(g3));
+    logger.println(std::get<3>(g3));
+
+    logger.println(LOG_TYPE::DATA, System_Storage::readWholeEEPROM().c_str());
+
+    logger.println("Done");
+
   } else {
     logger.println(LOG_TYPE::FATAL, "eeprom isn't initialized");
   }

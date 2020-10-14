@@ -77,7 +77,7 @@ Layout of a gadget config in eeprom
 | 1           | Gadget Type                       |
 | 2 + 3       | Config Length                     |
 | 4 - a       | Base Config (Json String)         |
-| (a + 1) - y | Code Mapping Config (Json String) |
+| (a + 1) - b | Code Mapping Config (Json String) |
 
 ### Gadget Config Bitfield
 
