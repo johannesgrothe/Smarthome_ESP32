@@ -560,8 +560,9 @@ void SH_Main::testStuff() {
   if (eeprom_active_) {
     logger.println("testing eeprom:");
 
-//    System_Storage::resetContentFlag();
-//    System_Storage::writeTestEEPROM();
+    System_Storage::resetContentFlag();
+    System_Storage::writeTestEEPROM();
+
     logger.println(LOG_TYPE::DATA, System_Storage::readWholeEEPROM().c_str());
     logger.println("Status-Byte:");
     logger.println(System_Storage::hasValidID());
@@ -588,6 +589,35 @@ void SH_Main::testStuff() {
     logger.println(System_Storage::readMQTTPort());
     logger.println(System_Storage::readMQTTUsername().c_str());
     logger.println(System_Storage::readMQTTPassword().c_str());
+
+    logger.println("Testing gadget saving:");
+
+    System_Storage::writeGadget(9, 8, "{-_-}", "{0.0}");
+    System_Storage::writeGadget(5, 6, "{o,O}", "{8#8}");
+    System_Storage::writeGadget(1, 2, "{yolokopterrrrrrrrrrrrrrrrrrrrrr}", "{RUMMMMSSSSSSSSSSSSSS}");
+
+    logger.println(LOG_TYPE::DATA, System_Storage::readWholeEEPROM().c_str());
+
+    auto g1 = System_Storage::readGadget(0);
+    auto g2 = System_Storage::readGadget(1);
+    auto g3 = System_Storage::readGadget(2);
+    auto g4 = System_Storage::readGadget(3);
+
+    Serial.println(int(std::get<0>(g1)));
+    Serial.println(int(std::get<1>(g1)));
+    logger.println(std::get<2>(g1));
+    logger.println(std::get<3>(g1));
+
+    Serial.println(int(std::get<0>(g2)));
+    Serial.println(int(std::get<1>(g2)));
+    logger.println(std::get<2>(g2));
+    logger.println(std::get<3>(g2));
+
+    Serial.println(int(std::get<0>(g3)));
+    Serial.println(int(std::get<1>(g3)));
+    logger.println(std::get<2>(g3));
+    logger.println(std::get<3>(g3));
+
   } else {
     logger.println(LOG_TYPE::FATAL, "eeprom isn't initialized");
   }

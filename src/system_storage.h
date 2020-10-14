@@ -24,7 +24,7 @@
 #define CONFIG_CHECK_INDEX_MQTT_PW 6
 
 // valid gadget storage bitfield
-#define VALID_GADGET_BITFIELD_BYTE 1
+#define GADGET_COUNT_POS 1
 
 // valid remote storage bitfield
 #define SYSTEM_SETTINGS_BITFIELD_BYTE 2
@@ -73,6 +73,12 @@
 #define MQTT_PW_POS (MQTT_USER_POS + MQTT_USER_MAX_LEN + 1)
 #define MQTT_PW_MAX_LEN 50
 
+//gadgets
+#define GADGET_POS_START (MQTT_PW_POS + MQTT_PW_MAX_LEN + 1)
+#define GADGET_MAX_COUNT 8
+#define GADGET_BLOCK_START (GADGET_POS_START + ((GADGET_MAX_COUNT + 1) * 2))
+
+
 static bool validateJson(const char *new_json_str) {
   DynamicJsonDocument json_file(2048);
   DeserializationError err = deserializeJson(json_file, new_json_str);
@@ -82,6 +88,13 @@ static bool validateJson(const char *new_json_str) {
 class System_Storage {
 private:
 
+  /**
+   * Method takes a bitfield, changes the selected bit to the passed value and returns the new bitfield
+   * @param index the bit to be written (0-7)
+   * @param new_value the value to be written
+   * @param old_flag the bitfield to be changed
+   * @return
+   */
   static uint8_t calculateNewContentFlag(uint8_t index, bool new_value, uint8_t old_flag) {
     auto content_flag = old_flag;
     auto mask = (unsigned int) pow(2, index);
@@ -94,20 +107,106 @@ private:
     return content_flag;
   }
 
-  static void setContentFlag(uint8_t index, bool value) {
-    uint8_t content_flag = EEPROM.readByte(VALID_CONFIG_BITFIELD_BYTE);
+  /**
+   * Sets the bit of a bitfield to the selected value
+   * @param bitfield_address the eeprom-address the bitfield is stored in
+   * @param index the bit to be written (0-7)
+   * @param value the value to be written
+   */
+  static void setFlag(int bitfield_address, uint8_t index, bool value) {
+    uint8_t content_flag = EEPROM.readByte(bitfield_address);
     content_flag = calculateNewContentFlag(index, value, content_flag);
-    EEPROM.writeByte(VALID_CONFIG_BITFIELD_BYTE, content_flag);
+    EEPROM.writeByte(bitfield_address, content_flag);
     EEPROM.commit();
   }
 
-  static bool getContentFlag(uint8_t index) {
-    uint8_t content_flag = EEPROM.readByte(VALID_CONFIG_BITFIELD_BYTE);
+  /**
+   * Reads the value stored at the selected index of a bitfield
+   * @param bitfield_address the eeprom-address the bitfield is stored in
+   * @param index the bit to be read (0-7)
+   * @return the value of the read bit
+   */
+  static bool getFlag(int bitfield_address, uint8_t index) {
+    uint8_t content_flag = EEPROM.readByte(bitfield_address);
     auto mask = (unsigned int) pow(2, index);
     uint8_t content_info = content_flag & mask;
     return content_info != 0;
   }
 
+  /**
+   * Sets the bit at the content bitfield to the selected value
+   * @param index the index the byte is located at
+   * @param value the value to set it to
+   */
+  static void setContentFlag(uint8_t index, bool value) {
+    setFlag(VALID_CONFIG_BITFIELD_BYTE, index, value);
+  }
+
+  /**
+   * Returns the bit in the content bitfield at the selected index
+   * @param index the index the bit is located at
+   * @return the value of the bit at the selected index
+   */
+  static bool getContentFlag(uint8_t index) {
+    return getFlag(VALID_CONFIG_BITFIELD_BYTE, index);
+  }
+
+  /**
+   * Writes a uint8_t (one byte) to the eeprom
+   * @param pos position to write to
+   * @param value value to be written
+   * @return whether writing was successful
+   */
+  static bool writeByte(int pos, uint8_t value) {
+    EEPROM.writeByte(pos, value);
+    EEPROM.commit();
+    return true;
+  }
+
+  /**
+   * Reads a uint8_t (one byte) from the selected part of the memory
+   * @param pos position to read from
+   * @return the uint16_t value
+   */
+  static uint8_t readByte(int pos) {
+    return EEPROM.readByte(pos);
+  }
+
+  /**
+   * Writes a uint16_t (two bytes) to the selected part of the memory
+   * @param pos position to write to
+   * @param value the value to write
+   * @return whether writing was successful
+   */
+  static bool writeUInt16(int pos, uint16_t value) {
+    unsigned int u_ff = 0xFF;
+    uint8_t second = value & u_ff;
+    uint8_t first = value / u_ff;
+
+    bool success = writeByte(pos, first);
+    success = success & writeByte(pos + 1, second);
+
+    return success;
+  }
+
+  /**
+   * Reads a uint16_t (two bytes) from the selected part of the memory
+   * @param pos position to read from
+   * @return the uint16_t value
+   */
+  static uint16_t readUInt16(int pos) {
+    auto first = readByte(pos);
+    auto second = readByte(pos + 1);
+    return (uint16_t) ((first * (0xFF + 1)) + second);
+  }
+
+  /**
+   * Writes the content of a string to the eeprom
+   * @param start start-index for the string
+   * @param max_len length of the string
+   * @param content the string to write
+   * @return whether writing was successful
+   */
   static bool writeContent(int start, int max_len, std::string content) {
     int id_length = content.size();
     if (id_length > max_len) {
@@ -122,16 +221,12 @@ private:
     return true;
   }
 
-  static bool writeByte(int pos, uint8_t value) {
-    EEPROM.writeByte(pos, value);
-    EEPROM.commit();
-    return true;
-  }
-
-  static uint8_t readByte(int pos) {
-    return EEPROM.readByte(pos);
-  }
-
+  /**
+   * Reads the sontent of the eeprom as a string
+   * @param start start-index of the string
+   * @param max_len maximum length of the string to read
+   * @return the read content
+   */
   static std::string readContent(int start, int max_len) {
     std::stringstream ss;
     for (int pos = 0; pos < max_len; pos++) {
@@ -144,13 +239,79 @@ private:
     return ss.str();
   }
 
+  /**
+   * Reads how many gadgets are currently saved in the eeprom
+   * @return the gadget count
+   */
+  static uint8_t getGadgetCount() {
+    return readByte(GADGET_COUNT_POS);
+  }
+
+  /**
+   * Writes the new gadget count to the eerpom
+   * @param count how many gadgets are stored in eeprom
+   * @return whether saving was successful or not
+   */
+  static bool writeGadgetCount(uint8_t count) {
+    return writeByte(GADGET_COUNT_POS, count);
+  }
+
+  /**
+   * Gets the memory position the selected gadget starts at
+   * @param gadget_nr the nr of the wanted gadget
+   * @return the memory position
+   */
+  static uint16_t getGadgetMemoryStart(uint8_t gadget_nr) {
+    if (gadget_nr >= GADGET_MAX_COUNT) {
+      return 0;
+    }
+    if (gadget_nr == 0) {
+      return GADGET_BLOCK_START;
+    }
+    return readUInt16(GADGET_POS_START + (gadget_nr * 2));
+  }
+
+  /**
+   * Gets the end of the memory segment for the selected gadget
+   * @param gadget_nr the nr of the wanted gadget
+   * @return the end of the memory
+   */
+  static uint16_t getGadgetMemoryEnd(uint8_t gadget_nr) {
+    if (gadget_nr >= GADGET_MAX_COUNT) {
+      return 0;
+    }
+    return readUInt16(GADGET_POS_START + ((gadget_nr + 1) * 2));
+  }
+
+  /**
+   * Sets the end of the memory segment for the selected gadget
+   * @param gadget_nr the nr of the wanted gadget
+   * @param mem_end the end of the memory
+   * @return whether writing was successful
+   */
+  static bool setGadgetMemoryEnd(uint8_t gadget_nr, uint16_t mem_end) {
+    if (gadget_nr >= GADGET_MAX_COUNT) {
+      return false;
+    }
+    if (mem_end < GADGET_BLOCK_START) {
+      return false;
+    }
+    if (mem_end >= EEPROM_CONFIG_LEN_MAX) {
+      return false;
+    }
+    return writeUInt16(GADGET_POS_START + ((gadget_nr + 1) * 2), mem_end);
+  }
+
 public:
 
+  /**
+   * Prints the whole eeprom layout to the console
+   */
   static void printEEPROMLayout() {
     std::stringstream ss;
     ss << "EEPROM config:";
     ss << "\nvalid config bitfield: " << VALID_CONFIG_BITFIELD_BYTE;
-    ss << "\nvalid gadget bitfield: " << VALID_GADGET_BITFIELD_BYTE;
+    ss << "\ngadget count: " << GADGET_COUNT_POS;
     ss << "\nsystem settings bitfield: " << SYSTEM_SETTINGS_BITFIELD_BYTE;
     ss << "\nir_recv pin: " << IR_RECV_PIN_POS;
     ss << "\nir_send pin: " << IR_SEND_PIN_POS;
@@ -170,6 +331,9 @@ public:
     Serial.println(ss.str().c_str());
   }
 
+  /**
+   * Resets the valid content flag to 0
+   */
   static void resetContentFlag() {
     uint8_t content_flag = 0;
     EEPROM.writeByte(VALID_CONFIG_BITFIELD_BYTE, content_flag);
@@ -193,12 +357,84 @@ public:
 
   // read and write gadgets
   /**
-   * Writes the gadget config in any free eeprom storage
-   * @param config gadget configuration information
-   * @return whether writing the info was successful
+   * Writes the data for a gadget to the eeprom
+   * @param config_bf the configuration-bitfield
+   * @param gadget_type the gadget-type
+   * @param gadget_json the general gadget config
+   * @param code_json the code-mapping config
+   * @return whether writing was successful
    */
-  static bool writeGadget(const DynamicJsonDocument& config) {
-    return false;
+  static bool writeGadget(uint8_t config_bf, uint8_t gadget_type, const std::string& gadget_json, const std::string& code_json) {
+    auto gadget_index = readByte(GADGET_COUNT_POS);
+
+    Serial.printf("gadget_index: %d\n", gadget_index);
+
+    if (gadget_index >= GADGET_MAX_COUNT) {
+      logger.println(LOG_TYPE::ERR, "Cannot save gadget: maximum count of gadgets reached");
+      return false;
+    }
+
+    auto addr = getGadgetMemoryStart(gadget_index);
+    uint16_t gadget_json_len = gadget_json.length();
+    uint16_t code_json_len = code_json.length();
+    uint16_t complete_len = 1 + 1 + 2 + gadget_json_len + code_json_len;
+    uint16_t end_index = addr + complete_len;
+
+    Serial.printf("addr: %d\n", addr);
+    Serial.printf("gadget_json_len: %d\n", gadget_json_len);
+    Serial.printf("code_json_len: %d\n", code_json_len);
+    Serial.printf("complete_len: %d\n", complete_len);
+    Serial.printf("end_index: %d\n", end_index);
+
+    if (end_index > EEPROM_CONFIG_LEN_MAX) {
+      logger.println(LOG_TYPE::ERR, "Cannot save gadget: missing space in eeprom");
+      return false;
+    }
+
+    auto success = true;
+    success = writeByte(addr, config_bf);
+    success = success && writeByte(addr + 1, gadget_type);
+    success = success && writeUInt16(addr + 2, gadget_json_len);
+    success = success && writeContent(addr + 4, gadget_json_len, gadget_json);
+    success = success && writeContent(addr + 4 + gadget_json_len + 1, code_json_len, code_json);
+
+    if (!success) {
+      logger.println(LOG_TYPE::ERR, "Cannot save gadget: error writing content");
+      return false;
+    }
+
+    // set the starting point for the next gadget
+    if (!setGadgetMemoryEnd(gadget_index, end_index)) {
+      logger.println(LOG_TYPE::ERR, "Cannot save gadget: error saving gadget memory end");
+      return false;
+    }
+
+    // increment gadget count to formally "save" the gadget
+    writeGadgetCount(gadget_index + 1);
+    return true;
+  }
+
+  /**
+   * Reads the data for a gadget from the eeprom
+   * @param gadget_index the position of the gadget
+   * @return the data for the gadget
+   */
+  static std::tuple<uint8_t, uint8_t, std::string, std::string> readGadget(uint8_t gadget_index) {
+    auto addr = getGadgetMemoryStart(gadget_index);
+    auto addr_end = getGadgetMemoryEnd(gadget_index);
+    auto stored_gadgets = readByte(GADGET_COUNT_POS);
+
+    Serial.printf("%d - %d\n", gadget_index, stored_gadgets);
+
+    if (!addr || !addr_end || gadget_index >= stored_gadgets) {
+      return std::tuple<uint8_t, uint8_t, std::string, std::string>(0, 0, "", "");
+    }
+    auto config_bf = readByte(addr);
+    auto gadget_type = readByte(addr + 1);
+    auto gadget_json_len = readUInt16(addr + 2);
+    auto gadget_json = readContent(addr + 4, gadget_json_len);
+    auto code_json = readContent(addr + 4 + gadget_json_len + 1, addr_end);
+    return std::tuple<uint8_t, uint8_t, std::string, std::string>(config_bf, gadget_type, gadget_json, code_json);
   }
 
   // read + write IR pins
@@ -514,12 +750,7 @@ public:
    * @return whether writing was successful
    */
   static bool writeMQTTPort(uint16_t port) {
-    unsigned int u_ff = 0xFF;
-    uint8_t second = port & u_ff;
-    uint8_t first = port / u_ff;
-
-    bool success = writeByte(MQTT_PORT_POS, first);
-    success = success & writeByte(MQTT_PORT_POS + 1, second);
+    bool success = writeUInt16(MQTT_PORT_POS, port);
 
     if (port == 0) {
       setContentFlag(CONFIG_CHECK_INDEX_MQTT_PORT, false);
@@ -535,9 +766,7 @@ public:
    * @return the port
    */
   static uint16_t readMQTTPort() {
-    auto first = readByte(MQTT_PORT_POS);
-    auto second = readByte(MQTT_PORT_POS + 1);
-    return (uint16_t) ((first * (0xFF + 1)) + second);
+    return readUInt16(MQTT_PORT_POS);
   }
 
   /**
@@ -652,8 +881,11 @@ public:
 //      char k = (char) (48 + (i % 10));
 //      EEPROM.writeChar(i, k);
     }
+
+    writeByte(GADGET_COUNT_POS, 0);
+    writeByte(VALID_CONFIG_BITFIELD_BYTE, 0);
+    writeByte(SYSTEM_SETTINGS_BITFIELD_BYTE, 0);
+
     EEPROM.commit();
   }
-
 };
-// TODO: split into declaration and implementation
