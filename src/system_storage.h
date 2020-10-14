@@ -179,9 +179,9 @@ private:
    * @return whether writing was successful
    */
   static bool writeUInt16(int pos, uint16_t value) {
-    unsigned int u_ff = 0xFF;
-    uint8_t second = value & u_ff;
-    uint8_t first = value / u_ff;
+
+    uint8_t first = value >> (uint8_t) 8;
+    uint8_t second = value & (uint16_t) 0x00ff;
 
     bool success = writeByte(pos, first);
     success = success & writeByte(pos + 1, second);
@@ -299,7 +299,7 @@ private:
     if (mem_end >= EEPROM_CONFIG_LEN_MAX) {
       return false;
     }
-    return writeUInt16(GADGET_POS_START + ((gadget_nr + 1) * 2), mem_end);
+    return writeUInt16(GADGET_POS_START + ((gadget_nr + 1) * 2), mem_end + 1);
   }
 
 public:
@@ -435,6 +435,15 @@ public:
     auto gadget_json = readContent(addr + 4, gadget_json_len);
     auto code_json = readContent(addr + 4 + gadget_json_len + 1, addr_end);
     return std::tuple<uint8_t, uint8_t, std::string, std::string>(config_bf, gadget_type, gadget_json, code_json);
+  }
+
+  /**
+   * Deletes the gadget with the selected index and moves all other gadgets up
+   * @param gadget_index the index of the gadgets to be deleted
+   * @return whether the process of deleting was successful
+   */
+  static bool deleteGadget(uint8_t gadget_index) {
+    // TODO: implement
   }
 
   // read + write IR pins
