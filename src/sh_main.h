@@ -30,8 +30,8 @@
 #include "pin_profile.h"
 #include "color.h"
 
-static void rebootChip(const char *reason) {
-  if (reason != nullptr) {
+static void rebootChip(const std::string& reason) {
+  if (!reason.empty()) {
     logger.print("Rebooting Chip because: '");
     logger.print(reason);
     logger.print("' in ");

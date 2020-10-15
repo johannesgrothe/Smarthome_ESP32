@@ -480,6 +480,14 @@ public:
     return true;
   }
 
+  /**
+   * Invalidates all saved gadgets
+   * @return whehter invalidating the gadgets was successful
+   */
+  static bool resetGadgets() {
+    return writeGadgetCount(0);
+  }
+
   // read + write IR pins
   /**
    * Writes the ir receive pin to the eeprom

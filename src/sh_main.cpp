@@ -219,11 +219,55 @@ void SH_Main::handleSystemRequest(Request *req) {
   // All directed Requests
   logger.println("Directed Request");
 
+  if (req->getPath() == "smarthome/sys/") {
+    auto subject = json_body["subject"].as<std::string>();
+    if (subject == "reboot") {
+      req->respond(true);
+      auto payload = req->getPayload();
+      if (payload.containsKey("message")) {
+        rebootChip(payload["message"]);
+      }
+      rebootChip("Network Request");
+    }
+    req->respond(false);
+    return;
+  }
+
   // Reset config
   if (req->getPath() == "smarthome/config/reset") {
-    System_Storage::writeTestEEPROM();
-    System_Storage::resetContentFlag();
-    req->respond(true);
+    // part of config to reset
+    auto reset_option = json_body["reset_option"].as<std::string>();
+
+    bool success = false;
+
+    // reset complete config
+    if (reset_option == "erase") {
+      System_Storage::writeTestEEPROM();
+      System_Storage::resetContentFlag();
+      System_Storage::resetGadgets();
+      success = true;
+    }
+
+    // reset the complete config
+    else if (reset_option == "complete") {
+      System_Storage::resetContentFlag();
+      System_Storage::resetGadgets();
+      success = true;
+    }
+
+    // reset the system config only
+    else if (reset_option == "config") {
+      System_Storage::resetContentFlag();
+      success = true;
+    }
+
+    // reset the complete config
+    else if (reset_option == "gadgets") {
+      System_Storage::resetGadgets();
+      success = true;
+    }
+
+    req->respond(success);
     return;
   }
 
@@ -449,7 +493,8 @@ void SH_Main::handleSystemRequest(Request *req) {
     }
 
   }
-  req->dontRespond();
+
+  req->respond(false);
 }
 
 void SH_Main::handleRequest(Request *req) {
@@ -467,6 +512,11 @@ void SH_Main::handleRequest(Request *req) {
   }
 
   if (req_path.compare(0, 17, "smarthome/config/") == 0) {
+    handleSystemRequest(req);
+    return;
+  }
+
+  if (req_path.compare(0, 14, "smarthome/sys/") == 0) {
     handleSystemRequest(req);
     return;
   }
