@@ -46,10 +46,58 @@ static void rebootChip(const std::string& reason) {
   ESP.restart();
 }
 
+/**
+ * Reads the gadget with the selected index
+ * @param index index of the gadget to load
+ * @return the gadget
+ */
+static gadget_tuple readGadget(uint8_t index) {
+  auto gadget = System_Storage::readGadget(index);
+  gadget_tuple err_gadget(0, 0, {0, 0, 0, 0, 0}, "", "", "");
+  auto type = std::get<0>(gadget);
+  if (type) {
+    auto ports = std::get<2>(gadget);
+    for (int i = 0; i < GADGET_PIN_BLOCK_LEN; i++) {
+      auto buf_pin = getPinForPort(ports[i]);
+      if (!buf_pin) {
+        return err_gadget;
+      }
+      ports[i] = buf_pin;
+    }
+
+    return gadget_tuple(type, std::get<1>(gadget), ports, std::get<3>(gadget), std::get<4>(gadget), std::get<5>(gadget));
+  } else {
+    return err_gadget;
+  }
+}
+
+/**
+ * Writes a gadget to the eeprom
+ * @param gadget_type type of the gadget
+ * @param remote_bf bitfield for the remotes
+ * @param ports ports used by the gadget to connect hardware
+ * @param gadget_config base config for the gadget
+ * @param code_config config for the code mapping
+ * @return whether writing was successful
+ */
+static bool writeGadget(uint8_t gadget_type, uint8_t remote_bf, pin_set ports, const std::string& name, const std::string& gadget_config, const std::string& code_config) {
+  if (gadget_type) {
+    for (int i = 0; i < GADGET_PIN_BLOCK_LEN; i++) {
+      auto buf_pin = getPinForPort(ports[i]);
+      if (!buf_pin) {
+        return false;
+      }
+      ports[i] = buf_pin;
+    }
+
+    return System_Storage::writeGadget(gadget_type, remote_bf, ports, name, gadget_config, code_config);
+  } else {
+    return false;
+  }
+}
+
 class SH_Main {
 private:
-
-//  char client_name[CLIENT_NAME_LEN_MAX]{};
 
   std::string client_id_;
 

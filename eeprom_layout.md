@@ -71,13 +71,20 @@ Stores information about the system status
 
 Layout of a gadget config in eeprom
 
-| Bit         | Content                           |
-|:----------- |:---------------------------------:|
-| 0           | Gadget Config Bitfield            |
-| 1           | Gadget Type                       |
-| 2 + 3       | Config Length                     |
-| 4 - a       | Base Config (Json String)         |
-| (a + 1) - b | Code Mapping Config (Json String) |
+| Bit     | Content                           | Datatype |
+|:------- |:---------------------------------:|:--------:|
+| 0       | Gadget Config Bitfield            | uint8_t  |
+| 1       | Gadget Type                       | uint8_t  |
+| 2       | Pin 1                             | uint8_t  |
+| 3       | Pin 2                             | uint8_t  |
+| 4       | Pin 3                             | uint8_t  |
+| 5       | Pin 4                             | uint8_t  |
+| 6       | Pin 5                             | uint8_t  |
+| 7       | Name Length                       | uint8_t  |
+| 8 - 9   | Config Length                     | uint16_t |
+| 10 - x  | Gadget Name                       | string   |
+| x+1 - y | Base Config (Json String)         | string   |
+| y+1 - z | Code Mapping Config (Json String) |          |
 
 ### Gadget Config Bitfield
 

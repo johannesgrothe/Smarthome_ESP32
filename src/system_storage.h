@@ -78,9 +78,18 @@
 #define GADGET_MAX_COUNT 8
 #define GADGET_BLOCK_START (GADGET_POS_START + ((GADGET_MAX_COUNT + 1) * 2))
 
-using gadget_tuple = std::tuple<uint8_t, uint8_t, std::string, std::string>;
+#define GADADGET_BF_POS 0
+#define GADGET_TYPE_POS 1
+#define GADGET_PIN_BLOCK_POS 2
+#define GADGET_PIN_BLOCK_LEN 5
+#define GADGET_NAME_LEN_POS (GADGET_PIN_BLOCK_POS + GADGET_PIN_BLOCK_LEN + 1)
+#define GADGET_JSON_LEN_POS (GADGET_NAME_LEN_POS + 1)
+#define GADGET_NAME_POS (GADGET_JSON_LEN_POS + 2)
 
-static bool validateJson(const char *new_json_str) {
+using pin_set = std::array<uint8_t, GADGET_PIN_BLOCK_LEN>;
+using gadget_tuple = std::tuple<uint8_t, uint8_t, pin_set, std::string, std::string, std::string>;
+
+static bool validateJson(std::string new_json_str) {
   DynamicJsonDocument json_file(2048);
   DeserializationError err = deserializeJson(json_file, new_json_str);
   return err == DeserializationError::Ok;
@@ -361,11 +370,12 @@ public:
    * Writes the data for a gadget to the eeprom
    * @param config_bf the configuration-bitfield
    * @param gadget_type the gadget-type
+   * @param name the name of the gadget
    * @param gadget_json the general gadget config
    * @param code_json the code-mapping config
    * @return whether writing was successful
    */
-  static bool writeGadget(uint8_t config_bf, uint8_t gadget_type, const std::string& gadget_json, const std::string& code_json) {
+  static bool writeGadget(uint8_t config_bf, uint8_t gadget_type, pin_set pins, const std::string& name, const std::string& gadget_json, const std::string& code_json) {
     auto gadget_index = readByte(GADGET_COUNT_POS);
 
     if (gadget_index >= GADGET_MAX_COUNT) {
@@ -373,23 +383,64 @@ public:
       return false;
     }
 
-    auto addr = getGadgetMemoryStart(gadget_index);
-    uint16_t gadget_json_len = gadget_json.length();
-    uint16_t code_json_len = code_json.length();
-    uint16_t complete_len = 1 + 1 + 2 + gadget_json_len + code_json_len;
-    uint16_t end_index = addr + complete_len;
+    // Addrees the gadget start at
+    uint16_t g_start_addr = getGadgetMemoryStart(gadget_index);
+
+    // Length of the gadget name
+    uint8_t g_name_len = name.length();
+    // Length of the gadget config json
+    uint16_t g_config_len = gadget_json.length();
+    // Length of the gadget code json
+    uint16_t g_code_len = code_json.length();
+
+    // Position the gadget name starts at
+    uint16_t name_start = g_start_addr + GADGET_NAME_POS;
+    // Position the gadget config json starts at
+    uint16_t config_start = name_start + g_name_len + 1;
+    // Position the gadget code json starts at
+    uint16_t code_start = config_start + g_config_len + 1;
+
+    // Complete length of the gadget config
+    uint16_t complete_len = (code_start + g_code_len + 1) - g_start_addr;
+    // Last storage index of the gadget
+    uint16_t end_index = g_start_addr + complete_len;
+
+    Serial.printf("g_start_addr: %d\n", g_start_addr);
+    Serial.printf("g_name_len: %d\n", g_name_len);
+    Serial.printf("g_config_len: %d\n", g_config_len);
+    Serial.printf("g_code_len: %d\n", g_code_len);
+    Serial.printf("name_start: %d\n", name_start);
+    Serial.printf("config_start: %d\n", config_start);
+    Serial.printf("code_start: %d\n", code_start);
+    Serial.printf("complete_len: %d\n", complete_len);
+    Serial.printf("end_index: %d\n", end_index);
 
     if (end_index > EEPROM_CONFIG_LEN_MAX) {
       logger.println(LOG_TYPE::ERR, "Cannot save gadget: missing space in eeprom");
       return false;
     }
 
-    auto success = true;
-    success = writeByte(addr, config_bf);
-    success = success && writeByte(addr + 1, gadget_type);
-    success = success && writeUInt16(addr + 2, gadget_json_len);
-    success = success && writeContent(addr + 4, gadget_json_len, gadget_json);
-    success = success && writeContent(addr + 4 + gadget_json_len + 1, code_json_len, code_json);
+    // write the config bitfield
+    auto success = writeByte(g_start_addr + GADADGET_BF_POS, config_bf);
+    // Write the gadget type
+    success = success && writeByte(g_start_addr + GADGET_TYPE_POS, gadget_type);
+
+    for (uint8_t i = 0; i < GADGET_PIN_BLOCK_LEN; i++) {
+      Serial.printf("writing port %d\n", pins[i]);
+      // Write the port config at position i
+      success = success && writeByte(g_start_addr + GADGET_PIN_BLOCK_POS + i, pins[i]);
+    }
+
+    // Write the length of the name
+    success = success && writeByte(g_start_addr + GADGET_NAME_LEN_POS, g_name_len);
+    // Write the length of the config length
+    success = success && writeUInt16(g_start_addr + GADGET_JSON_LEN_POS, g_config_len);
+    // Write the name
+    success = success && writeContent(name_start, g_name_len, name);
+    // Write the config json
+    success = success && writeContent(config_start, g_config_len, gadget_json);
+    // Write the code json
+    success = success && writeContent(code_start, g_code_len, code_json);
 
     if (!success) {
       logger.println(LOG_TYPE::ERR, "Cannot save gadget: error writing content");
@@ -418,14 +469,30 @@ public:
     auto stored_gadgets = readByte(GADGET_COUNT_POS);
 
     if (!addr || !addr_end || gadget_index >= stored_gadgets) {
-      return std::tuple<uint8_t, uint8_t, std::string, std::string>(0, 0, "", "");
+      pin_set pins = {0, 0, 0, 0, 0};
+      return gadget_tuple(0, 0, pins, "", "", "");
     }
-    auto config_bf = readByte(addr);
-    auto gadget_type = readByte(addr + 1);
-    auto gadget_json_len = readUInt16(addr + 2);
-    auto gadget_json = readContent(addr + 4, gadget_json_len);
-    auto code_json = readContent(addr + 4 + gadget_json_len + 1, addr_end);
-    return std::tuple<uint8_t, uint8_t, std::string, std::string>(config_bf, gadget_type, gadget_json, code_json);
+
+    auto config_bf = readByte(addr + GADADGET_BF_POS);
+    auto gadget_type = readByte(addr + GADGET_TYPE_POS);
+    auto gadget_name_len = readByte(addr + GADGET_NAME_LEN_POS);
+    auto gadget_json_len = readUInt16(addr + GADGET_JSON_LEN_POS);
+
+    uint16_t name_start = addr + GADGET_NAME_POS;
+    uint16_t config_start = name_start + gadget_name_len + 1;
+    uint16_t code_start = config_start + gadget_json_len + 1;
+
+    auto gadget_name = readContent(name_start, gadget_name_len);
+    auto gadget_json = readContent(config_start, gadget_json_len);
+    auto code_json = readContent(code_start, addr_end);
+
+    pin_set pins = {0, 0, 0, 0, 0};
+
+    for (uint8_t i = 0; i < GADGET_PIN_BLOCK_LEN; i++) {
+      pins[i] = readByte(addr + GADGET_PIN_BLOCK_POS + i);
+    }
+
+    return gadget_tuple(config_bf, gadget_type, pins, gadget_name, gadget_json, code_json);
   }
 
   /**
@@ -471,8 +538,10 @@ public:
       auto e2 = std::get<1>(buf_gadget);
       auto e3 = std::get<2>(buf_gadget);
       auto e4 = std::get<3>(buf_gadget);
+      auto e5 = std::get<4>(buf_gadget);
+      auto e6 = std::get<5>(buf_gadget);
 
-      if (!writeGadget(e1, e2, e3, e4)) {
+      if (!writeGadget(e1, e2, e3, e4, e5, e6)) {
         logger.println(LOG_TYPE::ERR, "Error in in deletion process: moving gadgets failed");
         return false;
       }
