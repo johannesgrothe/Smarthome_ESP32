@@ -219,7 +219,7 @@ void SH_Main::handleSystemRequest(Request *req) {
   // All directed Requests
   logger.println("Directed Request");
 
-  if (req->getPath() == "smarthome/sys/") {
+  if (req->getPath() == "smarthome/sys") {
     auto subject = json_body["subject"].as<std::string>();
     if (subject == "reboot") {
       req->respond(true);
@@ -491,7 +491,6 @@ void SH_Main::handleSystemRequest(Request *req) {
       req->respond(doc);
       return;
     }
-
   }
 
   req->respond(false);
@@ -516,7 +515,7 @@ void SH_Main::handleRequest(Request *req) {
     return;
   }
 
-  if (req_path.compare(0, 14, "smarthome/sys/") == 0) {
+  if (req_path.compare(0, 13, "smarthome/sys") == 0) {
     handleSystemRequest(req);
     return;
   }
@@ -610,8 +609,8 @@ void SH_Main::testStuff() {
   if (eeprom_active_) {
     logger.println("testing eeprom:");
 
-    System_Storage::resetContentFlag();
-    System_Storage::writeTestEEPROM();
+//    System_Storage::resetContentFlag();
+//    System_Storage::writeTestEEPROM();
 
     logger.println(LOG_TYPE::DATA, System_Storage::readWholeEEPROM().c_str());
     logger.println("Status-Byte:");
