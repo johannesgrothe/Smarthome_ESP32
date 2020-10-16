@@ -53,7 +53,7 @@ static void rebootChip(const std::string& reason) {
  */
 static gadget_tuple readGadget(uint8_t index) {
   auto gadget = System_Storage::readGadget(index);
-  gadget_tuple err_gadget(0, 0, {0, 0, 0, 0, 0}, "", "", "");
+  gadget_tuple err_gadget(0, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, "", "", "");
   auto type = std::get<0>(gadget);
   if (type) {
     auto ports = std::get<2>(gadget);
@@ -80,18 +80,22 @@ static gadget_tuple readGadget(uint8_t index) {
  * @param code_config config for the code mapping
  * @return whether writing was successful
  */
-static bool writeGadget(uint8_t gadget_type, uint8_t remote_bf, pin_set ports, const std::string& name, const std::string& gadget_config, const std::string& code_config) {
+static bool writeGadget(uint8_t gadget_type, bitfield_set remote_bf, pin_set ports, const std::string& name, const std::string& gadget_config, const std::string& code_config) {
   if (gadget_type) {
+    logger.printfln("Saving gadget '%s' with type %d", name.c_str(), gadget_type);
     for (int i = 0; i < GADGET_PIN_BLOCK_LEN; i++) {
-      auto buf_pin = getPinForPort(ports[i]);
-      if (!buf_pin) {
+      auto buf_port = ports[i];
+      auto buf_pin = getPinForPort(buf_port);
+      if (!buf_pin && buf_port) {
+        logger.printfln(LOG_TYPE::ERR, "Port %d is not configured on this system", ports[i]);
         return false;
       }
-      ports[i] = buf_pin;
+      // TODO: check if port is actually aviable
     }
 
     return System_Storage::writeGadget(gadget_type, remote_bf, ports, name, gadget_config, code_config);
   } else {
+    logger.println(LOG_TYPE::ERR, "Not saving gadget with err-type 0");
     return false;
   }
 }

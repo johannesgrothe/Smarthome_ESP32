@@ -1,9 +1,8 @@
 #pragma once
 
 //general
-#define EEPROM_SIZE 64
 #define SERIAL_SPEED 115200
-#define EEPROM_CONFIG_LEN_MAX 2000
+#define EEPROM_SIZE 2000
 
 // Client
 #define CLIENT_NAME_LEN_MAX 30

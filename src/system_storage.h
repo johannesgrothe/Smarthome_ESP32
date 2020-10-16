@@ -86,8 +86,10 @@
 #define GADGET_JSON_LEN_POS (GADGET_NAME_LEN_POS + 1)
 #define GADGET_NAME_POS (GADGET_JSON_LEN_POS + 2)
 
+using bitfield_set = std::array<bool, 8>;
 using pin_set = std::array<uint8_t, GADGET_PIN_BLOCK_LEN>;
-using gadget_tuple = std::tuple<uint8_t, uint8_t, pin_set, std::string, std::string, std::string>;
+// Tuple to store a gadget config: type, bitfield, pins, name, gadget_config, code_config
+using gadget_tuple = std::tuple<uint8_t, bitfield_set, pin_set, std::string, std::string, std::string>;
 
 static bool validateJson(std::string new_json_str) {
   DynamicJsonDocument json_file(2048);
@@ -102,11 +104,11 @@ private:
    * Method takes a bitfield, changes the selected bit to the passed value and returns the new bitfield
    * @param index the bit to be written (0-7)
    * @param new_value the value to be written
-   * @param old_flag the bitfield to be changed
+   * @param bitfield the bitfield to be changed
    * @return
    */
-  static uint8_t calculateNewContentFlag(uint8_t index, bool new_value, uint8_t old_flag) {
-    auto content_flag = old_flag;
+  static uint8_t calculateNewContentFlag(uint8_t index, bool new_value, uint8_t bitfield) {
+    auto content_flag = bitfield;
     auto mask = (unsigned int) pow(2, index);
     if (new_value) {
       content_flag = content_flag | mask;
@@ -115,6 +117,18 @@ private:
       content_flag = content_flag & mask;
     }
     return content_flag;
+  }
+
+  /**
+   * Extracts the bit at the selected index from the byte
+   * @param index index to get the bit from
+   * @param bitfield the bitfield to get the bit from
+   * @return
+   */
+  static bool getValueFromContentFlag(uint8_t index, uint8_t bitfield) {
+    auto mask = (unsigned int) pow(2, index);
+    uint8_t content_info = bitfield & mask;
+    return content_info != 0;
   }
 
   /**
@@ -138,9 +152,7 @@ private:
    */
   static bool getFlag(int bitfield_address, uint8_t index) {
     uint8_t content_flag = EEPROM.readByte(bitfield_address);
-    auto mask = (unsigned int) pow(2, index);
-    uint8_t content_info = content_flag & mask;
-    return content_info != 0;
+    return getValueFromContentFlag(index, content_flag);
   }
 
   /**
@@ -306,7 +318,7 @@ private:
     if (mem_end < GADGET_BLOCK_START) {
       return false;
     }
-    if (mem_end >= EEPROM_CONFIG_LEN_MAX) {
+    if (mem_end >= EEPROM_SIZE) {
       return false;
     }
     return writeUInt16(GADGET_POS_START + ((gadget_nr + 1) * 2), mem_end + 1);
@@ -358,7 +370,7 @@ public:
   static bool initEEPROM() {
     logger.println("Initializing EEPROM...");
 
-    if (!EEPROM.begin(EEPROM_CONFIG_LEN_MAX)) {
+    if (!EEPROM.begin(EEPROM_SIZE)) {
       logger.println(LOG_TYPE::ERR, "failed to initialize EEPROM");
       return false;
     }
@@ -375,7 +387,7 @@ public:
    * @param code_json the code-mapping config
    * @return whether writing was successful
    */
-  static bool writeGadget(uint8_t config_bf, uint8_t gadget_type, pin_set pins, const std::string& name, const std::string& gadget_json, const std::string& code_json) {
+  static bool writeGadget(uint8_t gadget_type, bitfield_set config_bf, pin_set pins, const std::string& name, const std::string& gadget_json, const std::string& code_json) {
     auto gadget_index = readByte(GADGET_COUNT_POS);
 
     if (gadget_index >= GADGET_MAX_COUNT) {
@@ -405,28 +417,24 @@ public:
     // Last storage index of the gadget
     uint16_t end_index = g_start_addr + complete_len;
 
-    Serial.printf("g_start_addr: %d\n", g_start_addr);
-    Serial.printf("g_name_len: %d\n", g_name_len);
-    Serial.printf("g_config_len: %d\n", g_config_len);
-    Serial.printf("g_code_len: %d\n", g_code_len);
-    Serial.printf("name_start: %d\n", name_start);
-    Serial.printf("config_start: %d\n", config_start);
-    Serial.printf("code_start: %d\n", code_start);
-    Serial.printf("complete_len: %d\n", complete_len);
-    Serial.printf("end_index: %d\n", end_index);
-
-    if (end_index > EEPROM_CONFIG_LEN_MAX) {
+    if (end_index > EEPROM_SIZE) {
       logger.println(LOG_TYPE::ERR, "Cannot save gadget: missing space in eeprom");
       return false;
     }
 
+    // Create the bitfield
+    uint8_t buf_bitfield = 0;
+    for (uint8_t i = 0; i < 8; i++) {
+      buf_bitfield = calculateNewContentFlag(i, config_bf[i], buf_bitfield);
+    }
+
     // write the config bitfield
-    auto success = writeByte(g_start_addr + GADADGET_BF_POS, config_bf);
+    auto success = writeByte(g_start_addr + GADADGET_BF_POS, buf_bitfield);
+
     // Write the gadget type
     success = success && writeByte(g_start_addr + GADGET_TYPE_POS, gadget_type);
 
     for (uint8_t i = 0; i < GADGET_PIN_BLOCK_LEN; i++) {
-      Serial.printf("writing port %d\n", pins[i]);
       // Write the port config at position i
       success = success && writeByte(g_start_addr + GADGET_PIN_BLOCK_POS + i, pins[i]);
     }
@@ -468,9 +476,11 @@ public:
     auto addr_end = getGadgetMemoryEnd(gadget_index);
     auto stored_gadgets = readByte(GADGET_COUNT_POS);
 
+    pin_set pins = {0, 0, 0, 0, 0};
+    bitfield_set remote_bf = {0, 0, 0, 0, 0, 0, 0, 0};
+
     if (!addr || !addr_end || gadget_index >= stored_gadgets) {
-      pin_set pins = {0, 0, 0, 0, 0};
-      return gadget_tuple(0, 0, pins, "", "", "");
+      return gadget_tuple(0, remote_bf, pins, "", "", "");
     }
 
     auto config_bf = readByte(addr + GADADGET_BF_POS);
@@ -486,13 +496,15 @@ public:
     auto gadget_json = readContent(config_start, gadget_json_len);
     auto code_json = readContent(code_start, addr_end);
 
-    pin_set pins = {0, 0, 0, 0, 0};
-
     for (uint8_t i = 0; i < GADGET_PIN_BLOCK_LEN; i++) {
       pins[i] = readByte(addr + GADGET_PIN_BLOCK_POS + i);
     }
 
-    return gadget_tuple(config_bf, gadget_type, pins, gadget_name, gadget_json, code_json);
+    for (uint8_t i = 0; i < 8; i++) {
+      remote_bf[i] = getValueFromContentFlag(i, config_bf);
+    }
+
+    return gadget_tuple(gadget_type, remote_bf, pins, gadget_name, gadget_json, code_json);
   }
 
   /**
@@ -1007,5 +1019,14 @@ public:
     writeByte(SYSTEM_SETTINGS_BITFIELD_BYTE, 0);
 
     EEPROM.commit();
+  }
+
+  /**
+   * Returns the address of the last used byte in the eeprom.
+   * The maximum eeprom is EEPROM_SIZE
+   * @return the address of the last used byte in the eeprom
+   */
+  static uint16_t getEEPROMUsage() {
+    return getGadgetMemoryEnd(getGadgetCount() - 1);
   }
 };

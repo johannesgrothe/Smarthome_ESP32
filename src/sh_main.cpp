@@ -491,12 +491,13 @@ void SH_Main::handleSystemRequest(Request *req) {
   }
 
   // Write gadget
-  if (req->getPath() == "smarthome/gadget/add" && json_body.containsKey("param")) {
+  if (req->getPath() == "smarthome/gadget/add") {
     if (!json_body.containsKey("type") || !json_body.containsKey("name")) {
       req->respond(false);
       return;
     }
 
+    // TODO: Check if conversion to gadget_type is working
     auto type = json_body["type"].as<uint8_t>();
 
     if (!type) {
@@ -512,23 +513,31 @@ void SH_Main::handleSystemRequest(Request *req) {
     uint8_t port3 = 0;
     uint8_t port4 = 0;
 
-    if (json_body.containsKey("port0")) {
-      port0 = json_body["port0"].as<uint8_t>();
-    }
-    if (json_body.containsKey("port1")) {
-      port1 = json_body["port1"].as<uint8_t>();
-    }
-    if (json_body.containsKey("port2")) {
-      port2 = json_body["port2"].as<uint8_t>();
-    }
-    if (json_body.containsKey("port3")) {
-      port3 = json_body["port3"].as<uint8_t>();
-    }
-    if (json_body.containsKey("port4")) {
-      port4 = json_body["port4"].as<uint8_t>();
+    if (json_body.containsKey("ports")) {
+      Serial.println("ports contained in incomming config");
+
+      JsonObject ports = json_body["ports"].as<JsonObject>();
+      if (ports.containsKey("port0")) {
+        Serial.println("Found port 0");
+        port0 = json_body["port0"].as<uint8_t>();
+      }
+      if (ports.containsKey("port1")) {
+        port1 = json_body["port1"].as<uint8_t>();
+      }
+      if (ports.containsKey("port2")) {
+        port2 = json_body["port2"].as<uint8_t>();
+      }
+      if (ports.containsKey("port3")) {
+        port3 = json_body["port3"].as<uint8_t>();
+      }
+      if (ports.containsKey("port4")) {
+        port4 = json_body["port4"].as<uint8_t>();
+      }
     }
 
     pin_set pins = {port0, port1, port2, port3, port4};
+
+    Serial.printf("%d, %d, %d, %d, %d\n", port0, port1, port2, port3, port4);
 
     std::string gadget_config;
     std::string code_config;
@@ -540,8 +549,21 @@ void SH_Main::handleSystemRequest(Request *req) {
       code_config = json_body["codes"].as<std::string>();
     }
 
-    // TODO: create remote bitfield
-    uint8_t remote_bf = 0;
+    // Create bitfield
+    bitfield_set remote_bf = {false, false, false, false, false, false, false, false};
+
+    if (json_body.containsKey("remotes")) {
+      JsonObject remote_json = json_body["remotes"].as<JsonObject>();
+      if (remote_json.containsKey("gadget")) {
+        remote_bf[0] = remote_json["gadget"].as<bool>();
+      }
+      if (remote_json.containsKey("code")) {
+        remote_bf[1] = remote_json["code"].as<bool>();
+      }
+      if (remote_json.containsKey("event")) {
+        remote_bf[2] = remote_json["event"].as<bool>();
+      }
+    }
 
     auto success = writeGadget(type, remote_bf, pins, name, gadget_config, code_config);
     req->respond(success);
@@ -571,6 +593,11 @@ void SH_Main::handleRequest(Request *req) {
   }
 
   if (req_path.compare(0, 13, "smarthome/sys") == 0) {
+    handleSystemRequest(req);
+    return;
+  }
+
+  if (req_path.compare(0, 17, "smarthome/gadget/") == 0) {
     handleSystemRequest(req);
     return;
   }
@@ -663,47 +690,44 @@ void SH_Main::testStuff() {
 
   if (eeprom_active_) {
     logger.println("testing eeprom:");
-
-    System_Storage::resetContentFlag();
-    System_Storage::writeTestEEPROM();
-
-    logger.println(LOG_TYPE::DATA, System_Storage::readWholeEEPROM().c_str());
-    logger.println("Status-Byte:");
-    logger.println(System_Storage::hasValidID());
-    logger.println(System_Storage::hasValidWifiSSID());
-    logger.println(System_Storage::hasValidWifiPW());
-    logger.println(System_Storage::hasValidMQTTIP());
-    logger.println(System_Storage::hasValidMQTTPort());
-    logger.println(System_Storage::hasValidMQTTUsername());
-    logger.println(System_Storage::hasValidMQTTPassword());
-    logger.println("IR:");
-    logger.println((int) System_Storage::readIRrecvPin());
-    logger.println((int) System_Storage::readIRsendPin());
-    logger.println("NetworkMode:");
-    logger.println((int) System_Storage::readNetworkMode());
-    logger.println("Remotes:");
-    logger.println((int) System_Storage::readGadgetRemote());
-    logger.println((int) System_Storage::readCodeRemote());
-    logger.println((int) System_Storage::readEventRemote());
-    logger.println("Config:");
-    logger.println(System_Storage::readID().c_str());
-    logger.println(System_Storage::readWifiSSID().c_str());
-    logger.println(System_Storage::readWifiPW().c_str());
-    logger.println(System_Storage::readMQTTIP().toString().c_str());
-    logger.println(System_Storage::readMQTTPort());
-    logger.println(System_Storage::readMQTTUsername().c_str());
-    logger.println(System_Storage::readMQTTPassword().c_str());
-
-    logger.println("Testing gadget saving:");
-
-    std::string str = "yolo";
-    Serial.println(str.size());
-
-    System_Storage::writeGadget(9, 8, {120, 120, 120, 4, 5}, "blub_gadget", "{-_-}", "{0.0}");
-    System_Storage::writeGadget(5, 6, {120, 120, 120, 4, 5}, "gggadget", "{o,O}", "{8#8}");
-    System_Storage::writeGadget(1, 2, {120, 120, 120, 4, 5}, "yolokopterrrrrrr", "{yolokopterrrrrrrrrrrrrrrrrrrrrr}", "{RUMMMMSSSSSSSSSSSSSS}");
-
-    logger.println(LOG_TYPE::DATA, System_Storage::readWholeEEPROM().c_str());
+//
+//    System_Storage::resetContentFlag();
+//    System_Storage::writeTestEEPROM();
+//
+//    logger.println(LOG_TYPE::DATA, System_Storage::readWholeEEPROM().c_str());
+//    logger.println("Status-Byte:");
+//    logger.println(System_Storage::hasValidID());
+//    logger.println(System_Storage::hasValidWifiSSID());
+//    logger.println(System_Storage::hasValidWifiPW());
+//    logger.println(System_Storage::hasValidMQTTIP());
+//    logger.println(System_Storage::hasValidMQTTPort());
+//    logger.println(System_Storage::hasValidMQTTUsername());
+//    logger.println(System_Storage::hasValidMQTTPassword());
+//    logger.println("IR:");
+//    logger.println((int) System_Storage::readIRrecvPin());
+//    logger.println((int) System_Storage::readIRsendPin());
+//    logger.println("NetworkMode:");
+//    logger.println((int) System_Storage::readNetworkMode());
+//    logger.println("Remotes:");
+//    logger.println((int) System_Storage::readGadgetRemote());
+//    logger.println((int) System_Storage::readCodeRemote());
+//    logger.println((int) System_Storage::readEventRemote());
+//    logger.println("Config:");
+//    logger.println(System_Storage::readID().c_str());
+//    logger.println(System_Storage::readWifiSSID().c_str());
+//    logger.println(System_Storage::readWifiPW().c_str());
+//    logger.println(System_Storage::readMQTTIP().toString().c_str());
+//    logger.println(System_Storage::readMQTTPort());
+//    logger.println(System_Storage::readMQTTUsername().c_str());
+//    logger.println(System_Storage::readMQTTPassword().c_str());
+//
+//    logger.println("Testing gadget saving:");
+//
+//    System_Storage::writeGadget(9, {true, true, false, false, false, false, false, false}, {120, 120, 120, 4, 5}, "blub_gadget", "{-_-}", "{0.0}");
+//    System_Storage::writeGadget(5, {false, true, false, false, false, false, false, false}, {120, 120, 120, 4, 5}, "gggadget", "{o,O}", "{8#8}");
+//    System_Storage::writeGadget(1, {true, false, false, false, false, false, false, false}, {120, 120, 120, 4, 5}, "yolokopterrrrrrr", "{yolokopterrrrrrrrrrrrrrrrrrrrrr}", "{RUMMMMSSSSSSSSSSSSSS}");
+//
+//    logger.println(LOG_TYPE::DATA, System_Storage::readWholeEEPROM().c_str());
 
     auto g1 = System_Storage::readGadget(0);
     auto g2 = System_Storage::readGadget(1);
@@ -711,7 +735,11 @@ void SH_Main::testStuff() {
     auto g4 = System_Storage::readGadget(3);
 
     Serial.println(int(std::get<0>(g1)));
-    Serial.println(int(std::get<1>(g1)));
+    auto remote_bf = std::get<1>(g1);
+    for (int i = 0; i < 3; i++) {
+      Serial.printf("%d, ", remote_bf[i]);
+    }
+    Serial.println("");
     auto pins = std::get<2>(g1);
     for (uint8_t pin : pins) {
       Serial.printf("%d, ", (int) pin);
@@ -722,7 +750,11 @@ void SH_Main::testStuff() {
     Serial.println(std::get<5>(g1).c_str());
 
     Serial.println(int(std::get<0>(g2)));
-    Serial.println(int(std::get<1>(g2)));
+    remote_bf = std::get<1>(g2);
+    for (int i = 0; i < 3; i++) {
+      Serial.printf("%d, ", remote_bf[i]);
+    }
+    Serial.println("");
     pins = std::get<2>(g2);
     for (uint8_t pin : pins) {
       Serial.printf("%d, ", (int) pin);
@@ -733,7 +765,11 @@ void SH_Main::testStuff() {
     Serial.println(std::get<5>(g2).c_str());
 
     Serial.println(int(std::get<0>(g3)));
-    Serial.println(int(std::get<1>(g3)));
+    remote_bf = std::get<1>(g3);
+    for (int i = 0; i < 3; i++) {
+      Serial.printf("%d, ", remote_bf[i]);
+    }
+    Serial.println("");
     pins = std::get<2>(g3);
     for (uint8_t pin : pins) {
       Serial.printf("%d, ", (int) pin);
@@ -786,8 +822,8 @@ void SH_Main::init() {
   }
   logger.printnl();
 
-  logger.print("Free Heap: ");
-  logger.println(ESP.getFreeHeap());
+  logger.printfln("EEPROM usage: %d / %d bytes\n", System_Storage::getEEPROMUsage(), EEPROM_SIZE);
+  logger.printfln("Free Heap: %d", ESP.getFreeHeap());
 }
 
 /**

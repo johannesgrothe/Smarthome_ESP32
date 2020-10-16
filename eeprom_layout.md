@@ -84,7 +84,7 @@ Layout of a gadget config in eeprom
 | 8 - 9   | Config Length                     | uint16_t |
 | 10 - x  | Gadget Name                       | string   |
 | x+1 - y | Base Config (Json String)         | string   |
-| y+1 - z | Code Mapping Config (Json String) |          |
+| y+1 - z | Code Mapping Config (Json String) | string   |
 
 ### Gadget Config Bitfield
 
@@ -93,8 +93,8 @@ Layout of the gadget config bitfield
 | Bit | Content              |
 |:--- |:--------------------:|
 | 0   | Gadget Remote Active |
-| 1   | Event Remote Active  |
-| 2   |                      |
+| 1   | Code Remote Active   |
+| 2   | Event Remote Active  |
 | 3   |                      |
 | 4   |                      |
 | 5   |                      |
