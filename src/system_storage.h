@@ -902,10 +902,10 @@ public:
       success = success && writeUInt8(MQTT_IP_POS + i, ip[i]);
     }
     if (ip == IPAddress(0, 0, 0, 0)) {
-      setContentFlag(CONFIG_CHECK_INDEX_MQTT_PW, false);
+      setContentFlag(CONFIG_CHECK_INDEX_MQTT_IP, false);
       success = true;
     } else {
-      setContentFlag(CONFIG_CHECK_INDEX_MQTT_PW, success);
+      setContentFlag(CONFIG_CHECK_INDEX_MQTT_IP, success);
     }
     return success;
   }
