@@ -48,6 +48,9 @@ bool SH_Main::initGadgets() {
         if (remote_bf[0]) {
           logger.println(LOG_TYPE::DATA, "Linking Gadget Remote");
           logger.incIndent();
+
+          gadget_remote->addGadget(buf_gadget);
+
           using std::placeholders::_1;
           using std::placeholders::_2;
           using std::placeholders::_3;
@@ -62,8 +65,8 @@ bool SH_Main::initGadgets() {
         if (remote_bf[1]) {
           logger.println(LOG_TYPE::DATA, "Linking Code Remote");
           logger.incIndent();
-          // TODO: init code remote on gadgets
-          logger.println(LOG_TYPE::ERR, "Not Implemented");
+
+          code_remote->addGadget(buf_gadget);
 
           logger.decIndent();
         }
@@ -175,13 +178,60 @@ bool SH_Main::initRemotes() {
   auto gadget_remote_mode = System_Storage::readGadgetRemote();
   auto code_remote_mode = System_Storage::readCodeRemote();
   auto event_remote_mode = System_Storage::readEventRemote();
+  logger.println("Initializing remotes");
+  logger.incIndent();
 
-  switch (gadget_remote_mode) {
-    case GadgetRemoteMode::Smarthome:
-      //TODO
-      gadget_remote = make_shared<SmarthomeGadgetRemote>(network_gadget);
+  // Init Gadget Remote
+  if (gadget_remote_mode != GadgetRemoteMode::None) {
+    logger.printfln("Initializing gadget remote");
+    logger.incIndent();
+    switch (gadget_remote_mode) {
+      case GadgetRemoteMode::Smarthome:
+        gadget_remote = make_shared<SmarthomeGadgetRemote>(network_gadget);
+        break;
+      default:
+        logger.printfln(LOG_TYPE::ERR, "Could not initialize gadget remote (code %d)", (int) gadget_remote_mode);
+    }
+    logger.decIndent();
+  } else {
+    logger.printfln("No gadget remote configured");
   }
 
+  // Init Code Remote
+  if (code_remote_mode != CodeRemoteMode::None) {
+    logger.printfln("Initializing code remote");
+    logger.incIndent();
+    switch (code_remote_mode) {
+      case CodeRemoteMode::Smarthome:
+        code_remote = make_shared<SmarthomeCodeRemote>(network_gadget);
+        break;
+      default:
+        logger.printfln(LOG_TYPE::ERR, "Could not initialize code remote (code %d)", (int) code_remote_mode);
+    }
+    logger.decIndent();
+  } else {
+    logger.printfln("No code remote configured");
+  }
+
+  // Init Event Remote
+  if (event_remote_mode != EventRemoteMode::None) {
+    logger.printfln("Initializing event remote");
+    logger.incIndent();
+    switch (event_remote_mode) {
+      case EventRemoteMode::Smarthome:
+        // TODO: init event remote
+//        event_remote = make_shared<SmarthomeCodeRemote>(network_gadget);
+          logger.println(LOG_TYPE::ERR, "Event-Remote is not implemented");
+        break;
+      default:
+        logger.printfln(LOG_TYPE::ERR, "Could not initialize event remote (code %d)", (int) code_remote_mode);
+    }
+    logger.decIndent();
+  } else {
+    logger.printfln("No event remote configured");
+  }
+
+  logger.decIndent();
   return true;
 }
 
@@ -775,20 +825,20 @@ void SH_Main::testStuff() {
 //  Serial.println((int) blub);
 //
   if (eeprom_active_) {
-//    logger.println("testing eeprom:");
+    logger.println("testing eeprom:");
 
 //    System_Storage::resetContentFlag();
 //    System_Storage::writeTestEEPROM();
 
 //    logger.println(LOG_TYPE::DATA, System_Storage::readWholeEEPROM().c_str());
-//    logger.println("Status-Byte:");
-//    logger.println(System_Storage::hasValidID());
-//    logger.println(System_Storage::hasValidWifiSSID());
-//    logger.println(System_Storage::hasValidWifiPW());
-//    logger.println(System_Storage::hasValidMQTTIP());
-//    logger.println(System_Storage::hasValidMQTTPort());
-//    logger.println(System_Storage::hasValidMQTTUsername());
-//    logger.println(System_Storage::hasValidMQTTPassword());
+    logger.println("Status-Byte:");
+    logger.println(System_Storage::hasValidID());
+    logger.println(System_Storage::hasValidWifiSSID());
+    logger.println(System_Storage::hasValidWifiPW());
+    logger.println(System_Storage::hasValidMQTTIP());
+    logger.println(System_Storage::hasValidMQTTPort());
+    logger.println(System_Storage::hasValidMQTTUsername());
+    logger.println(System_Storage::hasValidMQTTPassword());
 //    logger.println("IR:");
 //    logger.println((int) System_Storage::readIRrecvPin());
 //    logger.println((int) System_Storage::readIRsendPin());
@@ -866,8 +916,8 @@ void SH_Main::testStuff() {
 //    Serial.println(std::get<3>(g3).c_str());
 //    Serial.println(std::get<4>(g3).c_str());
 //    Serial.println(std::get<5>(g3).c_str());
-//
-//    logger.println("Done");
+
+    logger.println("Done");
 
   } else {
     logger.println(LOG_TYPE::FATAL, "eeprom isn't initialized");
@@ -946,9 +996,12 @@ void SH_Main::initModeComplete() {
     initNetwork(mode);
   } else {
     logger.println(LOG_TYPE::ERR, "network type could not be loaded");
+    return;
   }
 
   initConnectors();
+
+  initRemotes();
 
   initGadgets();
 

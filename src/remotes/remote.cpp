@@ -37,16 +37,12 @@ void Remote::handleRequest(Request *req) {  // TODO: unneeded
 
 void Remote::addGadget(const std::shared_ptr<SH_Gadget>& new_gadget) {
   if (gadgets.addGadget(new_gadget)) {
-    logger.print(LOG_TYPE::DATA, "Adding '");
-    logger.print(new_gadget->getName());
-    logger.println("'");
+    logger.print(LOG_TYPE::DATA, "Adding '%s'", new_gadget->getName());
 
     logger.incIndent();
     handleNewGadget(new_gadget);
     logger.decIndent();
   } else {
-    logger.print(LOG_TYPE::ERR, "Unable to add '");
-    logger.print(new_gadget->getName());
-    logger.println("'");
+    logger.print(LOG_TYPE::ERR, "Unable to add '%s'", new_gadget->getName());
   }
 }

@@ -128,6 +128,8 @@ MQTT_Gadget::MQTT_Gadget(const std::string& client_name,
     if (mqtt_ip == IPAddress(0, 0, 0, 0)) {
       everything_ok = false;
       logger.println(LOG_TYPE::ERR, "'ip' is null");
+    } else {
+      logger.printfln("IP: %s", mqtt_ip.toString().c_str());
     }
 
     // Reads the Port from the JSON
