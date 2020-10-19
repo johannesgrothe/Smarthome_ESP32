@@ -497,13 +497,7 @@ void SH_Main::handleSystemRequest(Request *req) {
       return;
     }
 
-    // TODO: Check if conversion to gadget_type is working
     auto type = json_body["type"].as<uint8_t>();
-
-    if (!type) {
-      req->respond(false);
-      return;
-    }
 
     auto name = json_body["name"].as<std::string>();
 
@@ -689,12 +683,16 @@ void SH_Main::testStuff() {
 
   System_Storage::printEEPROMLayout();
 
+  auto blub = (GadgetIdentifier) 55;
+
+  Serial.println((int) blub);
+
   if (eeprom_active_) {
     logger.println("testing eeprom:");
-//
+
 //    System_Storage::resetContentFlag();
 //    System_Storage::writeTestEEPROM();
-//
+
 //    logger.println(LOG_TYPE::DATA, System_Storage::readWholeEEPROM().c_str());
 //    logger.println("Status-Byte:");
 //    logger.println(System_Storage::hasValidID());
@@ -721,13 +719,13 @@ void SH_Main::testStuff() {
 //    logger.println(System_Storage::readMQTTPort());
 //    logger.println(System_Storage::readMQTTUsername().c_str());
 //    logger.println(System_Storage::readMQTTPassword().c_str());
-//
+
 //    logger.println("Testing gadget saving:");
-//
+
 //    System_Storage::writeGadget(9, {true, true, false, false, false, false, false, false}, {120, 120, 120, 4, 5}, "blub_gadget", "{-_-}", "{0.0}");
 //    System_Storage::writeGadget(5, {false, true, false, false, false, false, false, false}, {120, 120, 120, 4, 5}, "gggadget", "{o,O}", "{8#8}");
 //    System_Storage::writeGadget(1, {true, false, false, false, false, false, false, false}, {120, 120, 120, 4, 5}, "yolokopterrrrrrr", "{yolokopterrrrrrrrrrrrrrrrrrrrrr}", "{RUMMMMSSSSSSSSSSSSSS}");
-//
+
 //    logger.println(LOG_TYPE::DATA, System_Storage::readWholeEEPROM().c_str());
 
     auto g1 = System_Storage::readGadget(0);

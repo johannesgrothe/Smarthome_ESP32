@@ -21,6 +21,11 @@ enum class GadgetIdentifier {
 };
 
 /**
+ * Count of the possible gadgets
+ */
+#define GadgetIdentifierCount 5
+
+/**
  * List of all Gadget Types
  */
 enum class GadgetType {

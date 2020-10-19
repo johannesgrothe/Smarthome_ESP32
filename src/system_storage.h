@@ -457,6 +457,20 @@ public:
   }
 
   /**
+   * Collects all the names from the gadgets
+   * @return the gadget names
+   */
+  static std::vector<std::string> readAllGadgetNames() {
+    auto gadgets = readAllGadgets();
+    std::vector<std::string> names;
+    for (auto gadget: gadgets) {
+      auto buf_name = std::get<3>(gadget);
+      names.push_back(buf_name);
+    }
+    return names;
+  }
+
+  /**
    * Writes the data for a gadget to the eeprom
    * @param config_bf the configuration-bitfield
    * @param gadget_type the gadget-type
@@ -472,17 +486,6 @@ public:
     if (gadget_index >= GADGET_MAX_COUNT) {
       logger.println(LOG_TYPE::ERR, "Cannot save gadget: maximum count of gadgets reached");
       return status_tuple(false, "maximum count of gadgets reached");
-    }
-
-    // Check for double ports used
-    auto other_ports = readAllGadgetPorts();
-    for (auto new_port: ports) {
-      for (auto existing_port: other_ports) {
-        if (new_port == existing_port) {
-          logger.printfln(LOG_TYPE::ERR, "Cannot save gadget: gadget tries to use port already occupied (%d)", new_port);
-          return status_tuple(false, "gadget tries to use port already occupied");
-        }
-      }
     }
 
     // Addrees the gadget start at
