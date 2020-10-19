@@ -43,8 +43,8 @@ void SmarthomeCodeRemote::handleRequest(std::string path, const JsonObject& body
 
 bool SmarthomeCodeRemote::handleNewGadget(std::shared_ptr<SH_Gadget> new_gadget) { return true; }
 
-SmarthomeCodeRemote::SmarthomeCodeRemote(JsonObject data) :
-  CodeRemote(data) {};
+SmarthomeCodeRemote::SmarthomeCodeRemote() :
+  CodeRemote() {};
 
-SmarthomeCodeRemote::SmarthomeCodeRemote(Request_Gadget *gadget, JsonObject data) :
-  CodeRemote(gadget, data) {}
+SmarthomeCodeRemote::SmarthomeCodeRemote(std::shared_ptr<Request_Gadget> gadget) :
+  CodeRemote(gadget) {}

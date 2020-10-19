@@ -1,5 +1,7 @@
 #include "remote.h"
 
+#include <utility>
+
 bool Remote::updatesAreLocked() const { return lock_updates; }
 
 void Remote::lockUpdates() {
@@ -12,20 +14,20 @@ void Remote::unlockUpdates() {
   lock_updates = false;
 }
 
-bool Remote::isNetworkInitialised() {
+bool Remote::isNetworkInitialised() const {
   return network_initialized;
 }
 
-Remote::Remote(JsonObject data) :
+Remote::Remote() :
   lock_updates(false),
   network_initialized(false),
   req_gadget(nullptr),
   gadgets() {};
 
-Remote::Remote(Request_Gadget *gadget, JsonObject data) :
+Remote::Remote(std::shared_ptr<Request_Gadget> gadget) :
   lock_updates(false),
   network_initialized(true),
-  req_gadget(gadget),
+  req_gadget(std::move(gadget)),
   gadgets() {};
 
 void Remote::handleRequest(Request *req) {  // TODO: unneeded

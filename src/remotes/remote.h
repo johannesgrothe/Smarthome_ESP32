@@ -15,7 +15,7 @@ private:
 
 protected:
 
-  Request_Gadget *req_gadget;
+  std::shared_ptr<Request_Gadget> req_gadget;
   Gadget_Collection gadgets;
 
   bool updatesAreLocked() const;
@@ -30,12 +30,12 @@ protected:
 
   virtual bool handleNewGadget(std::shared_ptr<SH_Gadget> new_gadget) = 0;
 
-  bool isNetworkInitialised();
+  bool isNetworkInitialised() const;
 
 public:
-  explicit Remote(JsonObject data);
+  explicit Remote();
 
-  explicit Remote(Request_Gadget *gadget, JsonObject data);
+  explicit Remote(std::shared_ptr<Request_Gadget> gadget);
 
   void handleRequest(Request *req);
 

@@ -1,12 +1,6 @@
 #include "gadget_remote.h"
 
 bool
-GadgetRemote::registerGadget(const char *gadget_name, GadgetType gadget_type,
-                             const char *characteristics) { return false; };
-
-bool GadgetRemote::removeGadget(const char *gadget_name) { return false; };
-
-bool
 GadgetRemote::registerGadgetOnRemote(const char *gadget_name, GadgetType gadget_type, const char *characteristics) {
   logger.println("Registering Gadget:");
   logger.incIndent();
@@ -32,11 +26,11 @@ bool GadgetRemote::handleNewGadget(std::shared_ptr<SH_Gadget> new_gadget) {
   return true;
 }
 
-GadgetRemote::GadgetRemote(JsonObject data) :
-  Remote(data) {};
+GadgetRemote::GadgetRemote() :
+  Remote() {};
 
-GadgetRemote::GadgetRemote(Request_Gadget *gadget, JsonObject data) :
-  Remote(gadget, data) {};
+GadgetRemote::GadgetRemote(std::shared_ptr<Request_Gadget> gadget) :
+  Remote(gadget) {};
 
 void
 GadgetRemote::updateCharacteristic(const char *gadget_name, const char *service, const char *characteristic,

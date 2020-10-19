@@ -15,8 +15,8 @@ protected:
 
 public:
 
-  explicit SmarthomeCodeRemote(JsonObject data);
+  explicit SmarthomeCodeRemote();
 
-  SmarthomeCodeRemote(Request_Gadget *gadget, JsonObject data);
+  SmarthomeCodeRemote(std::shared_ptr<Request_Gadget> gadget);
 
 };

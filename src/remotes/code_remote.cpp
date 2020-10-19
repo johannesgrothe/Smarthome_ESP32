@@ -89,11 +89,11 @@ void CodeRemote::forwardAllCodes() {
   }
 }
 
-CodeRemote::CodeRemote(JsonObject data) :
-Remote(data){};
+CodeRemote::CodeRemote() :
+Remote(){};
 
-CodeRemote::CodeRemote(Request_Gadget *gadget, JsonObject data) :
-Remote(gadget, data) {};
+CodeRemote::CodeRemote(std::shared_ptr<Request_Gadget> gadget) :
+Remote(gadget) {};
 
 void CodeRemote::handleNewCodeFromGadget(CodeCommand *code) {
   addCodeToBuffer(code);

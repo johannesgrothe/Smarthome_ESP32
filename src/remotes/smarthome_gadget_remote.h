@@ -6,9 +6,9 @@
 class SmarthomeGadgetRemote : public GadgetRemote {
 private:
 
-  bool registerGadget(const char *gadget_name, GadgetType gadget_type, const char *characteristics) override;
+  bool registerGadget(const std::string& gadget_name, GadgetType gadget_type, const char *characteristics) override;
 
-  bool removeGadget(const char *gadget_name) override;
+  bool removeGadget(const std::string& gadget_name) override;
 
 protected:
 
@@ -18,7 +18,7 @@ protected:
 
 public:
 
-  SmarthomeGadgetRemote(Request_Gadget *gadget, JsonObject data);
+  explicit SmarthomeGadgetRemote(std::shared_ptr<Request_Gadget> gadget);
 
   void
   updateCharacteristic(const char *gadget_name, const char *service, const char *characteristic, int value) override;

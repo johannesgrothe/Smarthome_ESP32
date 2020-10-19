@@ -93,6 +93,7 @@ bool SH_Main::initGadgets() {
 }
 
 void SH_Main::mapConnectors(JsonObject connectors_json) {
+  // TODO: Not needed anymore
   // Mapping Code Connectors (IR/Radio) to the Gadgets for them to use
   logger.println("Mapping Connectors:");
   logger.incIndent();
@@ -149,7 +150,7 @@ bool SH_Main::initConnectors() {
   logger.println("Creating IR-Gadget: ");
   logger.incIndent();
   if (ir_recv || ir_send) {
-    ir_gadget = new IR_Gadget(ir_recv, ir_send);
+    ir_gadget = std::make_shared<IR_Gadget>(ir_recv, ir_send);
   } else {
     logger.println("No IR Configured");
     ir_gadget = nullptr;
@@ -169,6 +170,21 @@ bool SH_Main::initConnectors() {
   logger.decIndent();
   return true;
 }
+
+bool SH_Main::initRemotes() {
+  auto gadget_remote_mode = System_Storage::readGadgetRemote();
+  auto code_remote_mode = System_Storage::readCodeRemote();
+  auto event_remote_mode = System_Storage::readEventRemote();
+
+  switch (gadget_remote_mode) {
+    case GadgetRemoteMode::Smarthome:
+      //TODO
+      gadget_remote = make_shared<SmarthomeGadgetRemote>(network_gadget);
+  }
+
+  return true;
+}
+
 
 bool SH_Main::initNetwork(NetworkMode mode) {
   if (mode == NetworkMode::None) {
@@ -206,16 +222,16 @@ bool SH_Main::initNetwork(NetworkMode mode) {
     std::string user = System_Storage::readMQTTUsername();
     std::string mqtt_pw = System_Storage::readMQTTPassword();
 
-    network_gadget = new MQTT_Gadget(client_id_,
-                                     ssid,
-                                     wifi_pw,
-                                     ip,
-                                     port,
-                                     user,
-                                     mqtt_pw);
+    network_gadget = std::make_shared<MQTT_Gadget>(client_id_,
+                                                   ssid,
+                                                   wifi_pw,
+                                                   ip,
+                                                   port,
+                                                   user,
+                                                   mqtt_pw);
 
   } else if (mode == NetworkMode::Serial) {
-    network_gadget = new Serial_Gadget();
+    network_gadget = std::make_shared<Serial_Gadget>();
   } else {
     logger.println(LOG_TYPE::ERR, "Unknown Network Settings");
     return false;
@@ -224,7 +240,7 @@ bool SH_Main::initNetwork(NetworkMode mode) {
   return true;
 }
 
-void SH_Main::handleCodeConnector(Code_Gadget *gadget) {
+void SH_Main::handleCodeConnector(const std::shared_ptr<Code_Gadget>& gadget) {
   if (gadget == nullptr) {
     return;
   }
@@ -241,7 +257,7 @@ void SH_Main::handleCodeConnector(Code_Gadget *gadget) {
   }
 }
 
-void SH_Main::handleRequestConnector(Request_Gadget *gadget) {
+void SH_Main::handleRequestConnector(const std::shared_ptr<Request_Gadget>& gadget) {
   if (gadget == nullptr) {
     return;
   }

@@ -140,9 +140,9 @@ private:
   virtual void sendCodeToRemote(CodeCommand *code) = 0;
 
 public:
-  explicit CodeRemote(JsonObject);
+  explicit CodeRemote();
 
-  CodeRemote(Request_Gadget *, JsonObject);
+  explicit CodeRemote(std::shared_ptr<Request_Gadget>);
 
   void handleNewCodeFromGadget(CodeCommand *code);
 

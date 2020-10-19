@@ -132,16 +132,18 @@ private:
 
   std::string client_id_;
 
-  IR_Gadget *ir_gadget;
-  Radio_Gadget *radio_gadget;
+  std::shared_ptr<IR_Gadget> ir_gadget;
+  std::shared_ptr<Radio_Gadget> radio_gadget;
 
-  Request_Gadget *network_gadget;
+  std::shared_ptr<Request_Gadget> network_gadget;
 
   Gadget_Collection gadgets;
 
-  CodeRemote *code_remote;
+  std::shared_ptr<CodeRemote> code_remote;
 
-  GadgetRemote *gadget_remote;
+  std::shared_ptr<GadgetRemote> gadget_remote;
+
+//  std::shared_ptr<EventRemote> event_remote;
 
   BootMode system_mode;
 
@@ -155,11 +157,13 @@ private:
 
   bool initConnectors();
 
+  bool initRemotes();
+
   bool initNetwork(NetworkMode);
 
-  void handleCodeConnector(Code_Gadget *gadget);
+  void handleCodeConnector(const std::shared_ptr<Code_Gadget>& gadget);
 
-  void handleRequestConnector(Request_Gadget *gadget);
+  void handleRequestConnector(const std::shared_ptr<Request_Gadget>& gadget);
 
   void handleSystemRequest(Request *req);
 

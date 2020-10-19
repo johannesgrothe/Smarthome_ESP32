@@ -1,7 +1,7 @@
 #include "smarthome_gadget_remote.h"
 
 bool
-SmarthomeGadgetRemote::registerGadget(const char *gadget_name, GadgetType gadget_type, const char *characteristics) {
+SmarthomeGadgetRemote::registerGadget(const std::string& gadget_name, GadgetType gadget_type, const char *characteristics) {
   unsigned long ident = micros() % 7023;
   char reg_str[HOMEBRIDGE_REGISTER_STR_MAX_LEN]{};
   const char *service_name;
@@ -18,10 +18,10 @@ SmarthomeGadgetRemote::registerGadget(const char *gadget_name, GadgetType gadget
   if (characteristics != nullptr) {
     snprintf(reg_str, HOMEBRIDGE_REGISTER_STR_MAX_LEN,
              R"({"request_id" : %lu, "name": "%s", "service": "%s", "characteristics": {%s}})",
-             ident, gadget_name, service_name, characteristics);
+             ident, gadget_name.c_str(), service_name, characteristics);
   } else {
     sprintf(reg_str, R"({"request_id" : %lu, "name": "%s", "service": "%s", "characteristics": {}})", ident,
-            gadget_name,
+            gadget_name.c_str(),
             service_name);
   }
 //  req_gadget->sendRequest(new Request("smarthome/to/gadget/add", &reg_str[0]));  // TODO: fix
@@ -43,7 +43,7 @@ SmarthomeGadgetRemote::registerGadget(const char *gadget_name, GadgetType gadget
   return false;
 }
 
-bool SmarthomeGadgetRemote::removeGadget(const char *gadget_name) {  // TODO: fix
+bool SmarthomeGadgetRemote::removeGadget(const std::string& gadget_name) {  // TODO: fix
 //  char buf_msg[HOMEBRIDGE_UNREGISTER_STR_MAX_LEN]{};
 //  unsigned long ident = micros() % 7023;
 //  snprintf(&buf_msg[0], HOMEBRIDGE_UNREGISTER_STR_MAX_LEN, R"({"request_id" : %lu, "name": "%s"})", ident,
@@ -95,8 +95,8 @@ void SmarthomeGadgetRemote::handleRequest(std::string path, const JsonObject& bo
   }
 }
 
-SmarthomeGadgetRemote::SmarthomeGadgetRemote(Request_Gadget *gadget, JsonObject data) :
-  GadgetRemote(gadget, data) {};
+SmarthomeGadgetRemote::SmarthomeGadgetRemote(std::shared_ptr<Request_Gadget> gadget) :
+  GadgetRemote(gadget) {};
 
 void
 SmarthomeGadgetRemote::updateCharacteristic(const char *gadget_name, const char *service, const char *characteristic,
