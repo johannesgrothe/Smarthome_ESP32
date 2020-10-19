@@ -3,6 +3,8 @@
 #include "gadgets/sh_gadget.h"
 #include "system_settings.h"
 
+// TODO: not needed anymore
+
 class Gadget_Collection {
 private:
 

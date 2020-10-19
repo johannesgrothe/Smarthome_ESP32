@@ -97,6 +97,10 @@ static bool validateJson(std::string new_json_str) {
   return err == DeserializationError::Ok;
 }
 
+// TODO: blub
+/**
+ *
+ */
 class System_Storage {
 private:
 
@@ -563,7 +567,7 @@ public:
 
   /**
    * Invalidates all saved gadgets
-   * @return whehter invalidating the gadgets was successful
+   * @return whether invalidating the gadgets was successful
    */
   static bool resetGadgets() {
     return writeGadgetCount(0);

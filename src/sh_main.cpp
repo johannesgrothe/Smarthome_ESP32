@@ -2,28 +2,28 @@
 #include "sh_main.h"
 
 bool SH_Main::initGadgets(JsonArray gadget_json) {
-  gadgets = Gadget_Collection();
-  byte new_gadget_count = gadget_json.size() < MAIN_MAX_GADGETS ? gadget_json.size() : MAIN_MAX_GADGETS;
-  logger.print(LOG_TYPE::INFO, "Creating Gadgets: ");
-  logger.println(new_gadget_count);
-  logger.incIndent();
-  bool everything_ok = true;
-  for (unsigned int pointer = 0; pointer < new_gadget_count; pointer++) {
-    JsonObject gadget = gadget_json[pointer].as<JsonObject>();
-    SH_Gadget *buffergadget = createGadget(gadget);
-    using std::placeholders::_1;
-    using std::placeholders::_2;
-    using std::placeholders::_3;
-    using std::placeholders::_4;
-    if (buffergadget != nullptr) {
-      buffergadget->initRemoteUpdate(std::bind(&SH_Main::updateGadgetRemote, this, _1, _2, _3, _4));
-      gadgets.addGadget(buffergadget);
-    } else {
-      everything_ok = false;
-    }
-  }
-  logger.decIndent();
-  return everything_ok;
+//  gadgets = Gadget_Collection();
+//  byte new_gadget_count = gadget_json.size() < MAIN_MAX_GADGETS ? gadget_json.size() : MAIN_MAX_GADGETS;
+//  logger.print(LOG_TYPE::INFO, "Creating Gadgets: ");
+//  logger.println(new_gadget_count);
+//  logger.incIndent();
+//  bool everything_ok = true;
+//  for (unsigned int pointer = 0; pointer < new_gadget_count; pointer++) {
+//    JsonObject gadget = gadget_json[pointer].as<JsonObject>();
+//    SH_Gadget *buffergadget = createGadget(gadget);
+//    using std::placeholders::_1;
+//    using std::placeholders::_2;
+//    using std::placeholders::_3;
+//    using std::placeholders::_4;
+//    if (buffergadget != nullptr) {
+//      buffergadget->initRemoteUpdate(std::bind(&SH_Main::updateGadgetRemote, this, _1, _2, _3, _4));
+//      gadgets.addGadget(buffergadget);
+//    } else {
+//      everything_ok = false;
+//    }
+//  }
+//  logger.decIndent();
+//  return everything_ok;
 }
 
 void SH_Main::mapConnectors(JsonObject connectors_json) {
@@ -514,30 +514,25 @@ void SH_Main::handleSystemRequest(Request *req) {
     uint8_t port4 = 0;
 
     if (json_body.containsKey("ports")) {
-      Serial.println("ports contained in incomming config");
-
       JsonObject ports = json_body["ports"].as<JsonObject>();
       if (ports.containsKey("port0")) {
-        Serial.println("Found port 0");
-        port0 = json_body["port0"].as<uint8_t>();
+        port0 = ports["port0"].as<uint8_t>();
       }
       if (ports.containsKey("port1")) {
-        port1 = json_body["port1"].as<uint8_t>();
+        port1 = ports["port1"].as<uint8_t>();
       }
       if (ports.containsKey("port2")) {
-        port2 = json_body["port2"].as<uint8_t>();
+        port2 = ports["port2"].as<uint8_t>();
       }
       if (ports.containsKey("port3")) {
-        port3 = json_body["port3"].as<uint8_t>();
+        port3 = ports["port3"].as<uint8_t>();
       }
       if (ports.containsKey("port4")) {
-        port4 = json_body["port4"].as<uint8_t>();
+        port4 = ports["port4"].as<uint8_t>();
       }
     }
 
     pin_set pins = {port0, port1, port2, port3, port4};
-
-    Serial.printf("%d, %d, %d, %d, %d\n", port0, port1, port2, port3, port4);
 
     std::string gadget_config;
     std::string code_config;

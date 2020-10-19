@@ -9,6 +9,20 @@
 #include "../console_logger.h"
 #include "../connectors/connectors.h"
 
+/**
+ * List of all possible gadgets
+ */
+enum class GadgetIdentifier {
+  None = 0,
+  sh_lamp_neopixel_basic,
+  sh_lamp_basic,
+  sh_fan_westinghouse_ir,
+  sh_lamp_westinghouse_ir
+};
+
+/**
+ * List of all Gadget Types
+ */
 enum class GadgetType {
   None, Lightbulb, Fan, Doorbell
 };
@@ -51,7 +65,7 @@ protected:
 public:
   SH_Gadget();
 
-  explicit SH_Gadget(const JsonObject&, const GadgetType);
+  explicit SH_Gadget(const JsonObject&, GadgetType);
 
   void initRemoteUpdate(std::function<void(const char *, const char *, const char *, int)> update_method);
 
