@@ -11,7 +11,7 @@ protected:
 
   void handleRequest(std::string path, const JsonObject& body) override;
 
-  bool handleNewGadget(SH_Gadget *new_gadget) override;
+  bool handleNewGadget(std::shared_ptr<SH_Gadget> new_gadget) override;
 
 public:
 

@@ -16,7 +16,7 @@ private:
 
   bool registerGadgetOnRemote(const char *gadget_name, GadgetType gadget_type, const char *characteristics);
 
-  bool handleNewGadget(SH_Gadget * new_gadget) override;
+  bool handleNewGadget(std::shared_ptr<SH_Gadget> new_gadget) override;
 
 public:
   explicit GadgetRemote(JsonObject data);

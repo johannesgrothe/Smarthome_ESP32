@@ -74,7 +74,7 @@ void SmarthomeGadgetRemote::handleRequest(std::string path, const JsonObject& bo
   if (path == "smarthome/from/set") {
     if (body["name"] != nullptr && body["characteristic"] != nullptr && body["value"] != nullptr) {
       logger.print("System / Gadget-Remote", "Received valid Request: ");
-      SH_Gadget *target_gadget = gadgets.getGadget(body["name"].as<const char *>());
+      auto target_gadget = gadgets.getGadget(body["name"].as<const char *>());
       if (target_gadget != nullptr) {
         const char *characteristic = body["characteristic"].as<const char *>();
         logger.print(target_gadget->getName());
@@ -102,7 +102,7 @@ void
 SmarthomeGadgetRemote::updateCharacteristic(const char *gadget_name, const char *service, const char *characteristic,
                                             int value) {
   if (updatesAreLocked()) return;
-  SH_Gadget *target_gadget = gadgets.getGadget(gadget_name);
+  auto target_gadget = gadgets.getGadget(gadget_name);
   if (characteristic != nullptr && target_gadget != nullptr) {
     char update_str[HOMEBRIDGE_UPDATE_STR_LEN_MAX]{};
     sprintf(&update_str[0],

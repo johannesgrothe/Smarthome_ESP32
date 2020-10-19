@@ -1,35 +1,103 @@
 #include <sstream>
 #include "sh_main.h"
 
-bool SH_Main::initGadgets(JsonArray gadget_json) {
-//  gadgets = Gadget_Collection();
-//  byte new_gadget_count = gadget_json.size() < MAIN_MAX_GADGETS ? gadget_json.size() : MAIN_MAX_GADGETS;
-//  logger.print(LOG_TYPE::INFO, "Creating Gadgets: ");
-//  logger.println(new_gadget_count);
-//  logger.incIndent();
-//  bool everything_ok = true;
-//  for (unsigned int pointer = 0; pointer < new_gadget_count; pointer++) {
-//    JsonObject gadget = gadget_json[pointer].as<JsonObject>();
-//    SH_Gadget *buffergadget = createGadget(gadget);
-//    using std::placeholders::_1;
-//    using std::placeholders::_2;
-//    using std::placeholders::_3;
-//    using std::placeholders::_4;
-//    if (buffergadget != nullptr) {
-//      buffergadget->initRemoteUpdate(std::bind(&SH_Main::updateGadgetRemote, this, _1, _2, _3, _4));
-//      gadgets.addGadget(buffergadget);
-//    } else {
-//      everything_ok = false;
-//    }
-//  }
-//  logger.decIndent();
-//  return everything_ok;
+bool SH_Main::initGadgets() {
+
+  logger.println("Initializing Gadgets:");
+  logger.incIndent();
+
+  auto eeprom_gadgets = System_Storage::readAllGadgets();
+
+  for (auto gadget: eeprom_gadgets) {
+    auto gadget_ident = (GadgetIdentifier) std::get<0>(gadget);
+    auto remote_bf = std::get<1>(gadget);
+    auto pins = std::get<2>(gadget);
+    auto name = std::get<3>(gadget);
+    auto gadget_config_str = std::get<4>(gadget);
+    auto code_config_str = std::get<5>(gadget);
+
+    logger.printfln("Initializing %s", name.c_str());
+    logger.incIndent();
+
+    DynamicJsonDocument gadget_config(1000);
+    DynamicJsonDocument code_config(1000);
+
+    bool deserialization_ok = true;
+
+    auto err = deserializeJson(gadget_config, gadget_config_str);
+
+    if (err != DeserializationError::Ok) {
+      deserialization_ok = false;
+    }
+
+    err = deserializeJson(code_config, code_config_str);
+
+    if (err != DeserializationError::Ok) {
+      deserialization_ok = false;
+    }
+
+    if (deserialization_ok) {
+      logger.println(LOG_TYPE::DATA, "Creating Gadget");
+      logger.incIndent();
+      auto buf_gadget = createGadget(gadget_ident, pins, name, gadget_config.as<JsonObject>(),
+                                     code_config.as<JsonObject>());
+      logger.decIndent();
+
+      if (buf_gadget != nullptr) {
+        // Gadget Remote
+        if (remote_bf[0]) {
+          logger.println(LOG_TYPE::DATA, "Linking Gadget Remote");
+          logger.incIndent();
+          using std::placeholders::_1;
+          using std::placeholders::_2;
+          using std::placeholders::_3;
+          using std::placeholders::_4;
+
+          buf_gadget->initRemoteUpdate(std::bind(&SH_Main::updateGadgetRemote, this, _1, _2, _3, _4));
+
+          logger.decIndent();
+        }
+
+        // Code Remote
+        if (remote_bf[1]) {
+          logger.println(LOG_TYPE::DATA, "Linking Code Remote");
+          logger.incIndent();
+          // TODO: init code remote on gadgets
+          logger.println(LOG_TYPE::ERR, "Not Implemented");
+
+          logger.decIndent();
+        }
+
+        // Event Remote
+        if (remote_bf[2]) {
+          logger.println(LOG_TYPE::DATA, "Linking Gadget Remote");
+          logger.incIndent();
+          // TODO: init event remote on gadgets
+          logger.println(LOG_TYPE::ERR, "Not Implemented");
+
+          logger.decIndent();
+        }
+
+        // Add created gadget to the list
+        gadgets.addGadget(buf_gadget);
+      } else {
+        logger.println(LOG_TYPE::ERR, "Gadget could not be created");
+      }
+    } else {
+      logger.println(LOG_TYPE::ERR, "Error in config deserialization process");
+    }
+    logger.decIndent();
+  }
+  logger.decIndent();
+  return true;
 }
 
 void SH_Main::mapConnectors(JsonObject connectors_json) {
   // Mapping Code Connectors (IR/Radio) to the Gadgets for them to use
   logger.println("Mapping Connectors:");
   logger.incIndent();
+
+  // TODO: fix ir
   // IR
   logger.print("IR:");
   if (connectors_json["ir"] != nullptr && connectors_json["ir"].as<JsonArray>().size() > 0) {
@@ -38,7 +106,7 @@ void SH_Main::mapConnectors(JsonObject connectors_json) {
     JsonArray map_gadgets = connectors_json["ir"].as<JsonArray>();
     for (auto &&map_gadget : map_gadgets) {
       const char *gadget_name = map_gadget.as<const char *>();
-      SH_Gadget *found_gadget = gadgets.getGadget(gadget_name);
+      auto found_gadget = gadgets.getGadget(gadget_name);
       if (found_gadget != nullptr) {
         found_gadget->setIR(ir_gadget);
         logger.println(LOG_TYPE::DATA, gadget_name);
@@ -49,6 +117,7 @@ void SH_Main::mapConnectors(JsonObject connectors_json) {
     logger.println(" -");
   }
 
+  // TODO: fix radio connector
   // Radio
   logger.print("Radio:");
   if (connectors_json["radio"] != nullptr && connectors_json["radio"].as<JsonArray>().size() > 0) {
@@ -57,7 +126,7 @@ void SH_Main::mapConnectors(JsonObject connectors_json) {
     JsonArray map_gadgets = connectors_json["radio"].as<JsonArray>();
     for (auto &&map_gadget : map_gadgets) {
       const char *gadget_name = map_gadget.as<const char *>();
-      SH_Gadget *found_gadget = gadgets.getGadget(gadget_name);
+      auto found_gadget = gadgets.getGadget(gadget_name);
       if (found_gadget != nullptr) {
         found_gadget->setRadio(radio_gadget);
         logger.println(LOG_TYPE::DATA, gadget_name);
@@ -613,31 +682,32 @@ bool SH_Main::initGadgetRemote(JsonObject json) {
   logger.println("Initializing Gadget Remote");
   logger.incIndent();
 
-  if (json["type"] == nullptr) {
-    logger.println(LOG_TYPE::ERR, "'type' missing in gadget remote config");
-  }
-  if (json["gadgets"] == nullptr) {
-    logger.println(LOG_TYPE::ERR, "'gadgets' missing in gadget remote config");
-  }
-  auto remote_type = json["type"].as<const char *>();
-
-  if (strcmp(remote_type, "smarthome") == 0) {
-    JsonArray gadget_list = json["gadgets"].as<JsonArray>();
-    if (gadget_list.size() > 0) {
-      logger.println(LOG_TYPE::DATA, "Smarthome");
-      logger.incIndent();
-      auto *smarthome_remote = new SmarthomeGadgetRemote(network_gadget, json);
-      for (auto &&gadget_name_str : gadget_list) {
-        const char *gadget_name = gadget_name_str.as<const char *>();
-        SH_Gadget *gadget = gadgets.getGadget(gadget_name);
-        smarthome_remote->addGadget(gadget);
-      }
-      logger.decIndent();
-      gadget_remote = smarthome_remote;
-    } else {
-      logger.println(LOG_TYPE::DATA, "gadget-list is empty");
-    }
-  }
+  // TODO: fix gadget remote
+//  if (json["type"] == nullptr) {
+//    logger.println(LOG_TYPE::ERR, "'type' missing in gadget remote config");
+//  }
+//  if (json["gadgets"] == nullptr) {
+//    logger.println(LOG_TYPE::ERR, "'gadgets' missing in gadget remote config");
+//  }
+//  auto remote_type = json["type"].as<const char *>();
+//
+//  if (strcmp(remote_type, "smarthome") == 0) {
+//    JsonArray gadget_list = json["gadgets"].as<JsonArray>();
+//    if (gadget_list.size() > 0) {
+//      logger.println(LOG_TYPE::DATA, "Smarthome");
+//      logger.incIndent();
+//      auto *smarthome_remote = new SmarthomeGadgetRemote(network_gadget, json);
+//      for (auto &&gadget_name_str : gadget_list) {
+//        const char *gadget_name = gadget_name_str.as<const char *>();
+//        SH_Gadget *gadget = gadgets.getGadget(gadget_name);
+//        smarthome_remote->addGadget(gadget);
+//      }
+//      logger.decIndent();
+//      gadget_remote = smarthome_remote;
+//    } else {
+//      logger.println(LOG_TYPE::DATA, "gadget-list is empty");
+//    }
+//  }
 
   logger.decIndent();
   return true;
@@ -647,31 +717,32 @@ bool SH_Main::initCodeRemote(JsonObject json) {
   logger.println("Initializing Code Remote");
   logger.incIndent();
 
-  if (json["type"] == nullptr) {
-    logger.println(LOG_TYPE::ERR, "'type' missing in code remote config");
-  }
-  if (json["gadgets"] == nullptr) {
-    logger.println(LOG_TYPE::ERR, "'gadgets' missing in code remote config");
-  }
-  auto remote_type = json["type"].as<const char *>();
-
-  if (strcmp(remote_type, "smarthome") == 0) {
-    JsonArray gadget_list = json["gadgets"].as<JsonArray>();
-    if (gadget_list.size() > 0) {
-      logger.println(LOG_TYPE::DATA, "Smarthome");
-      logger.incIndent();
-      auto *smarthome_remote = new SmarthomeCodeRemote(network_gadget, json);
-      for (auto &&gadget_name_str : gadget_list) {
-        const char *gadget_name = gadget_name_str.as<const char *>();
-        SH_Gadget *gadget = gadgets.getGadget(gadget_name);
-        smarthome_remote->addGadget(gadget);
-      }
-      logger.decIndent();
-      code_remote = smarthome_remote;
-    } else {
-      logger.println(LOG_TYPE::DATA, "gadget-list is empty");
-    }
-  }
+  // TODO: fix code remote
+//  if (json["type"] == nullptr) {
+//    logger.println(LOG_TYPE::ERR, "'type' missing in code remote config");
+//  }
+//  if (json["gadgets"] == nullptr) {
+//    logger.println(LOG_TYPE::ERR, "'gadgets' missing in code remote config");
+//  }
+//  auto remote_type = json["type"].as<const char *>();
+//
+//  if (strcmp(remote_type, "smarthome") == 0) {
+//    JsonArray gadget_list = json["gadgets"].as<JsonArray>();
+//    if (gadget_list.size() > 0) {
+//      logger.println(LOG_TYPE::DATA, "Smarthome");
+//      logger.incIndent();
+//      auto *smarthome_remote = new SmarthomeCodeRemote(network_gadget, json);
+//      for (auto &&gadget_name_str : gadget_list) {
+//        const char *gadget_name = gadget_name_str.as<const char *>();
+//        SH_Gadget *gadget = gadgets.getGadget(gadget_name);
+//        smarthome_remote->addGadget(gadget);
+//      }
+//      logger.decIndent();
+//      code_remote = smarthome_remote;
+//    } else {
+//      logger.println(LOG_TYPE::DATA, "gadget-list is empty");
+//    }
+//  }
 
   logger.decIndent();
   return true;
@@ -681,14 +752,14 @@ void SH_Main::testStuff() {
   logger.println("Testing Stuff");
   logger.incIndent();
 
-  System_Storage::printEEPROMLayout();
-
-  auto blub = (GadgetIdentifier) 55;
-
-  Serial.println((int) blub);
-
+//  System_Storage::printEEPROMLayout();
+//
+//  auto blub = (GadgetIdentifier) 55;
+//
+//  Serial.println((int) blub);
+//
   if (eeprom_active_) {
-    logger.println("testing eeprom:");
+//    logger.println("testing eeprom:");
 
 //    System_Storage::resetContentFlag();
 //    System_Storage::writeTestEEPROM();
@@ -728,57 +799,59 @@ void SH_Main::testStuff() {
 
 //    logger.println(LOG_TYPE::DATA, System_Storage::readWholeEEPROM().c_str());
 
-    auto g1 = System_Storage::readGadget(0);
-    auto g2 = System_Storage::readGadget(1);
-    auto g3 = System_Storage::readGadget(2);
-    auto g4 = System_Storage::readGadget(3);
 
-    Serial.println(int(std::get<0>(g1)));
-    auto remote_bf = std::get<1>(g1);
-    for (int i = 0; i < 3; i++) {
-      Serial.printf("%d, ", remote_bf[i]);
-    }
-    Serial.println("");
-    auto pins = std::get<2>(g1);
-    for (uint8_t pin : pins) {
-      Serial.printf("%d, ", (int) pin);
-    }
-    Serial.println("");
-    Serial.println(std::get<3>(g1).c_str());
-    Serial.println(std::get<4>(g1).c_str());
-    Serial.println(std::get<5>(g1).c_str());
 
-    Serial.println(int(std::get<0>(g2)));
-    remote_bf = std::get<1>(g2);
-    for (int i = 0; i < 3; i++) {
-      Serial.printf("%d, ", remote_bf[i]);
-    }
-    Serial.println("");
-    pins = std::get<2>(g2);
-    for (uint8_t pin : pins) {
-      Serial.printf("%d, ", (int) pin);
-    }
-    Serial.println("");
-    Serial.println(std::get<3>(g2).c_str());
-    Serial.println(std::get<4>(g2).c_str());
-    Serial.println(std::get<5>(g2).c_str());
-
-    Serial.println(int(std::get<0>(g3)));
-    remote_bf = std::get<1>(g3);
-    for (int i = 0; i < 3; i++) {
-      Serial.printf("%d, ", remote_bf[i]);
-    }
-    Serial.println("");
-    pins = std::get<2>(g3);
-    for (uint8_t pin : pins) {
-      Serial.printf("%d, ", (int) pin);
-    }
-    Serial.println("");
-    Serial.println(std::get<3>(g3).c_str());
-    Serial.println(std::get<4>(g3).c_str());
-    Serial.println(std::get<5>(g3).c_str());
-
-    logger.println("Done");
+//    auto g1 = System_Storage::readGadget(0);
+//    auto g2 = System_Storage::readGadget(1);
+//    auto g3 = System_Storage::readGadget(2);
+//    auto g4 = System_Storage::readGadget(3);
+//
+//    Serial.println(int(std::get<0>(g1)));
+//    auto remote_bf = std::get<1>(g1);
+//    for (int i = 0; i < 3; i++) {
+//      Serial.printf("%d, ", remote_bf[i]);
+//    }
+//    Serial.println("");
+//    auto pins = std::get<2>(g1);
+//    for (uint8_t pin : pins) {
+//      Serial.printf("%d, ", (int) pin);
+//    }
+//    Serial.println("");
+//    Serial.println(std::get<3>(g1).c_str());
+//    Serial.println(std::get<4>(g1).c_str());
+//    Serial.println(std::get<5>(g1).c_str());
+//
+//    Serial.println(int(std::get<0>(g2)));
+//    remote_bf = std::get<1>(g2);
+//    for (int i = 0; i < 3; i++) {
+//      Serial.printf("%d, ", remote_bf[i]);
+//    }
+//    Serial.println("");
+//    pins = std::get<2>(g2);
+//    for (uint8_t pin : pins) {
+//      Serial.printf("%d, ", (int) pin);
+//    }
+//    Serial.println("");
+//    Serial.println(std::get<3>(g2).c_str());
+//    Serial.println(std::get<4>(g2).c_str());
+//    Serial.println(std::get<5>(g2).c_str());
+//
+//    Serial.println(int(std::get<0>(g3)));
+//    remote_bf = std::get<1>(g3);
+//    for (int i = 0; i < 3; i++) {
+//      Serial.printf("%d, ", remote_bf[i]);
+//    }
+//    Serial.println("");
+//    pins = std::get<2>(g3);
+//    for (uint8_t pin : pins) {
+//      Serial.printf("%d, ", (int) pin);
+//    }
+//    Serial.println("");
+//    Serial.println(std::get<3>(g3).c_str());
+//    Serial.println(std::get<4>(g3).c_str());
+//    Serial.println(std::get<5>(g3).c_str());
+//
+//    logger.println("Done");
 
   } else {
     logger.println(LOG_TYPE::FATAL, "eeprom isn't initialized");
@@ -819,7 +892,6 @@ void SH_Main::init() {
       logger.println("Unknown Boot Mode");
       break;
   }
-  logger.printnl();
 
   logger.printfln("EEPROM usage: %d / %d bytes\n", System_Storage::getEEPROMUsage(), EEPROM_SIZE);
   logger.printfln("Free Heap: %d", ESP.getFreeHeap());
@@ -862,6 +934,8 @@ void SH_Main::initModeComplete() {
 
   initConnectors();
 
+  initGadgets();
+
 //  if (json["gadgets"] != nullptr) {
 //    initGadgets(json["gadgets"]);
 //  } else {
@@ -887,6 +961,7 @@ void SH_Main::initModeComplete() {
   unsigned long ident = micros() % 7023;
 //  snprintf(client_str, 50, R"({"request_id": %lu, "id": "%s"})", ident, client_name);
 //  network_gadget->sendRequest(new Request("smarthome/to/client/add", client_str));
+  // TODO: initialize time sync
   unsigned long const start_time = millis();
 //  while (start_time + 5000 > millis()) {
 //    if (!network_gadget->hasRequest()) {

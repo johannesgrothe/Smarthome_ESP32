@@ -1,26 +1,23 @@
 #pragma once
 
+#include <memory>
 #include "gadgets/sh_gadget.h"
 #include "system_settings.h"
-
-// TODO: not needed anymore
 
 class Gadget_Collection {
 private:
 
-  SH_Gadget *gadgets[MAIN_MAX_GADGETS]{};
-
-  byte gadget_count{};
+  std::vector<shared_ptr<SH_Gadget>> gadgets;
 
 public:
 
-  bool addGadget(SH_Gadget *new_gadget);
+  bool addGadget(const shared_ptr<SH_Gadget>& new_gadget);
 
-  SH_Gadget *getGadget(const char *gadget_name);
+  shared_ptr<SH_Gadget> getGadget(const std::string& gadget_name);
 
-  SH_Gadget *getGadget(byte index) const;
+  shared_ptr<SH_Gadget> getGadget(uint8_t index) const;
 
-  SH_Gadget *operator[](int index) const;
+  shared_ptr<SH_Gadget> operator[](int index) const;
 
   byte getGadgetCount() const;
 };

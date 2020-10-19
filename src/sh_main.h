@@ -149,13 +149,11 @@ private:
 
   bool eeprom_active_;
 
-  bool initGadgets(JsonArray gadget_json);
+  bool initGadgets();
 
   void mapConnectors(JsonObject connectors_json);
 
   bool initConnectors();
-
-  bool initNetwork();
 
   bool initNetwork(NetworkMode);
 

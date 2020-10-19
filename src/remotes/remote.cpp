@@ -33,7 +33,7 @@ void Remote::handleRequest(Request *req) {  // TODO: unneeded
   handleRequest(req->getPath(), body);
 }
 
-void Remote::addGadget(SH_Gadget *new_gadget) {
+void Remote::addGadget(const std::shared_ptr<SH_Gadget>& new_gadget) {
   if (gadgets.addGadget(new_gadget)) {
     logger.print(LOG_TYPE::DATA, "Adding '");
     logger.print(new_gadget->getName());

@@ -6,7 +6,7 @@ IR_Gadget::IR_Gadget(int ir_recv_pin, int ir_send_pin) :
     if (ir_recv_pin != 0) {
       receiver_ = new IRrecv(ir_recv_pin);
       receiver_->enableIRIn();
-      logger.printf(LOG_TYPE::DATA, "Receiver-Pin: %d", ir_recv_pin);
+      logger.printfln(LOG_TYPE::DATA, "Receiver-Pin: %d", ir_recv_pin);
     } else {
       everything_ok = false;
       logger.println(LOG_TYPE::ERR, "'recv_pin' nicht spezifiziert.");
@@ -14,7 +14,7 @@ IR_Gadget::IR_Gadget(int ir_recv_pin, int ir_send_pin) :
     if (ir_send_pin != 0) {
       blaster_ = new IRsend(ir_send_pin);
       blaster_->begin();
-      logger.printf(LOG_TYPE::DATA, "Blaster-Pin: %d", ir_send_pin);
+      logger.printfln(LOG_TYPE::DATA, "Blaster-Pin: %d", ir_send_pin);
     } else {
       everything_ok = false;
       logger.println(LOG_TYPE::ERR, "'send_pin' nicht spezifiziert.");

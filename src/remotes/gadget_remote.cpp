@@ -21,7 +21,7 @@ GadgetRemote::registerGadgetOnRemote(const char *gadget_name, GadgetType gadget_
   return false;
 }
 
-bool GadgetRemote::handleNewGadget(SH_Gadget *new_gadget) {
+bool GadgetRemote::handleNewGadget(std::shared_ptr<SH_Gadget> new_gadget) {
   char characteristic_str[HOMEBRIDGE_REGISTER_STR_MAX_LEN - 60];
   new_gadget->
     getCharacteristics(&characteristic_str[0]);

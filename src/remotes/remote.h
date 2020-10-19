@@ -28,7 +28,7 @@ protected:
 
   virtual void handleRequest(std::string path, const JsonObject& body) = 0;
 
-  virtual bool handleNewGadget(SH_Gadget *new_gadget) = 0;
+  virtual bool handleNewGadget(std::shared_ptr<SH_Gadget> new_gadget) = 0;
 
   bool isNetworkInitialised();
 
@@ -39,5 +39,5 @@ public:
 
   void handleRequest(Request *req);
 
-  void addGadget(SH_Gadget *new_gadget);
+  void addGadget(const std::shared_ptr<SH_Gadget>& new_gadget);
 };
