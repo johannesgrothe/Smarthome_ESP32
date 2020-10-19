@@ -183,7 +183,7 @@ private:
    * @param value value to be written
    * @return whether writing was successful
    */
-  static bool writeByte(int pos, uint8_t value) {
+  static bool writeUInt8(int pos, uint8_t value) {
     EEPROM.writeByte(pos, value);
     EEPROM.commit();
     return true;
@@ -194,7 +194,7 @@ private:
    * @param pos position to read from
    * @return the uint16_t value
    */
-  static uint8_t readByte(int pos) {
+  static uint8_t readUInt8(int pos) {
     return EEPROM.readByte(pos);
   }
 
@@ -209,8 +209,8 @@ private:
     uint8_t first = value >> (uint8_t) 8;
     uint8_t second = value & (uint16_t) 0x00ff;
 
-    bool success = writeByte(pos, first);
-    success = success & writeByte(pos + 1, second);
+    bool success = writeUInt8(pos, first);
+    success = success & writeUInt8(pos + 1, second);
 
     return success;
   }
@@ -221,8 +221,8 @@ private:
    * @return the uint16_t value
    */
   static uint16_t readUInt16(int pos) {
-    auto first = readByte(pos);
-    auto second = readByte(pos + 1);
+    auto first = readUInt8(pos);
+    auto second = readUInt8(pos + 1);
     return (uint16_t) ((first * (0xFF + 1)) + second);
   }
 
@@ -233,7 +233,7 @@ private:
    * @param content the string to write
    * @return whether writing was successful
    */
-  static bool writeContent(int start, int max_len, std::string content) {
+  static bool writeString(int start, int max_len, std::string content) {
     int id_length = content.size();
     if (id_length > max_len) {
       logger.println(LOG_TYPE::ERR, "written content is too long");
@@ -253,7 +253,7 @@ private:
    * @param max_len maximum length of the string to read
    * @return the read content
    */
-  static std::string readContent(int start, int max_len) {
+  static std::string readString(int start, int max_len) {
     std::stringstream ss;
     for (int pos = 0; pos < max_len; pos++) {
       char c = EEPROM.readChar(pos + start);
@@ -270,7 +270,7 @@ private:
    * @return the gadget count
    */
   static uint8_t getGadgetCount() {
-    return readByte(GADGET_COUNT_POS);
+    return readUInt8(GADGET_COUNT_POS);
   }
 
   /**
@@ -279,7 +279,7 @@ private:
    * @return whether saving was successful or not
    */
   static bool writeGadgetCount(uint8_t count) {
-    return writeByte(GADGET_COUNT_POS, count);
+    return writeUInt8(GADGET_COUNT_POS, count);
   }
 
   /**
@@ -392,7 +392,7 @@ public:
    * @return whether writing was successful
    */
   static bool writeGadget(uint8_t gadget_type, bitfield_set config_bf, pin_set pins, const std::string& name, const std::string& gadget_json, const std::string& code_json) {
-    auto gadget_index = readByte(GADGET_COUNT_POS);
+    auto gadget_index = readUInt8(GADGET_COUNT_POS);
 
     if (gadget_index >= GADGET_MAX_COUNT) {
       logger.println(LOG_TYPE::ERR, "Cannot save gadget: maximum count of gadgets reached");
@@ -433,26 +433,26 @@ public:
     }
 
     // write the config bitfield
-    auto success = writeByte(g_start_addr + GADADGET_BF_POS, buf_bitfield);
+    auto success = writeUInt8(g_start_addr + GADADGET_BF_POS, buf_bitfield);
 
     // Write the gadget type
-    success = success && writeByte(g_start_addr + GADGET_TYPE_POS, gadget_type);
+    success = success && writeUInt8(g_start_addr + GADGET_TYPE_POS, gadget_type);
 
     for (uint8_t i = 0; i < GADGET_PIN_BLOCK_LEN; i++) {
       // Write the port config at position i
-      success = success && writeByte(g_start_addr + GADGET_PIN_BLOCK_POS + i, pins[i]);
+      success = success && writeUInt8(g_start_addr + GADGET_PIN_BLOCK_POS + i, pins[i]);
     }
 
     // Write the length of the name
-    success = success && writeByte(g_start_addr + GADGET_NAME_LEN_POS, g_name_len);
+    success = success && writeUInt8(g_start_addr + GADGET_NAME_LEN_POS, g_name_len);
     // Write the length of the config length
     success = success && writeUInt16(g_start_addr + GADGET_JSON_LEN_POS, g_config_len);
     // Write the name
-    success = success && writeContent(name_start, g_name_len, name);
+    success = success && writeString(name_start, g_name_len, name);
     // Write the config json
-    success = success && writeContent(config_start, g_config_len, gadget_json);
+    success = success && writeString(config_start, g_config_len, gadget_json);
     // Write the code json
-    success = success && writeContent(code_start, g_code_len, code_json);
+    success = success && writeString(code_start, g_code_len, code_json);
 
     if (!success) {
       logger.println(LOG_TYPE::ERR, "Cannot save gadget: error writing content");
@@ -478,7 +478,7 @@ public:
   static gadget_tuple readGadget(uint8_t gadget_index) {
     auto addr = getGadgetMemoryStart(gadget_index);
     auto addr_end = getGadgetMemoryEnd(gadget_index);
-    auto stored_gadgets = readByte(GADGET_COUNT_POS);
+    auto stored_gadgets = readUInt8(GADGET_COUNT_POS);
 
     pin_set pins = {0, 0, 0, 0, 0};
     bitfield_set remote_bf = {0, 0, 0, 0, 0, 0, 0, 0};
@@ -487,21 +487,21 @@ public:
       return gadget_tuple(0, remote_bf, pins, "", "", "");
     }
 
-    auto config_bf = readByte(addr + GADADGET_BF_POS);
-    auto gadget_type = readByte(addr + GADGET_TYPE_POS);
-    auto gadget_name_len = readByte(addr + GADGET_NAME_LEN_POS);
+    auto config_bf = readUInt8(addr + GADADGET_BF_POS);
+    auto gadget_type = readUInt8(addr + GADGET_TYPE_POS);
+    auto gadget_name_len = readUInt8(addr + GADGET_NAME_LEN_POS);
     auto gadget_json_len = readUInt16(addr + GADGET_JSON_LEN_POS);
 
     uint16_t name_start = addr + GADGET_NAME_POS;
     uint16_t config_start = name_start + gadget_name_len + 1;
     uint16_t code_start = config_start + gadget_json_len + 1;
 
-    auto gadget_name = readContent(name_start, gadget_name_len);
-    auto gadget_json = readContent(config_start, gadget_json_len);
-    auto code_json = readContent(code_start, addr_end);
+    auto gadget_name = readString(name_start, gadget_name_len);
+    auto gadget_json = readString(config_start, gadget_json_len);
+    auto code_json = readString(code_start, addr_end);
 
     for (uint8_t i = 0; i < GADGET_PIN_BLOCK_LEN; i++) {
-      pins[i] = readByte(addr + GADGET_PIN_BLOCK_POS + i);
+      pins[i] = readUInt8(addr + GADGET_PIN_BLOCK_POS + i);
     }
 
     for (uint8_t i = 0; i < 8; i++) {
@@ -580,7 +580,7 @@ public:
    * @return whether writing was successful
    */
   static bool writeIRrecvPin(uint8_t pin) {
-    return writeByte(IR_RECV_PIN_POS, pin);
+    return writeUInt8(IR_RECV_PIN_POS, pin);
   }
 
   /**
@@ -588,7 +588,7 @@ public:
    * @return the ir recv pin
    */
   static uint8_t readIRrecvPin() {
-    return readByte(IR_RECV_PIN_POS);
+    return readUInt8(IR_RECV_PIN_POS);
   }
 
   /**
@@ -597,7 +597,7 @@ public:
    * @return whether writing was successful
    */
   static bool writeIRsendPin(uint8_t pin) {
-    return writeByte(IR_SEND_PIN_POS, pin);
+    return writeUInt8(IR_SEND_PIN_POS, pin);
   }
 
   /**
@@ -605,7 +605,7 @@ public:
    * @return the ir send pin
    */
   static uint8_t readIRsendPin() {
-    return readByte(IR_SEND_PIN_POS);
+    return readUInt8(IR_SEND_PIN_POS);
   }
 
   // read + write radio pins
@@ -615,7 +615,7 @@ public:
    * @return whether writing radio was successful
    */
   static bool writeRadioRecvPin(uint8_t pin) {
-    return writeByte(RADIO_RECV_POS, pin);
+    return writeUInt8(RADIO_RECV_POS, pin);
   }
 
   /**
@@ -623,7 +623,7 @@ public:
    * @return the radio receiver pin
    */
   static uint8_t readRadioRecvPin() {
-    return readByte(RADIO_RECV_POS);
+    return readUInt8(RADIO_RECV_POS);
   }
 
   /**
@@ -632,7 +632,7 @@ public:
   * @return whether writing was successful
   */
   static bool writeRadioSendPin(uint8_t pin) {
-    return writeByte(RADIO_SEND_POS, pin);
+    return writeUInt8(RADIO_SEND_POS, pin);
   }
 
   /**
@@ -640,7 +640,7 @@ public:
    * @return the radio send pin
    */
   static uint8_t readRadioSendPin() {
-    return readByte(RADIO_SEND_POS);
+    return readUInt8(RADIO_SEND_POS);
   }
 
   // read + write network mode
@@ -650,7 +650,7 @@ public:
    * @return whether writing was successful
    */
   static bool writeNetworkMode(NetworkMode mode) {
-    return writeByte(NETWORK_MODE_POS, (uint8_t) mode);
+    return writeUInt8(NETWORK_MODE_POS, (uint8_t) mode);
   }
 
   /**
@@ -658,7 +658,7 @@ public:
    * @return the network mode
    */
   static NetworkMode readNetworkMode() {
-    uint8_t mode = readByte(NETWORK_MODE_POS);
+    uint8_t mode = readUInt8(NETWORK_MODE_POS);
     if (mode < NetworkModeCount) {
       return (NetworkMode) mode;
     }
@@ -673,7 +673,7 @@ public:
    * @return whether writing was successful
    */
   static bool writeGadgetRemote(GadgetRemoteMode mode) {
-    return writeByte(GADGET_REMOTE_POS, (uint8_t) mode);
+    return writeUInt8(GADGET_REMOTE_POS, (uint8_t) mode);
   }
 
   /**
@@ -681,7 +681,7 @@ public:
    * @return the gadget remote mode
    */
   static GadgetRemoteMode readGadgetRemote() {
-    uint8_t mode = readByte(GADGET_REMOTE_POS);
+    uint8_t mode = readUInt8(GADGET_REMOTE_POS);
     if (mode < GadgetRemoteModeCount) {
       return (GadgetRemoteMode) mode;
     }
@@ -696,7 +696,7 @@ public:
    * @return whether writing was successful
    */
   static bool writeCodeRemote(CodeRemoteMode mode) {
-    return writeByte(CODE_REMOTE_POS, (uint8_t) mode);
+    return writeUInt8(CODE_REMOTE_POS, (uint8_t) mode);
   }
 
   /**
@@ -704,7 +704,7 @@ public:
    * @return the code remote mode
    */
   static CodeRemoteMode readCodeRemote() {
-    uint8_t mode =  readByte(CODE_REMOTE_POS);
+    uint8_t mode = readUInt8(CODE_REMOTE_POS);
     if (mode < CodeRemoteModeCount) {
       return (CodeRemoteMode) mode;
     }
@@ -719,7 +719,7 @@ public:
    * @return whether writing was successful
    */
   static bool writeEventRemote(EventRemoteMode mode) {
-    return writeByte(EVENT_REMOTE_POS, (uint8_t) mode);
+    return writeUInt8(EVENT_REMOTE_POS, (uint8_t) mode);
   }
 
   /**
@@ -727,7 +727,7 @@ public:
    * @return the gadget remote mode
    */
   static EventRemoteMode readEventRemote() {
-    uint8_t mode = readByte(EVENT_REMOTE_POS);
+    uint8_t mode = readUInt8(EVENT_REMOTE_POS);
     if (mode < EventRemoteModeCount) {
       return (EventRemoteMode) mode;
     }
@@ -746,7 +746,7 @@ public:
       setContentFlag(CONFIG_CHECK_INDEX_ID, false);
       success = true;
     } else {
-      success = writeContent(ID_POS, ID_MAX_LEN, id);
+      success = writeString(ID_POS, ID_MAX_LEN, id);
       setContentFlag(CONFIG_CHECK_INDEX_ID, success);
     }
     return success;
@@ -762,7 +762,7 @@ public:
       sstr << "esp_" << (micros() % 17731776);
       writeID(sstr.str());
     }
-    return readContent(ID_POS, ID_MAX_LEN);
+    return readString(ID_POS, ID_MAX_LEN);
   }
 
   /**
@@ -784,7 +784,7 @@ public:
       setContentFlag(CONFIG_CHECK_INDEX_WIFI_SSID, false);
       success = true;
     } else {
-      success = writeContent(WIFI_SSID_POS, WIFI_SSID_MAX_LEN, ssid);
+      success = writeString(WIFI_SSID_POS, WIFI_SSID_MAX_LEN, ssid);
       setContentFlag(CONFIG_CHECK_INDEX_WIFI_SSID, success);
     }
     return success;
@@ -795,7 +795,7 @@ public:
    * @return the wifi ssid
    */
   static std::string readWifiSSID() {
-    return readContent(WIFI_SSID_POS, WIFI_SSID_MAX_LEN);
+    return readString(WIFI_SSID_POS, WIFI_SSID_MAX_LEN);
   }
 
   /**
@@ -817,7 +817,7 @@ public:
       setContentFlag(CONFIG_CHECK_INDEX_WIFI_PW, false);
       success = true;
     } else {
-      success = writeContent(WIFI_PW_POS, WIFI_PW_MAX_LEN, pw);
+      success = writeString(WIFI_PW_POS, WIFI_PW_MAX_LEN, pw);
       setContentFlag(CONFIG_CHECK_INDEX_WIFI_PW, success);
     }
     return success;
@@ -828,7 +828,7 @@ public:
    * @return the wifi password
    */
   static std::string readWifiPW() {
-    return readContent(WIFI_PW_POS, WIFI_PW_MAX_LEN);
+    return readString(WIFI_PW_POS, WIFI_PW_MAX_LEN);
   }
 
   /**
@@ -848,7 +848,7 @@ public:
   static bool writeMQTTIP(const IPAddress& ip) {
     bool success = true;
     for (int i = 0; i < 4; i++) {
-      success = success && writeByte(MQTT_IP_POS + i, ip[i]);
+      success = success && writeUInt8(MQTT_IP_POS + i, ip[i]);
     }
     if (ip == IPAddress(0, 0, 0, 0)) {
       setContentFlag(CONFIG_CHECK_INDEX_MQTT_PW, false);
@@ -866,7 +866,7 @@ public:
   static IPAddress readMQTTIP() {
     IPAddress ip;
     for (int i = 0; i < 4; i++) {
-      ip[i] = readByte(MQTT_IP_POS + i);
+      ip[i] = readUInt8(MQTT_IP_POS + i);
     }
     return ip;
   }
@@ -920,7 +920,7 @@ public:
    */
   static bool writeMQTTUsername(const std::string &username) {
     bool success;
-    success = writeContent(MQTT_USER_POS, MQTT_USER_MAX_LEN, username);
+    success = writeString(MQTT_USER_POS, MQTT_USER_MAX_LEN, username);
     if (username == "null") {
       setContentFlag(CONFIG_CHECK_INDEX_MQTT_USER, false);
       success = true;
@@ -935,7 +935,7 @@ public:
    * @return the username
    */
   static std::string readMQTTUsername() {
-    return readContent(MQTT_USER_POS, MQTT_USER_MAX_LEN);
+    return readString(MQTT_USER_POS, MQTT_USER_MAX_LEN);
   }
 
   /**
@@ -953,7 +953,7 @@ public:
   */
   static bool writeMQTTPassword(const std::string &pw) {
     bool success;
-    success = writeContent(MQTT_PW_POS, MQTT_PW_MAX_LEN, pw);
+    success = writeString(MQTT_PW_POS, MQTT_PW_MAX_LEN, pw);
     if (pw == "null") {
       setContentFlag(CONFIG_CHECK_INDEX_MQTT_PW, false);
       success = true;
@@ -968,7 +968,7 @@ public:
    * @return the password
    */
   static std::string readMQTTPassword() {
-    return readContent(MQTT_PW_POS, MQTT_PW_MAX_LEN);
+    return readString(MQTT_PW_POS, MQTT_PW_MAX_LEN);
   }
 
   /**
@@ -1018,9 +1018,9 @@ public:
 //      EEPROM.writeChar(i, k);
     }
 
-    writeByte(GADGET_COUNT_POS, 0);
-    writeByte(VALID_CONFIG_BITFIELD_BYTE, 0);
-    writeByte(SYSTEM_SETTINGS_BITFIELD_BYTE, 0);
+    writeUInt8(GADGET_COUNT_POS, 0);
+    writeUInt8(VALID_CONFIG_BITFIELD_BYTE, 0);
+    writeUInt8(SYSTEM_SETTINGS_BITFIELD_BYTE, 0);
 
     EEPROM.commit();
   }
