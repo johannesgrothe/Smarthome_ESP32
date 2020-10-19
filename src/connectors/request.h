@@ -132,6 +132,15 @@ public:
   bool respond(bool ack, const std::string& path);
 
   /**
+   * Responds to this request with the given path and a simple ack body
+   * @param ack whether the action the original request triggered was successful
+   * @param status_msg the status message explaining the ack
+   * @param path the path the response should be sent to
+   * @return whether responding was successful
+   */
+  bool respond(bool ack, const std::string& status_msg, const std::string& path);
+
+  /**
    * Responds to this request with the original path and payload.
    * @param payload the payload that should be sent
    * @return whether responding was successful

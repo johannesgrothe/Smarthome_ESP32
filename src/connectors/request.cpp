@@ -58,9 +58,21 @@ bool Request::respond(bool ack) {
   return respond(ack, path_);
 }
 
-bool Request::respond(bool ack, const std::string& path) {
-  DynamicJsonDocument doc(308);
+bool Request::respond(bool ack, const std::string& status_msg) {
+  DynamicJsonDocument doc(1000);
   doc["ack"] = ack;
+  if (!status_msg.empty()) {
+    doc["status_msg"] = status_msg;
+  }
+  return respond(path_, doc);
+}
+
+bool Request::respond(bool ack, const std::string& status_msg, const std::string& path) {
+  DynamicJsonDocument doc(1000);
+  doc["ack"] = ack;
+  if (!status_msg.empty()) {
+    doc["status_msg"] = status_msg;
+  }
   return respond(path, doc);
 }
 

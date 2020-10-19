@@ -90,6 +90,8 @@ using bitfield_set = std::array<bool, 8>;
 using pin_set = std::array<uint8_t, GADGET_PIN_BLOCK_LEN>;
 // Tuple to store a gadget config: type, bitfield, pins, name, gadget_config, code_config
 using gadget_tuple = std::tuple<uint8_t, bitfield_set, pin_set, std::string, std::string, std::string>;
+using status_tuple = std::tuple<bool, std::string>;
+
 
 static bool validateJson(std::string new_json_str) {
   DynamicJsonDocument json_file(2048);
@@ -97,7 +99,6 @@ static bool validateJson(std::string new_json_str) {
   return err == DeserializationError::Ok;
 }
 
-// TODO: blub
 /**
  *
  */
@@ -383,94 +384,6 @@ public:
 
   // read and write gadgets
   /**
-   * Writes the data for a gadget to the eeprom
-   * @param config_bf the configuration-bitfield
-   * @param gadget_type the gadget-type
-   * @param name the name of the gadget
-   * @param gadget_json the general gadget config
-   * @param code_json the code-mapping config
-   * @return whether writing was successful
-   */
-  static bool writeGadget(uint8_t gadget_type, bitfield_set config_bf, pin_set pins, const std::string& name, const std::string& gadget_json, const std::string& code_json) {
-    auto gadget_index = readUInt8(GADGET_COUNT_POS);
-
-    if (gadget_index >= GADGET_MAX_COUNT) {
-      logger.println(LOG_TYPE::ERR, "Cannot save gadget: maximum count of gadgets reached");
-      return false;
-    }
-
-    // Addrees the gadget start at
-    uint16_t g_start_addr = getGadgetMemoryStart(gadget_index);
-
-    // Length of the gadget name
-    uint8_t g_name_len = name.length();
-    // Length of the gadget config json
-    uint16_t g_config_len = gadget_json.length();
-    // Length of the gadget code json
-    uint16_t g_code_len = code_json.length();
-
-    // Position the gadget name starts at
-    uint16_t name_start = g_start_addr + GADGET_NAME_POS;
-    // Position the gadget config json starts at
-    uint16_t config_start = name_start + g_name_len + 1;
-    // Position the gadget code json starts at
-    uint16_t code_start = config_start + g_config_len + 1;
-
-    // Complete length of the gadget config
-    uint16_t complete_len = (code_start + g_code_len + 1) - g_start_addr;
-    // Last storage index of the gadget
-    uint16_t end_index = g_start_addr + complete_len;
-
-    if (end_index > EEPROM_SIZE) {
-      logger.println(LOG_TYPE::ERR, "Cannot save gadget: missing space in eeprom");
-      return false;
-    }
-
-    // Create the bitfield
-    uint8_t buf_bitfield = 0;
-    for (uint8_t i = 0; i < 8; i++) {
-      buf_bitfield = calculateNewContentFlag(i, config_bf[i], buf_bitfield);
-    }
-
-    // write the config bitfield
-    auto success = writeUInt8(g_start_addr + GADADGET_BF_POS, buf_bitfield);
-
-    // Write the gadget type
-    success = success && writeUInt8(g_start_addr + GADGET_TYPE_POS, gadget_type);
-
-    for (uint8_t i = 0; i < GADGET_PIN_BLOCK_LEN; i++) {
-      // Write the port config at position i
-      success = success && writeUInt8(g_start_addr + GADGET_PIN_BLOCK_POS + i, pins[i]);
-    }
-
-    // Write the length of the name
-    success = success && writeUInt8(g_start_addr + GADGET_NAME_LEN_POS, g_name_len);
-    // Write the length of the config length
-    success = success && writeUInt16(g_start_addr + GADGET_JSON_LEN_POS, g_config_len);
-    // Write the name
-    success = success && writeString(name_start, g_name_len, name);
-    // Write the config json
-    success = success && writeString(config_start, g_config_len, gadget_json);
-    // Write the code json
-    success = success && writeString(code_start, g_code_len, code_json);
-
-    if (!success) {
-      logger.println(LOG_TYPE::ERR, "Cannot save gadget: error writing content");
-      return false;
-    }
-
-    // set the starting point for the next gadget
-    if (!setGadgetMemoryEnd(gadget_index, end_index)) {
-      logger.println(LOG_TYPE::ERR, "Cannot save gadget: error saving gadget memory end");
-      return false;
-    }
-
-    // increment gadget count to formally "save" the gadget
-    writeGadgetCount(gadget_index + 1);
-    return true;
-  }
-
-  /**
    * Reads the data for a gadget from the eeprom
    * @param gadget_index the position of the gadget
    * @return the data for the gadget
@@ -481,7 +394,7 @@ public:
     auto stored_gadgets = readUInt8(GADGET_COUNT_POS);
 
     pin_set pins = {0, 0, 0, 0, 0};
-    bitfield_set remote_bf = {0, 0, 0, 0, 0, 0, 0, 0};
+    bitfield_set remote_bf = {false, false, false, false, false, false, false, false};
 
     if (!addr || !addr_end || gadget_index >= stored_gadgets) {
       return gadget_tuple(0, remote_bf, pins, "", "", "");
@@ -509,6 +422,138 @@ public:
     }
 
     return gadget_tuple(gadget_type, remote_bf, pins, gadget_name, gadget_json, code_json);
+  }
+
+  /**
+   * Reads all gadgets from the eeprom
+   * @return a vector containing all gadget information
+   */
+  static std::vector<gadget_tuple> readAllGadgets() {
+    auto gadget_count = getGadgetCount();
+    std::vector<gadget_tuple> gadgets;
+    for (uint8_t i = 0; i < gadget_count; i++) {
+      gadget_tuple buf_g = readGadget(i);
+      gadgets.push_back(buf_g);
+    }
+    return gadgets;
+  }
+
+  /**
+   * Collects all used ports from all gadgets
+   * @return the used ports
+   */
+  static std::vector<uint8_t> readAllGadgetPorts() {
+    auto gadgets = readAllGadgets();
+    std::vector<uint8_t> ports;
+    for (auto gadget: gadgets) {
+      auto buf_ports = std::get<2>(gadget);
+      for (auto port: buf_ports) {
+        if (port != 0) {
+          ports.push_back(port);
+        }
+      }
+    }
+    return ports;
+  }
+
+  /**
+   * Writes the data for a gadget to the eeprom
+   * @param config_bf the configuration-bitfield
+   * @param gadget_type the gadget-type
+   * @param name the name of the gadget
+   * @param gadget_json the general gadget config
+   * @param code_json the code-mapping config
+   * @return whether writing was successful
+   */
+  static status_tuple writeGadget(uint8_t gadget_type, bitfield_set config_bf, pin_set ports, const std::string& name, const std::string& gadget_json, const std::string& code_json) {
+
+    // Check if maximum gadget count is reached
+    auto gadget_index = readUInt8(GADGET_COUNT_POS);
+    if (gadget_index >= GADGET_MAX_COUNT) {
+      logger.println(LOG_TYPE::ERR, "Cannot save gadget: maximum count of gadgets reached");
+      return status_tuple(false, "maximum count of gadgets reached");
+    }
+
+    // Check for double ports used
+    auto other_ports = readAllGadgetPorts();
+    for (auto new_port: ports) {
+      for (auto existing_port: other_ports) {
+        if (new_port == existing_port) {
+          logger.printfln(LOG_TYPE::ERR, "Cannot save gadget: gadget tries to use port already occupied (%d)", new_port);
+          return status_tuple(false, "gadget tries to use port already occupied");
+        }
+      }
+    }
+
+    // Addrees the gadget start at
+    uint16_t g_start_addr = getGadgetMemoryStart(gadget_index);
+
+    // Length of the gadget name
+    uint8_t g_name_len = name.length();
+    // Length of the gadget config json
+    uint16_t g_config_len = gadget_json.length();
+    // Length of the gadget code json
+    uint16_t g_code_len = code_json.length();
+
+    // Position the gadget name starts at
+    uint16_t name_start = g_start_addr + GADGET_NAME_POS;
+    // Position the gadget config json starts at
+    uint16_t config_start = name_start + g_name_len + 1;
+    // Position the gadget code json starts at
+    uint16_t code_start = config_start + g_config_len + 1;
+
+    // Complete length of the gadget config
+    uint16_t complete_len = (code_start + g_code_len + 1) - g_start_addr;
+    // Last storage index of the gadget
+    uint16_t end_index = g_start_addr + complete_len;
+
+    if (end_index > EEPROM_SIZE) {
+      logger.println(LOG_TYPE::ERR, "Cannot save gadget: missing space in eeprom");
+      return status_tuple(false, "missing space in eeprom");
+    }
+
+    // Create the bitfield
+    uint8_t buf_bitfield = 0;
+    for (uint8_t i = 0; i < 8; i++) {
+      buf_bitfield = calculateNewContentFlag(i, config_bf[i], buf_bitfield);
+    }
+
+    // write the config bitfield
+    auto success = writeUInt8(g_start_addr + GADADGET_BF_POS, buf_bitfield);
+
+    // Write the gadget type
+    success = success && writeUInt8(g_start_addr + GADGET_TYPE_POS, gadget_type);
+
+    for (uint8_t i = 0; i < GADGET_PIN_BLOCK_LEN; i++) {
+      // Write the port config at position i
+      success = success && writeUInt8(g_start_addr + GADGET_PIN_BLOCK_POS + i, ports[i]);
+    }
+
+    // Write the length of the name
+    success = success && writeUInt8(g_start_addr + GADGET_NAME_LEN_POS, g_name_len);
+    // Write the length of the config length
+    success = success && writeUInt16(g_start_addr + GADGET_JSON_LEN_POS, g_config_len);
+    // Write the name
+    success = success && writeString(name_start, g_name_len, name);
+    // Write the config json
+    success = success && writeString(config_start, g_config_len, gadget_json);
+    // Write the code json
+    success = success && writeString(code_start, g_code_len, code_json);
+
+    if (!success) {
+      logger.println(LOG_TYPE::ERR, "Cannot save gadget: error writing content");
+      return status_tuple(false, "error writing content");
+    }
+
+    // set the starting point for the next gadget
+    if (!setGadgetMemoryEnd(gadget_index, end_index)) {
+      logger.println(LOG_TYPE::ERR, "Cannot save gadget: error saving gadget memory end");
+      return status_tuple(false, "error saving gadget memory end");;
+    }
+
+    // increment gadget count to formally "save" the gadget
+    writeGadgetCount(gadget_index + 1);
+    return status_tuple(true, "");
   }
 
   /**
@@ -557,7 +602,10 @@ public:
       auto e5 = std::get<4>(buf_gadget);
       auto e6 = std::get<5>(buf_gadget);
 
-      if (!writeGadget(e1, e2, e3, e4, e5, e6)) {
+      auto status = writeGadget(e1, e2, e3, e4, e5, e6);
+      bool success = std::get<0>(status);
+
+      if (!success) {
         logger.println(LOG_TYPE::ERR, "Error in in deletion process: moving gadgets failed");
         return false;
       }

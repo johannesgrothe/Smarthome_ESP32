@@ -560,8 +560,14 @@ void SH_Main::handleSystemRequest(Request *req) {
       }
     }
 
-    auto success = writeGadget(type, remote_bf, pins, name, gadget_config, code_config);
-    req->respond(success);
+    auto success_tuple = writeGadget(type, remote_bf, pins, name, gadget_config, code_config);
+    bool success = std::get<0>(success_tuple);
+    if (success) {
+      req->respond(true);
+    } else {
+      auto err_msg = std::get<1>(success_tuple);
+      req->respond(false, err_msg);
+    }
     return;
   }
 
