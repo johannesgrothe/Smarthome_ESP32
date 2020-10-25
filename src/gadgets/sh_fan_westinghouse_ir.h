@@ -36,7 +36,11 @@ protected:
 
 public:
 
-  explicit SH_Fan_Westinghouse_IR(const JsonObject &);
+  explicit SH_Fan_Westinghouse_IR(std::string name);
 
   void refresh() override;
 };
+
+std::shared_ptr<SH_Fan_Westinghouse_IR> createSHFanWestinghouseIR(std::string name, pin_set pins, const JsonObject& gadget_data) {
+  return std::make_shared<SH_Fan_Westinghouse_IR>(name);
+}

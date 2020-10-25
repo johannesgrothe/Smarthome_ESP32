@@ -1,18 +1,11 @@
 #include "sh_fan.h"
 
-SH_Fan::SH_Fan(const JsonObject& gadget) :
-  SH_Gadget(gadget, GadgetType::Fan),
-  rotation_speed_(0),
-  last_rotation_speed_(1) {
-  if (gadget["levels"] != nullptr) {
-    levels_ = (byte) gadget["levels"].as<unsigned int>();
-  }
-};
+#include <utility>
 
-SH_Fan::SH_Fan(const JsonObject& gadget, byte levels_count) :
-  SH_Gadget(gadget, GadgetType::Fan),
+SH_Fan::SH_Fan(std::string name, uint8_t levels_count) :
+  SH_Gadget(std::move(name), GadgetType::Fan),
   rotation_speed_(0),
-  last_rotation_speed_(1),
+  last_rotation_speed_(0),
   levels_(levels_count) {};
 
 // Status
@@ -28,8 +21,8 @@ byte SH_Fan::getLevel() const {
   return (rotation_speed_ / (FAN_ROTATION_SPEED_MAX / levels_));
 }
 
-void SH_Fan::setStatus(bool new_status) {
-  if (new_status) {
+void SH_Fan::setStatus(bool status) {
+  if (status) {
     if (rotation_speed_ == 0) {
       rotation_speed_ = last_rotation_speed_;
     }
@@ -39,7 +32,7 @@ void SH_Fan::setStatus(bool new_status) {
     rotation_speed_ = 0;
     updateCharacteristic("rotationspeed", rotation_speed_);
   }
-  has_changed = true;
+  setGadgetHasChanged();
 };
 
 byte SH_Fan::getRotationSpeed() const {
@@ -64,10 +57,7 @@ void SH_Fan::setRotationSpeed(byte new_speed) {
     rotation_speed_ = new_speed;
     updateCharacteristic("rotaionspeed", rotation_speed_);
   }
-  has_changed = true;
-}
-
-void SH_Fan::print() {
+  setGadgetHasChanged();
 }
 
 void SH_Fan::handleCharacteristicUpdate(const char *characteristic, int value) {

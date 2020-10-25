@@ -1,10 +1,12 @@
 #include "sh_fan_westinghouse_ir.h"
 
-SH_Fan_Westinghouse_IR::SH_Fan_Westinghouse_IR(const JsonObject& gadget) :
-  SH_Fan(gadget, 3) {};
+#include <utility>
+
+SH_Fan_Westinghouse_IR::SH_Fan_Westinghouse_IR(std::string name) :
+  SH_Fan(std::move(name), 3) {};
 
 void SH_Fan_Westinghouse_IR::refresh() {
-  if (has_changed) {
+  if (gadgetHasChanged()) {
     byte level = getLevel();
     logger.print(getName(), "has changed: Level ");
     logger.println(level);
@@ -21,5 +23,4 @@ void SH_Fan_Westinghouse_IR::refresh() {
     }
     logger.decIndent();
   }
-  has_changed = false;
 }

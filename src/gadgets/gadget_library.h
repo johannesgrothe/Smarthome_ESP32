@@ -31,7 +31,7 @@ static std::shared_ptr<SH_Gadget> createGadget(GadgetIdentifier gadget_type, pin
       return std::make_shared<SH_Lamp_Basic>(gadget_config);
 
     case GadgetIdentifier::sh_fan_westinghouse_ir:
-      return std::make_shared<SH_Fan_Westinghouse_IR>(gadget_config);
+      return createSHFanWestinghouseIR(name, pins, gadget_config);
 
     case GadgetIdentifier::sh_lamp_westinghouse_ir:
       return std::make_shared<SH_Lamp_Westinghouse_IR>(gadget_config);
