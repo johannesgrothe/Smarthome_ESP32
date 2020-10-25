@@ -1,107 +1,100 @@
 #include "sh_gadget.h"
 
-void SH_Gadget::updateCharacteristic(const char *characteristic, int value) {
-  updateRemotes(&name[0], &name[0], characteristic, value);
-}
+#include <utility>
 
-const char *SH_Gadget::findMethodForCode(unsigned long code) {
-  for (byte k = 0; k < mapping_count; k++) {
-    if (mapping[k]->containsCode(code)) {
-      const char *method_name = mapping[k]->getName();
-      logger.print(name, "-> ");
-      logger.println(method_name);
-      return method_name;
-    }
-  }
-  return nullptr;
-}
-
-void SH_Gadget::handleMethodUpdate(const char *method) {
-
-}
-
-SH_Gadget::SH_Gadget() :
-  remoteInitialized(false),
-  name("default"),
-  initialized(false),
-  has_changed(true),
-  type(GadgetType::None) {};
-
-SH_Gadget::SH_Gadget::SH_Gadget(const JsonObject& gadget, const GadgetType gadget_type) :
-  remoteInitialized(false),
-  initialized(false),
-  has_changed(true),
-  type(gadget_type) {
-  if (gadget["name"] != nullptr) {
-    byte namelen =
-      strlen(gadget["name"].as<const char *>()) < GADGET_NAME_LEN_MAX ? strlen(gadget["name"].as<const char *>())
-                                                                      : GADGET_NAME_LEN_MAX;
-    strncpy(name, gadget["name"].as<const char *>(), namelen);
-  } else {
-    strcpy(name, "Unknown");
-    logger.println(LOG_TYPE::ERR, "No Name found!");
-  }
-  if (gadget["mapping"] != nullptr) {
-    JsonObject local_mapping = gadget["mapping"].as<JsonObject>();
-    mapping_count = local_mapping.size() < MAPPING_MAX_COMMANDS ? local_mapping.size() : MAPPING_MAX_COMMANDS;
-    logger.print(LOG_TYPE::INFO, "Configuring Mapping, Commands: ");
-    logger.println(mapping_count);
-    logger.incIndent();
-    byte j = 0;
-    for (auto &&com : local_mapping) {
-      if (j < mapping_count) {
-        const char *new_name = com.key().c_str();
-        JsonArray buf_arr = com.value().as<JsonArray>();
-        mapping[j] = new Mapping_Reference(buf_arr, new_name);
-        j++;
+GadgetMethod SH_Gadget::getMethodForCode(unsigned long code) {
+  for (auto pair: code_mapping) {
+    auto map_method = std::get<0>(pair);
+    auto map_list = std::get<1>(pair);
+    for (auto map_code: map_list) {
+      if (code == map_code) {
+        return map_method;
       }
     }
-    logger.decIndent();
-    logger.println("Method Mapping loaded.");
-  } else {
-    logger.println(LOG_TYPE::WARN, "No Mapping Found.");
   }
+  return GadgetMethod::None;
 }
 
-void SH_Gadget::initRemoteUpdate(std::function<void(const char *, const char *, const char *, int)> update_method) {
-  updateRemotes = update_method;
+bool SH_Gadget::setMethodForCode(GadgetMethod method, unsigned long code) {
+  for (auto pair: code_mapping) {
+    auto map_method = std::get<0>(pair);
+    if (map_method == method) {
+      auto map_codes = std::get<1>(pair);
+      map_codes.push_back(code);
+      return true;
+    }
+  }
+  mapping_pair new_pair = mapping_pair(method, std::vector<unsigned long>(code));
+  code_mapping.push_back(new_pair);
+  return true;
+}
+
+void SH_Gadget::printMapping() {
+  logger.printfln("Accessible Methods: %d", code_mapping.size());
+  logger.incIndent();
+  for (auto buf_mapping_pair: code_mapping) {
+    auto method = std::get<0>(buf_mapping_pair);
+    auto codes = std::get<1>(buf_mapping_pair);
+    logger.printf("'%d':", (uint8_t) method);
+    logger.incIndent();
+    for (auto code: codes) {
+      logger.print(LOG_TYPE::DATA, code);
+    }
+    logger.decIndent();
+  }
+  logger.decIndent();
+}
+
+void SH_Gadget::updateCharacteristic(const char *characteristic, int value) {
+  gadget_remote_callback(&name[0], &name[0], characteristic, value);
+}
+
+SH_Gadget::SH_Gadget::SH_Gadget(std::string  name, const GadgetType type) :
+  init_error(false),
+  gadget_remote_ready(false),
+  name(std::move(name)),
+  has_changed(true),
+  type(type) {}
+
+void SH_Gadget::setGadgetRemoteCallback(std::function<void(const char *, const char *, const char *, int)> update_method) {
+  gadget_remote_callback = std::move(update_method);
   logger.println("Initialized Callbacks");
-  remoteInitialized = true;
+  gadget_remote_ready = true;
 }
 
 GadgetType SH_Gadget::getType() {
   return type;
 }
 
-const char *SH_Gadget::getName() {
-  return &name[0];
-}
-
-bool SH_Gadget::isInitialized() {
-  return initialized;
+std::string SH_Gadget::getName() {
+  return name;
 }
 
 void SH_Gadget::handleCodeUpdate(unsigned long code) {
-  const char *method_name = findMethodForCode(code);
-  if (method_name != nullptr) {
+  GadgetMethod method = getMethodForCode(code);
+  if (method != GadgetMethod::None) {
     logger.print(name, "Applying Method: ");
-    logger.println(method_name);
+    logger.printfln("'%d'", (uint8_t) method);
     logger.incIndent();
-    handleMethodUpdate(method_name);
+    handleMethodUpdate(method);
     logger.decIndent();
-  } else {
-    logger.print(name, "No Method for '");
-    logger.print(code);
-    logger.println("' found.");
   }
 }
 
-void SH_Gadget::printMapping() {
-  logger.print(name, "Accessible Methods: ");
-  logger.println(mapping_count);
-  logger.incIndent();
-  for (byte k = 0; k < mapping_count; k++) {
-    mapping[k]->printMapping();
-  }
-  logger.decIndent();
+void SH_Gadget::updateInitializationError(bool status_update) {
+  init_error = init_error && status_update;
+}
+
+bool SH_Gadget::hasInitializationError() const {
+  return init_error;
+}
+
+bool SH_Gadget::gadgetHasChanged() {
+  bool buf = has_changed;
+  has_changed = false;
+  return buf;
+}
+
+void SH_Gadget::setGadgetHasChanged() {
+  has_changed = true;
 }

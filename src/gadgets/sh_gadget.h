@@ -9,9 +9,7 @@
 #include "../console_logger.h"
 #include "../connectors/connectors.h"
 
-/**
- * List of all possible gadgets
- */
+// All possible gadget types
 enum class GadgetIdentifier {
   None = 0,
   sh_lamp_neopixel_basic,
@@ -20,14 +18,38 @@ enum class GadgetIdentifier {
   sh_lamp_westinghouse_ir
 };
 
-/**
- * Count of the possible gadgets
- */
+// Count of the gadgets
 #define GadgetIdentifierCount 5
 
-/**
- * List of all Gadget Types
- */
+// All GadgetMethods used to update the gadget status
+enum class GadgetMethod {
+  None = 0,
+  turnOn,
+  turnOff,
+  toggleStatus,
+  brightnessUp,
+  brightnessDown,
+  volumeUp,
+  volumeDown,
+  mute,
+  unmute,
+  toggleMute,
+  mode0,
+  mode1,
+  mode2,
+  mode3,
+  mode4,
+  modeUp,
+  modeDown
+};
+
+// Count of the gadget methods
+#define GadgetMethodCount 17
+
+// Pair for mapping
+using mapping_pair = std::tuple<GadgetMethod, std::vector<unsigned long>>;
+
+// List of all Gadget Types
 enum class GadgetType {
   None, Lightbulb, Fan, Doorbell
 };
@@ -43,53 +65,134 @@ enum SH_HSL_Color {
 class SH_Gadget : public IR_Connector, public Radio_Connector {
 private:
 
-  std::function<void(const char *, const char *, const char *, int)> updateRemotes;
+  // stores whether initializing was successful
+  bool init_error;
 
-  bool remoteInitialized;
+  // Callback to update a characteristic on the gadget remote
+  std::function<void(const char *, const char *, const char *, int)> gadget_remote_callback;
 
-  char name[GADGET_NAME_LEN_MAX]{};
+  // Flag to determine if the gadget remote is correctly initialized
+  bool gadget_remote_ready;
 
-  byte mapping_count{};
+  // Name of the gadget
+  const std::string name;
 
-  Mapping_Reference *mapping[MAPPING_MAX_COMMANDS]{};
+  // Vector to store the code mapping
+  std::vector<mapping_pair> code_mapping;
+
+  // Whether the status of the gadget has changed since the last refresh
+  bool has_changed;
 
 protected:
 
-  bool initialized;
+  // Type of the gadget
+  const GadgetType type;
 
-  bool has_changed;
+  /**
+   * Checks if the gadget has changed since the last refresh
+   * @return Whether the gadget has changed since the last refresh
+   */
+  bool gadgetHasChanged();
 
-  GadgetType type;
+  /**
+   * Protocols a change to the gadget for the next refresh
+   */
+  void setGadgetHasChanged();
 
-  void updateCharacteristic(const char *, int);
+  /**
+   * Updates the initialization error. If status_update is true, the error will not change. If its false, the error will now be false.
+   * @param status_update The update for the init_error
+   */
+  void updateInitializationError(bool status_update);
 
-  const char *findMethodForCode(unsigned long);
+  /**
+   * Updates a characteristic on the remote
+   * @param characteristic Characteristic to update
+   * @param value Value for the characteristic
+   */
+  void updateCharacteristic(const char * characteristic, int value);
 
-  virtual void handleMethodUpdate(const char *);
+  /**
+   * Returns the method for the passed code
+   * @param code The code the message should be returned for
+   * @return The Method mapped to the code
+   */
+  GadgetMethod getMethodForCode(unsigned long code);
+
+  /**
+   * Adds a code to a message. This message will be used to update the gadget when the code is received
+   * @param method The method to call
+   * @param code The code that should trigger the method
+   * @return Whether mapping the code to the method was successful
+   */
+  bool setMethodForCode(GadgetMethod method, unsigned long code);
+
+  /**
+   * Method to handle the update of the gadget via GadgetMethod
+   * @param method Method to update the gadget with
+   */
+  virtual void handleMethodUpdate(GadgetMethod method) = 0;
 
 public:
-  SH_Gadget();
 
-  explicit SH_Gadget(const JsonObject&, GadgetType);
+  /**
+   * Constructor for the base gadget
+   * @param name Name of the gadget. Should be unique in the system.
+   * @param type Type of the gadget
+   */
+  explicit SH_Gadget(std::string name, GadgetType type);
 
-  void initRemoteUpdate(std::function<void(const char *, const char *, const char *, int)> update_method);
+  /**
+   * Sets the callback for the gadget remote
+   * @param update_method Method used to update the remote
+   */
+  void setGadgetRemoteCallback(std::function<void(const char *, const char *, const char *, int)> update_method);
 
+  /**
+   * Returns the type of the gadget
+   * @return the type of the gadget
+   */
   GadgetType getType();
 
-  const char *getName();
+  /**
+   * Returns the unique name of the gadget
+   * @return the name of the gadget
+   */
+  std::string getName();
 
-  virtual bool getCharacteristics(char *characteristic_str) = 0;
-
-  bool isInitialized();
-
-  void handleCodeUpdate(unsigned long);
-
-  virtual void handleCharacteristicUpdate(const char *characteristic, int value) = 0;
-
-  virtual void refresh() = 0;
-
-  virtual void print() = 0;
-
+  /**
+   * Prints the mapping to the console
+   */
   void printMapping();
 
+  /**
+   * Returns all of the characteristics the gadget makes use of
+   * @param characteristic_str [out] a string containing all characteristics
+   * @return whether writing the characteristics to the string was successful
+   */
+  virtual bool getCharacteristics(char *characteristic_str) = 0;
+
+  /**
+   * Checks if the gadget was successfully initialized
+   * @return whether the gadget was successfully initialized
+   */
+  bool hasInitializationError() const;
+
+  /**
+   * Checks the code for a mapped method and updates the gadget using the method if one is found
+   * @param code The code to update the gadget with
+   */
+  void handleCodeUpdate(unsigned long code);
+
+  /**
+   * Updates the gadget with a characteristic
+   * @param characteristic Characteristic the gadget should be updated with
+   * @param value The value the characteristic should be updated with
+   */
+  virtual void handleCharacteristicUpdate(const char *characteristic, int value) = 0;
+
+  /**
+   * Refresh the gadget and its hardware. Used as loop method.
+   */
+  virtual void refresh() = 0;
 };

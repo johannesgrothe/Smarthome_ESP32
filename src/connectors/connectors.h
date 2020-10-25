@@ -12,7 +12,7 @@ private:
 
 protected:
 
-  //TODO: Build some methods to sue radio
+  //TODO: Build some methods to use radio
 
 public:
 

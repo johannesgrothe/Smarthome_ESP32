@@ -18,13 +18,16 @@ static void networkTask(void *args) {
 }
 
 static void createTasks() {
+  TaskHandle_t main_task;
+  TaskHandle_t network_task;
+
   xTaskCreatePinnedToCore(
     mainTask,     /* Task function. */
     "Smarthome_Main",       /* String with name of task. */
     10000,            /* Stack size in words. */
     NULL,             /* Parameter passed as input of the task */
     1,                /* Priority of the task. */
-    NULL,
+    &main_task,
     0);            /* Task handle. */
 
   xTaskCreatePinnedToCore(
@@ -33,8 +36,11 @@ static void createTasks() {
     10000,            /* Stack size in words. */
     NULL,             /* Parameter passed as input of the task */
     1,                /* Priority of the task. */
-    NULL,
+    &network_task,
     1);            /* Task handle. */
+
+  //    vTaskSuspend(main_task);
+  //    vTaskResume(main_task);
 }
 
 static void startSmarthomeSystem() {

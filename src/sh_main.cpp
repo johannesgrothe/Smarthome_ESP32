@@ -56,7 +56,7 @@ bool SH_Main::initGadgets() {
           using std::placeholders::_3;
           using std::placeholders::_4;
 
-          buf_gadget->initRemoteUpdate(std::bind(&SH_Main::updateGadgetRemote, this, _1, _2, _3, _4));
+          buf_gadget->setGadgetRemoteCallback(std::bind(&SH_Main::updateGadgetRemote, this, _1, _2, _3, _4));
 
           logger.decIndent();
         }
