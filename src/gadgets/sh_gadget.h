@@ -4,10 +4,13 @@
 #include <functional>
 #include <Arduino.h>
 #include "ArduinoJson.h"
+#include <memory>
 #include "../mapping_reference.h"
 #include "../system_settings.h"
 #include "../console_logger.h"
-#include "../connectors/connectors.h"
+
+#include "../connectors/ir_gadget.h"
+#include "../connectors/radio_gadget.h"
 
 // All possible gadget types
 enum class GadgetIdentifier {
@@ -62,7 +65,7 @@ enum SH_HSL_Color {
   SH_CLR_hue, SH_CLR_saturation, SH_CLR_lightness
 };
 
-class SH_Gadget : public IR_Connector, public Radio_Connector {
+class SH_Gadget {
 private:
 
   // stores whether initializing was successful
@@ -82,6 +85,12 @@ private:
 
   // Whether the status of the gadget has changed since the last refresh
   bool has_changed;
+
+  // The IR gadget to be used
+  std::shared_ptr<IR_Gadget> ir_gadget_;
+
+  // The radio gadget to be used
+  std::shared_ptr<Radio_Gadget> radio_gadget_;
 
 protected:
 
@@ -132,6 +141,23 @@ protected:
    * @param method Method to update the gadget with
    */
   virtual void handleMethodUpdate(GadgetMethod method) = 0;
+
+
+  /**
+   * Sends an array of raw IR data
+   * @param raw_data Raw IR data
+   * @param com_len Length of the ir data array
+   * @return Whether sending was successful
+   */
+  bool sendRawIR(const uint16_t raw_data[], uint8_t com_len);
+
+  /**
+   * Sends a IR command
+   * @param command Command to send
+   * @param com_type Coding type of the ri command
+   * @return Whether sending was successful
+   */
+  bool sendIR(unsigned long command, uint8_t com_type);
 
 public:
 
@@ -195,4 +221,28 @@ public:
    * Refresh the gadget and its hardware. Used as loop method.
    */
   virtual void refresh() = 0;
+
+  /**
+   * Initialized the IR capabilities of the gadget
+   * @param new_ir_gadget The IR_Gadget to be used
+   */
+  void setIR(const std::shared_ptr<IR_Gadget>& new_ir_gadget);
+
+  /**
+   * Returns whether the gadget has IR access or not
+   * @return Whether the gadget has IR access or not
+   */
+  bool hasIR() const;
+
+  /**
+   * Initialized the radio capabilities of the gadget
+   * @param new_radio_gadget The Radio_Gadget to be used
+   */
+  void setRadio(const std::shared_ptr<Radio_Gadget>& new_radio_gadget);
+
+  /**
+   * Returns whether the gadget has radio access or not
+   * @return Whether the gadget has radio access or not
+   */
+  bool hasRadio() const;
 };

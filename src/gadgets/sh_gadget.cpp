@@ -98,3 +98,37 @@ bool SH_Gadget::gadgetHasChanged() {
 void SH_Gadget::setGadgetHasChanged() {
   has_changed = true;
 }
+
+//IR Connector
+
+bool SH_Gadget::sendRawIR(const uint16_t raw_data[], const uint8_t content_length) {
+  if (!hasIR())
+    return ir_gadget_->sendRawIR(raw_data, content_length);
+  logger.println(LOG_TYPE::ERR, name, "Cannot send IR: no access.");
+  return false;
+}
+
+bool SH_Gadget::sendIR(const unsigned long command, const uint8_t com_type) {
+  if (!hasIR())
+    return ir_gadget_->sendIR(command, com_type);
+  logger.println(LOG_TYPE::ERR, name, "Cannot send IR: no access.");
+  return false;
+}
+
+void SH_Gadget::setIR(const std::shared_ptr<IR_Gadget>& new_ir_gadget) {
+  ir_gadget_ = new_ir_gadget;
+}
+
+bool SH_Gadget::hasIR() const {
+  return ir_gadget_ != nullptr;
+}
+
+// Radio Connector
+
+void SH_Gadget::setRadio(const std::shared_ptr<Radio_Gadget>& new_radio_gadget) {
+  radio_gadget_ = new_radio_gadget;
+}
+
+bool SH_Gadget::hasRadio() const {
+  return radio_gadget_ != nullptr;
+}
