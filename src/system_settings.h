@@ -28,6 +28,9 @@
 #define HOMEBRIDGE_UPDATE_STR_LEN_MAX 240
 #define HOMEBRIDGE_SERVICE_TYPE_LEN_MAX 25
 
+// System Storage
+#define GADGET_PIN_BLOCK_LEN 5
+
 const char json_str[] = R"(
 {
   "id" : "TestClientESP32",

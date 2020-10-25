@@ -8,6 +8,7 @@
 #include <string>
 #include "system_settings.h"
 #include "console_logger.h"
+#include "datatypes.h"
 
 #include "network_library.h"
 #include "remote_library.h"
@@ -81,17 +82,9 @@
 #define GADADGET_BF_POS 0
 #define GADGET_TYPE_POS 1
 #define GADGET_PIN_BLOCK_POS 2
-#define GADGET_PIN_BLOCK_LEN 5
 #define GADGET_NAME_LEN_POS (GADGET_PIN_BLOCK_POS + GADGET_PIN_BLOCK_LEN + 1)
 #define GADGET_JSON_LEN_POS (GADGET_NAME_LEN_POS + 1)
 #define GADGET_NAME_POS (GADGET_JSON_LEN_POS + 2)
-
-using bitfield_set = std::array<bool, 8>;
-using pin_set = std::array<uint8_t, GADGET_PIN_BLOCK_LEN>;
-// Tuple to store a gadget config: type, bitfield, pins, name, gadget_config, code_config
-using gadget_tuple = std::tuple<uint8_t, bitfield_set, pin_set, std::string, std::string, std::string>;
-using status_tuple = std::tuple<bool, std::string>;
-
 
 static bool validateJson(std::string new_json_str) {
   DynamicJsonDocument json_file(2048);

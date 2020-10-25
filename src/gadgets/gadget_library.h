@@ -21,6 +21,9 @@
 
 static std::shared_ptr<SH_Gadget> createGadget(GadgetIdentifier gadget_type, pin_set pins, const std::string& name, JsonObject gadget_config, JsonObject code_config) {
   switch (gadget_type) {
+    case GadgetIdentifier::sh_doorbell_basic:
+      return createSHDoorbellBasic(name, pins, gadget_config);
+
     case GadgetIdentifier::sh_lamp_neopixel_basic:
       return std::make_shared<SH_Lamp_NeoPixel_Basic>(gadget_config);
 

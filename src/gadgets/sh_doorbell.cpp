@@ -1,28 +1,16 @@
 #include "sh_doorbell.h"
 
-SH_Doorbell::SH_Doorbell(const JsonObject& gadget) :
-  SH_Gadget(gadget, GadgetType::Doorbell) {};
+#include <utility>
 
-void SH_Doorbell::triggerEvent() {
-  has_changed = true;
-//    updateHomebridgeCharacteristic("ProgrammableSwitchEvent", false);
+SH_Doorbell::SH_Doorbell(std::string name) :
+  SH_Gadget(std::move(name), GadgetType::Doorbell) {};
+
+void SH_Doorbell::doorbellTriggered() {
   updateCharacteristic("ProgrammableSwitchEvent", true);
 }
 
-void SH_Doorbell::print() {};
-
-void SH_Doorbell::handleCharacteristicUpdate(const char *characteristic, int value) {
-  logger.print(getName(), "Updating Characteristic: '");
-  logger.print(characteristic);
-  logger.println("'");
-}
+void SH_Doorbell::handleCharacteristicUpdate(const char *characteristic, int value) {}
 
 bool SH_Doorbell::getCharacteristics(char *buffer) { return false; };
 
-void SH_Doorbell::handleMethodUpdate(const char *method) {
-  if (method != nullptr) {
-    if (strcmp(method, "triggerDoorbell") == 0) {
-      triggerEvent();
-    }
-  }
-}
+void SH_Doorbell::handleMethodUpdate(GadgetMethod method) {}

@@ -2,24 +2,24 @@
 
 #include "sh_gadget.h"
 
+/**
+ * Class that implements a simple doorbell
+ */
 class SH_Doorbell : public SH_Gadget {
 protected:
 
 public:
 
-  explicit SH_Doorbell(const JsonObject& gadget);
+  explicit SH_Doorbell(std::string name);
 
-  void triggerEvent();
+  /**
+   * Registeres a triggered doorbell and updates remote
+   */
+  void doorbellTriggered();
 
-  void print() override;
-
-//  Homebridge-Connector
   void handleCharacteristicUpdate(const char *characteristic, int value) override;
 
   bool getCharacteristics(char *buffer) override;
-  // End of Homebridge-Connector
 
-  // Code-Connector
-  void handleMethodUpdate(const char *method) override;
-  // End of Code-Connector
+  void handleMethodUpdate(GadgetMethod method) override;
 };

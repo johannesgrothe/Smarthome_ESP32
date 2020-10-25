@@ -7,6 +7,7 @@
 #include <memory>
 #include "../mapping_reference.h"
 #include "../system_settings.h"
+#include "../datatypes.h"
 #include "../console_logger.h"
 
 #include "../connectors/ir_gadget.h"
@@ -18,7 +19,8 @@ enum class GadgetIdentifier {
   sh_lamp_neopixel_basic,
   sh_lamp_basic,
   sh_fan_westinghouse_ir,
-  sh_lamp_westinghouse_ir
+  sh_lamp_westinghouse_ir,
+  sh_doorbell_basic,
 };
 
 // Count of the gadgets
@@ -65,6 +67,9 @@ enum SH_HSL_Color {
   SH_CLR_hue, SH_CLR_saturation, SH_CLR_lightness
 };
 
+/**
+ * Base class for all gadgets in the system
+ */
 class SH_Gadget {
 private:
 
