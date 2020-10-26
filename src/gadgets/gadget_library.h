@@ -22,6 +22,10 @@
 //Wallswitch
 #include "sh_wallswitch_basic.h"
 
+//Sensors
+#include "sh_sensor_motion_HR501.h"
+#include "sh_sensor_temperature_DHT.h"
+
 /**
  * Creates a new gadget out of the given information.
  * The returned gadget may not be successfully initialized.
@@ -51,6 +55,12 @@ static std::shared_ptr<SH_Gadget> createGadgetHelper(GadgetIdentifier gadget_typ
 
     case GadgetIdentifier::sh_wallswitch_basic:
       return createSHWallswitchBasic(name, pins, gadget_config);
+
+    case GadgetIdentifier::sh_sensor_motion_hr501:
+      return createSHSensorMotionHR501(name, pins, gadget_config);
+
+    case GadgetIdentifier::sh_sensor_temperature_dht:
+      return createSHSensorTemperatureDHT(name, pins, gadget_config);
 
     default:
       return nullptr;

@@ -21,7 +21,9 @@ enum class GadgetIdentifier {
   sh_fan_westinghouse_ir,
   sh_lamp_westinghouse_ir,
   sh_doorbell_basic,
-  sh_wallswitch_basic
+  sh_wallswitch_basic,
+  sh_sensor_motion_hr501,
+  sh_sensor_temperature_dht
 };
 
 // Count of the gadgets
@@ -57,7 +59,7 @@ using mapping_pair = std::tuple<GadgetMethod, std::vector<unsigned long>>;
 
 // List of all Gadget Types
 enum class GadgetType {
-  None, Lightbulb, Fan, Doorbell, Wallswitch
+  None, Lightbulb, Fan, Doorbell, Wallswitch, Motion_Sensor, Temp_Humm_Sensor
 };
 
 enum SH_RGB_Color {
