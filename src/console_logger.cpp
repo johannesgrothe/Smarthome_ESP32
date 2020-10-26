@@ -159,6 +159,7 @@ void Console_Logger::addToBuffer(string s) {
 
 void Console_Logger::flushBuffer(){
   if (xPortGetCoreID() == 0) {
+    if(core_0_buffer_.str().size() == 0) return;
     printIndent();
     printBeginning(core_0_log_type_);
     if (core_0_has_name_) {
@@ -171,6 +172,7 @@ void Console_Logger::flushBuffer(){
     core_0_buffer_.str(string());
     setLogType(LOG_TYPE::INFO);
   } else {
+    if(core_1_buffer_.str().size() == 0) return;
     printIndent();
     printBeginning(core_1_log_type_);
     if (core_1_has_name_) {
