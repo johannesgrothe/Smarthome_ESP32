@@ -80,6 +80,7 @@ bool SH_Main::initConnectors(JsonObject connectors_json) {
   } else {
     ir_gadget = new IR_Gadget();
   }
+  radio_gadget = new Radio_Gadget(4, 5);
   logger.decIndent();
 
   logger.println("Creating IR-Gadget:");
@@ -298,6 +299,19 @@ bool SH_Main::initCodeRemote(JsonObject json) {
 void SH_Main::testStuff() {
   logger.println("Testing Stuff");
   logger.incIndent();
+  Radio_Gadget spongo(2, 4);
+//  while (true) {
+//    spongo.sendRadio(1234567890);
+//    sleep(3);
+//  }
+  while (true) {
+    spongo.refresh();
+//    logger.printfln("i have received a new command %d", spongo.hasNewCommand());
+    if (spongo.hasNewCommand()){
+      logger.print("spongokopter: ");
+      logger.println(spongo.getCommand());
+    }
+  }
   logger.decIndent();
 }
 
@@ -351,6 +365,7 @@ void SH_Main::init() {
       break;
   }
   logger.printnl();
+  testStuff();
 }
 
 void SH_Main::initModeSerial() {
@@ -522,6 +537,9 @@ void SH_Main::refreshModeComplete() {
 
   ir_gadget->refresh();
   handleCodeConnector(ir_gadget);
+
+  radio_gadget->refresh();
+  handleCodeConnector(radio_gadget);
 
 //  handleCodeRemote();
 
