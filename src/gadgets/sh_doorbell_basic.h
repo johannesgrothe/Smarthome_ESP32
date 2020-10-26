@@ -32,7 +32,6 @@ std::shared_ptr<SH_Doorbell_Basic> createSHDoorbellBasic(std::string name, pin_s
 
   if (gadget_data.containsKey("default_state")) {
     default_state = gadget_data["default_state"].as<bool>();
-  } else {
   }
 
   logger.printfln("Pin: %d", pin);

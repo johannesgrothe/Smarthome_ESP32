@@ -6,16 +6,15 @@ SH_Fan::SH_Fan(std::string name, uint8_t levels_count) :
   SH_Gadget(std::move(name), GadgetType::Fan),
   rotation_speed_(0),
   last_rotation_speed_(0),
-  levels_(levels_count) {};
+  levels_(levels_count) {}
 
-// Status
 void SH_Fan::toggleStatus() {
   setStatus(!getStatus());
-};
+}
 
 bool SH_Fan::getStatus() const {
   return rotation_speed_ > 0;
-};
+}
 
 byte SH_Fan::getLevel() const {
   return (rotation_speed_ / (FAN_ROTATION_SPEED_MAX / levels_));
@@ -33,7 +32,7 @@ void SH_Fan::setStatus(bool status) {
     updateCharacteristic("rotationspeed", rotation_speed_);
   }
   setGadgetHasChanged();
-};
+}
 
 byte SH_Fan::getRotationSpeed() const {
   return rotation_speed_;
@@ -78,14 +77,18 @@ bool SH_Fan::getCharacteristics(char *buffer) {
   return true;
 }
 
-void SH_Fan::handleMethodUpdate(const char *method) {
-  if (method != nullptr) {
-    if (strcmp(method, "toggleStatus") == 0) {
+void SH_Fan::handleMethodUpdate(GadgetMethod method) {
+  switch (method) {
+    case GadgetMethod::toggleStatus:
       toggleStatus();
-    } else if (strcmp(method, "'turnOn'") == 0) {
+      break;
+    case GadgetMethod::turnOn:
       setStatus(true);
-    } else if (strcmp(method, "'turnOff'") == 0) {
+      break;
+    case GadgetMethod::turnOff:
       setStatus(false);
-    }
+      break;
+    default:
+      break;
   }
 }

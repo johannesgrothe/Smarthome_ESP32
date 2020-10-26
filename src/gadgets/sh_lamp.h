@@ -19,39 +19,66 @@ protected:
 
 public:
 
-  explicit SH_Lamp(const JsonObject&);
+  /**
+   * Constructor for the SH_Lamp
+   * @param name Name of the gadget
+   * @param lamp_type Type of the lamp
+   */
+  SH_Lamp(std::string name, SHLampType lamp_type);
 
-  SH_Lamp(const JsonObject&, SHLampType);
+  /**
+   * Sets the brightness of the lamp
+   * @param brightness The new brightness to be set
+   */
+  void setBrightness(byte brightness);
 
-  // Lightness
-  void setBrightness(byte);
-
+  /**
+   * Gets the brightness of the lamp
+   * @return The brightness
+   */
   float getBrightness();
 
-  // Color (RGB)
-  void setColor(uint8_t, uint8_t, uint8_t);
+  /**
+   * Sets the color of the lamp
+   * @param red Red-value
+   * @param green Green-value
+   * @param blue Blue-value
+   */
+  void setColor(uint8_t red, uint8_t green, uint8_t blue);
 
-  uint8_t getColor(uint8_t);
+  /**
+   * Gets just a special color channel
+   * @param index Index of the color channel
+   * @return The color value
+   */
+  uint8_t getColor(uint8_t index);
 
-  void getColor(uint8_t []);
+  void getColor(uint8_t color[]);
 
-  // Hue
-  void setHue(unsigned int);
+  void setHue(unsigned int hue);
 
   float getHue();
 
-  // Status
+  /**
+   * Toggles the status (on/off) of the fan
+   */
   void toggleStatus();
 
+  /**
+   * Gets the status of the fan
+   * @return Whether the fan is on or off
+   */
   bool getStatus();
 
-  void setStatus(bool);
-
-  void print() override;
+  /**
+   * Turns the fan on or off
+   * @param status The new status of the fan
+   */
+  void setStatus(bool status);
 
   void handleCharacteristicUpdate(const char *, int) override;
 
   bool getCharacteristics(char *) override;
 
-  void handleMethodUpdate(const char *) override;
+  void handleMethodUpdate(GadgetMethod method) override;
 };

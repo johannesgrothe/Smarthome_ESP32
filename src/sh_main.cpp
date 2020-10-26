@@ -39,8 +39,7 @@ bool SH_Main::initGadgets() {
     if (deserialization_ok) {
       logger.println(LOG_TYPE::DATA, "Creating Gadget");
       logger.incIndent();
-      auto buf_gadget = createGadget(gadget_ident, pins, name, gadget_config.as<JsonObject>(),
-                                     code_config.as<JsonObject>());
+      auto buf_gadget = createGadgetHelper(gadget_ident, pins, name, gadget_config.as<JsonObject>());
       logger.decIndent();
 
       if (buf_gadget != nullptr) {
@@ -69,6 +68,8 @@ bool SH_Main::initGadgets() {
           code_remote->addGadget(buf_gadget);
 
           logger.decIndent();
+
+          // TODO: add codes to gadget
         }
 
         // Event Remote

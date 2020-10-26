@@ -20,7 +20,7 @@ public:
   explicit SH_Fan(std::string name, uint8_t levels_count);
 
   /**
-   * Toggles the status of the fan
+   * Toggles the status (on/off) of the fan
    */
   void toggleStatus();
 
@@ -68,5 +68,5 @@ public:
 
   bool getCharacteristics(char *) override;
 
-  void handleMethodUpdate(const char *) override;
+  void handleMethodUpdate(GadgetMethod) override;
 };

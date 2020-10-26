@@ -19,7 +19,17 @@
 #include "sh_fan_westinghouse_ir.h"
 #include "sh_lamp_westinghouse_ir.h"
 
-static std::shared_ptr<SH_Gadget> createGadget(GadgetIdentifier gadget_type, pin_set pins, const std::string& name, JsonObject gadget_config, JsonObject code_config) {
+/**
+ * Creates a new gadget out of the given information.
+ * The returned gadget may not be successfully initialized.
+ * Returns nullptr if no initialization is possible
+ * @param gadget_type Which type of gadget to create
+ * @param pins Pins ready to use for the gadget
+ * @param name Name of the gadget
+ * @param gadget_config Config information for the gadget
+ * @return A shared pointer to the gadget
+ */
+static std::shared_ptr<SH_Gadget> createGadgetHelper(GadgetIdentifier gadget_type, pin_set pins, const std::string& name, JsonObject gadget_config) {
   switch (gadget_type) {
     case GadgetIdentifier::sh_doorbell_basic:
       return createSHDoorbellBasic(name, pins, gadget_config);
@@ -28,7 +38,7 @@ static std::shared_ptr<SH_Gadget> createGadget(GadgetIdentifier gadget_type, pin
       return std::make_shared<SH_Lamp_NeoPixel_Basic>(gadget_config);
 
     case GadgetIdentifier::sh_lamp_basic:
-      return std::make_shared<SH_Lamp_Basic>(gadget_config);
+      return createSHLampBasic(name, pins, gadget_config);
 
     case GadgetIdentifier::sh_fan_westinghouse_ir:
       return createSHFanWestinghouseIR(name, pins, gadget_config);
@@ -39,4 +49,23 @@ static std::shared_ptr<SH_Gadget> createGadget(GadgetIdentifier gadget_type, pin
     default:
       return nullptr;
   }
+}
+
+/**
+ * Creates a new gadget out of the given information.
+ * The returned gadget is completely initialized and ready to go.
+ * Returns nullptr if no initialization is possible
+ * @param gadget_type Which type of gadget to create
+ * @param pins Pins ready to use for the gadget
+ * @param name Name of the gadget
+ * @param gadget_config Config information for the gadget
+ * @return A shared pointer to the gadget
+ */
+static std::shared_ptr<SH_Gadget> createGadget(GadgetIdentifier gadget_type, pin_set pins, const std::string& name, JsonObject gadget_config) {
+  auto buf_gadget = createGadgetHelper(gadget_type, pins, name, gadget_config);
+  if (!buf_gadget->hasInitializationError()) {
+    return buf_gadget;
+  }
+  logger.println(LOG_TYPE::ERR, "gadget could not be successfully initialized and was discarded");
+  return nullptr;
 }

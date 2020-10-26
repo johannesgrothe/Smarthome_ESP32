@@ -7,6 +7,7 @@ SH_Doorbell::SH_Doorbell(std::string name) :
 
 void SH_Doorbell::doorbellTriggered() {
   updateCharacteristic("ProgrammableSwitchEvent", true);
+  // TODO: event remote needed
 }
 
 void SH_Doorbell::handleCharacteristicUpdate(const char *characteristic, int value) {}
