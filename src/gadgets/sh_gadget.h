@@ -21,6 +21,7 @@ enum class GadgetIdentifier {
   sh_fan_westinghouse_ir,
   sh_lamp_westinghouse_ir,
   sh_doorbell_basic,
+  sh_wallswitch_basic
 };
 
 // Count of the gadgets
@@ -56,7 +57,7 @@ using mapping_pair = std::tuple<GadgetMethod, std::vector<unsigned long>>;
 
 // List of all Gadget Types
 enum class GadgetType {
-  None, Lightbulb, Fan, Doorbell
+  None, Lightbulb, Fan, Doorbell, Wallswitch
 };
 
 enum SH_RGB_Color {
@@ -117,7 +118,7 @@ protected:
    * Updates the initialization error. If status_update is true, the error will not change. If its false, the error will now be false.
    * @param status_update The update for the init_error
    */
-  void updateInitializationError(bool status_update);
+  void updateInitStatus(bool status_update);
 
   /**
    * Updates a characteristic on the remote
@@ -207,7 +208,7 @@ public:
    * Checks if the gadget was successfully initialized
    * @return whether the gadget was successfully initialized
    */
-  bool hasInitializationError() const;
+  bool hasInitError() const;
 
   /**
    * Checks the code for a mapped method and updates the gadget using the method if one is found

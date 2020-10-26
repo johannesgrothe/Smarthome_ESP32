@@ -41,6 +41,6 @@ public:
   void refresh() override;
 };
 
-std::shared_ptr<SH_Fan_Westinghouse_IR> createSHFanWestinghouseIR(std::string name, pin_set pins, const JsonObject& gadget_data) {
+static std::shared_ptr<SH_Fan_Westinghouse_IR> createSHFanWestinghouseIR(std::string name, pin_set pins, const JsonObject& gadget_data) {
   return std::make_shared<SH_Fan_Westinghouse_IR>(name);
 }

@@ -15,7 +15,7 @@ public:
   void refresh() override;
 };
 
-std::shared_ptr<SH_Lamp_Basic> createSHLampBasic(std::string name, pin_set pins, const JsonObject& gadget_data) {
+static std::shared_ptr<SH_Lamp_Basic> createSHLampBasic(std::string name, pin_set pins, const JsonObject& gadget_data) {
   uint8_t pin = 0;
 
   if (pins[0] != 0) {

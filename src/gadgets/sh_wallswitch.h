@@ -1,43 +1,18 @@
 #pragma once
 
-#define BOUNCE_DELAY 5
-#define MULTI_KLICK_TIME 200
-#define LONG_KLICK_TIME 1000
+#include "sh_gadget.h"
 
-#include <Arduino.h>
+class SH_Wallswitch: public SH_Gadget {
+protected:
 
-//TODO: Fix this mess
-
-class SH_Wallswitch {
-private:
-    uint8_t status;
-    uint8_t switch_pin;
-    uint8_t klick_counter;
-    bool has_new_status;
-    bool btn_status;
-    bool def_pinstate;
-    bool is_initialized;
-    unsigned long last_action;
+  void switchTriggered();
 
 public:
-    SH_Wallswitch():
-        status(0),
-        switch_pin(0),
-        klick_counter(0),
-        has_new_status(false),
-        btn_status(false),
-        is_initialized(false),
-        last_action(0)
-        {
-        }
+  explicit SH_Wallswitch(std::string name);
 
-    bool hasNewStatus();
+  void handleCharacteristicUpdate(const char *, int) override;
 
-    byte getStatus() const;
+  bool getCharacteristics(char *) override;
 
-    bool getRawStatus() const;
-
-    void refresh();
-
-    bool init(uint8_t, bool);
+  void handleMethodUpdate(GadgetMethod) override;
 };

@@ -1,25 +1,23 @@
 #pragma once
 
-#include "sh_doorbell.h"
-#define HW_BOUNCE_DELAY 50
+#include "sh_wallswitch.h"
 
-class SH_Doorbell_Basic : public SH_Doorbell {
-protected:
+class SH_Wallswitch_Basic : public SH_Wallswitch {
+private:
 
-  byte switch_pin_;
-
+  uint8_t pin_;
+  unsigned long last_action_;
   bool default_state_;
-
-  unsigned long last_event_;
 
 public:
 
-  explicit SH_Doorbell_Basic(std::string name, uint8_t pin, bool default_state);
+  SH_Wallswitch_Basic(std::string name, uint8_t pin, bool default_state);
 
   void refresh() override;
 };
 
-static std::shared_ptr<SH_Doorbell_Basic> createSHDoorbellBasic(std::string name, pin_set pins, const JsonObject& gadget_data) {
+static std::shared_ptr<SH_Wallswitch_Basic>
+createSHWallswitchBasic(std::string name, pin_set pins, const JsonObject &gadget_data) {
   uint8_t pin = 0;
   bool default_state = false;
 
@@ -37,5 +35,5 @@ static std::shared_ptr<SH_Doorbell_Basic> createSHDoorbellBasic(std::string name
   logger.printfln("Pin: %d", pin);
   logger.printfln("Default State: %d", default_state);
 
-  return std::make_shared<SH_Doorbell_Basic>(name, pin, default_state);
+  return std::make_shared<SH_Wallswitch_Basic>(name, pin, default_state);
 }

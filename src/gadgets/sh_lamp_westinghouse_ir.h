@@ -44,7 +44,11 @@ protected:
 
 public:
 
-  explicit SH_Lamp_Westinghouse_IR(const JsonObject&);
+  explicit SH_Lamp_Westinghouse_IR(std::string name);
 
   void refresh() override;
 };
+
+static std::shared_ptr<SH_Lamp_Westinghouse_IR> createSHLampWestinghouseIR(std::string name, pin_set pins, const JsonObject& gadget_data) {
+  return std::make_shared<SH_Lamp_Westinghouse_IR>(name);
+}

@@ -81,11 +81,11 @@ void SH_Gadget::handleCodeUpdate(unsigned long code) {
   }
 }
 
-void SH_Gadget::updateInitializationError(bool status_update) {
+void SH_Gadget::updateInitStatus(bool status_update) {
   init_error = init_error && status_update;
 }
 
-bool SH_Gadget::hasInitializationError() const {
+bool SH_Gadget::hasInitError() const {
   return init_error;
 }
 

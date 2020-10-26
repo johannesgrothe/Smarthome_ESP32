@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sh_lamp.h"
+#include "sh_lamp_neopixel.h"
 #include <Arduino.h>
 #include "Adafruit_NeoPixel.h"
 
@@ -8,16 +8,34 @@
 #include <avr/power.h>
 #endif
 
-class SH_Lamp_NeoPixel_Basic : public SH_Lamp {
-private:
-  uint8_t pin_;
-  uint16_t len_;
-
+class SH_Lamp_NeoPixel_Basic : public SH_Lamp_NeoPixel {
 public:
 
-  explicit SH_Lamp_NeoPixel_Basic(const JsonObject&);
+  explicit SH_Lamp_NeoPixel_Basic(std::string name, uint8_t pin, uint16_t len);
 
   void refresh() override;
-
-  void setLEDColor(uint8_t, uint8_t, uint8_t);
 };
+
+static std::shared_ptr<SH_Lamp_NeoPixel_Basic> createSHLampNeoPixelBasic(std::string name, pin_set pins, const JsonObject& gadget_data) {
+  uint8_t pin = 0;
+  uint16_t len = 0;
+
+  if (pins[0] != 0) {
+    pin = pins[0];
+  } else {
+    logger.println(LOG_TYPE::ERR, "No pin set");
+    return nullptr;
+  }
+
+  if (gadget_data.containsKey("length")) {
+    len = gadget_data["length"].as<uint16_t>();
+  } else {
+    logger.println(LOG_TYPE::ERR, "No length specified");
+    return nullptr;
+  }
+
+  logger.printfln("Pin: %d", pin);
+  logger.printfln("Length: %d", len);
+
+  return std::make_shared<SH_Lamp_NeoPixel_Basic>(name, pin, len);
+}

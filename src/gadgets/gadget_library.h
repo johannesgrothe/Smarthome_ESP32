@@ -19,6 +19,9 @@
 #include "sh_fan_westinghouse_ir.h"
 #include "sh_lamp_westinghouse_ir.h"
 
+//Wallswitch
+#include "sh_wallswitch_basic.h"
+
 /**
  * Creates a new gadget out of the given information.
  * The returned gadget may not be successfully initialized.
@@ -35,7 +38,7 @@ static std::shared_ptr<SH_Gadget> createGadgetHelper(GadgetIdentifier gadget_typ
       return createSHDoorbellBasic(name, pins, gadget_config);
 
     case GadgetIdentifier::sh_lamp_neopixel_basic:
-      return std::make_shared<SH_Lamp_NeoPixel_Basic>(gadget_config);
+      return createSHLampNeoPixelBasic(name, pins, gadget_config);
 
     case GadgetIdentifier::sh_lamp_basic:
       return createSHLampBasic(name, pins, gadget_config);
@@ -44,7 +47,10 @@ static std::shared_ptr<SH_Gadget> createGadgetHelper(GadgetIdentifier gadget_typ
       return createSHFanWestinghouseIR(name, pins, gadget_config);
 
     case GadgetIdentifier::sh_lamp_westinghouse_ir:
-      return std::make_shared<SH_Lamp_Westinghouse_IR>(gadget_config);
+      return createSHLampWestinghouseIR(name, pins, gadget_config);
+
+    case GadgetIdentifier::sh_wallswitch_basic:
+      return createSHWallswitchBasic(name, pins, gadget_config);
 
     default:
       return nullptr;
@@ -63,7 +69,7 @@ static std::shared_ptr<SH_Gadget> createGadgetHelper(GadgetIdentifier gadget_typ
  */
 static std::shared_ptr<SH_Gadget> createGadget(GadgetIdentifier gadget_type, pin_set pins, const std::string& name, JsonObject gadget_config) {
   auto buf_gadget = createGadgetHelper(gadget_type, pins, name, gadget_config);
-  if (!buf_gadget->hasInitializationError()) {
+  if (!buf_gadget->hasInitError()) {
     return buf_gadget;
   }
   logger.println(LOG_TYPE::ERR, "gadget could not be successfully initialized and was discarded");
