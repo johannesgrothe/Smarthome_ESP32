@@ -13,9 +13,13 @@
 #include "sh_lamp_basic.h"
 #include "sh_doorbell_basic.h"
 
-//Fan
+//Fans
 #include "sh_fan_westinghouse_ir.h"
 #include "sh_lamp_westinghouse_ir.h"
+
+//Motion Sensors
+#include "sh_sensor_motion.h"
+#include "sh_sensor_motion_HR501.h"
 
 
 static SH_Gadget *createGadget(JsonObject gadget_json) {
@@ -48,6 +52,11 @@ static SH_Gadget *createGadget(JsonObject gadget_json) {
     // sh_lamp_westinghouse_ir.h
     else if (strcmp(type, "sh_lamp_westinghouse_ir") == 0) {
       new_gadget = new SH_Lamp_Westinghouse_IR(gadget_json);
+    }
+
+      // sh_sensor_motion_HR501.h
+    else if (strcmp(type, "sh_sensor_motion_HR501") == 0) {
+      new_gadget = new SH_Sensor_Motion_HR501(gadget_json);
     }
 
     // sh_fan_basic.h
