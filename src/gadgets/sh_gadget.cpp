@@ -102,16 +102,16 @@ void SH_Gadget::setGadgetHasChanged() {
 //IR Connector
 
 bool SH_Gadget::sendRawIR(const uint16_t raw_data[], const uint8_t content_length) {
-  if (!hasIR())
+  if (hasIR())
     return ir_gadget_->sendRawIR(raw_data, content_length);
-  logger.println(LOG_TYPE::ERR, name, "Cannot send IR: no access.");
+  logger.println(LOG_TYPE::ERR, name, "Cannot send IR: not initialized");
   return false;
 }
 
 bool SH_Gadget::sendIR(const unsigned long command, const uint8_t com_type) {
-  if (!hasIR())
+  if (hasIR())
     return ir_gadget_->sendIR(command, com_type);
-  logger.println(LOG_TYPE::ERR, name, "Cannot send IR: no access.");
+  logger.println(LOG_TYPE::ERR, name, "Cannot send IR: not initialized");
   return false;
 }
 

@@ -3,14 +3,14 @@
 
 SH_Main smarthome_system;
 
-static void mainTask(void *args) {
+[[noreturn]] static void mainTask(void *args) {
   while (true) {
     smarthome_system.refresh();
     vTaskDelay(10 / portTICK_PERIOD_MS);
   }
 }
 
-static void networkTask(void *args) {
+[[noreturn]] static void networkTask(void *args) {
   while (true) {
     smarthome_system.refreshNetwork();
     vTaskDelay(10 / portTICK_PERIOD_MS);

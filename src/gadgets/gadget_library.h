@@ -79,9 +79,38 @@ static std::shared_ptr<SH_Gadget> createGadgetHelper(GadgetIdentifier gadget_typ
  */
 static std::shared_ptr<SH_Gadget> createGadget(GadgetIdentifier gadget_type, pin_set pins, const std::string& name, JsonObject gadget_config) {
   auto buf_gadget = createGadgetHelper(gadget_type, pins, name, gadget_config);
-  if (!buf_gadget->hasInitError()) {
+  if (buf_gadget != nullptr && !buf_gadget->hasInitError()) {
     return buf_gadget;
   }
   logger.println(LOG_TYPE::ERR, "gadget could not be successfully initialized and was discarded");
   return nullptr;
+}
+
+/**
+ * Function that returns whether the gadget requires IR access
+ * @param gadget Gadget type to check
+ * @return Whether the stated gadget type needs ir access
+ */
+static bool gadgetRequiresIR(GadgetIdentifier gadget) {
+  switch (gadget) {
+    case GadgetIdentifier::sh_fan_westinghouse_ir:
+    case GadgetIdentifier::sh_lamp_westinghouse_ir:
+      return true;
+    default:
+      return false;
+  }
+}
+
+/**
+ * Function that returns whether the gadget requires radio access
+ * @param gadget Gadget type to check
+ * @return Whether the stated gadget type needs radio access
+ */
+static bool gadgetRequiresRadio(GadgetIdentifier gadget) {
+  switch (gadget) {
+//    case GadgetIdentifier::sh_lamp_westinghouse_ir:
+//      return true;
+    default:
+      return false;
+  }
 }

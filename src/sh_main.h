@@ -13,7 +13,6 @@
 // Tools
 #include "console_logger.h"
 #include "system_timer.h"
-#include "hardware_link.h"
 #include "boot_mode.h"
 
 // External Dependencies
@@ -26,7 +25,6 @@
 #include "gadget_collection.h"
 #include "system_storage.h"
 
-#include "hardware_link.h"
 #include "pin_profile.h"
 #include "color.h"
 
@@ -53,7 +51,7 @@ static void rebootChip(const std::string& reason) {
  */
 static gadget_tuple readGadget(uint8_t index) {
   auto gadget = System_Storage::readGadget(index);
-  gadget_tuple err_gadget(0, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, "", "", "");
+  gadget_tuple err_gadget(0, {false, false, false, false, false, false}, {0, 0, 0, 0, 0}, "", "", "");
   auto type = std::get<0>(gadget);
   if (type) {
     auto ports = std::get<2>(gadget);
@@ -88,6 +86,26 @@ static status_tuple writeGadget(uint8_t gadget_type, bitfield_set remote_bf, pin
   }
 
   auto type = (GadgetIdentifier) gadget_type;
+
+  DynamicJsonDocument buf_doc(2000);
+
+  // Check gadget config
+  if (!gadget_config.empty()) {
+    auto err = deserializeJson(buf_doc, gadget_config);
+    if (err != DeserializationError::Ok) {
+      logger.printfln(LOG_TYPE::ERR, "Cannot save gadget: received faulty gadget config");
+      return status_tuple(false, "received faulty gadget config");
+    }
+  }
+
+  // Check code config
+  if (!code_config.empty()) {
+    auto err = deserializeJson(buf_doc, code_config);
+    if (err != DeserializationError::Ok) {
+      logger.printfln(LOG_TYPE::ERR, "Cannot save gadget: received faulty code config");
+      return status_tuple(false, "received faulty code config");
+    }
+  }
 
   if (type != GadgetIdentifier::None) {
     logger.printfln("Saving gadget '%s' with type %d", name.c_str(), gadget_type);
@@ -153,8 +171,6 @@ private:
 
   bool initGadgets();
 
-  void mapConnectors(JsonObject connectors_json);
-
   bool initConnectors();
 
   bool initRemotes();
@@ -163,7 +179,7 @@ private:
 
   void handleCodeConnector(const std::shared_ptr<Code_Gadget>& gadget);
 
-  void handleRequestConnector(const std::shared_ptr<Request_Gadget>& gadget);
+  void handleNetwork();
 
   void handleSystemRequest(Request *req);
 

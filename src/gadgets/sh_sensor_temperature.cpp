@@ -1,10 +1,11 @@
 #include "sh_sensor_temperature.h"
 
+#include <utility>
+
 SH_Sensor_Temperature::SH_Sensor_Temperature(std::string name) :
-  SH_Gadget(name, GadgetType::Temp_Humm_Sensor),
+  SH_Gadget(std::move(name), GadgetType::Temp_Humm_Sensor),
   humidity_(0),
   temperature_(0) {}
-
 
 void SH_Sensor_Temperature::setHumidity(int new_humiditiy) {
   if (new_humiditiy != humidity_) {

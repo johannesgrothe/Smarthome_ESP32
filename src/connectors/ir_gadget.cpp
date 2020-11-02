@@ -94,9 +94,8 @@ IR_Gadget::IR_Gadget(int ir_recv_pin, int ir_send_pin) :
       return false;
     }
     logger.print("System / IR", "Sending Raw Command, 38kHz, ");
+    logger.printfln("%d Blocks.", content_length);
     blaster_->sendRaw(raw_data, content_length, 38);
-    logger.print(content_length);
-    logger.println(" Blocks.");
     receiver_->resume();
     return true;
   }

@@ -137,21 +137,6 @@ protected:
   GadgetMethod getMethodForCode(unsigned long code);
 
   /**
-   * Adds a code to a message. This message will be used to update the gadget when the code is received
-   * @param method The method to call
-   * @param code The code that should trigger the method
-   * @return Whether mapping the code to the method was successful
-   */
-  bool setMethodForCode(GadgetMethod method, unsigned long code);
-
-  /**
-   * Method to handle the update of the gadget via GadgetMethod
-   * @param method Method to update the gadget with
-   */
-  virtual void handleMethodUpdate(GadgetMethod method) = 0;
-
-
-  /**
    * Sends an array of raw IR data
    * @param raw_data Raw IR data
    * @param com_len Length of the ir data array
@@ -229,6 +214,20 @@ public:
    * Refresh the gadget and its hardware. Used as loop method.
    */
   virtual void refresh() = 0;
+
+  /**
+   * Adds a code to a message. This message will be used to update the gadget when the code is received
+   * @param method The method to call
+   * @param code The code that should trigger the method
+   * @return Whether mapping the code to the method was successful
+   */
+  bool setMethodForCode(GadgetMethod method, unsigned long code);
+
+  /**
+   * Method to handle the update of the gadget via GadgetMethod
+   * @param method Method to update the gadget with
+   */
+  virtual void handleMethodUpdate(GadgetMethod method) = 0;
 
   /**
    * Initialized the IR capabilities of the gadget

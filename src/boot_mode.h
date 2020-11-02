@@ -1,8 +1,8 @@
 #pragma once
 
-#include "user_settings.h"
-#include "hardware_link.h"
 #include "pin_profile.h"
+
+#define STATIC_BOOTMODE 2
 
 enum class BootMode {
   Serial_Ony = 0,

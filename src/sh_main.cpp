@@ -3,10 +3,12 @@
 
 bool SH_Main::initGadgets() {
 
-  logger.println("Initializing Gadgets:");
-  logger.incIndent();
+  logger.print("Initializing Gadgets: ");
 
   auto eeprom_gadgets = System_Storage::readAllGadgets();
+
+  logger.println(eeprom_gadgets.size());
+  logger.incIndent();
 
   for (auto gadget: eeprom_gadgets) {
     auto gadget_ident = (GadgetIdentifier) std::get<0>(gadget);
@@ -19,27 +21,31 @@ bool SH_Main::initGadgets() {
     logger.printfln("Initializing %s", name.c_str());
     logger.incIndent();
 
-    DynamicJsonDocument gadget_config(1000);
-    DynamicJsonDocument code_config(1000);
+    DynamicJsonDocument gadget_config(2500);
+    DynamicJsonDocument code_config(2500);
 
     bool deserialization_ok = true;
 
-    auto err = deserializeJson(gadget_config, gadget_config_str);
+    DeserializationError err;
 
-    if (err != DeserializationError::Ok) {
-      deserialization_ok = false;
+    if (!gadget_config_str.empty()) {
+      err = deserializeJson(gadget_config, gadget_config_str);
+      if (err != DeserializationError::Ok) {
+        deserialization_ok = false;
+      }
     }
 
-    err = deserializeJson(code_config, code_config_str);
-
-    if (err != DeserializationError::Ok) {
-      deserialization_ok = false;
+    if (!gadget_config_str.empty()) {
+      err = deserializeJson(code_config, code_config_str);
+      if (err != DeserializationError::Ok) {
+        deserialization_ok = false;
+      }
     }
 
     if (deserialization_ok) {
       logger.println(LOG_TYPE::DATA, "Creating Gadget");
       logger.incIndent();
-      auto buf_gadget = createGadgetHelper(gadget_ident, pins, name, gadget_config.as<JsonObject>());
+      auto buf_gadget = createGadget(gadget_ident, pins, name, gadget_config.as<JsonObject>());
       logger.decIndent();
 
       if (buf_gadget != nullptr) {
@@ -69,7 +75,20 @@ bool SH_Main::initGadgets() {
 
           logger.decIndent();
 
-          // TODO: add codes to gadget
+          for (int method_index = 0; method_index < GadgetMethodCount; method_index++) {
+            std::stringstream ss;
+            ss << method_index;
+            std::string method_str = ss.str();
+            if (code_config.containsKey(method_str)) {
+              JsonArray codes = code_config[method_str].as<JsonArray>();
+              for (int i = 0; i < codes.size(); i++) {
+                unsigned long code = codes[i].as<unsigned long>();
+                buf_gadget->setMethodForCode((GadgetMethod) method_index, code);
+              }
+            }
+          }
+
+          buf_gadget->printMapping();
         }
 
         // Event Remote
@@ -82,8 +101,41 @@ bool SH_Main::initGadgets() {
           logger.decIndent();
         }
 
+        // IR Gadget
+        bool ir_ok = true;
+        if (gadgetRequiresIR(gadget_ident)) {
+          if (ir_gadget != nullptr) {
+            logger.println(LOG_TYPE::DATA, "Linking IR gadget");
+            buf_gadget->setIR(ir_gadget);
+          } else {
+            logger.println(LOG_TYPE::ERR, "No IR gadget available");
+            ir_ok = false;
+          }
+        } else {
+          logger.println(LOG_TYPE::DATA, "No IR required");
+        }
+
+        // Radio
+        // TODO: check when radio is implemented
+        bool radio_ok = true;
+        if (gadgetRequiresRadio(gadget_ident)) {
+          if (radio_gadget != nullptr) {
+            logger.println(LOG_TYPE::DATA, "Linking radio gadget");
+            buf_gadget->setRadio(radio_gadget);
+          } else {
+            logger.println(LOG_TYPE::DATA, "No radio gadget available");
+            radio_ok = false;
+          }
+        } else {
+          logger.println(LOG_TYPE::DATA, "No radio required");
+        }
+
         // Add created gadget to the list
-        gadgets.addGadget(buf_gadget);
+        if (ir_ok && radio_ok) {
+          gadgets.addGadget(buf_gadget);
+        } else {
+          logger.println(LOG_TYPE::DATA, "Gadget initialization failed due to ir/radio problems");
+        }
       } else {
         logger.println(LOG_TYPE::ERR, "Gadget could not be created");
       }
@@ -94,54 +146,6 @@ bool SH_Main::initGadgets() {
   }
   logger.decIndent();
   return true;
-}
-
-void SH_Main::mapConnectors(JsonObject connectors_json) {
-  // TODO: Not needed anymore
-  // Mapping Code Connectors (IR/Radio) to the Gadgets for them to use
-  logger.println("Mapping Connectors:");
-  logger.incIndent();
-
-  // TODO: fix ir
-  // IR
-  logger.print("IR:");
-  if (connectors_json["ir"] != nullptr && connectors_json["ir"].as<JsonArray>().size() > 0) {
-    logger.printnl();
-    logger.incIndent();
-    JsonArray map_gadgets = connectors_json["ir"].as<JsonArray>();
-    for (auto &&map_gadget : map_gadgets) {
-      const char *gadget_name = map_gadget.as<const char *>();
-      auto found_gadget = gadgets.getGadget(gadget_name);
-      if (found_gadget != nullptr) {
-        found_gadget->setIR(ir_gadget);
-        logger.println(LOG_TYPE::DATA, gadget_name);
-      }
-    }
-    logger.decIndent();
-  } else {
-    logger.println(" -");
-  }
-
-  // TODO: fix radio connector
-  // Radio
-  logger.print("Radio:");
-  if (connectors_json["radio"] != nullptr && connectors_json["radio"].as<JsonArray>().size() > 0) {
-    logger.printnl();
-    logger.incIndent();
-    JsonArray map_gadgets = connectors_json["radio"].as<JsonArray>();
-    for (auto &&map_gadget : map_gadgets) {
-      const char *gadget_name = map_gadget.as<const char *>();
-      auto found_gadget = gadgets.getGadget(gadget_name);
-      if (found_gadget != nullptr) {
-        found_gadget->setRadio(radio_gadget);
-        logger.println(LOG_TYPE::DATA, gadget_name);
-      }
-    }
-    logger.decIndent();
-  } else {
-    logger.println(" -");
-  }
-  logger.decIndent();
 }
 
 bool SH_Main::initConnectors() {
@@ -222,7 +226,7 @@ bool SH_Main::initRemotes() {
       case EventRemoteMode::Smarthome:
         // TODO: init event remote
 //        event_remote = make_shared<SmarthomeCodeRemote>(network_gadget);
-          logger.println(LOG_TYPE::ERR, "Event-Remote is not implemented");
+        logger.println(LOG_TYPE::ERR, "Event-Remote is not implemented");
         break;
       default:
         logger.printfln(LOG_TYPE::ERR, "Could not initialize event remote (code %d)", (int) code_remote_mode);
@@ -291,7 +295,7 @@ bool SH_Main::initNetwork(NetworkMode mode) {
   return true;
 }
 
-void SH_Main::handleCodeConnector(const std::shared_ptr<Code_Gadget>& gadget) {
+void SH_Main::handleCodeConnector(const std::shared_ptr<Code_Gadget> &gadget) {
   if (gadget == nullptr) {
     return;
   }
@@ -308,14 +312,14 @@ void SH_Main::handleCodeConnector(const std::shared_ptr<Code_Gadget>& gadget) {
   }
 }
 
-void SH_Main::handleRequestConnector(const std::shared_ptr<Request_Gadget>& gadget) {
-  if (gadget == nullptr) {
+void SH_Main::handleNetwork() {
+  if (network_gadget == nullptr) {
     return;
   }
-  if (gadget->hasRequest()) {
+  if (network_gadget->hasRequest()) {
     std::string type;
-    Request *req = gadget->getRequest();
-    RequestGadgetType g_type = gadget->getGadgetType();
+    Request *req = network_gadget->getRequest();
+    RequestGadgetType g_type = network_gadget->getGadgetType();
     if (g_type == RequestGadgetType::MQTT_G)
       type = "MQTT";
     else if (g_type == RequestGadgetType::SERIAL_G)
@@ -381,20 +385,20 @@ void SH_Main::handleSystemRequest(Request *req) {
       success = true;
     }
 
-    // reset the complete config
+      // reset the complete config
     else if (reset_option == "complete") {
       System_Storage::resetContentFlag();
       System_Storage::resetGadgets();
       success = true;
     }
 
-    // reset the system config only
+      // reset the system config only
     else if (reset_option == "config") {
       System_Storage::resetContentFlag();
       success = true;
     }
 
-    // reset the complete config
+      // reset the complete config
     else if (reset_option == "gadgets") {
       System_Storage::resetGadgets();
       success = true;
@@ -860,7 +864,9 @@ void SH_Main::testStuff() {
 
 //    logger.println("Testing gadget saving:");
 
-//    System_Storage::writeGadget(9, {true, true, false, false, false, false, false, false}, {120, 120, 120, 4, 5}, "blub_gadget", "{-_-}", "{0.0}");
+//    System_Storage::
+//
+//    (9, {true, true, false, false, false, false, false, false}, {120, 120, 120, 4, 5}, "blub_gadget", "{-_-}", "{0.0}");
 //    System_Storage::writeGadget(5, {false, true, false, false, false, false, false, false}, {120, 120, 120, 4, 5}, "gggadget", "{o,O}", "{8#8}");
 //    System_Storage::writeGadget(1, {true, false, false, false, false, false, false, false}, {120, 120, 120, 4, 5}, "yolokopterrrrrrr", "{yolokopterrrrrrrrrrrrrrrrrrrrrr}", "{RUMMMMSSSSSSSSSSSSSS}");
 
@@ -1080,16 +1086,16 @@ void SH_Main::refresh() {
 }
 
 void SH_Main::refreshModeSerial() {
-  handleRequestConnector(network_gadget);
+  handleNetwork();
 }
 
 void SH_Main::refreshModeNetwork() {
-  handleRequestConnector(network_gadget);
+  handleNetwork();
 }
 
 void SH_Main::refreshModeComplete() {
 
-  handleRequestConnector(network_gadget);
+  handleNetwork();
 
   ir_gadget->refresh();
   handleCodeConnector(ir_gadget);
