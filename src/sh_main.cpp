@@ -712,37 +712,41 @@ void SH_Main::handleRequest(Request *req) {
   std::string req_path = req->getPath();
   if (!req->hasReceiver()) {
     req->updateReceiver(client_id_);
-    if (req_path == "smarthome/broadcast/req") {
-      // Handle broadcasts which do not have an receiver
-      handleSystemRequest(req);
+    for (auto list_path: broadcast_request_paths) {
+      if (req_path == list_path) {
+        // Handle broadcasts which do not have an receiver
+        handleSystemRequest(req);
+        return;
+      }
     }
     return;
-  } else if (req->hasReceiver() && client_id_ != req->getReceiver()) {
+  } else if (client_id_ != req->getReceiver()) {
     // Return if the client is not the receiver of the message
     return;
   }
 
-  if (req_path.compare(0, 17, "smarthome/config/") == 0) {
-    handleSystemRequest(req);
-    return;
+  // Check if the received request is a system request
+  for (auto list_path: system_request_paths) {
+    if (req_path.compare(0, list_path.length(), list_path) == 0) {
+      handleSystemRequest(req);
+      return;
+    }
   }
 
-  if (req_path.compare(0, 13, "smarthome/sys") == 0) {
-    handleSystemRequest(req);
-    return;
+  for (auto list_path: additional_request_paths) {
+    if (req_path.compare(0, list_path.length(), list_path) == 0) {
+      if (code_remote != nullptr) {
+        code_remote->handleRequest(req);
+      }
+
+      if (gadget_remote != nullptr) {
+        gadget_remote->handleRequest(req);
+      }
+      return;
+    }
   }
 
-  if (req_path.compare(0, 17, "smarthome/gadget/") == 0) {
-    handleSystemRequest(req);
-    return;
-  }
-
-  if (code_remote != nullptr) {
-    code_remote->handleRequest(req);
-  }
-  if (gadget_remote != nullptr) {
-    gadget_remote->handleRequest(req);
-  }
+  logger.printfln(LOG_TYPE::ERR, "Received request to unconfigured path");
 }
 
 void SH_Main::updateGadgetRemote(const char *gadget_name, const char *service, const char *characteristic, int value) {

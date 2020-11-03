@@ -22,13 +22,19 @@ bool MQTT_Gadget::connect_mqtt() {
 
     if (connected) {
       logger.println("OK");
-      mqttClient_->subscribe("debug/in");
-      mqttClient_->subscribe("smarthome/from/sys/config/set");
-      mqttClient_->subscribe("smarthome/from/sys/command");
-      mqttClient_->subscribe("smarthome/from/sys/time");
-      mqttClient_->subscribe("smarthome/from/gadget/set");
-      mqttClient_->subscribe("smarthome/from/response");
-      mqttClient_->subscribe("smarthome/from/code");
+
+      for (const auto& list_path: broadcast_request_paths) {
+        mqttClient_->subscribe(list_path.c_str());
+      }
+
+      for (const auto& list_path: system_request_paths) {
+        mqttClient_->subscribe(list_path.c_str());
+      }
+
+      for (const auto& list_path: additional_request_paths) {
+        mqttClient_->subscribe(list_path.c_str());
+      }
+
       mqttClient_->publish("debug/out", "Controller Launched");
       return true;
     } else {
@@ -119,12 +125,11 @@ MQTT_Gadget::MQTT_Gadget(const std::string& client_name,
   client_name_(client_name) {
   if (wifiIsInitialized()) {
     logger.println("Creating MQTT Gadget");
-//    network_client_ = WiFiClient();
     logger.incIndent();
     mqttClient_ = new PubSubClient(network_client_);
     bool everything_ok = true;
 
-    // Reads the IP from the JSON
+    // Check IP
     if (mqtt_ip == IPAddress(0, 0, 0, 0)) {
       everything_ok = false;
       logger.println(LOG_TYPE::ERR, "'ip' is null");
@@ -132,7 +137,7 @@ MQTT_Gadget::MQTT_Gadget(const std::string& client_name,
       logger.printfln("IP: %s", mqtt_ip.toString().c_str());
     }
 
-    // Reads the Port from the JSON
+    // Check port
     if (mqtt_port != 0) {
       mqtt_port_ = mqtt_port;
       logger.print(LOG_TYPE::DATA, "Port: ");
@@ -142,7 +147,7 @@ MQTT_Gadget::MQTT_Gadget(const std::string& client_name,
       logger.println(LOG_TYPE::ERR, "'port' is 0");
     }
 
-    // Reads the Username from JSON
+    // Check username
     if (mqtt_username != "null") {
       username_ = mqtt_username;
       logger.print(LOG_TYPE::DATA, "Username: ");
@@ -153,13 +158,12 @@ MQTT_Gadget::MQTT_Gadget(const std::string& client_name,
       logger.println(LOG_TYPE::WARN, "no 'username' configured.");
     }
 
-    // Reads the Username from JSON
+    // Check password
     if (mqtt_pw != "null") {
       password_ = mqtt_pw;
       logger.print(LOG_TYPE::DATA, "Password: ");
       logger.println(password_);
     } else {
-      // everything_ok = false;
       has_credentials_ = false;
       logger.println(LOG_TYPE::WARN, "no 'password' configured.");
     }
