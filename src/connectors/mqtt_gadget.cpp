@@ -23,19 +23,23 @@ bool MQTT_Gadget::connect_mqtt() {
     if (connected) {
       logger.println("OK");
 
+      logger.println(LOG_TYPE::DATA, "Subscribing to topics:");
+      logger.incIndent();
       for (const auto& list_path: broadcast_request_paths) {
-        mqttClient_->subscribe(list_path.c_str());
+        subscibe_to_topic(list_path);
       }
 
       for (const auto& list_path: system_request_paths) {
-        mqttClient_->subscribe(list_path.c_str());
+        subscibe_to_topic(list_path);
       }
 
       for (const auto& list_path: additional_request_paths) {
-        mqttClient_->subscribe(list_path.c_str());
+        subscibe_to_topic(list_path);
       }
 
-      mqttClient_->publish("debug/out", "Controller Launched");
+      logger.decIndent();
+
+      mqttClient_->publish("smarthome/debug/out", "Controller Launched");
       return true;
     } else {
       if (conn_count > 5) {
@@ -54,6 +58,8 @@ bool MQTT_Gadget::connect_mqtt() {
 void MQTT_Gadget::callback(char *topic, const byte *payload, const unsigned int length) {
   std::stringstream local_topic;
   local_topic << topic;
+
+  logger.println("Callback called");
 
   std::stringstream local_message;
   for (unsigned int i = 0; i < length; i++) {
@@ -186,4 +192,14 @@ void MQTT_Gadget::refresh() {
   }
   mqttClient_->loop();
   sendQueuedItems();
+}
+
+bool MQTT_Gadget::subscibe_to_topic(const std::string& topic) {
+  bool status = mqttClient_->subscribe(topic.c_str());
+  if (status) {
+    logger.printfln("Subscribed to %s", topic.c_str());
+  } else {
+    logger.printfln(LOG_TYPE::ERR, "Failed to subscribe to %s", topic.c_str());
+  }
+  return status;
 }

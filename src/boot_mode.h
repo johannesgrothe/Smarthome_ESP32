@@ -2,7 +2,7 @@
 
 #include "pin_profile.h"
 
-#define STATIC_BOOTMODE 0
+#define STATIC_BOOTMODE 2
 
 enum class BootMode {
   Serial_Ony = 0,
@@ -16,19 +16,11 @@ static BootMode getBootMode() {
 #ifdef STATIC_BOOTMODE
   return BootMode(STATIC_BOOTMODE);
 #else
-//  sysPinMode(REG0, INPUT);
-//  sysPinMode(REG1, INPUT);
-//  sysPinMode(REG2, INPUT);
-
   pinMode(REG0, INPUT);
   pinMode(REG1, INPUT);
   pinMode(REG2, INPUT);
 
   BootMode mode = BootMode::Unknown_Mode;
-
-//  bool reg0 = sysDdigitalRead(REG0);
-//  bool reg1 = sysDdigitalRead(REG1);
-//  bool reg2 = sysDdigitalRead(REG2);
 
   bool reg0 = digitalRead(REG0);
   bool reg1 = digitalRead(REG1);

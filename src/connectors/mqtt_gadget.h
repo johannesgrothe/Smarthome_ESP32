@@ -30,6 +30,8 @@ protected:
 
   void executeRequestSending(Request *) override;
 
+  bool subscibe_to_topic(const std::string& topic);
+
 public:
 
   /**

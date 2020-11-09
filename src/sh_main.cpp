@@ -712,7 +712,7 @@ void SH_Main::handleRequest(Request *req) {
   std::string req_path = req->getPath();
   if (!req->hasReceiver()) {
     req->updateReceiver(client_id_);
-    for (auto list_path: broadcast_request_paths) {
+    for (const auto& list_path: broadcast_request_paths) {
       if (req_path == list_path) {
         // Handle broadcasts which do not have an receiver
         handleSystemRequest(req);
@@ -726,7 +726,7 @@ void SH_Main::handleRequest(Request *req) {
   }
 
   // Check if the received request is a system request
-  for (auto list_path: system_request_paths) {
+  for (const auto& list_path: system_request_paths) {
     if (req_path.compare(0, list_path.length(), list_path) == 0) {
       handleSystemRequest(req);
       return;
