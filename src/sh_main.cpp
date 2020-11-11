@@ -727,20 +727,21 @@ void SH_Main::handleRequest(Request *req) {
 
   // Check if the received request is a system request
   for (const auto& list_path: system_request_paths) {
+    // TODO: check if last character is # and then only check 0 - (n-2)
     if (req_path.compare(0, list_path.length(), list_path) == 0) {
       handleSystemRequest(req);
       return;
     }
   }
 
-  for (auto list_path: additional_request_paths) {
+  for (const auto& list_path: additional_request_paths) {
     if (req_path.compare(0, list_path.length(), list_path) == 0) {
       if (code_remote != nullptr) {
-        code_remote->handleRequest(req);
+//        code_remote->handleRequest(req);
       }
 
       if (gadget_remote != nullptr) {
-        gadget_remote->handleRequest(req);
+//        gadget_remote->handleRequest(req);
       }
       return;
     }

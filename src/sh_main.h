@@ -79,70 +79,7 @@ static gadget_tuple readGadget(uint8_t index) {
  * @return whether writing was successful
  */
 static status_tuple writeGadget(uint8_t gadget_type, bitfield_set remote_bf, pin_set ports, const std::string& name, const std::string& gadget_config, const std::string& code_config) {
-
-  if (gadget_type >= GadgetIdentifierCount) {
-    logger.printfln(LOG_TYPE::ERR, "Unknown gadget identifier '%d'", gadget_type);
-    return status_tuple(false, "not saving gadget with err-type 0");
-  }
-
-  auto type = (GadgetIdentifier) gadget_type;
-
-  DynamicJsonDocument buf_doc(2000);
-
-  // Check gadget config
-  if (!gadget_config.empty()) {
-    auto err = deserializeJson(buf_doc, gadget_config);
-    if (err != DeserializationError::Ok) {
-      logger.printfln(LOG_TYPE::ERR, "Cannot save gadget: received faulty gadget config");
-      return status_tuple(false, "received faulty gadget config");
-    }
-  }
-
-  // Check code config
-  if (!code_config.empty()) {
-    auto err = deserializeJson(buf_doc, code_config);
-    if (err != DeserializationError::Ok) {
-      logger.printfln(LOG_TYPE::ERR, "Cannot save gadget: received faulty code config");
-      return status_tuple(false, "received faulty code config");
-    }
-  }
-
-  if (type != GadgetIdentifier::None) {
-    logger.printfln("Saving gadget '%s' with type %d", name.c_str(), gadget_type);
-
-    auto existing_ports = System_Storage::readAllGadgetPorts();
-
-    for (auto gadget_port: ports) {
-      // Check if port is configured on the system
-      auto buf_pin = getPinForPort(gadget_port);
-      if (!buf_pin && gadget_port) {
-        logger.printfln(LOG_TYPE::ERR, "Cannot save gadget: port %d is not configured on this system", gadget_port);
-        return status_tuple(false, "gadget tries to use port not configured on this system");
-      }
-
-      // Check if port is already in use on the system
-      for (auto existing_port: existing_ports) {
-        if (gadget_port == existing_port) {
-          logger.printfln(LOG_TYPE::ERR, "Cannot save gadget: gadget tries to use port already occupied (%d)", gadget_port);
-          return status_tuple(false, "gadget tries to use port already occupied");
-        }
-      }
-    }
-
-    auto existing_names = System_Storage::readAllGadgetNames();
-
-    for (const auto& list_name: existing_names) {
-      if (name == list_name) {
-        logger.printfln(LOG_TYPE::ERR, "Cannot save gadget: gadget name '%s' is already in use", name.c_str());
-        return status_tuple(false, "gadget name is already in use");
-      }
-    }
-
-    return System_Storage::writeGadget(gadget_type, remote_bf, ports, name, gadget_config, code_config);
-  } else {
-    logger.println(LOG_TYPE::ERR, "Cannot save gadget: gadget has err-type 0");
-    return status_tuple(false, "not saving gadget with err-type 0");
-  }
+  return System_Storage::writeGadget(gadget_type, remote_bf, ports, name, gadget_config, code_config);
 }
 
 class SH_Main {

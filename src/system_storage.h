@@ -12,6 +12,7 @@
 
 #include "network_library.h"
 #include "remote_library.h"
+#include "pin_profile.h"
 
 // valid config bitfield
 #define VALID_CONFIG_BITFIELD_BYTE 0
@@ -322,6 +323,128 @@ private:
     return writeUInt16(GADGET_POS_START + ((gadget_nr + 1) * 2), mem_end + 1);
   }
 
+  /**
+   * Writes the data for a gadget to the eeprom
+   * @param config_bf The configuration-bitfield
+   * @param gadget_type The type of the gadget
+   * @param name The name of the gadget
+   * @param gadget_json The general gadget config
+   * @param code_json The code-mapping config
+   * @return whether writing was successful
+   */
+  static status_tuple writeNewGadget(uint8_t gadget_type, bitfield_set config_bf, pin_set ports, const std::string& name, const std::string& gadget_json, const std::string& code_json) {
+
+    // Check if updating gadget is possible
+    uint8_t gadget_index = getGadgetCount();
+
+    Serial.println(gadget_index);
+    Serial.println(GADGET_MAX_COUNT);
+
+    // Check if maximum gadget count is reached
+    if (gadget_index >= GADGET_MAX_COUNT) {
+      logger.println(LOG_TYPE::ERR, "Cannot save gadget: maximum count of gadgets reached");
+      return status_tuple(false, "maximum count of gadgets reached");
+    }
+
+    // Check if name exist and quit if name is already taken
+    auto existing_names = System_Storage::readAllGadgetNames();
+    for (const auto& list_name: existing_names) {
+      if (name == list_name) {
+        logger.printfln(LOG_TYPE::ERR, "Cannot save gadget: gadget name '%s' is already in use", name.c_str());
+        return status_tuple(false, "gadget name is already in use");
+      }
+    }
+
+    auto existing_ports = System_Storage::readAllGadgetPorts();
+
+    for (auto gadget_port: ports) {
+      // Check if port is configured on the system
+      auto buf_pin = getPinForPort(gadget_port);
+      if (!buf_pin && gadget_port) {
+        logger.printfln(LOG_TYPE::ERR, "Cannot save gadget: port %d is not configured on this system", gadget_port);
+        return status_tuple(false, "gadget tries to use port not configured on this system");
+      }
+
+      // Check if port is already in use on the system
+      for (auto existing_port: existing_ports) {
+        if (gadget_port == existing_port) {
+          logger.printfln(LOG_TYPE::ERR, "Cannot save gadget: gadget tries to use port already occupied (%d)", gadget_port);
+          return status_tuple(false, "gadget tries to use port already occupied");
+        }
+      }
+    }
+
+    // Addrees the gadget start at
+    uint16_t g_start_addr = getGadgetMemoryStart(gadget_index);
+
+    // Length of the gadget name
+    uint8_t g_name_len = name.length();
+    // Length of the gadget config json
+    uint16_t g_config_len = gadget_json.length();
+    // Length of the gadget code json
+    uint16_t g_code_len = code_json.length();
+
+    // Position the gadget name starts at
+    uint16_t name_start = g_start_addr + GADGET_NAME_POS;
+    // Position the gadget config json starts at
+    uint16_t config_start = name_start + g_name_len + 1;
+    // Position the gadget code json starts at
+    uint16_t code_start = config_start + g_config_len + 1;
+
+    // Complete length of the gadget config
+    uint16_t complete_len = (code_start + g_code_len + 1) - g_start_addr;
+    // Last storage index of the gadget
+    uint16_t end_index = g_start_addr + complete_len;
+
+    if (end_index > EEPROM_SIZE) {
+      logger.println(LOG_TYPE::ERR, "Cannot save gadget: missing space in eeprom");
+      return status_tuple(false, "missing space in eeprom");
+    }
+
+    // Create the bitfield
+    uint8_t buf_bitfield = 0;
+    for (uint8_t i = 0; i < 8; i++) {
+      buf_bitfield = calculateNewContentFlag(i, config_bf[i], buf_bitfield);
+    }
+
+    // write the config bitfield
+    auto success = writeUInt8(g_start_addr + GADADGET_BF_POS, buf_bitfield);
+
+    // Write the gadget type
+    success = success && writeUInt8(g_start_addr + GADGET_TYPE_POS, gadget_type);
+
+    for (uint8_t i = 0; i < GADGET_PIN_BLOCK_LEN; i++) {
+      // Write the port config at position i
+      success = success && writeUInt8(g_start_addr + GADGET_PIN_BLOCK_POS + i, ports[i]);
+    }
+
+    // Write the length of the name
+    success = success && writeUInt8(g_start_addr + GADGET_NAME_LEN_POS, g_name_len);
+    // Write the length of the config length
+    success = success && writeUInt16(g_start_addr + GADGET_JSON_LEN_POS, g_config_len);
+    // Write the name
+    success = success && writeString(name_start, g_name_len, name);
+    // Write the config json
+    success = success && writeString(config_start, g_config_len, gadget_json);
+    // Write the code json
+    success = success && writeString(code_start, g_code_len, code_json);
+
+    if (!success) {
+      logger.println(LOG_TYPE::ERR, "Cannot save gadget: error writing content");
+      return status_tuple(false, "error writing content");
+    }
+
+    // set the starting point for the next gadget
+    if (!setGadgetMemoryEnd(gadget_index, end_index)) {
+      logger.println(LOG_TYPE::ERR, "Cannot save gadget: error saving gadget memory end");
+      return status_tuple(false, "error saving gadget memory end");;
+    }
+
+    // increment gadget count to formally "save" the gadget
+    writeGadgetCount(gadget_index + 1);
+    return status_tuple(true, "");
+  }
+
 public:
 
   /**
@@ -464,6 +587,23 @@ public:
   }
 
   /**
+   * Returns the index for an specific gadget name or -1 it name was not found.
+   * @param name The name you're searching for
+   * @return The index of the gadget or -1 if the name wasnt found
+   */
+  static int getGadgetIndexForName(const std::string& name) {
+    auto gadget_count = getGadgetCount();
+    for (uint8_t i = 0; i < gadget_count; i++) {
+      gadget_tuple buf_g = readGadget(i);
+      auto gadget_name = std::get<3>(buf_g);
+      if (gadget_name == name) {
+        return int(i);
+      }
+    }
+    return -1;
+  }
+
+  /**
    * Writes the data for a gadget to the eeprom
    * @param config_bf the configuration-bitfield
    * @param gadget_type the gadget-type
@@ -474,82 +614,50 @@ public:
    */
   static status_tuple writeGadget(uint8_t gadget_type, bitfield_set config_bf, pin_set ports, const std::string& name, const std::string& gadget_json, const std::string& code_json) {
 
-    // Check if maximum gadget count is reached
-    auto gadget_index = readUInt8(GADGET_COUNT_POS);
-    if (gadget_index >= GADGET_MAX_COUNT) {
-      logger.println(LOG_TYPE::ERR, "Cannot save gadget: maximum count of gadgets reached");
-      return status_tuple(false, "maximum count of gadgets reached");
+    if (gadget_type >= GadgetIdentifierCount) {
+      logger.printfln(LOG_TYPE::ERR, "Unknown gadget identifier '%d'", gadget_type);
+      return status_tuple(false, "not saving gadget with err-type 0");
     }
 
-    // Addrees the gadget start at
-    uint16_t g_start_addr = getGadgetMemoryStart(gadget_index);
+    auto type = (GadgetIdentifier) gadget_type;
 
-    // Length of the gadget name
-    uint8_t g_name_len = name.length();
-    // Length of the gadget config json
-    uint16_t g_config_len = gadget_json.length();
-    // Length of the gadget code json
-    uint16_t g_code_len = code_json.length();
-
-    // Position the gadget name starts at
-    uint16_t name_start = g_start_addr + GADGET_NAME_POS;
-    // Position the gadget config json starts at
-    uint16_t config_start = name_start + g_name_len + 1;
-    // Position the gadget code json starts at
-    uint16_t code_start = config_start + g_config_len + 1;
-
-    // Complete length of the gadget config
-    uint16_t complete_len = (code_start + g_code_len + 1) - g_start_addr;
-    // Last storage index of the gadget
-    uint16_t end_index = g_start_addr + complete_len;
-
-    if (end_index > EEPROM_SIZE) {
-      logger.println(LOG_TYPE::ERR, "Cannot save gadget: missing space in eeprom");
-      return status_tuple(false, "missing space in eeprom");
+    if (type == GadgetIdentifier::None) {
+      logger.println(LOG_TYPE::ERR, "Cannot save gadget: gadget has err-type 0");
+      return status_tuple(false, "not saving gadget with err-type 0");
+    } else {
+      logger.printfln("Saving gadget '%s' with type %d", name.c_str(), gadget_type);
     }
 
-    // Create the bitfield
-    uint8_t buf_bitfield = 0;
-    for (uint8_t i = 0; i < 8; i++) {
-      buf_bitfield = calculateNewContentFlag(i, config_bf[i], buf_bitfield);
+    DynamicJsonDocument buf_doc(2000);
+
+    // Check gadget config
+    if (!gadget_json.empty()) {
+      auto err = deserializeJson(buf_doc, gadget_json);
+      if (err != DeserializationError::Ok) {
+        logger.printfln(LOG_TYPE::ERR, "Cannot save gadget: received faulty gadget config");
+        return status_tuple(false, "received faulty gadget config");
+      }
     }
 
-    // write the config bitfield
-    auto success = writeUInt8(g_start_addr + GADADGET_BF_POS, buf_bitfield);
-
-    // Write the gadget type
-    success = success && writeUInt8(g_start_addr + GADGET_TYPE_POS, gadget_type);
-
-    for (uint8_t i = 0; i < GADGET_PIN_BLOCK_LEN; i++) {
-      // Write the port config at position i
-      success = success && writeUInt8(g_start_addr + GADGET_PIN_BLOCK_POS + i, ports[i]);
+    // Check code config
+    if (!code_json.empty()) {
+      auto err = deserializeJson(buf_doc, code_json);
+      if (err != DeserializationError::Ok) {
+        logger.printfln(LOG_TYPE::ERR, "Cannot save gadget: received faulty code config");
+        return status_tuple(false, "received faulty code config");
+      }
     }
 
-    // Write the length of the name
-    success = success && writeUInt8(g_start_addr + GADGET_NAME_LEN_POS, g_name_len);
-    // Write the length of the config length
-    success = success && writeUInt16(g_start_addr + GADGET_JSON_LEN_POS, g_config_len);
-    // Write the name
-    success = success && writeString(name_start, g_name_len, name);
-    // Write the config json
-    success = success && writeString(config_start, g_config_len, gadget_json);
-    // Write the code json
-    success = success && writeString(code_start, g_code_len, code_json);
+    // Check if updating gadget is possible
+    int index = getGadgetIndexForName(name);
 
-    if (!success) {
-      logger.println(LOG_TYPE::ERR, "Cannot save gadget: error writing content");
-      return status_tuple(false, "error writing content");
+    if (index != -1) {
+      if (!(deleteGadget(index))) {
+        return status_tuple(false, "failed to delete gadget for rewriting");
+      }
     }
 
-    // set the starting point for the next gadget
-    if (!setGadgetMemoryEnd(gadget_index, end_index)) {
-      logger.println(LOG_TYPE::ERR, "Cannot save gadget: error saving gadget memory end");
-      return status_tuple(false, "error saving gadget memory end");;
-    }
-
-    // increment gadget count to formally "save" the gadget
-    writeGadgetCount(gadget_index + 1);
-    return status_tuple(true, "");
+    return writeNewGadget(gadget_type, config_bf, ports, name, gadget_json, code_json);
   }
 
   /**
@@ -558,7 +666,7 @@ public:
    * @return whether the process of deleting was successful
    */
   static bool deleteGadget(uint8_t gadget_index) {
-    uint8_t gadget_count = getGadgetCount();
+    auto gadget_count = getGadgetCount();
 
     if (gadget_count == 0) {
       logger.println(LOG_TYPE::ERR, "Cannot delete gadget: no gadget saved");
