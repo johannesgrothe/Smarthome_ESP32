@@ -6,13 +6,11 @@
 class SmarthomeGadgetRemote : public GadgetRemote {
 private:
 
-  bool registerGadget(const std::string& gadget_name, GadgetType gadget_type, vector<GadgetCharacteristic> characteristics) override;
+  bool registerGadget(const std::string& gadget_name, GadgetType gadget_type, vector<GadgetCharacteristicSettings> characteristics) override;
 
   bool removeGadget(const std::string& gadget_name) override;
 
 protected:
-
-  void handleRequest(std::string path, std::string body) override;
 
   void handleRequest(std::shared_ptr<Request> req) override;
 

@@ -15,6 +15,7 @@ private:
 
 protected:
 
+  std::string chip_name;
   std::shared_ptr<Request_Gadget> req_gadget;
   Gadget_Collection gadgets;
 
@@ -33,7 +34,7 @@ protected:
 public:
   explicit Remote();
 
-  explicit Remote(std::shared_ptr<Request_Gadget> gadget);
+  explicit Remote(std::shared_ptr<Request_Gadget> gadget, std::string chip_name);
 
   void handleRequest(Request *req);
 

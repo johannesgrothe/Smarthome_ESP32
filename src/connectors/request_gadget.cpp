@@ -53,4 +53,36 @@ Request *Request_Gadget::getRequest() {
 
 void Request_Gadget::sendRequest(Request *request) {
   xQueueSend(out_request_queue_, &request, portMAX_DELAY);
+}
+
+Request *Request_Gadget::waitForResponse(int id, unsigned long wait_time) {
+  {
+    unsigned long end_time = millis() + wait_time;
+
+    std::vector<Request *> buffered_requests;
+
+    Request *out_req = nullptr;
+
+    while (millis() < end_time) {
+
+      Request *buf_req;
+      xQueueReceive(in_request_queue_, &buf_req, portMAX_DELAY);
+
+      if (buf_req->getID() == id) {
+        out_req = buf_req;
+        break;
+      } else {
+        buffered_requests.push_back(buf_req);
+      }
+    }
+    for (auto buf_req: buffered_requests){
+      xQueueSend(in_request_queue_, &buf_req, portMAX_DELAY);
+    }
+    return out_req;
+  }
+}
+
+Request * Request_Gadget::sendRequestAndWaitForResponse(Request *request, unsigned long wait_time) {
+  sendRequest(request);
+  return waitForResponse(request->getID(), wait_time);
 };

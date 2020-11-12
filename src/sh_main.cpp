@@ -1,4 +1,5 @@
 #include <sstream>
+#include <utility>
 #include "sh_main.h"
 
 bool SH_Main::initGadgets() {
@@ -59,9 +60,8 @@ bool SH_Main::initGadgets() {
           using std::placeholders::_1;
           using std::placeholders::_2;
           using std::placeholders::_3;
-          using std::placeholders::_4;
 
-          buf_gadget->setGadgetRemoteCallback(std::bind(&SH_Main::updateGadgetRemote, this, _1, _2, _3, _4));
+          buf_gadget->setGadgetRemoteCallback(std::bind(&SH_Main::updateGadgetRemote, this, _1, _2, _3));
 
           logger.decIndent();
         }
@@ -750,8 +750,8 @@ void SH_Main::handleRequest(Request *req) {
   logger.printfln(LOG_TYPE::ERR, "Received request to unconfigured path");
 }
 
-void SH_Main::updateGadgetRemote(const char *gadget_name, const char *service, const char *characteristic, int value) {
-  gadget_remote->updateCharacteristic(gadget_name, characteristic, value);
+void SH_Main::updateGadgetRemote(std::string gadget_name, GadgetCharacteristic characteristic, int value) {
+  gadget_remote->updateCharacteristic(std::move(gadget_name), characteristic, value);
 }
 
 bool SH_Main::initGadgetRemote(JsonObject json) {

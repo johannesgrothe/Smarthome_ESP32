@@ -44,7 +44,7 @@ void SH_Lamp::getColor(uint8_t color_buffer[]) {
 void SH_Lamp::setHue(unsigned int new_hue) {
   lamp_color_.setHue(new_hue);
   setGadgetHasChanged();
-  updateCharacteristic(GadgetCharacteristic::color, (int) new_hue);
+  updateCharacteristic(GadgetCharacteristic::hue, (int) new_hue);
 }
 
 unsigned int SH_Lamp::getHue() {
@@ -81,7 +81,7 @@ void SH_Lamp::executeCharacteristicUpdate(GadgetCharacteristic characteristic, i
     case GadgetCharacteristic::brightness:
       setBrightness(value);
       break;
-    case GadgetCharacteristic::color:
+    case GadgetCharacteristic::hue:
       setHue((unsigned int) value);
       break;
     default:

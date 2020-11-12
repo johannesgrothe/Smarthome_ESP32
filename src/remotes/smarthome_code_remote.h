@@ -7,8 +7,6 @@ protected:
 
   void sendCodeToRemote(CodeCommand *code) override;
 
-  void handleRequest(std::string path, std::string body) override;
-
   void handleRequest(std::shared_ptr<Request> req) override;
 
   bool handleNewGadget(std::shared_ptr<SH_Gadget> new_gadget) override;
@@ -17,6 +15,6 @@ public:
 
   explicit SmarthomeCodeRemote();
 
-  SmarthomeCodeRemote(std::shared_ptr<Request_Gadget> gadget);
+  explicit SmarthomeCodeRemote(std::shared_ptr<Request_Gadget> gadget);
 
 };

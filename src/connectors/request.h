@@ -161,21 +161,9 @@ public:
   void dontRespond();
 
   /**
-   * Checks if there is a response to this request
-   * @return the stored response
+   * Checks if the request has a ack-status and an status message.
+   * Returns them if there are any, returns false if there are none.
+   * @return {ack-status, stauts-message}
    */
-  bool hasResponse();
-
-  /**
-   * Returns the received response to this request
-   * @return the stored response
-   */
-  std::shared_ptr<Request> getResponse();
-
-  /**
-   * Used by the gadget to set a matching received request as an answer for the queued waiting request.
-   * Any method with access to the original request can then access the response via the getResponse() method.
-   * @param res The response to the request
-   */
-  void setResponse(std::shared_ptr<Request> res);
+  std::tuple<bool, std::string> getAck();
 };

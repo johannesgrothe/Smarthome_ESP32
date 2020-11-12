@@ -115,14 +115,14 @@ bool Request::hasReceiver() const {
   return receiver_ != "null";
 }
 
-bool Request::hasResponse() {
-  return response_ != nullptr;
-}
-
-std::shared_ptr<Request> Request::getResponse() {
-  return response_;
-}
-
-void Request::setResponse(std::shared_ptr<Request> res) {
-  response_ = std::move(res);
+std::tuple<bool, std::string> Request::getAck() {
+  bool ack = false;
+  std::string status_msg;
+  if (payload_.containsKey("ack")) {
+    ack = payload_["ack"].as<bool>();
+    if (payload_.containsKey("status_message")) {
+      status_msg = payload_["status_message"].as<std::string>();
+    }
+  }
+  return std::tuple<bool, std::string>(ack, status_msg);
 }

@@ -122,7 +122,7 @@ private:
 
   void handleRequest(Request *req);
 
-  void updateGadgetRemote(const char *gadget_name, const char *service, const char *characteristic, int value);
+  void updateGadgetRemote(std::string gadget_name, GadgetCharacteristic characteristic, int value);
 
   bool initGadgetRemote(JsonObject json);
 

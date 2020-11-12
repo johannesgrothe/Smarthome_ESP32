@@ -16,28 +16,29 @@ void SmarthomeCodeRemote::sendCodeToRemote(CodeCommand *code) {
 //  req_gadget->sendRequest(new Request("smarthome/to/code", code_str));  // TODO: fix
 }
 
-void SmarthomeCodeRemote::handleRequest(std::string path, std::string body) {};
-
 void SmarthomeCodeRemote::handleRequest(std::shared_ptr<Request> req) {
-  if (path != "smarthome/from/code") { return; }
+  if (req->getPath() != "smarthome/from/code") { return; }
 
-  if (req["type"] == nullptr) {
+  auto req_payload = req->getPayload();
+
+  if (!req_payload.containsKey("type")) {
     logger.print(LOG_TYPE::ERR, "Broken Code Request Received: 'type' missing");
     return;
   }
 
-  if (req["code"] == nullptr) {
+  if (!req_payload.containsKey("code")) {
     logger.print(LOG_TYPE::ERR, "Broken Code Request Received: 'code' missing");
     return;
   }
 
-  if (req["timestamp"] == nullptr) {
+  if (!req_payload.containsKey("timestamp") ) {
     logger.print(LOG_TYPE::ERR, "Broken Code Request Received: 'timestamp' missing");
     return;
   }
 
-  auto *newCode = new CodeCommand(stringToCodeType(req["type"].as<const char *>()), req["code"].as<unsigned long>(),
-                                  req["timestamp"].as<unsigned long long>());
+  auto newCode = new CodeCommand(stringToCodeType(req_payload["type"].as<const char *>()),
+                                  req_payload["code"].as<unsigned long>(),
+                                  req_payload["timestamp"].as<unsigned long long>());
   handleNewCodeFromRequest(newCode);
 }
 

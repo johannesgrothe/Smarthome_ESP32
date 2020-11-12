@@ -24,16 +24,12 @@ Remote::Remote() :
   req_gadget(nullptr),
   gadgets() {};
 
-Remote::Remote(std::shared_ptr<Request_Gadget> gadget) :
+Remote::Remote(std::shared_ptr<Request_Gadget> gadget, std::string chip_name) :
   lock_updates(false),
   network_initialized(true),
+  chip_name(std::move(chip_name)),
   req_gadget(std::move(gadget)),
   gadgets() {};
-
-void Remote::handleRequest(Request *req) {  // TODO: unneeded
-  JsonObject body = req->getPayload().as<JsonObject>();
-  handleRequest(body);
-}
 
 void Remote::addGadget(const std::shared_ptr<SH_Gadget>& new_gadget) {
   if (gadgets.addGadget(new_gadget)) {
@@ -45,4 +41,8 @@ void Remote::addGadget(const std::shared_ptr<SH_Gadget>& new_gadget) {
   } else {
     logger.print(LOG_TYPE::ERR, "Unable to add '%s'", new_gadget->getName());
   }
+}
+
+void Remote::handleRequest(Request *req) {
+ // TODO
 }

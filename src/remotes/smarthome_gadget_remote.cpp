@@ -3,68 +3,44 @@
 #include <utility>
 
 bool
-SmarthomeGadgetRemote::registerGadget(const std::string& gadget_name, GadgetType gadget_type, vector<GadgetCharacteristic> characteristics) {
+SmarthomeGadgetRemote::registerGadget(const std::string& gadget_name, GadgetType gadget_type, vector<GadgetCharacteristicSettings> characteristics) {
+
+  DynamicJsonDocument payload(2000);
   unsigned long ident = micros() % 7023;
-  char reg_str[HOMEBRIDGE_REGISTER_STR_MAX_LEN]{};
-  const char *service_name;
-  if (gadget_type == GadgetType::Lightbulb)
-    service_name = "lightbulb";
-  else if (gadget_type == GadgetType::Fan)
-    service_name = "fan";
-  else if (gadget_type == GadgetType::Doorbell)
-    service_name = "doorbell";
-  else {
-    logger.println(LOG_TYPE::ERR, "Unknown Gadget Type");
+
+  payload["gadget_type"] = int(gadget_type);
+  payload["gadget_name"] = gadget_name;
+
+  for (auto characteristic_data: characteristics) {
+    payload[int(characteristic_data.characteristic)] = JsonObject();
+    payload[int(characteristic_data.characteristic)]["max"] = characteristic_data.max;
+    payload[int(characteristic_data.characteristic)]["min"] = characteristic_data.min;
+    payload[int(characteristic_data.characteristic)]["step"] = characteristic_data.step;
+  }
+
+  auto register_req = new Request("smarthome/remotes/gadget/register", int(ident), chip_name, "<bridge>", payload);
+
+  auto resp = req_gadget->sendRequestAndWaitForResponse(register_req, 5000);
+
+  if (resp == nullptr) {
+    logger.println(LOG_TYPE::ERR, "No response received");
+    delete resp;
     return false;
   }
-  if (characteristics != nullptr) {
-    snprintf(reg_str, HOMEBRIDGE_REGISTER_STR_MAX_LEN,
-             R"({"request_id" : %lu, "name": "%s", "service": "%s", "characteristics": {%s}})",
-             ident, gadget_name.c_str(), service_name, characteristics);
-  } else {
-    sprintf(reg_str, R"({"request_id" : %lu, "name": "%s", "service": "%s", "characteristics": {}})", ident,
-            gadget_name.c_str(),
-            service_name);
+
+  auto resp_info = resp->getAck();
+  if (!std::get<0>(resp_info)) {
+    logger.printfln(LOG_TYPE::ERR, "Registering gadget failed: %s", std::get<1>(resp_info).c_str());
+    delete resp;
+    return false;
   }
-//  req_gadget->sendRequest(new Request("smarthome/to/gadget/add", &reg_str[0]));  // TODO: fix
-//  unsigned long start_time = millis();
-//  while (start_time + 5000 > millis()) {
-//    if (!req_gadget->hasRequest()) {
-//      req_gadget->refresh();
-//    } else {
-//      Request *resp = req_gadget->getRequest();
-////      if (resp->getPath() == "smarthome/from/response" && getIdent(resp->getPayload()) == ident) {
-//      if (resp->getPath() == "smarthome/from/response") {  // TODO: fix
-//          delete resp;
-//          return getAck(resp->getPayload());
-//        }
-//      }
-//      delete resp;
-//    }
-//  }
-  return false;
+
+  logger.println("Adding gadget was successful.");
+  delete resp;
+  return true;
 }
 
-bool SmarthomeGadgetRemote::removeGadget(const std::string& gadget_name) {  // TODO: fix
-//  char buf_msg[HOMEBRIDGE_UNREGISTER_STR_MAX_LEN]{};
-//  unsigned long ident = micros() % 7023;
-//  snprintf(&buf_msg[0], HOMEBRIDGE_UNREGISTER_STR_MAX_LEN, R"({"request_id" : %lu, "name": "%s"})", ident,
-//           gadget_name);
-//  req_gadget->sendRequest(new Request("smarthome/to/gadget/remove", &buf_msg[0]));
-//  unsigned long start_time = millis();
-//  while (start_time + 5000 > millis()) {
-//    if (!req_gadget->hasRequest()) {
-//      req_gadget->refresh();
-//    } else {
-//      Request *resp = req_gadget->getRequest();
-//      if (resp->getPath() == "smarthome/from/response" && getIdent(resp->getPayload()) == ident) {
-//        bool buf_ack = getAck(resp->getPayload());
-//        delete resp;
-//        return buf_ack;
-//      }
-//      delete resp;
-//    }
-//  }
+bool SmarthomeGadgetRemote::removeGadget(const std::string& gadget_name) {
   return false;
 }
 
@@ -79,7 +55,7 @@ void SmarthomeGadgetRemote::handleRequest(std::shared_ptr<Request> req) {
         if (characteristic != GadgetCharacteristic::None) {
           logger.incIndent();
           lockUpdates();
-          int value = req["value"].as<int>();
+          int value = req_body["value"].as<int>();
           target_gadget->handleCharacteristicUpdate(characteristic, value);
           unlockUpdates();
           logger.decIndent();
@@ -102,14 +78,17 @@ void
 SmarthomeGadgetRemote::updateCharacteristic(std::string gadget_name, GadgetCharacteristic characteristic, int value) {
   if (updatesAreLocked()) return;
   auto target_gadget = gadgets.getGadget(gadget_name);
-  if (characteristic != nullptr && target_gadget != nullptr) {
-    char update_str[HOMEBRIDGE_UPDATE_STR_LEN_MAX]{};
-    sprintf(&update_str[0],
-            R"({"name":"%s","service":"%s","characteristic":"%s","value":%d})",
-            gadget_name,
-            service,
-            characteristic,
-            value);
-//    req_gadget->sendRequest(new Request("smarthome/to/gadget/update", update_str));  // TODO: fix
-  }
+
+  DynamicJsonDocument req_doc(2000);
+
+  req_doc["name"] = gadget_name;
+  req_doc["type"] = int(target_gadget->getType());
+  req_doc["characteristic"] = int(characteristic);
+  req_doc["value"] = value;
+
+  auto timestamp = int(micros() % 7554);
+
+  auto out_req = new Request("smarthome/remotes/gadget/update", timestamp, chip_name, "<remote>", req_doc);
+
+  req_gadget->sendRequest(out_req);
 }

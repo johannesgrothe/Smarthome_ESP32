@@ -93,7 +93,7 @@ CodeRemote::CodeRemote() :
 Remote(){};
 
 CodeRemote::CodeRemote(std::shared_ptr<Request_Gadget> gadget) :
-Remote(gadget) {};
+  Remote(gadget, std::__cxx11::string()) {};
 
 void CodeRemote::handleNewCodeFromGadget(CodeCommand *code) {
   addCodeToBuffer(code);

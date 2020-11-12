@@ -10,11 +10,11 @@ class GadgetRemote: public Remote {
 private:
 
   virtual bool
-  registerGadget(const std::string& gadget_name, GadgetType gadget_type, vector<GadgetCharacteristic> characteristics) = 0;
+  registerGadget(const std::string& gadget_name, GadgetType gadget_type, vector<GadgetCharacteristicSettings> characteristics) = 0;
 
   virtual bool removeGadget(const std::string& gadget_name) = 0;
 
-  bool registerGadgetOnRemote(const string& gadget_name, GadgetType gadget_type, vector<GadgetCharacteristic> characteristics);
+  bool registerGadgetOnRemote(const string& gadget_name, GadgetType gadget_type, const vector<GadgetCharacteristicSettings>& characteristics);
 
   bool handleNewGadget(std::shared_ptr<SH_Gadget> new_gadget) override;
 
