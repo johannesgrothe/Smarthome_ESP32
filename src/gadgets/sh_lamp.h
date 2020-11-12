@@ -17,6 +17,8 @@ protected:
 
   SHLampType lamp_type_;
 
+  void executeCharacteristicUpdate(GadgetCharacteristic, int) override;
+
 public:
 
   /**
@@ -57,7 +59,11 @@ public:
 
   void setHue(unsigned int hue);
 
-  float getHue();
+  /**
+   * Gets the color of the lamp
+   * @return The color of the lamp
+   */
+  unsigned int getHue();
 
   /**
    * Toggles the status (on/off) of the fan
@@ -76,9 +82,7 @@ public:
    */
   void setStatus(bool status);
 
-  void handleCharacteristicUpdate(const char *, int) override;
-
-  bool getCharacteristics(char *) override;
+  vector<GadgetCharacteristicSettings> getCharacteristics() override;
 
   void handleMethodUpdate(GadgetMethod method) override;
 };

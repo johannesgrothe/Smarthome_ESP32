@@ -1,7 +1,9 @@
 #include "smarthome_gadget_remote.h"
 
+#include <utility>
+
 bool
-SmarthomeGadgetRemote::registerGadget(const std::string& gadget_name, GadgetType gadget_type, const char *characteristics) {
+SmarthomeGadgetRemote::registerGadget(const std::string& gadget_name, GadgetType gadget_type, vector<GadgetCharacteristic> characteristics) {
   unsigned long ident = micros() % 7023;
   char reg_str[HOMEBRIDGE_REGISTER_STR_MAX_LEN]{};
   const char *service_name;
@@ -66,26 +68,24 @@ bool SmarthomeGadgetRemote::removeGadget(const std::string& gadget_name) {  // T
   return false;
 }
 
-void SmarthomeGadgetRemote::handleRequest(std::string path, std::string body) {
-  logger.println(LOG_TYPE::ERR, "Smarthome-Remote cannot handle String Bodys.");
-}
-
-void SmarthomeGadgetRemote::handleRequest(std::string path, const JsonObject& body) {
-  if (path == "smarthome/from/set") {
-    if (body["name"] != nullptr && body["characteristic"] != nullptr && body["value"] != nullptr) {
-      logger.print("System / Gadget-Remote", "Received valid Request: ");
-      auto target_gadget = gadgets.getGadget(body["name"].as<const char *>());
+void SmarthomeGadgetRemote::handleRequest(std::shared_ptr<Request> req) {
+  if (req->getPath() == "smarthome/from/set") {
+    auto req_body = req->getPayload();
+    if (req_body.containsKey("name") && req_body.containsKey("characteristic") && req_body.containsKey("value")) {
+      logger.print("System / Gadget-Remote", "Received characteristic update");
+      auto target_gadget = gadgets.getGadget(req_body["name"]);
       if (target_gadget != nullptr) {
-        const char *characteristic = body["characteristic"].as<const char *>();
-        logger.print(target_gadget->getName());
-        logger.print("/");
-        logger.println(characteristic);
-        logger.incIndent();
-        lockUpdates();
-        int value = body["value"].as<int>();
-        target_gadget->handleCharacteristicUpdate(characteristic, value);
-        unlockUpdates();
-        logger.decIndent();
+        auto characteristic = getCharacteristicFromInt(req_body["characteristic"].as<int>());
+        if (characteristic != GadgetCharacteristic::None) {
+          logger.incIndent();
+          lockUpdates();
+          int value = req["value"].as<int>();
+          target_gadget->handleCharacteristicUpdate(characteristic, value);
+          unlockUpdates();
+          logger.decIndent();
+        } else {
+          logger.print(LOG_TYPE::ERR, "Illegal err_characteristic 0");
+        }
       } else {
         logger.print("Unknown Gadget");
       }
@@ -96,11 +96,10 @@ void SmarthomeGadgetRemote::handleRequest(std::string path, const JsonObject& bo
 }
 
 SmarthomeGadgetRemote::SmarthomeGadgetRemote(std::shared_ptr<Request_Gadget> gadget) :
-  GadgetRemote(gadget) {};
+  GadgetRemote(std::move(gadget)) {};
 
 void
-SmarthomeGadgetRemote::updateCharacteristic(const char *gadget_name, const char *service, const char *characteristic,
-                                            int value) {
+SmarthomeGadgetRemote::updateCharacteristic(std::string gadget_name, GadgetCharacteristic characteristic, int value) {
   if (updatesAreLocked()) return;
   auto target_gadget = gadgets.getGadget(gadget_name);
   if (characteristic != nullptr && target_gadget != nullptr) {

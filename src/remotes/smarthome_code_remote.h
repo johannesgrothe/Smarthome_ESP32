@@ -9,7 +9,7 @@ protected:
 
   void handleRequest(std::string path, std::string body) override;
 
-  void handleRequest(std::string path, const JsonObject& body) override;
+  void handleRequest(std::shared_ptr<Request> req) override;
 
   bool handleNewGadget(std::shared_ptr<SH_Gadget> new_gadget) override;
 

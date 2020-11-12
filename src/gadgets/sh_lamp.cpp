@@ -13,7 +13,7 @@ SH_Lamp::SH_Lamp(std::string name, SHLampType lamp_type) :
 void SH_Lamp::setBrightness(byte new_brightness) {
   lamp_color_.setBrightness(new_brightness);
   setGadgetHasChanged();
-  updateCharacteristic("brightness", (int) new_brightness);
+  updateCharacteristic(GadgetCharacteristic::brightness, (int) new_brightness);
 }
 
 float SH_Lamp::getBrightness() {
@@ -44,10 +44,10 @@ void SH_Lamp::getColor(uint8_t color_buffer[]) {
 void SH_Lamp::setHue(unsigned int new_hue) {
   lamp_color_.setHue(new_hue);
   setGadgetHasChanged();
-  updateCharacteristic("hue", (int) new_hue);
+  updateCharacteristic(GadgetCharacteristic::color, (int) new_hue);
 }
 
-float SH_Lamp::getHue() {
+unsigned int SH_Lamp::getHue() {
   return lamp_color_.getHue();
 }
 
@@ -70,39 +70,44 @@ void SH_Lamp::setStatus(bool new_status) {
     }
   }
   setGadgetHasChanged();
-  updateCharacteristic("status", new_status);
+  updateCharacteristic(GadgetCharacteristic::status, new_status);
 }
 
-void SH_Lamp::handleCharacteristicUpdate(const char *characteristic, int value) {
-  logger.print(getName(), "Updating Characteristic: '");
-  logger.print(characteristic);
-  logger.println("'");
-  if (strcmp(characteristic, "status") == 0) {
-    setStatus((bool) value);
-  } else if (strcmp(characteristic, "brightness") == 0) {
-    setBrightness((byte) value);
-  } else if (strcmp(characteristic, "hue") == 0) {
-    setHue((unsigned int) value);
+void SH_Lamp::executeCharacteristicUpdate(GadgetCharacteristic characteristic, int value) {
+  switch(characteristic) {
+    case GadgetCharacteristic::status:
+      setStatus((bool) value);
+      break;
+    case GadgetCharacteristic::brightness:
+      setBrightness(value);
+      break;
+    case GadgetCharacteristic::color:
+      setHue((unsigned int) value);
+      break;
+    default:
+      break;
   }
 }
 
-bool SH_Lamp::getCharacteristics(char *characteristic_str) {
+vector<GadgetCharacteristicSettings> SH_Lamp::getCharacteristics() {
+  std::vector<GadgetCharacteristicSettings> settings = {GadgetCharacteristicSettings(GadgetCharacteristic::status, 0, 1, 1)};
   switch (lamp_type_) {
-    case SHLampType::ON_OFF :
-      return false;
     case SHLampType::BRI_ONLY :
-      strcpy(characteristic_str, R"("brightness": "default")");
+      settings.push_back(GadgetCharacteristicSettings(GadgetCharacteristic::brightness, 0, 100, 1));
       break;
     case SHLampType::CLR_ONLY :
-      strcpy(characteristic_str, R"("hue": "default", "saturation": "default")");
+      settings.push_back(GadgetCharacteristicSettings(GadgetCharacteristic::hue, 0, 100, 1));
+      settings.push_back(GadgetCharacteristicSettings(GadgetCharacteristic::saturation, 0, 100, 1));
       break;
     case SHLampType::CLR_BRI :
-      strcpy(characteristic_str, R"("brightness": "default", "hue": "default", "saturation": "default")");
+      settings.push_back(GadgetCharacteristicSettings(GadgetCharacteristic::brightness, 0, 100, 1));
+      settings.push_back(GadgetCharacteristicSettings(GadgetCharacteristic::hue, 0, 100, 1));
+      settings.push_back(GadgetCharacteristicSettings(GadgetCharacteristic::saturation, 0, 100, 1));
       break;
     default :
-      return false;
+      break;
   }
-  return true;
+  return settings;
 }
 
 void SH_Lamp::handleMethodUpdate(GadgetMethod method) {

@@ -1,10 +1,12 @@
 #include "gadget_remote.h"
 
+#include <utility>
+
 bool
-GadgetRemote::registerGadgetOnRemote(const char *gadget_name, GadgetType gadget_type, const char *characteristics) {
+GadgetRemote::registerGadgetOnRemote(const string& gadget_name, GadgetType gadget_type, vector<GadgetCharacteristic> characteristics) {
   logger.println("Registering Gadget:");
   logger.incIndent();
-  if (registerGadget(gadget_name, gadget_type, characteristics)) {
+  if (registerGadget(gadget_name, gadget_type, std::move(characteristics))) {
     logger.println(LOG_TYPE::INFO, "OK");
     logger.decIndent();
     return true;
@@ -16,10 +18,9 @@ GadgetRemote::registerGadgetOnRemote(const char *gadget_name, GadgetType gadget_
 }
 
 bool GadgetRemote::handleNewGadget(std::shared_ptr<SH_Gadget> new_gadget) {
-  char characteristic_str[HOMEBRIDGE_REGISTER_STR_MAX_LEN - 60];
-  new_gadget->
-    getCharacteristics(&characteristic_str[0]);
-  if (registerGadgetOnRemote(new_gadget->getName().c_str(), new_gadget->getType(), characteristic_str))
+  if (registerGadgetOnRemote(new_gadget->getName(),
+                             new_gadget->getType(),
+                             new_gadget->getCharacteristics()))
     logger.println("Registering Gadget successfull.");
   else
     logger.println(LOG_TYPE::ERR, "Failed to register Gadget.");
@@ -33,5 +34,4 @@ GadgetRemote::GadgetRemote(std::shared_ptr<Request_Gadget> gadget) :
   Remote(gadget) {};
 
 void
-GadgetRemote::updateCharacteristic(const char *gadget_name, const char *service, const char *characteristic,
-                                   int value) {};
+GadgetRemote::updateCharacteristic(std::string gadget_name, GadgetCharacteristic characteristic, int value) {};

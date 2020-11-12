@@ -45,8 +45,8 @@ void SH_Gadget::printMapping() {
   logger.decIndent();
 }
 
-void SH_Gadget::updateCharacteristic(const char *characteristic, int value) {
-  gadget_remote_callback(&name[0], &name[0], characteristic, value);
+void SH_Gadget::updateCharacteristic(GadgetCharacteristic characteristic, int value) {
+  gadget_remote_callback(getName(), characteristic, value);
 }
 
 SH_Gadget::SH_Gadget::SH_Gadget(std::string  name, const GadgetType type) :
@@ -56,7 +56,7 @@ SH_Gadget::SH_Gadget::SH_Gadget(std::string  name, const GadgetType type) :
   has_changed(true),
   type(type) {}
 
-void SH_Gadget::setGadgetRemoteCallback(std::function<void(const char *, const char *, const char *, int)> update_method) {
+void SH_Gadget::setGadgetRemoteCallback(std::function<void(std::string, GadgetCharacteristic, int)> update_method) {
   gadget_remote_callback = std::move(update_method);
   logger.println("Initialized Callbacks");
   gadget_remote_ready = true;
@@ -131,4 +131,10 @@ void SH_Gadget::setRadio(const std::shared_ptr<Radio_Gadget>& new_radio_gadget) 
 
 bool SH_Gadget::hasRadio() const {
   return radio_gadget_ != nullptr;
+}
+
+void SH_Gadget::handleCharacteristicUpdate(GadgetCharacteristic characteristic, int value) {
+  logger.println(getName(), "Updating Characteristic: ");
+  logger.printfln("%d", int(characteristic));
+  executeCharacteristicUpdate(characteristic, value);
 }

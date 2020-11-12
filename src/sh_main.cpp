@@ -751,7 +751,7 @@ void SH_Main::handleRequest(Request *req) {
 }
 
 void SH_Main::updateGadgetRemote(const char *gadget_name, const char *service, const char *characteristic, int value) {
-  gadget_remote->updateCharacteristic(gadget_name, service, characteristic, value);
+  gadget_remote->updateCharacteristic(gadget_name, characteristic, value);
 }
 
 bool SH_Main::initGadgetRemote(JsonObject json) {

@@ -1452,7 +1452,7 @@
         <mxCell id="N7pTtKHYTQ4L6rCnfdCQ-109" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;" parent="N7pTtKHYTQ4L6rCnfdCQ-108" vertex="1">
           <mxGeometry x="45" y="1139.97" width="10" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="N7pTtKHYTQ4L6rCnfdCQ-110" value="handleCharacteristicUpdate()" style="html=1;verticalAlign=bottom;endArrow=block;dashed=1;entryX=-0.05;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" parent="3bSDKnmku6XSPxeCNkpC-1" source="N7pTtKHYTQ4L6rCnfdCQ-109" target="N7pTtKHYTQ4L6rCnfdCQ-111" edge="1">
+        <mxCell id="N7pTtKHYTQ4L6rCnfdCQ-110" value="executeCharacteristicUpdate()" style="html=1;verticalAlign=bottom;endArrow=block;dashed=1;entryX=-0.05;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" parent="3bSDKnmku6XSPxeCNkpC-1" source="N7pTtKHYTQ4L6rCnfdCQ-109" target="N7pTtKHYTQ4L6rCnfdCQ-111" edge="1">
           <mxGeometry width="80" relative="1" as="geometry">
             <mxPoint x="730" y="1359.97" as="sourcePoint" />
             <mxPoint x="890" y="1360.97" as="targetPoint" />

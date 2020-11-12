@@ -32,7 +32,7 @@ Remote::Remote(std::shared_ptr<Request_Gadget> gadget) :
 
 void Remote::handleRequest(Request *req) {  // TODO: unneeded
   JsonObject body = req->getPayload().as<JsonObject>();
-  handleRequest(req->getPath(), body);
+  handleRequest(body);
 }
 
 void Remote::addGadget(const std::shared_ptr<SH_Gadget>& new_gadget) {

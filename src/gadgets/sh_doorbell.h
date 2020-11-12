@@ -8,6 +8,8 @@
 class SH_Doorbell : public SH_Gadget {
 protected:
 
+  void executeCharacteristicUpdate(GadgetCharacteristic characteristic, int value) override;
+
 public:
 
   explicit SH_Doorbell(std::string name);
@@ -17,9 +19,7 @@ public:
    */
   void doorbellTriggered();
 
-  void handleCharacteristicUpdate(const char *characteristic, int value) override;
-
-  bool getCharacteristics(char *buffer) override;
+  vector<GadgetCharacteristicSettings> getCharacteristics() override;
 
   void handleMethodUpdate(GadgetMethod method) override;
 };

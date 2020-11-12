@@ -10,6 +10,8 @@ protected:
   uint8_t last_rotation_speed_;
   uint8_t levels_;
 
+  void executeCharacteristicUpdate(GadgetCharacteristic characteristic, int value) override;
+
 public:
 
   /**
@@ -64,9 +66,7 @@ public:
    */
   void setRotationSpeed(uint8_t speed);
 
-  void handleCharacteristicUpdate(const char *, int) override;
-
-  bool getCharacteristics(char *) override;
+  vector<GadgetCharacteristicSettings> getCharacteristics() override;
 
   void handleMethodUpdate(GadgetMethod) override;
 };

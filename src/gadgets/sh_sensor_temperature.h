@@ -20,6 +20,8 @@ protected:
    */
   void setTemperature(int new_temperature);
 
+  void executeCharacteristicUpdate(GadgetCharacteristic, int) override;
+
 public:
   /**
    * constructor for class SH_Sensor_Temperature
@@ -31,17 +33,15 @@ public:
    * method to return humidity
    * @return hummidity
    */
-  int getHumidity();
+  int getHumidity() const;
 
   /**
    * method returns temperature
    * @return temperature
    */
-  int getTemperature();
+  int getTemperature() const;
 
-  void handleCharacteristicUpdate(const char *, int) override;
-
-  bool getCharacteristics(char *) override;
+  vector<GadgetCharacteristicSettings> getCharacteristics() override;
 
   void handleMethodUpdate(GadgetMethod) override;
 };

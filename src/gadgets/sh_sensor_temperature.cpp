@@ -10,39 +10,41 @@ SH_Sensor_Temperature::SH_Sensor_Temperature(std::string name) :
 void SH_Sensor_Temperature::setHumidity(int new_humiditiy) {
   if (new_humiditiy != humidity_) {
     humidity_ = new_humiditiy;
-    updateCharacteristic("humidity", new_humiditiy);
+    updateCharacteristic(GadgetCharacteristic::humidity, new_humiditiy);
   }
 }
 
 void SH_Sensor_Temperature::setTemperature(int new_temperature) {
   if (new_temperature != temperature_) {
     temperature_ = new_temperature;
-    updateCharacteristic("temperature", new_temperature);
+    updateCharacteristic(GadgetCharacteristic::humidity, new_temperature);
   }
 }
 
-int SH_Sensor_Temperature::getHumidity() {
+int SH_Sensor_Temperature::getHumidity() const {
   return humidity_;
 }
 
-int SH_Sensor_Temperature::getTemperature() {
+int SH_Sensor_Temperature::getTemperature() const {
   return temperature_;
 }
 
-void SH_Sensor_Temperature::handleCharacteristicUpdate(const char *characteristic, int value) {
-  logger.print(getName(), "Updating Characteristic: '");
-  logger.print(characteristic);
-  logger.println("'");
-  if (strcmp(characteristic, "Hummidity") == 0) {
-    setHumidity(value);
-  } else if (strcmp(characteristic, "Temperature") == 0) {
-    setTemperature(value);
+void SH_Sensor_Temperature::executeCharacteristicUpdate(GadgetCharacteristic characteristic, int value) {
+  switch (characteristic) {
+    case GadgetCharacteristic::humidity:
+      setHumidity(value);
+      break;
+    case GadgetCharacteristic::temperature:
+      setTemperature(value);
+      break;
+    default:
+      break;
   }
 }
 
-bool SH_Sensor_Temperature::getCharacteristics(char *buffer) {
-  sprintf(buffer, R"( "characteristics": {"hummidity": %d, "temperature": %d}})", humidity_, temperature_);
-  return true;
+vector<GadgetCharacteristicSettings> SH_Sensor_Temperature::getCharacteristics() {
+  return {GadgetCharacteristicSettings(GadgetCharacteristic::humidity, 0, 100, 1),
+          GadgetCharacteristicSettings(GadgetCharacteristic::temperature, -50, 100, 1)};
 }
 
 void SH_Sensor_Temperature::handleMethodUpdate(GadgetMethod) {}

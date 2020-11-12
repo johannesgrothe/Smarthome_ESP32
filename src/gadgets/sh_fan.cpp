@@ -25,11 +25,11 @@ void SH_Fan::setStatus(bool status) {
     if (rotation_speed_ == 0) {
       rotation_speed_ = last_rotation_speed_;
     }
-    updateCharacteristic("rotationspeed", rotation_speed_);
+    updateCharacteristic(GadgetCharacteristic::fanSpeed, rotation_speed_);
   } else {
     last_rotation_speed_ = rotation_speed_;
     rotation_speed_ = 0;
-    updateCharacteristic("rotationspeed", rotation_speed_);
+    updateCharacteristic(GadgetCharacteristic::fanSpeed, rotation_speed_);
   }
   setGadgetHasChanged();
 }
@@ -51,30 +51,31 @@ void SH_Fan::setRotationSpeed(byte new_speed) {
   if (new_speed == 0) {
     last_rotation_speed_ = rotation_speed_;
     rotation_speed_ = 0;
-    updateCharacteristic("rotaionspeed", rotation_speed_);
+    updateCharacteristic(GadgetCharacteristic::fanSpeed, rotation_speed_);
   } else {
     rotation_speed_ = new_speed;
-    updateCharacteristic("rotaionspeed", rotation_speed_);
+    updateCharacteristic(GadgetCharacteristic::fanSpeed, rotation_speed_);
   }
   setGadgetHasChanged();
 }
 
-void SH_Fan::handleCharacteristicUpdate(const char *characteristic, int value) {
-  logger.print(getName(), "Updating Characteristic: '");
-  logger.print(characteristic);
-  logger.println("'");
-  if (strcmp(characteristic, "On") == 0) {
-    setStatus((bool) value);
-  } else if (strcmp(characteristic, "rotationspeed") == 0) {
-    setRotationSpeed(value);
+void SH_Fan::executeCharacteristicUpdate(GadgetCharacteristic characteristic, int value) {
+  switch(characteristic) {
+    case GadgetCharacteristic::status:
+      setStatus((bool) value);
+      break;
+    case GadgetCharacteristic::fanSpeed:
+      setRotationSpeed(value);
+      break;
+    default:
+      break;
   }
 }
 
-bool SH_Fan::getCharacteristics(char *buffer) {
+vector<GadgetCharacteristicSettings> SH_Fan::getCharacteristics() {
   byte steps = (FAN_ROTATION_SPEED_MAX / levels_);
-  sprintf(buffer, R"( "rotationspeed": {"min": 0, "max": %d, "step": %d})", FAN_ROTATION_SPEED_MAX,
-          steps);
-  return true;
+  return {GadgetCharacteristicSettings(GadgetCharacteristic::status, 0, 1, 1),
+          GadgetCharacteristicSettings(GadgetCharacteristic::fanSpeed, 0, FAN_ROTATION_SPEED_MAX, steps)};
 }
 
 void SH_Fan::handleMethodUpdate(GadgetMethod method) {

@@ -7,12 +7,12 @@ protected:
 
   void switchTriggered();
 
+  void executeCharacteristicUpdate(GadgetCharacteristic, int) override;
+
 public:
   explicit SH_Wallswitch(std::string name);
 
-  void handleCharacteristicUpdate(const char *, int) override;
-
-  bool getCharacteristics(char *) override;
+  vector<GadgetCharacteristicSettings> getCharacteristics() override;
 
   void handleMethodUpdate(GadgetMethod) override;
 };

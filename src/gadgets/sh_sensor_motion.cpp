@@ -1,12 +1,14 @@
 #include "sh_sensor_motion.h"
 
+#include <utility>
+
 SH_Sensor_Motion::SH_Sensor_Motion(std::string name) :
-    SH_Gadget(name, GadgetType::Motion_Sensor),
+    SH_Gadget(std::move(name), GadgetType::Motion_Sensor),
     sensor_status_(false) {}
 
 void SH_Sensor_Motion::setStatus(bool status) {
   if (status != sensor_status_) {
-    updateCharacteristic("status", (int) status);
+    updateCharacteristic(GadgetCharacteristic::status, (int) status);
     sensor_status_ = status;
   }
   if (status) {
@@ -20,18 +22,14 @@ void SH_Sensor_Motion::setStatus(bool status) {
   }
 }
 
-void SH_Sensor_Motion::handleCharacteristicUpdate(const char *characteristic, int value) {
-  logger.print(getName(), "Updating Characteristic: '");
-  logger.print(characteristic);
-  logger.println("'");
-  if (strcmp(characteristic, "sensor_status") == 0) {
+void SH_Sensor_Motion::executeCharacteristicUpdate(GadgetCharacteristic characteristic, int value) {
+  if (characteristic == GadgetCharacteristic::status) {
     setStatus(value);
   }
 }
 
-bool SH_Sensor_Motion::getCharacteristics(char *buffer) {
-  sprintf(buffer, R"( "characteristics": {"sensor_status": %d})", sensor_status_);
-  return true;
+vector<GadgetCharacteristicSettings> SH_Sensor_Motion::getCharacteristics() {
+  return {GadgetCharacteristicSettings(GadgetCharacteristic::status, 0, 1, 1)};
 }
 
 void SH_Sensor_Motion::handleMethodUpdate(GadgetMethod method) {}

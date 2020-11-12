@@ -1,7 +1,9 @@
 #include "sh_sensor_motion_HR501.h"
 
+#include <utility>
+
 SH_Sensor_Motion_HR501::SH_Sensor_Motion_HR501(std::string name, uint8_t pin) :
-  SH_Sensor_Motion(name),
+  SH_Sensor_Motion(std::move(name)),
   input_pin_(pin) {
   pinMode(input_pin_, INPUT);
 }

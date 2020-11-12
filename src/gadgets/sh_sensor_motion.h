@@ -14,6 +14,8 @@ protected:
    */
   void setStatus(bool);
 
+  void executeCharacteristicUpdate(GadgetCharacteristic, int) override;
+
 public:
   /**
    * Constructor for class SH_Sensor_Motion
@@ -21,9 +23,7 @@ public:
    */
   explicit SH_Sensor_Motion(std::string name);
 
-  void handleCharacteristicUpdate(const char *, int) override;
-
-  bool getCharacteristics(char *) override;
+  vector<GadgetCharacteristicSettings> getCharacteristics() override;
 
   void handleMethodUpdate(GadgetMethod) override;
 };

@@ -6,12 +6,12 @@ SH_Doorbell::SH_Doorbell(std::string name) :
   SH_Gadget(std::move(name), GadgetType::Doorbell) {};
 
 void SH_Doorbell::doorbellTriggered() {
-  updateCharacteristic("ProgrammableSwitchEvent", true);
+//  updateCharacteristic("ProgrammableSwitchEvent", true);
   // TODO: event remote needed
 }
 
-void SH_Doorbell::handleCharacteristicUpdate(const char *characteristic, int value) {}
+void SH_Doorbell::executeCharacteristicUpdate(GadgetCharacteristic characteristic, int value) {}
 
-bool SH_Doorbell::getCharacteristics(char *buffer) { return false; };
+vector<GadgetCharacteristicSettings> SH_Doorbell::getCharacteristics() { return {}; };
 
 void SH_Doorbell::handleMethodUpdate(GadgetMethod method) {}

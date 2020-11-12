@@ -9,10 +9,10 @@ void SH_Wallswitch::switchTriggered() {
 SH_Wallswitch::SH_Wallswitch(std::string name) :
   SH_Gadget(std::move(name), GadgetType::Wallswitch) {}
 
-void SH_Wallswitch::handleCharacteristicUpdate(const char *, int) {}
+void SH_Wallswitch::executeCharacteristicUpdate(GadgetCharacteristic, int) {}
 
-bool SH_Wallswitch::getCharacteristics(char *) {
-  return false;
+vector<GadgetCharacteristicSettings> SH_Wallswitch::getCharacteristics() {
+  return {};
 }
 
 void SH_Wallswitch::handleMethodUpdate(GadgetMethod) {}

@@ -12,47 +12,7 @@
 
 #include "../connectors/ir_gadget.h"
 #include "../connectors/radio_gadget.h"
-
-// All possible gadget types
-enum class GadgetIdentifier {
-  None = 0,
-  sh_lamp_neopixel_basic,
-  sh_lamp_basic,
-  sh_fan_westinghouse_ir,
-  sh_lamp_westinghouse_ir,
-  sh_doorbell_basic,
-  sh_wallswitch_basic,
-  sh_sensor_motion_hr501,
-  sh_sensor_temperature_dht
-};
-
-// Count of the gadgets
-#define GadgetIdentifierCount 5
-
-// All GadgetMethods used to update the gadget status
-enum class GadgetMethod {
-  None = 0,
-  turnOn,
-  turnOff,
-  toggleStatus,
-  brightnessUp,
-  brightnessDown,
-  volumeUp,
-  volumeDown,
-  mute,
-  unmute,
-  toggleMute,
-  mode0,
-  mode1,
-  mode2,
-  mode3,
-  mode4,
-  modeUp,
-  modeDown
-};
-
-// Count of the gadget methods
-#define GadgetMethodCount 17
+#include "gadget_enums.h"
 
 // Pair for mapping
 using mapping_pair = std::tuple<GadgetMethod, std::vector<unsigned long>>;
@@ -80,7 +40,7 @@ private:
   bool init_error;
 
   // Callback to update a characteristic on the gadget remote
-  std::function<void(const char *, const char *, const char *, int)> gadget_remote_callback;
+  std::function<void(std::string, GadgetCharacteristic, int)> gadget_remote_callback;
 
   // Flag to determine if the gadget remote is correctly initialized
   bool gadget_remote_ready;
@@ -127,7 +87,7 @@ protected:
    * @param characteristic Characteristic to update
    * @param value Value for the characteristic
    */
-  void updateCharacteristic(const char * characteristic, int value);
+  void updateCharacteristic(GadgetCharacteristic characteristic, int value);
 
   /**
    * Returns the method for the passed code
@@ -152,6 +112,13 @@ protected:
    */
   bool sendIR(unsigned long command, uint8_t com_type);
 
+  /**
+   * Updates the gadget with a characteristic
+   * @param characteristic Characteristic the gadget should be updated with
+   * @param value The value the characteristic should be updated with
+   */
+  virtual void executeCharacteristicUpdate(GadgetCharacteristic characteristic, int value) = 0;
+
 public:
 
   /**
@@ -165,7 +132,7 @@ public:
    * Sets the callback for the gadget remote
    * @param update_method Method used to update the remote
    */
-  void setGadgetRemoteCallback(std::function<void(const char *, const char *, const char *, int)> update_method);
+  void setGadgetRemoteCallback(std::function<void(std::string, GadgetCharacteristic, int)> update_method);
 
   /**
    * Returns the type of the gadget
@@ -189,7 +156,7 @@ public:
    * @param characteristic_str [out] a string containing all characteristics
    * @return whether writing the characteristics to the string was successful
    */
-  virtual bool getCharacteristics(char *characteristic_str) = 0;
+  virtual vector<GadgetCharacteristicSettings> getCharacteristics() = 0;
 
   /**
    * Checks if the gadget was successfully initialized
@@ -208,7 +175,8 @@ public:
    * @param characteristic Characteristic the gadget should be updated with
    * @param value The value the characteristic should be updated with
    */
-  virtual void handleCharacteristicUpdate(const char *characteristic, int value) = 0;
+  virtual void handleCharacteristicUpdate(GadgetCharacteristic characteristic, int value);
+
 
   /**
    * Refresh the gadget and its hardware. Used as loop method.

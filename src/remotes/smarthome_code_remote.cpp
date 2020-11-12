@@ -18,26 +18,26 @@ void SmarthomeCodeRemote::sendCodeToRemote(CodeCommand *code) {
 
 void SmarthomeCodeRemote::handleRequest(std::string path, std::string body) {};
 
-void SmarthomeCodeRemote::handleRequest(std::string path, const JsonObject& body) {
+void SmarthomeCodeRemote::handleRequest(std::shared_ptr<Request> req) {
   if (path != "smarthome/from/code") { return; }
 
-  if (body["type"] == nullptr) {
+  if (req["type"] == nullptr) {
     logger.print(LOG_TYPE::ERR, "Broken Code Request Received: 'type' missing");
     return;
   }
 
-  if (body["code"] == nullptr) {
+  if (req["code"] == nullptr) {
     logger.print(LOG_TYPE::ERR, "Broken Code Request Received: 'code' missing");
     return;
   }
 
-  if (body["timestamp"] == nullptr) {
+  if (req["timestamp"] == nullptr) {
     logger.print(LOG_TYPE::ERR, "Broken Code Request Received: 'timestamp' missing");
     return;
   }
 
-  auto *newCode = new CodeCommand(stringToCodeType(body["type"].as<const char *>()), body["code"].as<unsigned long>(),
-                                  body["timestamp"].as<unsigned long long>());
+  auto *newCode = new CodeCommand(stringToCodeType(req["type"].as<const char *>()), req["code"].as<unsigned long>(),
+                                  req["timestamp"].as<unsigned long long>());
   handleNewCodeFromRequest(newCode);
 }
 
