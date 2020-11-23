@@ -5,18 +5,21 @@
 #include <memory.h>
 #include "Event.h"
 
-enum class event_type {
+enum class EventType {
   StatusOn, StatusOff, StatusChanged
 };
 
 class EventRemote : public Remote {
 private:
 
+  virtual bool registerGadget(const std::string& gadget_name, GadgetType gadget_type, vector<GadgetCharacteristicSettings> characteristics) = 0;
+
+  virtual bool removeGadget(const std::string& gadget_name) = 0;
+
+
 protected:
-  void handleRequest(std::string path, std::string body) override;
 
-  void handleRequest(std::string path, const JsonObject& body) override;
-
+  void forwardEvent(std::shared_ptr<Event> event);
 
 public:
 
@@ -24,7 +27,9 @@ public:
 
   explicit EventRemote(std::shared_ptr<Request_Gadget> gadget);
 
-  void sendEvent(string sender, event_type type);
+  virtual void sendEvent(string sender, EventType type) = 0;
+
+
 
 
 
