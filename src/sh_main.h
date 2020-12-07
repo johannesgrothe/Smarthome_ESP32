@@ -98,7 +98,7 @@ private:
 
   std::shared_ptr<GadgetRemote> gadget_remote;
 
-//  std::shared_ptr<EventRemote> event_remote;
+  std::shared_ptr<EventRemote> event_remote;
 
   BootMode system_mode;
 
@@ -123,6 +123,8 @@ private:
   void handleRequest(Request *req);
 
   void updateGadgetRemote(std::string gadget_name, GadgetCharacteristic characteristic, int value);
+
+  void updateEventRemote(string sender, EventType type);
 
   bool initGadgetRemote(JsonObject json);
 

@@ -5,10 +5,6 @@
 #include <memory.h>
 #include "Event.h"
 
-enum class EventType {
-  StatusOn, StatusOff, StatusChanged
-};
-
 class EventRemote : public Remote {
 private:
 

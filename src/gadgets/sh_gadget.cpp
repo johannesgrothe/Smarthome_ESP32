@@ -49,6 +49,7 @@ void SH_Gadget::updateCharacteristic(GadgetCharacteristic characteristic, int va
   gadget_remote_callback(getName(), characteristic, value);
 }
 
+
 SH_Gadget::SH_Gadget::SH_Gadget(std::string  name, const GadgetType type) :
   init_error(false),
   gadget_remote_ready(false),
@@ -58,8 +59,14 @@ SH_Gadget::SH_Gadget::SH_Gadget(std::string  name, const GadgetType type) :
 
 void SH_Gadget::setGadgetRemoteCallback(std::function<void(std::string, GadgetCharacteristic, int)> update_method) {
   gadget_remote_callback = std::move(update_method);
-  logger.println("Initialized Callbacks");
+  logger.println("Initialized Gadget Remote Callback");
   gadget_remote_ready = true;
+}
+
+void SH_Gadget::setEventRemoteCallback(std::function<void(std::string, EventType)> send_event) {
+  event_remote_callback = std::move(send_event);
+  logger.println("Initialized Event Callback");
+  event_remote_ready = true;
 }
 
 GadgetType SH_Gadget::getType() {
@@ -137,4 +144,8 @@ void SH_Gadget::handleCharacteristicUpdate(GadgetCharacteristic characteristic, 
   logger.println(getName(), "Updating Characteristic: ");
   logger.printfln("%d", int(characteristic));
   executeCharacteristicUpdate(characteristic, value);
+}
+
+void SH_Gadget::handleEvent(std::string sender, EventType event_type) {
+  logger.println("not yet implemenmted");
 }

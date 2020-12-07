@@ -13,6 +13,7 @@
 #include "../connectors/ir_gadget.h"
 #include "../connectors/radio_gadget.h"
 #include "gadget_enums.h"
+#include "../remotes/Event.h"
 
 // Pair for mapping
 using mapping_pair = std::tuple<GadgetMethod, std::vector<unsigned long>>;
@@ -41,9 +42,10 @@ private:
 
   // Callback to update a characteristic on the gadget remote
   std::function<void(std::string, GadgetCharacteristic, int)> gadget_remote_callback;
-
+  std::function<void(std::string, EventType)> event_remote_callback;
   // Flag to determine if the gadget remote is correctly initialized
   bool gadget_remote_ready;
+  bool event_remote_ready;
 
   // Name of the gadget
   const std::string name;
@@ -133,6 +135,7 @@ public:
    * @param update_method Method used to update the remote
    */
   void setGadgetRemoteCallback(std::function<void(std::string, GadgetCharacteristic, int)> update_method);
+  void setEventRemoteCallback(function<void(string, EventType)> send_event);
 
   /**
    * Returns the type of the gadget
@@ -177,6 +180,8 @@ public:
    */
   virtual void handleCharacteristicUpdate(GadgetCharacteristic characteristic, int value);
 
+  virtual void handleEvent(std::string sender, EventType event_type);
+
 
   /**
    * Refresh the gadget and its hardware. Used as loop method.
@@ -220,4 +225,5 @@ public:
    * @return Whether the gadget has radio access or not
    */
   bool hasRadio() const;
+
 };

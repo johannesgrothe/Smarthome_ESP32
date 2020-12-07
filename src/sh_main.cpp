@@ -62,6 +62,7 @@ bool SH_Main::initGadgets() {
           using std::placeholders::_3;
 
           buf_gadget->setGadgetRemoteCallback(std::bind(&SH_Main::updateGadgetRemote, this, _1, _2, _3));
+          buf_gadget->setEventRemoteCallback(std::bind(&SH_Main::updateEventRemote, this, _1, _2));
 
           logger.decIndent();
         }
@@ -752,6 +753,10 @@ void SH_Main::handleRequest(Request *req) {
 
 void SH_Main::updateGadgetRemote(std::string gadget_name, GadgetCharacteristic characteristic, int value) {
   gadget_remote->updateCharacteristic(std::move(gadget_name), characteristic, value);
+}
+
+void SH_Main::updateEventRemote(string sender, EventType type) {
+  event_remote->sendEvent(std::move(sender), type);
 }
 
 bool SH_Main::initGadgetRemote(JsonObject json) {
