@@ -24,6 +24,6 @@ public:
   explicit GadgetRemote(std::shared_ptr<Request_Gadget> gadget);
 
   virtual void
-  updateCharacteristic(std::string gadget_name, GadgetCharacteristic characteristic, int value);
+  updateCharacteristic(std::string gadget_name, GadgetCharacteristic characteristic, int value) = 0;
 
 };

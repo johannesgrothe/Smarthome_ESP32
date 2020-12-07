@@ -31,7 +31,4 @@ GadgetRemote::GadgetRemote() :
   Remote() {};
 
 GadgetRemote::GadgetRemote(std::shared_ptr<Request_Gadget> gadget) :
-  Remote(gadget, std::__cxx11::string()) {};
-
-void
-GadgetRemote::updateCharacteristic(std::string gadget_name, GadgetCharacteristic characteristic, int value) {};
+  Remote(std::move(gadget), std::__cxx11::string()) {};

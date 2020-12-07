@@ -79,6 +79,10 @@ SmarthomeGadgetRemote::updateCharacteristic(std::string gadget_name, GadgetChara
   if (updatesAreLocked()) return;
   auto target_gadget = gadgets.getGadget(gadget_name);
 
+  if (!target_gadget) {
+      return;
+  }
+
   DynamicJsonDocument req_doc(2000);
 
   req_doc["name"] = gadget_name;
