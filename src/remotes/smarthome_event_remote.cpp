@@ -13,7 +13,7 @@ void SmarthomeEventRemote::handleRequest(std::shared_ptr<Request> req) {
       logger.incIndent();
       auto sender = req_body["name"].as<string>();
       auto timestamp = req_body["timestamp"].as<unsigned long long>();
-      auto type = req_body["event_type"].as<EventType>();
+      auto type = EventType(req_body["event_type"].as<int>());
       auto event_buf = std::make_shared<Event>(sender, timestamp, type);
       forwardEvent(event_buf);
       logger.decIndent();
@@ -36,7 +36,7 @@ void SmarthomeEventRemote::sendEvent(string sender, EventType type) {
 
   req_doc["name"] = sender;
   req_doc["timestamp"] = timestamp;
-  req_doc["event_type"] = type;
+  req_doc["event_type"] = int(type);
 
   auto out_req = new Request("smarthome/remotes/event/send", timestamp, chip_name, "<remote>", req_doc);
 

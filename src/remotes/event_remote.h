@@ -2,7 +2,7 @@
 
 #include "console_logger.h"
 #include "remote.h"
-#include <memory.h>
+#include <memory>
 #include "Event.h"
 
 class EventRemote : public Remote {
