@@ -5,6 +5,7 @@
 
 // Network Gadgets
 #include "network_library.h"
+#include "protocol_paths.h"
 
 // Gadget-Lib
 #include "gadgets/gadget_library.h"
@@ -96,10 +97,6 @@ Gadget_Collection gadgets;
 
 std::shared_ptr<CodeRemote> code_remote;
 
-std::shared_ptr<GadgetRemote> gadget_remote;
-
-std::shared_ptr<EventRemote> event_remote;
-
 BootMode system_mode = BootMode::Unknown_Mode;
 
 unsigned long last_req_id_;
@@ -109,15 +106,49 @@ bool eeprom_active_;
 TaskHandle_t main_task;
 TaskHandle_t network_task;
 
+bool lock_updates = false;
+
+// ===== REMOTE METHODS =====
+
+void lockUpdates() {
+    logger.println("Locking Updates");
+    lock_updates = true;
+}
+
+void unlockUpdates() {
+    logger.println("Unlocking Updates");
+    lock_updates = false;
+}
+
+bool updatesAreLocked() { return lock_updates; }
+
 
 // ===== START METHODS =====
 
-void updateGadgetRemote(std::string gadget_name, GadgetCharacteristic characteristic, int value) {
-    gadget_remote->updateCharacteristic(std::move(gadget_name), characteristic, value);
+void updateCharacteristicOnBridge(const std::string& gadget_name, GadgetCharacteristic characteristic, int value) {
+    if (updatesAreLocked()) return;
+    auto target_gadget = gadgets.getGadget(gadget_name);
+
+    if (!target_gadget) {
+        return;
+    }
+
+    DynamicJsonDocument req_doc(2000);
+
+    req_doc["name"] = gadget_name;
+    req_doc["type"] = int(target_gadget->getType());
+    req_doc["characteristic"] = int(characteristic);
+    req_doc["value"] = value;
+
+    auto timestamp = int(micros() % 7554);
+
+    auto out_req = new Request("smarthome/remotes/gadget/update", timestamp, client_id_, "<remote>", req_doc);
+
+    network_gadget->sendRequest(out_req);
 }
 
-void updateEventRemote(string sender, EventType type) {
-    event_remote->sendEvent(std::move(sender), type);
+void updateEventRemote(const string& sender, EventType type) {
+//    event_remote->sendEvent(std::move(sender), type);
 }
 
 bool initGadgets() {
@@ -173,13 +204,11 @@ bool initGadgets() {
                     logger.println(LOG_TYPE::DATA, "Linking Gadget Remote");
                     logger.incIndent();
 
-                    gadget_remote->addGadget(buf_gadget);
-
                     using std::placeholders::_1;
                     using std::placeholders::_2;
                     using std::placeholders::_3;
 
-                    buf_gadget->setGadgetRemoteCallback(std::bind(&updateGadgetRemote, _1, _2, _3));
+                    buf_gadget->setGadgetRemoteCallback(std::bind(&updateCharacteristicOnBridge, _1, _2, _3));
                     buf_gadget->setEventRemoteCallback(std::bind(&updateEventRemote, _1, _2));
 
                     logger.decIndent();
@@ -189,8 +218,6 @@ bool initGadgets() {
                 if (remote_bf[1]) {
                     logger.println(LOG_TYPE::DATA, "Linking Code Remote");
                     logger.incIndent();
-
-                    code_remote->addGadget(buf_gadget);
 
                     logger.decIndent();
 
@@ -298,67 +325,6 @@ bool initConnectors() {
     return true;
 }
 
-bool initRemotes() {
-    auto gadget_remote_mode = System_Storage::readGadgetRemote();
-    auto code_remote_mode = System_Storage::readCodeRemote();
-    auto event_remote_mode = System_Storage::readEventRemote();
-    logger.println("Initializing remotes");
-    logger.incIndent();
-
-    // Init Gadget Remote
-    if (gadget_remote_mode != GadgetRemoteMode::None) {
-        logger.printfln("Initializing gadget remote");
-        logger.incIndent();
-        switch (gadget_remote_mode) {
-            case GadgetRemoteMode::Smarthome:
-                gadget_remote = make_shared<SmarthomeGadgetRemote>(network_gadget);
-                break;
-            default:
-                logger.printfln(LOG_TYPE::ERR, "Could not initialize gadget remote (code %d)", (int) gadget_remote_mode);
-        }
-        logger.decIndent();
-    } else {
-        logger.printfln("No gadget remote configured");
-    }
-
-    // Init Code Remote
-    if (code_remote_mode != CodeRemoteMode::None) {
-        logger.printfln("Initializing code remote");
-        logger.incIndent();
-        switch (code_remote_mode) {
-            case CodeRemoteMode::Smarthome:
-                code_remote = make_shared<SmarthomeCodeRemote>(network_gadget);
-                break;
-            default:
-                logger.printfln(LOG_TYPE::ERR, "Could not initialize code remote (code %d)", (int) code_remote_mode);
-        }
-        logger.decIndent();
-    } else {
-        logger.printfln("No code remote configured");
-    }
-
-    // Init Event Remote
-    if (event_remote_mode != EventRemoteMode::None) {
-        logger.printfln("Initializing event remote");
-        logger.incIndent();
-        switch (event_remote_mode) {
-            case EventRemoteMode::Smarthome:
-                // TODO: init event remote
-//        event_remote = make_shared<SmarthomeCodeRemote>(network_gadget);
-                logger.println(LOG_TYPE::ERR, "Event-Remote is not implemented");
-                break;
-            default:
-                logger.printfln(LOG_TYPE::ERR, "Could not initialize event remote (code %d)", (int) code_remote_mode);
-        }
-        logger.decIndent();
-    } else {
-        logger.printfln("No event remote configured");
-    }
-
-    logger.decIndent();
-    return true;
-}
-
 bool initNetwork(NetworkMode mode) {
     if (mode == NetworkMode::None) {
         logger.println(LOG_TYPE::ERR, "No network configured.");
@@ -447,6 +413,34 @@ void handleNetwork() {
         logger.printfln("[%s] '%s': %s", type.c_str(), req->getPath().c_str(), req->getBody().c_str());
         handleRequest(req);
         delete req;
+    }
+}
+
+// TODO: use
+void handleGadgetRemoteRequest(const std::shared_ptr<Request>& req) {
+    if (req->getPath() == PATH_UPDATE_FROM_BRIDGE) {
+        auto req_body = req->getPayload();
+        if (req_body.containsKey("name") && req_body.containsKey("characteristic") && req_body.containsKey("value")) {
+            logger.print("System / Gadget-Remote", "Received characteristic update");
+            auto target_gadget = gadgets.getGadget(req_body["name"]);
+            if (target_gadget != nullptr) {
+                auto characteristic = getCharacteristicFromInt(req_body["characteristic"].as<int>());
+                if (characteristic != GadgetCharacteristic::None) {
+                    logger.incIndent();
+                    lockUpdates();
+                    int value = req_body["value"].as<int>();
+                    target_gadget->handleCharacteristicUpdate(characteristic, value);
+                    unlockUpdates();
+                    logger.decIndent();
+                } else {
+                    logger.print(LOG_TYPE::ERR, "Illegal err_characteristic 0");
+                }
+            } else {
+                logger.print("Unknown Gadget");
+            }
+        }
+    } else {
+        logger.println("System / Homebridge-Remote", "Received uncomplete Request");
     }
 }
 
@@ -854,88 +848,14 @@ void handleRequest(Request *req) {
 
     for (const auto& list_path: additional_request_paths) {
         if (req_path.compare(0, list_path.length(), list_path) == 0) {
-            if (code_remote != nullptr) {
-//        code_remote->handleRequest(req);
-            }
+            handleGadgetRemoteRequest(req);
+            // TODO: replace native request pointer with smart pointer
 
-            if (gadget_remote != nullptr) {
-//        gadget_remote->handleRequest(req);
-            }
             return;
         }
     }
 
     logger.printfln(LOG_TYPE::ERR, "Received request to unconfigured path");
-}
-
-bool initGadgetRemote(JsonObject json) {
-    logger.println("Initializing Gadget Remote");
-    logger.incIndent();
-
-    // TODO: fix gadget remote
-//  if (json["type"] == nullptr) {
-//    logger.println(LOG_TYPE::ERR, "'type' missing in gadget remote config");
-//  }
-//  if (json["gadgets"] == nullptr) {
-//    logger.println(LOG_TYPE::ERR, "'gadgets' missing in gadget remote config");
-//  }
-//  auto remote_type = json["type"].as<const char *>();
-//
-//  if (strcmp(remote_type, "smarthome") == 0) {
-//    JsonArray gadget_list = json["gadgets"].as<JsonArray>();
-//    if (gadget_list.size() > 0) {
-//      logger.println(LOG_TYPE::DATA, "Smarthome");
-//      logger.incIndent();
-//      auto *smarthome_remote = new SmarthomeGadgetRemote(network_gadget, json);
-//      for (auto &&gadget_name_str : gadget_list) {
-//        const char *gadget_name = gadget_name_str.as<const char *>();
-//        SH_Gadget *gadget = gadgets.getGadget(gadget_name);
-//        smarthome_remote->addGadget(gadget);
-//      }
-//      logger.decIndent();
-//      gadget_remote = smarthome_remote;
-//    } else {
-//      logger.println(LOG_TYPE::DATA, "gadget-list is empty");
-//    }
-//  }
-
-    logger.decIndent();
-    return true;
-}
-
-bool initCodeRemote(JsonObject json) {
-    logger.println("Initializing Code Remote");
-    logger.incIndent();
-
-    // TODO: fix code remote
-//  if (json["type"] == nullptr) {
-//    logger.println(LOG_TYPE::ERR, "'type' missing in code remote config");
-//  }
-//  if (json["gadgets"] == nullptr) {
-//    logger.println(LOG_TYPE::ERR, "'gadgets' missing in code remote config");
-//  }
-//  auto remote_type = json["type"].as<const char *>();
-//
-//  if (strcmp(remote_type, "smarthome") == 0) {
-//    JsonArray gadget_list = json["gadgets"].as<JsonArray>();
-//    if (gadget_list.size() > 0) {
-//      logger.println(LOG_TYPE::DATA, "Smarthome");
-//      logger.incIndent();
-//      auto *smarthome_remote = new SmarthomeCodeRemote(network_gadget, json);
-//      for (auto &&gadget_name_str : gadget_list) {
-//        const char *gadget_name = gadget_name_str.as<const char *>();
-//        SH_Gadget *gadget = gadgets.getGadget(gadget_name);
-//        smarthome_remote->addGadget(gadget);
-//      }
-//      logger.decIndent();
-//      code_remote = smarthome_remote;
-//    } else {
-//      logger.println(LOG_TYPE::DATA, "gadget-list is empty");
-//    }
-//  }
-
-    logger.decIndent();
-    return true;
 }
 
 void testStuff() {
@@ -961,10 +881,6 @@ void testStuff() {
     }
 
     logger.decIndent();
-}
-
-void init() {
-
 }
 
 /**
@@ -1044,14 +960,24 @@ void initModeComplete() {
 //  }
 }
 
+// ===== REFRESHERS =====
+/**
+ * The refresh method that is supposed to be performed in serial only mode
+ */
 void refreshModeSerial() {
     handleNetwork();
 }
 
+/**
+ * The refresh method that is supposed to be performed in network only mode
+ */
 void refreshModeNetwork() {
     handleNetwork();
 }
 
+/**
+ * The refresh method that is supposed to be performed in full operation mode
+ */
 void refreshModeComplete() {
 
     handleNetwork();
@@ -1066,6 +992,9 @@ void refreshModeComplete() {
     }
 }
 
+/**
+ * Refresh method for the main task
+ */
 void refresh() {
     switch (system_mode) {
         case BootMode::Serial_Ony:
@@ -1083,15 +1012,22 @@ void refresh() {
     }
 }
 
+/**
+ * Refresh method for network operation
+ */
 void refreshNetwork() {
     if (network_gadget == nullptr) {
         return;
     }
     network_gadget->refresh();
 }
+// ===== END REFRESHERS =====
 
-// =====================================================
-
+// ===== TASKS =====
+/**
+ * Function for the main task refresing the main content
+ * @param args Unused
+ */
 [[noreturn]] static void mainTask(void *args) {
   while (true) {
     refresh();
@@ -1099,13 +1035,22 @@ void refreshNetwork() {
   }
 }
 
+/**
+ * Function for the network tasks receiving and sending requests
+ * @param args Unused
+ */
 [[noreturn]] static void networkTask(void *args) {
   while (true) {
     refreshNetwork();
     vTaskDelay(10 / portTICK_PERIOD_MS);
   }
 }
+// ===== END TASKS =====
 
+// ===== TASK CREATION =====
+/**
+ * Creates and starts the tasks used by the system
+ */
 static void createTasks() {
   xTaskCreatePinnedToCore(
     mainTask,     /* Task function. */
@@ -1128,7 +1073,9 @@ static void createTasks() {
   //    vTaskSuspend(main_task);
   //    vTaskResume(main_task);
 }
+// ===== END TASK CREATION =====
 
+// ===== MAIN FUNCTIONS =====
 void setup() {
     Serial.begin(SERIAL_SPEED);
     logger.println(LOG_TYPE::INFO, "Launching...");

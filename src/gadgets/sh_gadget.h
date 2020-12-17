@@ -130,6 +130,23 @@ public:
    */
   explicit SH_Gadget(std::string name, GadgetType type);
 
+
+  DynamicJsonDocument serialized() {
+      DynamicJsonDocument ser_doc(2000);
+      unsigned long ident = micros() % 7023;
+
+      ser_doc["gadget_type"] = int(type);
+      ser_doc["gadget_name"] = name;
+
+      for (auto characteristic_data: getCharacteristics()) {
+          ser_doc[int(characteristic_data.characteristic)] = JsonObject();
+          ser_doc[int(characteristic_data.characteristic)]["max"] = characteristic_data.max;
+          ser_doc[int(characteristic_data.characteristic)]["min"] = characteristic_data.min;
+          ser_doc[int(characteristic_data.characteristic)]["step"] = characteristic_data.step;
+      }
+      return ser_doc;
+  }
+
   /**
    * Sets the callback for the gadget remote
    * @param update_method Method used to update the remote
