@@ -8,7 +8,7 @@
 class Serial_Gadget : public Request_Gadget {
 protected:
 
-  void executeRequestSending(Request *req) override;
+  void executeRequestSending(std::shared_ptr<Request> req) override;
 
   void receiveSerialRequest();
 

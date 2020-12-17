@@ -19,7 +19,7 @@ private:
   // respond to (incomming) request
   bool needs_response_;
   bool can_respond_;
-  std::function<void(Request *)> send_answer_;
+  std::function<void(std::shared_ptr<Request>)> send_answer_;
 
   // wait for answer to request
   bool await_response_;
@@ -58,7 +58,7 @@ public:
           std::string sender,
           std::string receiver,
           DynamicJsonDocument payload,
-          std::function<void(Request *request)> answer_method);
+          std::function<void(std::shared_ptr<Request> request)> answer_method);
 
   /**
    * Destructor

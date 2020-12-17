@@ -38,7 +38,7 @@ void SmarthomeEventRemote::sendEvent(string sender, EventType type) {
   req_doc["timestamp"] = timestamp;
   req_doc["event_type"] = int(type);
 
-  auto out_req = new Request("smarthome/remotes/event/send", timestamp, chip_name, "<remote>", req_doc);
+  auto out_req = std::make_shared<Request>("smarthome/remotes/event/send", timestamp, chip_name, "<remote>", req_doc);
 
   req_gadget->sendRequest(out_req);
 

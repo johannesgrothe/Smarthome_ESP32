@@ -142,7 +142,7 @@ void updateCharacteristicOnBridge(const std::string& gadget_name, GadgetCharacte
 
     auto timestamp = int(micros() % 7554);
 
-    auto out_req = new Request("smarthome/remotes/gadget/update", timestamp, client_id_, "<remote>", req_doc);
+    auto out_req = std::make_shared<Request>("smarthome/remotes/gadget/update", timestamp, client_id_, "<remote>", req_doc);
 
     network_gadget->sendRequest(out_req);
 }
@@ -396,55 +396,34 @@ void handleCodeConnector(const std::shared_ptr<Code_Gadget> &gadget) {
     }
 }
 
-void handleNetwork() {
-    if (network_gadget == nullptr) {
-        return;
-    }
-    if (network_gadget->hasRequest()) {
-        std::string type;
-        Request *req = network_gadget->getRequest();
-        RequestGadgetType g_type = network_gadget->getGadgetType();
-        if (g_type == RequestGadgetType::MQTT_G)
-            type = "MQTT";
-        else if (g_type == RequestGadgetType::SERIAL_G)
-            type = "Serial";
-        else
-            type = "<o.O>";
-        logger.printfln("[%s] '%s': %s", type.c_str(), req->getPath().c_str(), req->getBody().c_str());
-        handleRequest(req);
-        delete req;
-    }
-}
-
-// TODO: use
-void handleGadgetRemoteRequest(const std::shared_ptr<Request>& req) {
-    if (req->getPath() == PATH_UPDATE_FROM_BRIDGE) {
-        auto req_body = req->getPayload();
-        if (req_body.containsKey("name") && req_body.containsKey("characteristic") && req_body.containsKey("value")) {
-            logger.print("System / Gadget-Remote", "Received characteristic update");
-            auto target_gadget = gadgets.getGadget(req_body["name"]);
-            if (target_gadget != nullptr) {
-                auto characteristic = getCharacteristicFromInt(req_body["characteristic"].as<int>());
-                if (characteristic != GadgetCharacteristic::None) {
-                    logger.incIndent();
-                    lockUpdates();
-                    int value = req_body["value"].as<int>();
-                    target_gadget->handleCharacteristicUpdate(characteristic, value);
-                    unlockUpdates();
-                    logger.decIndent();
-                } else {
-                    logger.print(LOG_TYPE::ERR, "Illegal err_characteristic 0");
-                }
+/**
+ * Method that handles a request to receive a characteristic update
+ * @param req Request that demands the characteristic update
+ */
+void handleGadgetCharacteristicUpdateRequest(const std::shared_ptr<Request>& req) {
+    auto req_body = req->getPayload();
+    if (req_body.containsKey("name") && req_body.containsKey("characteristic") && req_body.containsKey("value")) {
+        logger.print("System / Gadget-Remote", "Received characteristic update");
+        auto target_gadget = gadgets.getGadget(req_body["name"]);
+        if (target_gadget != nullptr) {
+            auto characteristic = getCharacteristicFromInt(req_body["characteristic"].as<int>());
+            if (characteristic != GadgetCharacteristic::None) {
+                logger.incIndent();
+                lockUpdates();
+                int value = req_body["value"].as<int>();
+                target_gadget->handleCharacteristicUpdate(characteristic, value);
+                unlockUpdates();
+                logger.decIndent();
             } else {
-                logger.print("Unknown Gadget");
+                logger.print(LOG_TYPE::ERR, "Illegal err_characteristic 0");
             }
+        } else {
+            logger.print("Unknown Gadget");
         }
-    } else {
-        logger.println("System / Homebridge-Remote", "Received uncomplete Request");
     }
 }
 
-void handleSystemRequest(Request *req) {
+void handleSystemRequest(const std::shared_ptr<Request>& req) {
 
     DynamicJsonDocument json_body = req->getPayload();
 
@@ -820,7 +799,7 @@ void handleSystemRequest(Request *req) {
     req->respond(false);
 }
 
-void handleRequest(Request *req) {
+void handleRequest(const std::shared_ptr<Request>& req) {
     std::string req_path = req->getPath();
     if (!req->hasReceiver()) {
         req->updateReceiver(client_id_);
@@ -846,16 +825,32 @@ void handleRequest(Request *req) {
         }
     }
 
-    for (const auto& list_path: additional_request_paths) {
-        if (req_path.compare(0, list_path.length(), list_path) == 0) {
-            handleGadgetRemoteRequest(req);
-            // TODO: replace native request pointer with smart pointer
-
-            return;
-        }
+    // Checks for characteristic update request
+    if (req->getPath() == PATH_UPDATE_FROM_BRIDGE) {
+        handleGadgetCharacteristicUpdateRequest(req);
+        return;
     }
 
     logger.printfln(LOG_TYPE::ERR, "Received request to unconfigured path");
+}
+
+void handleNetwork() {
+    if (network_gadget == nullptr) {
+        return;
+    }
+    if (network_gadget->hasRequest()) {
+        std::string type;
+        std::shared_ptr<Request> req = network_gadget->getRequest();
+        RequestGadgetType g_type = network_gadget->getGadgetType();
+        if (g_type == RequestGadgetType::MQTT_G)
+            type = "MQTT";
+        else if (g_type == RequestGadgetType::SERIAL_G)
+            type = "Serial";
+        else
+            type = "<o.O>";
+        logger.printfln("[%s] '%s': %s", type.c_str(), req->getPath().c_str(), req->getBody().c_str());
+        handleRequest(req);
+    }
 }
 
 void testStuff() {
@@ -920,8 +915,6 @@ void initModeComplete() {
     }
 
     initConnectors();
-
-    initRemotes();
 
     initGadgets();
 
