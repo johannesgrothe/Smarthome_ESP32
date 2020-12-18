@@ -2,8 +2,7 @@
 
 void Code_Gadget::setCommand(CodeType type, unsigned long new_command) {
   has_news_ = true;
-  auto *buf_com(new CodeCommand(type, new_command, system_timer.getTime()));
-  com_ = buf_com;
+  com_ = std::make_shared<CodeCommand>(type, new_command, system_timer.getTime());
 }
 
 Code_Gadget::Code_Gadget() :
@@ -22,6 +21,6 @@ bool Code_Gadget::hasNewCommand() {
   return buffer;
 }
 
-CodeCommand *Code_Gadget::getCommand() {
+std::shared_ptr<CodeCommand> Code_Gadget::getCommand() {
   return com_;
 }

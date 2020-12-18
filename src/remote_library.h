@@ -1,8 +1,5 @@
 #pragma once
 
-// include all possible remotes here
-#include "remotes/smarthome_code_remote.h"
-
 /**
  * Every possible gadget remote mode
  */

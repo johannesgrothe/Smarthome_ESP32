@@ -9,6 +9,10 @@
 
 // Gadget-Lib
 #include "gadgets/gadget_library.h"
+#include "gadgets/gadget_enums.h"
+
+// Code-Buffer
+#include "connectors/code_command_buffer.h"
 
 // Tools
 #include "console_logger.h"
@@ -27,6 +31,10 @@
 
 #include "pin_profile.h"
 #include "color.h"
+
+#include "ArduinoJson.h"
+#include "connectors/mqtt_gadget.h"
+#include "connectors/serial_gadget.h"
 
 /**
  * Reboots the chip and prints out the given message
@@ -99,7 +107,7 @@ std::shared_ptr<Request_Gadget> network_gadget;
 
 Gadget_Collection gadgets;
 
-std::shared_ptr<CodeRemote> code_remote;
+CodeCommandBuffer codes;
 
 BootMode system_mode = BootMode::Unknown_Mode;
 
@@ -142,6 +150,67 @@ void forwardEvent(const std::shared_ptr<Event>& event){
     for (int i = 0; i < gadgets.getGadgetCount(); i++){
         gadgets[i]->handleEvent(event->getSender(), event->getType());
     }
+}
+
+void addCodeToBuffer(const std::shared_ptr<CodeCommand>& code) {
+    if (!codes.codeIsDoubled(code)) {
+        codes.addCode(code);
+        codes.print();
+    } else {
+        logger.println(LOG_TYPE::ERR, "Ignoring: Double Code");
+    }
+}
+
+void forwardCodeToGadgets(const std::shared_ptr<CodeCommand>& code) {
+    logger.print("Forwarding Code to ");
+    logger.print(gadgets.getGadgetCount());
+    logger.println(" Gadgets:");
+    logger.incIndent();
+    for (int i = 0; i < gadgets.getGadgetCount(); i++) {
+        gadgets[i]->handleCodeUpdate(code->getCode());
+    }
+    logger.decIndent();
+}
+
+void forwardAllCodes() {
+    while (codes.hasNewCode()) {
+        forwardCodeToGadgets(codes.getCode());
+    }
+}
+
+void sendCodeToRemote(const std::shared_ptr<CodeCommand>& code) {
+    if (!network_gadget) {
+        return;
+    }
+
+    if (code->getType() == IR_UNKNOWN_C || code->getType() == UNKNOWN_C) {
+        return;
+    }
+
+    unsigned long ident = micros();
+    DynamicJsonDocument doc(2000);
+
+    doc["request_id"] = ident;
+    doc["type"] = int(code->getType());
+    doc["code"] = code->getCode();
+    doc["timestamp"] = code->getTimestamp();
+
+    network_gadget->sendRequest(std::make_shared<Request>("smarthome/to/code",
+                                                                  ident,
+                                                                  client_id_,
+                                                                  "<bridge>",
+                                                                  doc));
+}
+
+void handleNewCodeFromGadget(const std::shared_ptr<CodeCommand>& code) {
+    addCodeToBuffer(code);
+    sendCodeToRemote(code);
+    forwardAllCodes();
+}
+
+void handleNewCodeFromRequest(const std::shared_ptr<CodeCommand>& code) {
+    addCodeToBuffer(code);
+    forwardAllCodes();
 }
 
 // ===== START METHODS =====
@@ -422,15 +491,13 @@ void handleCodeConnector(const std::shared_ptr<Code_Gadget> &gadget) {
         return;
     }
     if (gadget->hasNewCommand()) {
-        CodeCommand *com = gadget->getCommand();
+        auto com = gadget->getCommand();
         logger.print("Command: ");
         logger.println(com->getCode());
 
-        if (code_remote != nullptr) {
-            logger.incIndent();
-            code_remote->handleNewCodeFromGadget(com);
-            logger.decIndent();
-        }
+        logger.incIndent();
+        handleNewCodeFromGadget(com);
+        logger.decIndent();
     }
 }
 

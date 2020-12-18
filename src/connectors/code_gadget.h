@@ -5,13 +5,13 @@
 #include "../console_logger.h"
 #include "../system_timer.h"
 #include "code_command.h"
+#include <memory>
 
 class Code_Gadget {
 protected:
   bool code_gadget_is_ready_;
 
-  // TODO: Use Queue
-  CodeCommand *com_;
+  std::shared_ptr<CodeCommand> com_;
 
   bool has_news_;
 
@@ -26,5 +26,5 @@ public:
 
   bool hasNewCommand();
 
-  CodeCommand *getCommand();
+  std::shared_ptr<CodeCommand> getCommand();
 };

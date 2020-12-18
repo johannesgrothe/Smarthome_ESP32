@@ -13,7 +13,7 @@
 #include "../connectors/ir_gadget.h"
 #include "../connectors/radio_gadget.h"
 #include "gadget_enums.h"
-#include "../remotes/Event.h"
+#include "connectors/event.h"
 
 // Pair for mapping
 using mapping_pair = std::tuple<GadgetMethod, std::vector<unsigned long>>;
@@ -133,7 +133,6 @@ public:
 
   DynamicJsonDocument serialized() {
       DynamicJsonDocument ser_doc(2000);
-      unsigned long ident = micros() % 7023;
 
       ser_doc["gadget_type"] = int(type);
       ser_doc["gadget_name"] = name;
