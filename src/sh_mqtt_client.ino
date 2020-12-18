@@ -397,29 +397,55 @@ void handleCodeConnector(const std::shared_ptr<Code_Gadget> &gadget) {
 }
 
 /**
+ * Method to check if request payload contains all of the selected keys. respondes a false ack if any of them misses
+ * @param req Request to ckeck payload off
+ * @param key_list The list of all the keys that need to be present
+ * @return Whether all keys were present
+ */
+static bool checkPayloadForKeys(const std::shared_ptr<Request>& req, const std::vector<std::string>& key_list) {
+    DynamicJsonDocument json_body = req->getPayload();
+
+    for (const auto& key: key_list) {
+        if (!json_body.containsKey(key)) {
+            logger.printfln(LOG_TYPE::ERR, "'%s' missing in request", key);
+            std::stringstream sstr;
+            sstr << "Key missing in payload: '" << key << "'." << std::endl;
+            req->respond(false, sstr.str());
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
  * Method that handles a request to receive a characteristic update
  * @param req Request that demands the characteristic update
  */
 void handleGadgetCharacteristicUpdateRequest(const std::shared_ptr<Request>& req) {
+
+    // Check payload for missing keys
+    if (!checkPayloadForKeys(req, {"name", "characteristic", "value"})) {
+        return;
+    }
+
     auto req_body = req->getPayload();
-    if (req_body.containsKey("name") && req_body.containsKey("characteristic") && req_body.containsKey("value")) {
-        logger.print("System / Gadget-Remote", "Received characteristic update");
-        auto target_gadget = gadgets.getGadget(req_body["name"]);
-        if (target_gadget != nullptr) {
-            auto characteristic = getCharacteristicFromInt(req_body["characteristic"].as<int>());
-            if (characteristic != GadgetCharacteristic::None) {
-                logger.incIndent();
-                lockUpdates();
-                int value = req_body["value"].as<int>();
-                target_gadget->handleCharacteristicUpdate(characteristic, value);
-                unlockUpdates();
-                logger.decIndent();
-            } else {
-                logger.print(LOG_TYPE::ERR, "Illegal err_characteristic 0");
-            }
+
+    logger.print("System / Gadget-Remote", "Received characteristic update");
+    auto target_gadget = gadgets.getGadget(req_body["name"]);
+    if (target_gadget != nullptr) {
+        auto characteristic = getCharacteristicFromInt(req_body["characteristic"].as<int>());
+        if (characteristic != GadgetCharacteristic::None) {
+            logger.incIndent();
+            lockUpdates();
+            int value = req_body["value"].as<int>();
+            target_gadget->handleCharacteristicUpdate(characteristic, value);
+            unlockUpdates();
+            logger.decIndent();
         } else {
-            logger.print("Unknown Gadget");
+            logger.print(LOG_TYPE::ERR, "Illegal err_characteristic 0");
         }
+    } else {
+        logger.print("Unknown Gadget");
     }
 }
 
@@ -430,6 +456,12 @@ void handleBroadcastRequest(const std::shared_ptr<Request>& req) {
 }
 
 void handleSystemControlRequest(const std::shared_ptr<Request>& req) {
+
+    // Check payload for missing keys
+    if (!checkPayloadForKeys(req, {"subject"})) {
+        return;
+    }
+
     DynamicJsonDocument json_body = req->getPayload();
 
     auto subject = json_body["subject"].as<std::string>();
@@ -445,6 +477,12 @@ void handleSystemControlRequest(const std::shared_ptr<Request>& req) {
 }
 
 void handleConfigResetRequest(const std::shared_ptr<Request>& req) {
+
+    // Check payload for missing keys
+    if (!checkPayloadForKeys(req, {"reset_option"})) {
+        return;
+    }
+
     DynamicJsonDocument json_body = req->getPayload();
 
     // part of config to reset
@@ -483,6 +521,12 @@ void handleConfigResetRequest(const std::shared_ptr<Request>& req) {
 }
 
 void handleConfigWriteRequest(const std::shared_ptr<Request>& req) {
+
+    // Check payload for missing keys
+    if (!checkPayloadForKeys(req, {"param", "value"})) {
+        return;
+    }
+
     DynamicJsonDocument json_body = req->getPayload();
 
     // Parameter to write
@@ -602,6 +646,191 @@ void handleConfigWriteRequest(const std::shared_ptr<Request>& req) {
     }
 }
 
+void handleConfigReadRequest(const std::shared_ptr<Request>& req) {
+
+    // Check payload for missing keys
+    if (!checkPayloadForKeys(req, {"param"})) {
+        return;
+    }
+
+    DynamicJsonDocument json_body = req->getPayload();
+
+    auto param_name = json_body["param"].as<std::string>();
+    bool read_successful = false;
+    std::string read_val_str;
+    uint8_t read_val_uint;
+
+    logger.printfln("Read param '%s'", param_name.c_str());
+
+    // read wifi ssid
+    if (param_name == "wifi_ssid") {
+        read_successful = true;
+        read_val_str = System_Storage::readWifiSSID();
+    }
+
+    // read mqtt ip
+    if (param_name == "mqtt_ip") {
+        read_successful = true;
+        std::stringstream sstr;
+        sstr << System_Storage::readMQTTIP().toString().c_str();
+        read_val_str = sstr.str();
+    }
+
+    // read mqtt port
+    if (param_name == "mqtt_port") {
+        read_successful = true;
+        std::stringstream sstr;
+        sstr << System_Storage::readMQTTPort();
+        read_val_str = sstr.str();
+    }
+
+    // read mqtt username
+    if (param_name == "mqtt_user") {
+        read_successful = true;
+        read_val_str = System_Storage::readMQTTUsername();
+    }
+
+    // send response if read was successful
+    if (read_successful) {
+        DynamicJsonDocument doc(100);
+        doc["value"] = read_val_str;
+        req->respond(doc);
+        return;
+    }
+
+    // read irrecv pin
+    if (param_name == "irrecv_pin") {
+        read_successful = true;
+        read_val_uint = System_Storage::readIRrecvPin();
+    }
+
+    // read irsend pin
+    else if (param_name == "irsend_pin") {
+        read_successful = true;
+        read_val_uint = System_Storage::readIRsendPin();
+    }
+
+    // read radio recv pin
+    else if (param_name == "radio_recv_pin") {
+        read_successful = true;
+        read_val_uint = System_Storage::readRadioRecvPin();
+    }
+
+    // read radio send pin
+    else if (param_name == "radio_send_pin") {
+        read_successful = true;
+        read_val_uint = System_Storage::readRadioSendPin();
+    }
+
+    // read network mode
+    else if (param_name == "network_mode") {
+        read_successful = true;
+        read_val_uint = (uint8_t) System_Storage::readNetworkMode();
+    }
+
+    // read gadget remote
+    else if (param_name == "gadget_remote") {
+        read_successful = true;
+        read_val_uint = (uint8_t) System_Storage::readGadgetRemote();
+    }
+
+    // read code remote
+    else if (param_name == "code_remote") {
+        read_successful = true;
+        read_val_uint = (uint8_t) System_Storage::readCodeRemote();
+    }
+
+    // read event_remote
+    else if (param_name == "event_remote") {
+        read_successful = true;
+        read_val_uint = (uint8_t) System_Storage::readEventRemote();
+    }
+
+    // send response if read was successful
+    if (read_successful) {
+        DynamicJsonDocument doc(100);
+        doc["value"] = read_val_uint;
+        req->respond(doc);
+        return;
+    }
+}
+
+void handleGadgetWriteRequest(const std::shared_ptr<Request>& req) {
+    // Check payload for missing keys
+    if (!checkPayloadForKeys(req, {"type", "name"})) {
+        return;
+    }
+
+    DynamicJsonDocument json_body = req->getPayload();
+
+    auto type = json_body["type"].as<uint8_t>();
+
+    auto name = json_body["name"].as<std::string>();
+
+    uint8_t port0 = 0;
+    uint8_t port1 = 0;
+    uint8_t port2 = 0;
+    uint8_t port3 = 0;
+    uint8_t port4 = 0;
+
+    if (json_body.containsKey("ports")) {
+        JsonObject ports = json_body["ports"].as<JsonObject>();
+        if (ports.containsKey("port0")) {
+            port0 = ports["port0"].as<uint8_t>();
+        }
+        if (ports.containsKey("port1")) {
+            port1 = ports["port1"].as<uint8_t>();
+        }
+        if (ports.containsKey("port2")) {
+            port2 = ports["port2"].as<uint8_t>();
+        }
+        if (ports.containsKey("port3")) {
+            port3 = ports["port3"].as<uint8_t>();
+        }
+        if (ports.containsKey("port4")) {
+            port4 = ports["port4"].as<uint8_t>();
+        }
+    }
+
+    pin_set pins = {port0, port1, port2, port3, port4};
+
+    std::string gadget_config;
+    std::string code_config;
+
+    if (json_body.containsKey("config")) {
+        gadget_config = json_body["config"].as<std::string>();
+    }
+    if (json_body.containsKey("codes")) {
+        code_config = json_body["codes"].as<std::string>();
+    }
+
+    // Create bitfield
+    bitfield_set remote_bf = {false, false, false, false, false, false, false, false};
+
+    if (json_body.containsKey("remotes")) {
+        JsonObject remote_json = json_body["remotes"].as<JsonObject>();
+        if (remote_json.containsKey("gadget")) {
+            remote_bf[0] = remote_json["gadget"].as<bool>();
+        }
+        if (remote_json.containsKey("code")) {
+            remote_bf[1] = remote_json["code"].as<bool>();
+        }
+        if (remote_json.containsKey("event")) {
+            remote_bf[2] = remote_json["event"].as<bool>();
+        }
+    }
+
+    auto success_tuple = writeGadget(type, remote_bf, pins, name, gadget_config, code_config);
+    bool success = std::get<0>(success_tuple);
+    if (success) {
+        req->respond(true);
+    } else {
+        auto err_msg = std::get<1>(success_tuple);
+        req->respond(false, err_msg);
+    }
+    return;
+}
+
 void xddd(const std::shared_ptr<Request>& req) {
 
 }
@@ -640,185 +869,20 @@ void handleSystemRequest(const std::shared_ptr<Request>& req) {
     }
 
     // Write parameters
-    if (req->getPath() == "smarthome/config/write" && json_body.containsKey("param") && json_body.containsKey("value")) {
+        if (req->getPath() == PATH_CONFIG_WRITE) {
         handleConfigWriteRequest(req);
         return;
     }
 
     // Read parameters
-    if (req->getPath() == "smarthome/config/read" && json_body.containsKey("param")) {
-        auto param_name = json_body["param"].as<std::string>();
-        bool read_successful = false;
-        std::string read_val_str;
-        uint8_t read_val_uint;
-
-        logger.printfln("Read param '%s'", param_name.c_str());
-
-        // read wifi ssid
-        if (param_name == "wifi_ssid") {
-            read_successful = true;
-            read_val_str = System_Storage::readWifiSSID();
-        }
-
-        // read mqtt ip
-        if (param_name == "mqtt_ip") {
-            read_successful = true;
-            std::stringstream sstr;
-            sstr << System_Storage::readMQTTIP().toString().c_str();
-            read_val_str = sstr.str();
-        }
-
-        // read mqtt port
-        if (param_name == "mqtt_port") {
-            read_successful = true;
-            std::stringstream sstr;
-            sstr << System_Storage::readMQTTPort();
-            read_val_str = sstr.str();
-        }
-
-        // read mqtt username
-        if (param_name == "mqtt_user") {
-            read_successful = true;
-            read_val_str = System_Storage::readMQTTUsername();
-        }
-
-        // send response if read was successful
-        if (read_successful) {
-            DynamicJsonDocument doc(100);
-            doc["value"] = read_val_str;
-            req->respond(doc);
-            return;
-        }
-
-        // read irrecv pin
-        if (param_name == "irrecv_pin") {
-            read_successful = true;
-            read_val_uint = System_Storage::readIRrecvPin();
-        }
-
-            // read irsend pin
-        else if (param_name == "irsend_pin") {
-            read_successful = true;
-            read_val_uint = System_Storage::readIRsendPin();
-        }
-
-            // read radio recv pin
-        else if (param_name == "radio_recv_pin") {
-            read_successful = true;
-            read_val_uint = System_Storage::readRadioRecvPin();
-        }
-
-            // read radio send pin
-        else if (param_name == "radio_send_pin") {
-            read_successful = true;
-            read_val_uint = System_Storage::readRadioSendPin();
-        }
-
-            // read network mode
-        else if (param_name == "network_mode") {
-            read_successful = true;
-            read_val_uint = (uint8_t) System_Storage::readNetworkMode();
-        }
-
-            // read gadget remote
-        else if (param_name == "gadget_remote") {
-            read_successful = true;
-            read_val_uint = (uint8_t) System_Storage::readGadgetRemote();
-        }
-
-            // read code remote
-        else if (param_name == "code_remote") {
-            read_successful = true;
-            read_val_uint = (uint8_t) System_Storage::readCodeRemote();
-        }
-
-            // read event_remote
-        else if (param_name == "event_remote") {
-            read_successful = true;
-            read_val_uint = (uint8_t) System_Storage::readEventRemote();
-        }
-
-        // send response if read was successful
-        if (read_successful) {
-            DynamicJsonDocument doc(100);
-            doc["value"] = read_val_uint;
-            req->respond(doc);
-            return;
-        }
+    if (req->getPath() == PATH_CONFIG_READ) {
+        handleConfigReadRequest(req);
+        return;
     }
 
     // Write gadget
-    if (req->getPath() == "smarthome/gadget/add") {
-        if (!json_body.containsKey("type") || !json_body.containsKey("name")) {
-            req->respond(false);
-            return;
-        }
-
-        auto type = json_body["type"].as<uint8_t>();
-
-        auto name = json_body["name"].as<std::string>();
-
-        uint8_t port0 = 0;
-        uint8_t port1 = 0;
-        uint8_t port2 = 0;
-        uint8_t port3 = 0;
-        uint8_t port4 = 0;
-
-        if (json_body.containsKey("ports")) {
-            JsonObject ports = json_body["ports"].as<JsonObject>();
-            if (ports.containsKey("port0")) {
-                port0 = ports["port0"].as<uint8_t>();
-            }
-            if (ports.containsKey("port1")) {
-                port1 = ports["port1"].as<uint8_t>();
-            }
-            if (ports.containsKey("port2")) {
-                port2 = ports["port2"].as<uint8_t>();
-            }
-            if (ports.containsKey("port3")) {
-                port3 = ports["port3"].as<uint8_t>();
-            }
-            if (ports.containsKey("port4")) {
-                port4 = ports["port4"].as<uint8_t>();
-            }
-        }
-
-        pin_set pins = {port0, port1, port2, port3, port4};
-
-        std::string gadget_config;
-        std::string code_config;
-
-        if (json_body.containsKey("config")) {
-            gadget_config = json_body["config"].as<std::string>();
-        }
-        if (json_body.containsKey("codes")) {
-            code_config = json_body["codes"].as<std::string>();
-        }
-
-        // Create bitfield
-        bitfield_set remote_bf = {false, false, false, false, false, false, false, false};
-
-        if (json_body.containsKey("remotes")) {
-            JsonObject remote_json = json_body["remotes"].as<JsonObject>();
-            if (remote_json.containsKey("gadget")) {
-                remote_bf[0] = remote_json["gadget"].as<bool>();
-            }
-            if (remote_json.containsKey("code")) {
-                remote_bf[1] = remote_json["code"].as<bool>();
-            }
-            if (remote_json.containsKey("event")) {
-                remote_bf[2] = remote_json["event"].as<bool>();
-            }
-        }
-
-        auto success_tuple = writeGadget(type, remote_bf, pins, name, gadget_config, code_config);
-        bool success = std::get<0>(success_tuple);
-        if (success) {
-            req->respond(true);
-        } else {
-            auto err_msg = std::get<1>(success_tuple);
-            req->respond(false, err_msg);
-        }
+    if (req->getPath() == PATH_GADGET_WRITE) {
+        handleGadgetWriteRequest(req);
         return;
     }
 
