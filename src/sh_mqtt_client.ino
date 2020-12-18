@@ -423,6 +423,189 @@ void handleGadgetCharacteristicUpdateRequest(const std::shared_ptr<Request>& req
     }
 }
 
+void handleBroadcastRequest(const std::shared_ptr<Request>& req) {
+    logger.println("Broadcast");
+    DynamicJsonDocument doc(10);
+    req->respond("smarthome/broadcast/res", doc);
+}
+
+void handleSystemControlRequest(const std::shared_ptr<Request>& req) {
+    DynamicJsonDocument json_body = req->getPayload();
+
+    auto subject = json_body["subject"].as<std::string>();
+    if (subject == "reboot") {
+        req->respond(true);
+        auto payload = req->getPayload();
+        if (payload.containsKey("message")) {
+            rebootChip(payload["message"]);
+        }
+        rebootChip("Network Request");
+    }
+    req->respond(false);
+}
+
+void handleConfigResetRequest(const std::shared_ptr<Request>& req) {
+    DynamicJsonDocument json_body = req->getPayload();
+
+    // part of config to reset
+    auto reset_option = json_body["reset_option"].as<std::string>();
+
+    bool success = false;
+
+    // reset complete config
+    if (reset_option == "erase") {
+        System_Storage::writeTestEEPROM();
+        System_Storage::resetContentFlag();
+        System_Storage::resetGadgets();
+        success = true;
+    }
+
+    // reset the complete config
+    else if (reset_option == "complete") {
+        System_Storage::resetContentFlag();
+        System_Storage::resetGadgets();
+        success = true;
+    }
+
+    // reset the system config only
+    else if (reset_option == "config") {
+        System_Storage::resetContentFlag();
+        success = true;
+    }
+
+    // reset the complete config
+    else if (reset_option == "gadgets") {
+        System_Storage::resetGadgets();
+        success = true;
+    }
+
+    req->respond(success);
+}
+
+void handleConfigWriteRequest(const std::shared_ptr<Request>& req) {
+    DynamicJsonDocument json_body = req->getPayload();
+
+    // Parameter to write
+    auto param_name = json_body["param"].as<std::string>();
+    // Value to write as std::string
+    auto param_val = json_body["value"].as<std::string>();
+    // Value to write as uint8_t
+    auto param_val_uint = json_body["value"].as<uint8_t>();
+
+    logger.printfln("Write param '%s'", param_name.c_str());
+    bool write_successful = false;
+
+    // write ID
+    if (param_name == "id") {
+        write_successful = System_Storage::writeID(param_val);
+        if (write_successful) {
+            client_id_ = param_val;
+        }
+    }
+
+    // Write Wifi SSID
+    else if (param_name == "wifi_ssid") {
+        write_successful = System_Storage::writeWifiSSID(param_val);
+    }
+
+    // Write Wifi PW
+    else if (param_name == "wifi_pw") {
+        write_successful = System_Storage::writeWifiPW(param_val);
+    }
+
+    // Write MQTT IP
+    else if (param_name == "mqtt_ip") {
+        if (param_val == "null") {
+            write_successful = System_Storage::writeMQTTIP(IPAddress(0, 0, 0, 0));
+        } else {
+            IPAddress buf_ip;
+            buf_ip.fromString(param_val.c_str());
+            write_successful = System_Storage::writeMQTTIP(buf_ip);
+        }
+    }
+
+    // Write MQTT Port
+    else if (param_name == "mqtt_port") {
+        write_successful = System_Storage::writeMQTTPort((uint16_t) atoi(param_val.c_str()));
+    }
+
+    // Write MQTT User
+    else if (param_name == "mqtt_user") {
+        write_successful = System_Storage::writeMQTTUsername(param_val);
+    }
+
+    // Write MQTT PW
+    else if (param_name == "mqtt_pw") {
+        write_successful = System_Storage::writeMQTTPassword(param_val);
+    }
+
+    // Write IR recv
+    else if (param_name == "irrecv_pin") {
+        write_successful = System_Storage::writeIRrecvPin(param_val_uint);
+    }
+
+    // Write IR send
+    else if (param_name == "irsend_pin") {
+        write_successful = System_Storage::writeIRsendPin(param_val_uint);
+    }
+
+    // Write radio receiver pin
+    else if (param_name == "radio_recv_pin") {
+        write_successful = System_Storage::writeRadioRecvPin(param_val_uint);
+    }
+
+    // Write radio sender pin
+    else if (param_name == "radio_send_pin") {
+        write_successful = System_Storage::writeRadioSendPin(param_val_uint);
+    }
+
+    // Write network mode
+    else if (param_name == "network_mode") {
+        if (param_val_uint < NetworkModeCount) {
+            write_successful = System_Storage::writeNetworkMode((NetworkMode) param_val_uint);
+        } else {
+            write_successful = false;
+        }
+    }
+
+    // Write gadget remote
+    else if (param_name == "gadget_remote") {
+        if (param_val_uint < GadgetRemoteModeCount) {
+            write_successful = System_Storage::writeGadgetRemote((GadgetRemoteMode) param_val_uint);
+        } else {
+            write_successful = false;
+        }
+    }
+
+    // Write code remote
+    else if (param_name == "code_remote") {
+        if (param_val_uint < CodeRemoteModeCount) {
+            write_successful = System_Storage::writeCodeRemote((CodeRemoteMode) param_val_uint);
+        } else {
+            write_successful = false;
+        }
+    }
+
+    // Write event remote
+    else if (param_name == "event_remote") {
+        if (param_val_uint < EventRemoteModeCount) {
+            write_successful = System_Storage::writeEventRemote((EventRemoteMode) param_val_uint);
+        } else {
+            write_successful = false;
+        }
+    }
+
+    req->respond(write_successful);
+
+    if (param_name == "id" && write_successful) {
+        client_id_ = param_val;
+    }
+}
+
+void xddd(const std::shared_ptr<Request>& req) {
+
+}
+
 void handleSystemRequest(const std::shared_ptr<Request>& req) {
 
     DynamicJsonDocument json_body = req->getPayload();
@@ -436,10 +619,8 @@ void handleSystemRequest(const std::shared_ptr<Request>& req) {
     logger.println("System command received");
 
     // React to broadcast
-    if (req->getPath() == "smarthome/broadcast/req") {
-        logger.println("Broadcast");
-        DynamicJsonDocument doc(10);
-        req->respond("smarthome/broadcast/res", doc);
+    if (req->getPath() == PATH_BROADCAST) {
+        handleBroadcastRequest(req);
         return;
     }
 
@@ -447,175 +628,20 @@ void handleSystemRequest(const std::shared_ptr<Request>& req) {
     logger.println("Directed Request");
 
     // system commands
-    if (req->getPath() == "smarthome/sys") {
-        auto subject = json_body["subject"].as<std::string>();
-        if (subject == "reboot") {
-            req->respond(true);
-            auto payload = req->getPayload();
-            if (payload.containsKey("message")) {
-                rebootChip(payload["message"]);
-            }
-            rebootChip("Network Request");
-        }
-        req->respond(false);
+    if (req->getPath() == PATH_SYSTEM_CONTROL) {
+        handleSystemControlRequest(req);
         return;
     }
 
     // Reset config
-    if (req->getPath() == "smarthome/config/reset") {
-        // part of config to reset
-        auto reset_option = json_body["reset_option"].as<std::string>();
-
-        bool success = false;
-
-        // reset complete config
-        if (reset_option == "erase") {
-            System_Storage::writeTestEEPROM();
-            System_Storage::resetContentFlag();
-            System_Storage::resetGadgets();
-            success = true;
-        }
-
-            // reset the complete config
-        else if (reset_option == "complete") {
-            System_Storage::resetContentFlag();
-            System_Storage::resetGadgets();
-            success = true;
-        }
-
-            // reset the system config only
-        else if (reset_option == "config") {
-            System_Storage::resetContentFlag();
-            success = true;
-        }
-
-            // reset the complete config
-        else if (reset_option == "gadgets") {
-            System_Storage::resetGadgets();
-            success = true;
-        }
-
-        req->respond(success);
+    if (req->getPath() == PATH_CONFIG_RESET) {
+        handleConfigResetRequest(req);
         return;
     }
 
     // Write parameters
     if (req->getPath() == "smarthome/config/write" && json_body.containsKey("param") && json_body.containsKey("value")) {
-        // Parameter to write
-        auto param_name = json_body["param"].as<std::string>();
-        // Value to write as std::string
-        auto param_val = json_body["value"].as<std::string>();
-        // Value to write as uint8_t
-        auto param_val_uint = json_body["value"].as<uint8_t>();
-
-        logger.printfln("Write param '%s'", param_name.c_str());
-        bool write_successful = false;
-
-        // write ID
-        if (param_name == "id") {
-            write_successful = System_Storage::writeID(param_val);
-            if (write_successful) {
-                client_id_ = param_val;
-            }
-        }
-
-            // Write Wifi SSID
-        else if (param_name == "wifi_ssid") {
-            write_successful = System_Storage::writeWifiSSID(param_val);
-        }
-
-            // Write Wifi PW
-        else if (param_name == "wifi_pw") {
-            write_successful = System_Storage::writeWifiPW(param_val);
-        }
-
-            // Write MQTT IP
-        else if (param_name == "mqtt_ip") {
-            if (param_val == "null") {
-                write_successful = System_Storage::writeMQTTIP(IPAddress(0, 0, 0, 0));
-            } else {
-                IPAddress buf_ip;
-                buf_ip.fromString(param_val.c_str());
-                write_successful = System_Storage::writeMQTTIP(buf_ip);
-            }
-        }
-
-            // Write MQTT Port
-        else if (param_name == "mqtt_port") {
-            write_successful = System_Storage::writeMQTTPort((uint16_t) atoi(param_val.c_str()));
-        }
-
-            // Write MQTT User
-        else if (param_name == "mqtt_user") {
-            write_successful = System_Storage::writeMQTTUsername(param_val);
-        }
-
-            // Write MQTT PW
-        else if (param_name == "mqtt_pw") {
-            write_successful = System_Storage::writeMQTTPassword(param_val);
-        }
-
-            // Write IR recv
-        else if (param_name == "irrecv_pin") {
-            write_successful = System_Storage::writeIRrecvPin(param_val_uint);
-        }
-
-            // Write IR send
-        else if (param_name == "irsend_pin") {
-            write_successful = System_Storage::writeIRsendPin(param_val_uint);
-        }
-
-            // Write radio receiver pin
-        else if (param_name == "radio_recv_pin") {
-            write_successful = System_Storage::writeRadioRecvPin(param_val_uint);
-        }
-
-            // Write radio sender pin
-        else if (param_name == "radio_send_pin") {
-            write_successful = System_Storage::writeRadioSendPin(param_val_uint);
-        }
-
-            // Write network mode
-        else if (param_name == "network_mode") {
-            if (param_val_uint < NetworkModeCount) {
-                write_successful = System_Storage::writeNetworkMode((NetworkMode) param_val_uint);
-            } else {
-                write_successful = false;
-            }
-        }
-
-            // Write gadget remote
-        else if (param_name == "gadget_remote") {
-            if (param_val_uint < GadgetRemoteModeCount) {
-                write_successful = System_Storage::writeGadgetRemote((GadgetRemoteMode) param_val_uint);
-            } else {
-                write_successful = false;
-            }
-        }
-
-            // Write code remote
-        else if (param_name == "code_remote") {
-            if (param_val_uint < CodeRemoteModeCount) {
-                write_successful = System_Storage::writeCodeRemote((CodeRemoteMode) param_val_uint);
-            } else {
-                write_successful = false;
-            }
-        }
-
-            // Write event remote
-        else if (param_name == "event_remote") {
-            if (param_val_uint < EventRemoteModeCount) {
-                write_successful = System_Storage::writeEventRemote((EventRemoteMode) param_val_uint);
-            } else {
-                write_successful = false;
-            }
-        }
-
-        req->respond(write_successful);
-
-        if (param_name == "id" && write_successful) {
-            client_id_ = param_val;
-        }
+        handleConfigWriteRequest(req);
         return;
     }
 
@@ -917,40 +943,6 @@ void initModeComplete() {
     initConnectors();
 
     initGadgets();
-
-    char client_str[50]{};
-    unsigned long ident = micros() % 7023;
-//  snprintf(client_str, 50, R"({"request_id": %lu, "id": "%s"})", ident, client_name);
-//  network_gadget->sendRequest(new Request("smarthome/to/client/add", client_str));
-    // TODO: initialize time sync
-    unsigned long const start_time = millis();
-//  while (start_time + 5000 > millis()) {
-//    if (!network_gadget->hasRequest()) {
-//      network_gadget->refresh();
-//    } else {
-//      Request *resp = network_gadget->getRequest();
-//      if (resp->getPath() == "smarthome/from/response" && getIdent(resp->getPayload()) == ident) {
-//        DynamicJsonDocument time_json(2048);
-//        DeserializationError err = deserializeJson(time_json, resp->getPayload());
-//        if (err == DeserializationError::Ok) {
-//          unsigned long time_offset = (millis() - start_time) / 2;
-//          JsonObject json_obj = time_json.as<JsonObject>();
-//          if (json_obj["ack"] != nullptr) {
-//            if (json_obj["ack"].as<bool>()) {
-//              logger.println("Adding Gadget succesfull.");
-//              if (json_obj["time"] != nullptr) {
-//                unsigned long long new_time = json_obj["time"].as<unsigned long long>();
-//                system_timer.setTime(new_time, time_offset);
-//              }
-//            } else {
-//              logger.println(LOG_TYPE::ERR, "Registering Client failed");
-//            }
-//          }
-//        }
-//      }
-//      delete resp;
-//    }
-//  }
 }
 
 // ===== REFRESHERS =====
