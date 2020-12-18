@@ -28,6 +28,10 @@
 #include "pin_profile.h"
 #include "color.h"
 
+/**
+ * Reboots the chip and prints out the given message
+ * @param reason The reason to print to the terminal
+ */
 static void rebootChip(const std::string& reason) {
     if (!reason.empty()) {
         logger.print("Rebooting Chip because: '");
@@ -99,34 +103,51 @@ std::shared_ptr<CodeRemote> code_remote;
 
 BootMode system_mode = BootMode::Unknown_Mode;
 
-unsigned long last_req_id_;
-
 bool eeprom_active_;
 
 TaskHandle_t main_task;
 TaskHandle_t network_task;
 
-bool lock_updates = false;
+bool lock_gadget_updates = false;
 
 // ===== REMOTE METHODS =====
 
-void lockUpdates() {
+/**
+ * Prevents gadgets from getting updates
+ */
+void lockGadgetUpdates() {
     logger.println("Locking Updates");
-    lock_updates = true;
+    lock_gadget_updates = true;
 }
 
-void unlockUpdates() {
+/**
+ * Lets gadgets receive characteristic updates
+ */
+void unlockGadgetUpdates() {
     logger.println("Unlocking Updates");
-    lock_updates = false;
+    lock_gadget_updates = false;
 }
 
-bool updatesAreLocked() { return lock_updates; }
+/**
+ * returns whether gadgets are currently allowed to receive updates
+ * @return Whether gadgets are currently allowed to receive updates
+ */
+bool gadgetUpdatesAreLocked() { return lock_gadget_updates; }
 
+/**
+ * forwards an event to all gadgets
+ * @param event
+ */
+void forwardEvent(const std::shared_ptr<Event>& event){
+    for (int i = 0; i < gadgets.getGadgetCount(); i++){
+        gadgets[i]->handleEvent(event->getSender(), event->getType());
+    }
+}
 
 // ===== START METHODS =====
 
 void updateCharacteristicOnBridge(const std::string& gadget_name, GadgetCharacteristic characteristic, int value) {
-    if (updatesAreLocked()) return;
+    if (gadgetUpdatesAreLocked()) return;
     auto target_gadget = gadgets.getGadget(gadget_name);
 
     if (!target_gadget) {
@@ -147,8 +168,25 @@ void updateCharacteristicOnBridge(const std::string& gadget_name, GadgetCharacte
     network_gadget->sendRequest(out_req);
 }
 
-void updateEventRemote(const string& sender, EventType type) {
-//    event_remote->sendEvent(std::move(sender), type);
+void updateEventOnBridge(const string& sender, EventType type) {
+    if (sender.empty()) {
+        logger.println("no sender specified, no event send");
+        return;
+    }
+    unsigned long long timestamp = millis();
+    auto event_buf = std::make_shared<Event>(sender, timestamp, type);
+
+    DynamicJsonDocument req_doc(2000);
+
+    req_doc["name"] = sender;
+    req_doc["timestamp"] = timestamp;
+    req_doc["event_type"] = int(type);
+
+    auto out_req = std::make_shared<Request>("smarthome/remotes/event/send", timestamp, client_id_, "<remote>", req_doc);
+
+    network_gadget->sendRequest(out_req);
+
+    forwardEvent(event_buf);
 }
 
 bool initGadgets() {
@@ -209,7 +247,7 @@ bool initGadgets() {
                     using std::placeholders::_3;
 
                     buf_gadget->setGadgetRemoteCallback(std::bind(&updateCharacteristicOnBridge, _1, _2, _3));
-                    buf_gadget->setEventRemoteCallback(std::bind(&updateEventRemote, _1, _2));
+                    buf_gadget->setEventRemoteCallback(std::bind(&updateEventOnBridge, _1, _2));
 
                     logger.decIndent();
                 }
@@ -436,10 +474,10 @@ void handleGadgetCharacteristicUpdateRequest(const std::shared_ptr<Request>& req
         auto characteristic = getCharacteristicFromInt(req_body["characteristic"].as<int>());
         if (characteristic != GadgetCharacteristic::None) {
             logger.incIndent();
-            lockUpdates();
+            lockGadgetUpdates();
             int value = req_body["value"].as<int>();
             target_gadget->handleCharacteristicUpdate(characteristic, value);
-            unlockUpdates();
+            unlockGadgetUpdates();
             logger.decIndent();
         } else {
             logger.print(LOG_TYPE::ERR, "Illegal err_characteristic 0");
@@ -447,6 +485,25 @@ void handleGadgetCharacteristicUpdateRequest(const std::shared_ptr<Request>& req
     } else {
         logger.print("Unknown Gadget");
     }
+}
+
+void handleEventUpdateRequest(const std::shared_ptr<Request>& req) {
+
+    // Check payload for missing keys
+    if (!checkPayloadForKeys(req, {"name", "timestamp", "event_type"})) {
+        return;
+    }
+
+    auto req_body = req->getPayload();
+
+    logger.print("System / Event-Remote", "Received event_type update");
+    logger.incIndent();
+    auto sender = req_body["name"].as<string>();
+    auto timestamp = req_body["timestamp"].as<unsigned long long>();
+    auto type = EventType(req_body["event_type"].as<int>());
+    auto event_buf = std::make_shared<Event>(sender, timestamp, type);
+    forwardEvent(event_buf);
+    logger.decIndent();
 }
 
 void handleBroadcastRequest(const std::shared_ptr<Request>& req) {
@@ -889,6 +946,10 @@ void handleSystemRequest(const std::shared_ptr<Request>& req) {
     req->respond(false);
 }
 
+/**
+ * Handles a request gotten from the network gadget
+ * @param req Request to handle
+ */
 void handleRequest(const std::shared_ptr<Request>& req) {
     std::string req_path = req->getPath();
     if (!req->hasReceiver()) {
@@ -916,14 +977,23 @@ void handleRequest(const std::shared_ptr<Request>& req) {
     }
 
     // Checks for characteristic update request
-    if (req->getPath() == PATH_UPDATE_FROM_BRIDGE) {
+    if (req->getPath() == PATH_CHARACTERISTIC_UPDATE_FROM_BRIDGE) {
         handleGadgetCharacteristicUpdateRequest(req);
+        return;
+    }
+
+    // Check for request containing new event
+    if (req->getPath() == PATH_EVENT_UPDATE_FROM_BRIDGE) {
+        handleEventUpdateRequest(req);
         return;
     }
 
     logger.printfln(LOG_TYPE::ERR, "Received request to unconfigured path");
 }
 
+/**
+ * Gets new requests from the network gadget.
+ */
 void handleNetwork() {
     if (network_gadget == nullptr) {
         return;
@@ -943,6 +1013,9 @@ void handleNetwork() {
     }
 }
 
+/**
+ * Test-Fuction for debugging
+ */
 void testStuff() {
     logger.println("Testing Stuff");
     logger.incIndent();

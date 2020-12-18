@@ -17,5 +17,11 @@ public:
 
   Event(std::string , unsigned long long , EventType );
 
+  std::string getSender();
+
+  unsigned long long getTimestamp();
+
+  EventType getType();
+
 };
 

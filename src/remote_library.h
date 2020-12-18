@@ -2,7 +2,6 @@
 
 // include all possible remotes here
 #include "remotes/smarthome_code_remote.h"
-#include "remotes/smarthome_event_remote.h"
 
 /**
  * Every possible gadget remote mode

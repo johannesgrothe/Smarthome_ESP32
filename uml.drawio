@@ -525,7 +525,7 @@
         <mxCell id="vfNDVRDWI49IqqNghzil-1" value="Remote" style="swimlane;fontStyle=2;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=none;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;" parent="1" vertex="1">
           <mxGeometry x="-560" y="-350" width="705" height="424" as="geometry" />
         </mxCell>
-        <mxCell id="Lzvt-awx7u4jwX_vymV8-1" value="- lock_updates: bool" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-1" vertex="1">
+        <mxCell id="Lzvt-awx7u4jwX_vymV8-1" value="- lock_gadget_updates: bool" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-1" vertex="1">
           <mxGeometry y="26" width="705" height="26" as="geometry" />
         </mxCell>
         <mxCell id="tup9LoGHmV5f9MwEpz5L-15" value="- network_initialized: bool" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-1" vertex="1">
@@ -540,13 +540,13 @@
         <mxCell id="tup9LoGHmV5f9MwEpz5L-16" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-1" vertex="1">
           <mxGeometry y="130" width="705" height="8" as="geometry" />
         </mxCell>
-        <mxCell id="tup9LoGHmV5f9MwEpz5L-19" value="# updatesAreLocked(): bool" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-1" vertex="1">
+        <mxCell id="tup9LoGHmV5f9MwEpz5L-19" value="# gadgetUpdatesAreLocked(): bool" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-1" vertex="1">
           <mxGeometry y="138" width="705" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="tup9LoGHmV5f9MwEpz5L-20" value="# lockUpdates(): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-1" vertex="1">
+        <mxCell id="tup9LoGHmV5f9MwEpz5L-20" value="# lockGadgetUpdates(): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-1" vertex="1">
           <mxGeometry y="164" width="705" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="tup9LoGHmV5f9MwEpz5L-21" value="# unlockUpdates(): void&#xa;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-1" vertex="1">
+        <mxCell id="tup9LoGHmV5f9MwEpz5L-21" value="# unlockGadgetUpdates(): void&#xa;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-1" vertex="1">
           <mxGeometry y="190" width="705" height="26" as="geometry" />
         </mxCell>
         <mxCell id="vfNDVRDWI49IqqNghzil-36" value="# virtual handleRequest(path: const char *, body: const char *): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=2" parent="vfNDVRDWI49IqqNghzil-1" vertex="1">
