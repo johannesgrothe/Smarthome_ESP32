@@ -8,14 +8,14 @@ Event::Event(std::string sender, unsigned long long int timestamp, EventType eve
   timestamp(timestamp),
   event_type(event_type){}
 
-std::string Event::getSender() {
+std::string Event::getSender() const {
     return sender;
 }
 
-unsigned long long Event::getTimestamp() {
+unsigned long long Event::getTimestamp() const {
     return timestamp;
 }
 
-EventType Event::getType() {
+EventType Event::getType() const {
     return event_type;
 };
