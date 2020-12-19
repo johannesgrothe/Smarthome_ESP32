@@ -1,3 +1,8 @@
+/**
+ * Main file for the Smarthome ESP32 project
+ */
+
+//region IMPORTS
 
 // Settings
 #include "user_settings.h"
@@ -36,6 +41,10 @@
 #include "connectors/mqtt_gadget.h"
 #include "connectors/serial_gadget.h"
 
+//endregion
+
+//region STATIC METHODS
+
 /**
  * Reboots the chip and prints out the given message
  * @param reason The reason to print to the terminal
@@ -54,6 +63,27 @@ static void rebootChip(const std::string& reason) {
         delay(1000);
     }
     ESP.restart();
+}
+
+/**
+ * Method to check if request payload contains all of the selected keys. respondes a false ack if any of them misses
+ * @param req Request to ckeck payload off
+ * @param key_list The list of all the keys that need to be present
+ * @return Whether all keys were present
+ */
+static bool checkPayloadForKeys(const std::shared_ptr<Request>& req, const std::vector<std::string>& key_list) {
+    DynamicJsonDocument json_body = req->getPayload();
+
+    for (const auto& key: key_list) {
+        if (!json_body.containsKey(key)) {
+            logger.printfln(LOG_TYPE::ERR, "'%s' missing in request", key);
+            std::stringstream sstr;
+            sstr << "Key missing in payload: '" << key << "'." << std::endl;
+            req->respond(false, sstr.str());
+            return false;
+        }
+    }
+    return true;
 }
 
 /**
@@ -94,9 +124,7 @@ static status_tuple writeGadget(uint8_t gadget_type, bitfield_set remote_bf, pin
     return System_Storage::writeGadget(gadget_type, remote_bf, ports, name, gadget_config, code_config);
 }
 
-// ========= STATIC METHODS END ============
-
-
+//endregion
 
 std::string client_id_;
 
@@ -118,7 +146,7 @@ TaskHandle_t network_task;
 
 bool lock_gadget_updates = false;
 
-// ===== REMOTE METHODS =====
+//region SYNC AND HANDLE GADGETS AND CHARACTERISTICS
 
 /**
  * Prevents gadgets from getting updates
@@ -142,6 +170,32 @@ void unlockGadgetUpdates() {
  */
 bool gadgetUpdatesAreLocked() { return lock_gadget_updates; }
 
+void updateCharacteristicOnBridge(const std::string& gadget_name, GadgetCharacteristic characteristic, int value) {
+    if (gadgetUpdatesAreLocked()) return;
+    auto target_gadget = gadgets.getGadget(gadget_name);
+
+    if (!target_gadget) {
+        return;
+    }
+
+    DynamicJsonDocument req_doc(2000);
+
+    req_doc["name"] = gadget_name;
+    req_doc["type"] = int(target_gadget->getType());
+    req_doc["characteristic"] = int(characteristic);
+    req_doc["value"] = value;
+
+    auto timestamp = int(micros() % 7554);
+
+    auto out_req = std::make_shared<Request>("smarthome/remotes/gadget/update", timestamp, client_id_, "<remote>", req_doc);
+
+    network_gadget->sendRequest(out_req);
+}
+
+//endregion
+
+//region SYNC AND HANDLE EVENTS
+
 /**
  * forwards an event to all gadgets
  * @param event
@@ -151,6 +205,31 @@ void forwardEvent(const std::shared_ptr<Event>& event){
         gadgets[i]->handleEvent(event->getSender(), event->getType());
     }
 }
+
+void updateEventOnBridge(const string& sender, EventType type) {
+    if (sender.empty()) {
+        logger.println("no sender specified, no event send");
+        return;
+    }
+    unsigned long long timestamp = millis();
+    auto event_buf = std::make_shared<Event>(sender, timestamp, type);
+
+    DynamicJsonDocument req_doc(2000);
+
+    req_doc["name"] = sender;
+    req_doc["timestamp"] = timestamp;
+    req_doc["event_type"] = int(type);
+
+    auto out_req = std::make_shared<Request>("smarthome/remotes/event/send", timestamp, client_id_, "<remote>", req_doc);
+
+    network_gadget->sendRequest(out_req);
+
+    forwardEvent(event_buf);
+}
+
+//endregion
+
+//region SYNC AND HANDLE CODES
 
 void addCodeToBuffer(const std::shared_ptr<CodeCommand>& code) {
     if (!codes.codeIsDoubled(code)) {
@@ -213,314 +292,9 @@ void handleNewCodeFromRequest(const std::shared_ptr<CodeCommand>& code) {
     forwardAllCodes();
 }
 
-// ===== START METHODS =====
+//endregion
 
-void updateCharacteristicOnBridge(const std::string& gadget_name, GadgetCharacteristic characteristic, int value) {
-    if (gadgetUpdatesAreLocked()) return;
-    auto target_gadget = gadgets.getGadget(gadget_name);
-
-    if (!target_gadget) {
-        return;
-    }
-
-    DynamicJsonDocument req_doc(2000);
-
-    req_doc["name"] = gadget_name;
-    req_doc["type"] = int(target_gadget->getType());
-    req_doc["characteristic"] = int(characteristic);
-    req_doc["value"] = value;
-
-    auto timestamp = int(micros() % 7554);
-
-    auto out_req = std::make_shared<Request>("smarthome/remotes/gadget/update", timestamp, client_id_, "<remote>", req_doc);
-
-    network_gadget->sendRequest(out_req);
-}
-
-void updateEventOnBridge(const string& sender, EventType type) {
-    if (sender.empty()) {
-        logger.println("no sender specified, no event send");
-        return;
-    }
-    unsigned long long timestamp = millis();
-    auto event_buf = std::make_shared<Event>(sender, timestamp, type);
-
-    DynamicJsonDocument req_doc(2000);
-
-    req_doc["name"] = sender;
-    req_doc["timestamp"] = timestamp;
-    req_doc["event_type"] = int(type);
-
-    auto out_req = std::make_shared<Request>("smarthome/remotes/event/send", timestamp, client_id_, "<remote>", req_doc);
-
-    network_gadget->sendRequest(out_req);
-
-    forwardEvent(event_buf);
-}
-
-bool initGadgets() {
-
-    logger.print("Initializing Gadgets: ");
-
-    auto eeprom_gadgets = System_Storage::readAllGadgets();
-
-    logger.println(eeprom_gadgets.size());
-    logger.incIndent();
-
-    for (auto gadget: eeprom_gadgets) {
-        auto gadget_ident = (GadgetIdentifier) std::get<0>(gadget);
-        auto remote_bf = std::get<1>(gadget);
-        auto pins = std::get<2>(gadget);
-        auto name = std::get<3>(gadget);
-        auto gadget_config_str = std::get<4>(gadget);
-        auto code_config_str = std::get<5>(gadget);
-
-        logger.printfln("Initializing %s", name.c_str());
-        logger.incIndent();
-
-        DynamicJsonDocument gadget_config(2500);
-        DynamicJsonDocument code_config(2500);
-
-        bool deserialization_ok = true;
-
-        DeserializationError err;
-
-        if (!gadget_config_str.empty()) {
-            err = deserializeJson(gadget_config, gadget_config_str);
-            if (err != DeserializationError::Ok) {
-                deserialization_ok = false;
-            }
-        }
-
-        if (!gadget_config_str.empty()) {
-            err = deserializeJson(code_config, code_config_str);
-            if (err != DeserializationError::Ok) {
-                deserialization_ok = false;
-            }
-        }
-
-        if (deserialization_ok) {
-            logger.println(LOG_TYPE::DATA, "Creating Gadget");
-            logger.incIndent();
-            auto buf_gadget = createGadget(gadget_ident, pins, name, gadget_config.as<JsonObject>());
-            logger.decIndent();
-
-            if (buf_gadget != nullptr) {
-                // Gadget Remote
-                if (remote_bf[0]) {
-                    logger.println(LOG_TYPE::DATA, "Linking Gadget Remote");
-                    logger.incIndent();
-
-                    using std::placeholders::_1;
-                    using std::placeholders::_2;
-                    using std::placeholders::_3;
-
-                    buf_gadget->setGadgetRemoteCallback(std::bind(&updateCharacteristicOnBridge, _1, _2, _3));
-                    buf_gadget->setEventRemoteCallback(std::bind(&updateEventOnBridge, _1, _2));
-
-                    logger.decIndent();
-                }
-
-                // Code Remote
-                if (remote_bf[1]) {
-                    logger.println(LOG_TYPE::DATA, "Linking Code Remote");
-                    logger.incIndent();
-
-                    logger.decIndent();
-
-                    for (int method_index = 0; method_index < GadgetMethodCount; method_index++) {
-                        std::stringstream ss;
-                        ss << method_index;
-                        std::string method_str = ss.str();
-                        if (code_config.containsKey(method_str)) {
-                            JsonArray codes = code_config[method_str].as<JsonArray>();
-                            for (int i = 0; i < codes.size(); i++) {
-                                unsigned long code = codes[i].as<unsigned long>();
-                                buf_gadget->setMethodForCode((GadgetMethod) method_index, code);
-                            }
-                        }
-                    }
-
-                    buf_gadget->printMapping();
-                }
-
-                // Event Remote
-                if (remote_bf[2]) {
-                    logger.println(LOG_TYPE::DATA, "Linking Gadget Remote");
-                    logger.incIndent();
-                    // TODO: init event remote on gadgets
-                    logger.println(LOG_TYPE::ERR, "Not Implemented");
-
-                    logger.decIndent();
-                }
-
-                // IR Gadget
-                bool ir_ok = true;
-                if (gadgetRequiresIR(gadget_ident)) {
-                    if (ir_gadget != nullptr) {
-                        logger.println(LOG_TYPE::DATA, "Linking IR gadget");
-                        buf_gadget->setIR(ir_gadget);
-                    } else {
-                        logger.println(LOG_TYPE::ERR, "No IR gadget available");
-                        ir_ok = false;
-                    }
-                } else {
-                    logger.println(LOG_TYPE::DATA, "No IR required");
-                }
-
-                // Radio
-                // TODO: check when radio is implemented
-                bool radio_ok = true;
-                if (gadgetRequiresRadio(gadget_ident)) {
-                    if (radio_gadget != nullptr) {
-                        logger.println(LOG_TYPE::DATA, "Linking radio gadget");
-                        buf_gadget->setRadio(radio_gadget);
-                    } else {
-                        logger.println(LOG_TYPE::DATA, "No radio gadget available");
-                        radio_ok = false;
-                    }
-                } else {
-                    logger.println(LOG_TYPE::DATA, "No radio required");
-                }
-
-                // Add created gadget to the list
-                if (ir_ok && radio_ok) {
-                    gadgets.addGadget(buf_gadget);
-                } else {
-                    logger.println(LOG_TYPE::DATA, "Gadget initialization failed due to ir/radio problems");
-                }
-            } else {
-                logger.println(LOG_TYPE::ERR, "Gadget could not be created");
-            }
-        } else {
-            logger.println(LOG_TYPE::ERR, "Error in config deserialization process");
-        }
-        logger.decIndent();
-    }
-    logger.decIndent();
-    return true;
-}
-
-bool initConnectors() {
-    logger.println("Initializing Connectors: ");
-
-    int ir_recv = System_Storage::readIRrecvPin();
-    int ir_send = System_Storage::readIRsendPin();
-    int radio = 0;
-
-    logger.println("Creating IR-Gadget: ");
-    logger.incIndent();
-    if (ir_recv || ir_send) {
-        ir_gadget = std::make_shared<IR_Gadget>(ir_recv, ir_send);
-    } else {
-        logger.println("No IR Configured");
-        ir_gadget = nullptr;
-    }
-    logger.decIndent();
-
-    logger.println("Creating Radio-Gadget:");
-    logger.incIndent();
-    if (radio) {
-        logger.println("Radio Configured bot not implemented");
-    } else {
-        logger.println("No Radio Configured");
-        radio_gadget = nullptr;
-    }
-    logger.decIndent();
-
-    logger.decIndent();
-    return true;
-}
-
-bool initNetwork(NetworkMode mode) {
-    if (mode == NetworkMode::None) {
-        logger.println(LOG_TYPE::ERR, "No network configured.");
-        return false;
-    }
-
-    // initialize Network
-    if (mode == NetworkMode::MQTT) {
-
-        if (!System_Storage::hasValidWifiSSID()) {
-            logger.println(LOG_TYPE::ERR, "Config has no valid wifi ssid");
-            return false;
-        }
-
-        if (!System_Storage::hasValidWifiPW()) {
-            logger.println(LOG_TYPE::ERR, "Config has no valid wifi password");
-            return false;
-        }
-
-        if (!System_Storage::hasValidMQTTIP()) {
-            logger.println(LOG_TYPE::ERR, "Config has no valid mqtt ip");
-            return false;
-        }
-
-        if (!System_Storage::hasValidMQTTPort()) {
-            logger.println(LOG_TYPE::ERR, "Config has no valid mqtt port");
-            return false;
-        }
-
-        std::string ssid = System_Storage::readWifiSSID();
-        std::string wifi_pw = System_Storage::readWifiPW();
-        uint16_t port = System_Storage::readMQTTPort();
-        IPAddress ip = System_Storage::readMQTTIP();
-        std::string user = System_Storage::readMQTTUsername();
-        std::string mqtt_pw = System_Storage::readMQTTPassword();
-
-        network_gadget = std::make_shared<MQTT_Gadget>(client_id_,
-                                                       ssid,
-                                                       wifi_pw,
-                                                       ip,
-                                                       port,
-                                                       user,
-                                                       mqtt_pw);
-
-    } else if (mode == NetworkMode::Serial) {
-        network_gadget = std::make_shared<Serial_Gadget>();
-    } else {
-        logger.println(LOG_TYPE::ERR, "Unknown Network Settings");
-        return false;
-    }
-    logger.decIndent();
-    return true;
-}
-
-void handleCodeConnector(const std::shared_ptr<Code_Gadget> &gadget) {
-    if (gadget == nullptr) {
-        return;
-    }
-    if (gadget->hasNewCommand()) {
-        auto com = gadget->getCommand();
-        logger.print("Command: ");
-        logger.println(com->getCode());
-
-        logger.incIndent();
-        handleNewCodeFromGadget(com);
-        logger.decIndent();
-    }
-}
-
-/**
- * Method to check if request payload contains all of the selected keys. respondes a false ack if any of them misses
- * @param req Request to ckeck payload off
- * @param key_list The list of all the keys that need to be present
- * @return Whether all keys were present
- */
-static bool checkPayloadForKeys(const std::shared_ptr<Request>& req, const std::vector<std::string>& key_list) {
-    DynamicJsonDocument json_body = req->getPayload();
-
-    for (const auto& key: key_list) {
-        if (!json_body.containsKey(key)) {
-            logger.printfln(LOG_TYPE::ERR, "'%s' missing in request", key);
-            std::stringstream sstr;
-            sstr << "Key missing in payload: '" << key << "'." << std::endl;
-            req->respond(false, sstr.str());
-            return false;
-        }
-    }
-    return true;
-}
+//region HANDLING OF SPECIFIC REQUESTS
 
 /**
  * Method that handles a request to receive a characteristic update
@@ -571,6 +345,21 @@ void handleEventUpdateRequest(const std::shared_ptr<Request>& req) {
     auto event_buf = std::make_shared<Event>(sender, timestamp, type);
     forwardEvent(event_buf);
     logger.decIndent();
+}
+
+void handleCodeUpdateRequest(const std::shared_ptr<Request>& req) {
+
+    // Check payload for missing keys
+    if (!checkPayloadForKeys(req, {"type", "code", "timestamp"})) {
+        return;
+    }
+
+    auto req_payload = req->getPayload();
+
+    auto newCode = std::make_shared<CodeCommand>(CodeType(req_payload["type"].as<int>()),
+                                                 req_payload["code"].as<unsigned long>(),
+                                                 req_payload["timestamp"].as<unsigned long long>());
+    handleNewCodeFromRequest(newCode);
 }
 
 void handleBroadcastRequest(const std::shared_ptr<Request>& req) {
@@ -959,6 +748,10 @@ void xddd(const std::shared_ptr<Request>& req) {
 
 }
 
+//endregion
+
+//region SORTING OF REQUESTS
+
 void handleSystemRequest(const std::shared_ptr<Request>& req) {
 
     DynamicJsonDocument json_body = req->getPayload();
@@ -1055,30 +848,15 @@ void handleRequest(const std::shared_ptr<Request>& req) {
         return;
     }
 
+    if (req->getPath() == PATH_CODE_UPDATE_FROM_BRIDGE) {
+        handleCodeUpdateRequest(req);
+        return;
+    }
+
     logger.printfln(LOG_TYPE::ERR, "Received request to unconfigured path");
 }
 
-/**
- * Gets new requests from the network gadget.
- */
-void handleNetwork() {
-    if (network_gadget == nullptr) {
-        return;
-    }
-    if (network_gadget->hasRequest()) {
-        std::string type;
-        std::shared_ptr<Request> req = network_gadget->getRequest();
-        RequestGadgetType g_type = network_gadget->getGadgetType();
-        if (g_type == RequestGadgetType::MQTT_G)
-            type = "MQTT";
-        else if (g_type == RequestGadgetType::SERIAL_G)
-            type = "Serial";
-        else
-            type = "<o.O>";
-        logger.printfln("[%s] '%s': %s", type.c_str(), req->getPath().c_str(), req->getBody().c_str());
-        handleRequest(req);
-    }
-}
+//endregion
 
 /**
  * Test-Fuction for debugging
@@ -1106,6 +884,248 @@ void testStuff() {
     }
 
     logger.decIndent();
+}
+
+//region INITIALIZATION METHODS
+
+/**
+ * Initialized all of the gadgets stored in the EEPROM
+ * @return Whether initializing all gadgets was successful or not
+ */
+bool initGadgets() {
+    logger.print("Initializing Gadgets: ");
+
+    auto eeprom_gadgets = System_Storage::readAllGadgets();
+
+    logger.println(eeprom_gadgets.size());
+    logger.incIndent();
+
+    for (auto gadget: eeprom_gadgets) {
+        auto gadget_ident = (GadgetIdentifier) std::get<0>(gadget);
+        auto remote_bf = std::get<1>(gadget);
+        auto pins = std::get<2>(gadget);
+        auto name = std::get<3>(gadget);
+        auto gadget_config_str = std::get<4>(gadget);
+        auto code_config_str = std::get<5>(gadget);
+
+        logger.printfln("Initializing %s", name.c_str());
+        logger.incIndent();
+
+        DynamicJsonDocument gadget_config(2500);
+        DynamicJsonDocument code_config(2500);
+
+        bool deserialization_ok = true;
+
+        DeserializationError err;
+
+        if (!gadget_config_str.empty()) {
+            err = deserializeJson(gadget_config, gadget_config_str);
+            if (err != DeserializationError::Ok) {
+                deserialization_ok = false;
+            }
+        }
+
+        if (!gadget_config_str.empty()) {
+            err = deserializeJson(code_config, code_config_str);
+            if (err != DeserializationError::Ok) {
+                deserialization_ok = false;
+            }
+        }
+
+        if (deserialization_ok) {
+            logger.println(LOG_TYPE::DATA, "Creating Gadget");
+            logger.incIndent();
+            auto buf_gadget = createGadget(gadget_ident, pins, name, gadget_config.as<JsonObject>());
+            logger.decIndent();
+
+            if (buf_gadget != nullptr) {
+                // Gadget Remote
+                if (remote_bf[0]) {
+                    logger.println(LOG_TYPE::DATA, "Linking Gadget Remote");
+                    logger.incIndent();
+
+                    using std::placeholders::_1;
+                    using std::placeholders::_2;
+                    using std::placeholders::_3;
+
+                    buf_gadget->setGadgetRemoteCallback(std::bind(&updateCharacteristicOnBridge, _1, _2, _3));
+                    buf_gadget->setEventRemoteCallback(std::bind(&updateEventOnBridge, _1, _2));
+
+                    logger.decIndent();
+                }
+
+                // Code Remote
+                if (remote_bf[1]) {
+                    logger.println(LOG_TYPE::DATA, "Linking Code Remote");
+                    logger.incIndent();
+
+                    logger.decIndent();
+
+                    for (int method_index = 0; method_index < GadgetMethodCount; method_index++) {
+                        std::stringstream ss;
+                        ss << method_index;
+                        std::string method_str = ss.str();
+                        if (code_config.containsKey(method_str)) {
+                            JsonArray code_arr = code_config[method_str].as<JsonArray>();
+                            for (int i = 0; i < code_arr.size(); i++) {
+                                unsigned long code = code_arr[i].as<unsigned long>();
+                                buf_gadget->setMethodForCode((GadgetMethod) method_index, code);
+                            }
+                        }
+                    }
+
+                    buf_gadget->printMapping();
+                }
+
+                // Event Remote
+                if (remote_bf[2]) {
+                    logger.println(LOG_TYPE::DATA, "Linking Gadget Remote");
+                    logger.incIndent();
+                    // TODO: init event remote on gadgets
+                    logger.println(LOG_TYPE::ERR, "Not Implemented");
+
+                    logger.decIndent();
+                }
+
+                // IR Gadget
+                bool ir_ok = true;
+                if (gadgetRequiresIR(gadget_ident)) {
+                    if (ir_gadget != nullptr) {
+                        logger.println(LOG_TYPE::DATA, "Linking IR gadget");
+                        buf_gadget->setIR(ir_gadget);
+                    } else {
+                        logger.println(LOG_TYPE::ERR, "No IR gadget available");
+                        ir_ok = false;
+                    }
+                } else {
+                    logger.println(LOG_TYPE::DATA, "No IR required");
+                }
+
+                // Radio
+                // TODO: check when radio is implemented
+                bool radio_ok = true;
+                if (gadgetRequiresRadio(gadget_ident)) {
+                    if (radio_gadget != nullptr) {
+                        logger.println(LOG_TYPE::DATA, "Linking radio gadget");
+                        buf_gadget->setRadio(radio_gadget);
+                    } else {
+                        logger.println(LOG_TYPE::DATA, "No radio gadget available");
+                        radio_ok = false;
+                    }
+                } else {
+                    logger.println(LOG_TYPE::DATA, "No radio required");
+                }
+
+                // Add created gadget to the list
+                if (ir_ok && radio_ok) {
+                    gadgets.addGadget(buf_gadget);
+                } else {
+                    logger.println(LOG_TYPE::DATA, "Gadget initialization failed due to ir/radio problems");
+                }
+            } else {
+                logger.println(LOG_TYPE::ERR, "Gadget could not be created");
+            }
+        } else {
+            logger.println(LOG_TYPE::ERR, "Error in config deserialization process");
+        }
+        logger.decIndent();
+    }
+    logger.decIndent();
+    return true;
+}
+
+/**
+ * Initializes all Connectors (IR/Radio)
+ * @return Whether initializing connectors was successful or not
+ */
+bool initConnectors() {
+    logger.println("Initializing Connectors: ");
+
+    int ir_recv = System_Storage::readIRrecvPin();
+    int ir_send = System_Storage::readIRsendPin();
+    int radio = 0;
+
+    logger.println("Creating IR-Gadget: ");
+    logger.incIndent();
+    if (ir_recv || ir_send) {
+        ir_gadget = std::make_shared<IR_Gadget>(ir_recv, ir_send);
+    } else {
+        logger.println("No IR Configured");
+        ir_gadget = nullptr;
+    }
+    logger.decIndent();
+
+    logger.println("Creating Radio-Gadget:");
+    logger.incIndent();
+    if (radio) {
+        logger.println("Radio Configured bot not implemented");
+    } else {
+        logger.println("No Radio Configured");
+        radio_gadget = nullptr;
+    }
+    logger.decIndent();
+
+    logger.decIndent();
+    return true;
+}
+
+/**
+ * Initializes the network gadget
+ * @param mode The mode the chip should start at
+ * @return Whether initializing network was successful or not
+ */
+bool initNetwork(NetworkMode mode) {
+    if (mode == NetworkMode::None) {
+        logger.println(LOG_TYPE::ERR, "No network configured.");
+        return false;
+    }
+
+    // initialize Network
+    if (mode == NetworkMode::MQTT) {
+
+        if (!System_Storage::hasValidWifiSSID()) {
+            logger.println(LOG_TYPE::ERR, "Config has no valid wifi ssid");
+            return false;
+        }
+
+        if (!System_Storage::hasValidWifiPW()) {
+            logger.println(LOG_TYPE::ERR, "Config has no valid wifi password");
+            return false;
+        }
+
+        if (!System_Storage::hasValidMQTTIP()) {
+            logger.println(LOG_TYPE::ERR, "Config has no valid mqtt ip");
+            return false;
+        }
+
+        if (!System_Storage::hasValidMQTTPort()) {
+            logger.println(LOG_TYPE::ERR, "Config has no valid mqtt port");
+            return false;
+        }
+
+        std::string ssid = System_Storage::readWifiSSID();
+        std::string wifi_pw = System_Storage::readWifiPW();
+        uint16_t port = System_Storage::readMQTTPort();
+        IPAddress ip = System_Storage::readMQTTIP();
+        std::string user = System_Storage::readMQTTUsername();
+        std::string mqtt_pw = System_Storage::readMQTTPassword();
+
+        network_gadget = std::make_shared<MQTT_Gadget>(client_id_,
+                                                       ssid,
+                                                       wifi_pw,
+                                                       ip,
+                                                       port,
+                                                       user,
+                                                       mqtt_pw);
+
+    } else if (mode == NetworkMode::Serial) {
+        network_gadget = std::make_shared<Serial_Gadget>();
+    } else {
+        logger.println(LOG_TYPE::ERR, "Unknown Network Settings");
+        return false;
+    }
+    logger.decIndent();
+    return true;
 }
 
 /**
@@ -1149,7 +1169,47 @@ void initModeComplete() {
     initGadgets();
 }
 
-// ===== REFRESHERS =====
+//endregion
+
+//region REFRESHERS
+
+void handleCodeConnector(const std::shared_ptr<Code_Gadget> &gadget) {
+    if (gadget == nullptr) {
+        return;
+    }
+    if (gadget->hasNewCommand()) {
+        auto com = gadget->getCommand();
+        logger.print("Command: ");
+        logger.println(com->getCode());
+
+        logger.incIndent();
+        handleNewCodeFromGadget(com);
+        logger.decIndent();
+    }
+}
+
+/**
+ * Gets new requests from the network gadget.
+ */
+void handleNetwork() {
+    if (network_gadget == nullptr) {
+        return;
+    }
+    if (network_gadget->hasRequest()) {
+        std::string type;
+        std::shared_ptr<Request> req = network_gadget->getRequest();
+        RequestGadgetType g_type = network_gadget->getGadgetType();
+        if (g_type == RequestGadgetType::MQTT_G)
+            type = "MQTT";
+        else if (g_type == RequestGadgetType::SERIAL_G)
+            type = "Serial";
+        else
+            type = "<o.O>";
+        logger.printfln("[%s] '%s': %s", type.c_str(), req->getPath().c_str(), req->getBody().c_str());
+        handleRequest(req);
+    }
+}
+
 /**
  * The refresh method that is supposed to be performed in serial only mode
  */
@@ -1173,8 +1233,6 @@ void refreshModeComplete() {
 
     ir_gadget->refresh();
     handleCodeConnector(ir_gadget);
-
-//  handleCodeRemote();
 
     for (byte c = 0; c < gadgets.getGadgetCount(); c++) {
         gadgets.getGadget(c)->refresh();
@@ -1210,9 +1268,11 @@ void refreshNetwork() {
     }
     network_gadget->refresh();
 }
-// ===== END REFRESHERS =====
 
-// ===== TASKS =====
+//endregion
+
+//region TASKS
+
 /**
  * Function for the main task refresing the main content
  * @param args Unused
@@ -1234,9 +1294,7 @@ void refreshNetwork() {
     vTaskDelay(10 / portTICK_PERIOD_MS);
   }
 }
-// ===== END TASKS =====
 
-// ===== TASK CREATION =====
 /**
  * Creates and starts the tasks used by the system
  */
@@ -1262,9 +1320,11 @@ static void createTasks() {
   //    vTaskSuspend(main_task);
   //    vTaskResume(main_task);
 }
-// ===== END TASK CREATION =====
 
-// ===== MAIN FUNCTIONS =====
+//endregion
+
+//region MAIN FUNCTIONS
+
 void setup() {
     Serial.begin(SERIAL_SPEED);
     logger.println(LOG_TYPE::INFO, "Launching...");
@@ -1305,3 +1365,5 @@ void setup() {
 }
 
 void loop() {}
+
+//endregion
