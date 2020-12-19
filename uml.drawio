@@ -1913,7 +1913,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="OJ75r6qA2VGPxLA7Arud-80" value="handleNewCodeFromGadget()" style="html=1;points=[];perimeter=orthogonalPerimeter;fillColor=#FFFFFF;labelPosition=center;verticalLabelPosition=middle;align=center;verticalAlign=middle;horizontal=0;fontSize=9;spacingLeft=0;spacingBottom=2;" vertex="1" parent="sWQe_pdeb9xs_2e3PKX3-1">
+        <mxCell id="OJ75r6qA2VGPxLA7Arud-80" value="handleNewCodeFromConnector()" style="html=1;points=[];perimeter=orthogonalPerimeter;fillColor=#FFFFFF;labelPosition=center;verticalLabelPosition=middle;align=center;verticalAlign=middle;horizontal=0;fontSize=9;spacingLeft=0;spacingBottom=2;" vertex="1" parent="sWQe_pdeb9xs_2e3PKX3-1">
           <mxGeometry x="847.16" y="1510" width="10" height="140" as="geometry" />
         </mxCell>
         <mxCell id="OJ75r6qA2VGPxLA7Arud-81" value="dispatch" style="html=1;verticalAlign=bottom;endArrow=block;fontSize=9;entryX=-0.045;entryY=0.005;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="sWQe_pdeb9xs_2e3PKX3-1" target="OJ75r6qA2VGPxLA7Arud-80" source="OJ75r6qA2VGPxLA7Arud-69">

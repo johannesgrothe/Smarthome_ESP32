@@ -124,6 +124,14 @@ static status_tuple writeGadget(uint8_t gadget_type, bitfield_set remote_bf, pin
     return System_Storage::writeGadget(gadget_type, remote_bf, ports, name, gadget_config, code_config);
 }
 
+/**
+ * Generates a unique random int
+ * @return Random int
+ */
+static int gen_req_id() {
+    return int(millis());
+}
+
 //endregion
 
 std::string client_id_;
@@ -165,11 +173,17 @@ void unlockGadgetUpdates() {
 }
 
 /**
- * returns whether gadgets are currently allowed to receive updates
+ * Returns whether gadgets are currently allowed to receive updates
  * @return Whether gadgets are currently allowed to receive updates
  */
 bool gadgetUpdatesAreLocked() { return lock_gadget_updates; }
 
+/**
+ * Sends a request updating a characteristic on the bridge
+ * @param gadget_name Name of the gadget to be updated
+ * @param characteristic Characteristic to be updated
+ * @param value New value of the characteristic
+ */
 void updateCharacteristicOnBridge(const std::string& gadget_name, GadgetCharacteristic characteristic, int value) {
     if (gadgetUpdatesAreLocked()) return;
     auto target_gadget = gadgets.getGadget(gadget_name);
@@ -185,9 +199,11 @@ void updateCharacteristicOnBridge(const std::string& gadget_name, GadgetCharacte
     req_doc["characteristic"] = int(characteristic);
     req_doc["value"] = value;
 
-    auto timestamp = int(micros() % 7554);
-
-    auto out_req = std::make_shared<Request>("smarthome/remotes/gadget/update", timestamp, client_id_, "<remote>", req_doc);
+    auto out_req = std::make_shared<Request>(PATH_CHARACTERISTIC_UPDATE_TO_BRIDGE,
+                                             gen_req_id(),
+                                             client_id_,
+                                             PROTOCOL_BRIDGE_NAME,
+                                             req_doc);
 
     network_gadget->sendRequest(out_req);
 }
@@ -211,7 +227,7 @@ void updateEventOnBridge(const string& sender, EventType type) {
         logger.println("no sender specified, no event send");
         return;
     }
-    unsigned long long timestamp = millis();
+
     auto event_buf = std::make_shared<Event>(sender, timestamp, type);
 
     DynamicJsonDocument req_doc(2000);
@@ -220,7 +236,11 @@ void updateEventOnBridge(const string& sender, EventType type) {
     req_doc["timestamp"] = timestamp;
     req_doc["event_type"] = int(type);
 
-    auto out_req = std::make_shared<Request>("smarthome/remotes/event/send", timestamp, client_id_, "<remote>", req_doc);
+    auto out_req = std::make_shared<Request>(PATH_EVENT_UPDATE_TO_BRIDGE,
+                                             gen_req_id(),
+                                             client_id_,
+                                             PROTOCOL_BRIDGE_NAME,
+                                             req_doc);
 
     network_gadget->sendRequest(out_req);
 
@@ -274,14 +294,14 @@ void sendCodeToRemote(const std::shared_ptr<CodeCommand>& code) {
     doc["code"] = code->getCode();
     doc["timestamp"] = code->getTimestamp();
 
-    network_gadget->sendRequest(std::make_shared<Request>("smarthome/to/code",
+    network_gadget->sendRequest(std::make_shared<Request>(PATH_CODE_UPDATE_TO_BRIDGE,
                                                                   ident,
                                                                   client_id_,
-                                                                  "<bridge>",
+                                                                  PROTOCOL_BRIDGE_NAME,
                                                                   doc));
 }
 
-void handleNewCodeFromGadget(const std::shared_ptr<CodeCommand>& code) {
+void handleNewCodeFromConnector(const std::shared_ptr<CodeCommand>& code) {
     addCodeToBuffer(code);
     sendCodeToRemote(code);
     forwardAllCodes();
@@ -297,8 +317,8 @@ void handleNewCodeFromRequest(const std::shared_ptr<CodeCommand>& code) {
 //region HANDLING OF SPECIFIC REQUESTS
 
 /**
- * Method that handles a request to receive a characteristic update
- * @param req Request that demands the characteristic update
+ * Handles a request to receive a characteristic update
+ * @param req Request that contains the characteristic update information
  */
 void handleGadgetCharacteristicUpdateRequest(const std::shared_ptr<Request>& req) {
 
@@ -328,6 +348,10 @@ void handleGadgetCharacteristicUpdateRequest(const std::shared_ptr<Request>& req
     }
 }
 
+/**
+ * Handles a request to receive a event from the bridge
+ * @param req Request that contains the event information
+ */
 void handleEventUpdateRequest(const std::shared_ptr<Request>& req) {
 
     // Check payload for missing keys
@@ -347,6 +371,10 @@ void handleEventUpdateRequest(const std::shared_ptr<Request>& req) {
     logger.decIndent();
 }
 
+/**
+ * Handles a request to receive a code from the bridge
+ * @param req Request that contains the code information
+ */
 void handleCodeUpdateRequest(const std::shared_ptr<Request>& req) {
 
     // Check payload for missing keys
@@ -362,12 +390,20 @@ void handleCodeUpdateRequest(const std::shared_ptr<Request>& req) {
     handleNewCodeFromRequest(newCode);
 }
 
+/**
+ * Handles a broadcast request
+ * @param req Request that contains the broadcast request information
+ */
 void handleBroadcastRequest(const std::shared_ptr<Request>& req) {
     logger.println("Broadcast");
     DynamicJsonDocument doc(10);
     req->respond("smarthome/broadcast/res", doc);
 }
 
+/**
+ * Handles a request that contains system control information
+ * @param req Request that contains system control information
+ */
 void handleSystemControlRequest(const std::shared_ptr<Request>& req) {
 
     // Check payload for missing keys
@@ -389,6 +425,10 @@ void handleSystemControlRequest(const std::shared_ptr<Request>& req) {
     req->respond(false);
 }
 
+/**
+ * Handles a request that contains config reset information
+ * @param req Request that contains config reset command information
+ */
 void handleConfigResetRequest(const std::shared_ptr<Request>& req) {
 
     // Check payload for missing keys
@@ -433,6 +473,10 @@ void handleConfigResetRequest(const std::shared_ptr<Request>& req) {
     req->respond(success);
 }
 
+/**
+ * Handles a request that contains config write information
+ * @param req Request that contains config write information
+ */
 void handleConfigWriteRequest(const std::shared_ptr<Request>& req) {
 
     // Check payload for missing keys
@@ -559,6 +603,10 @@ void handleConfigWriteRequest(const std::shared_ptr<Request>& req) {
     }
 }
 
+/**
+ * Handles a request that contains config read information
+ * @param req Request that contains config read information
+ */
 void handleConfigReadRequest(const std::shared_ptr<Request>& req) {
 
     // Check payload for missing keys
@@ -668,6 +716,10 @@ void handleConfigReadRequest(const std::shared_ptr<Request>& req) {
     }
 }
 
+/**
+ * Handles a request that contains gadget write information
+ * @param req Request that contains gadget write information
+ */
 void handleGadgetWriteRequest(const std::shared_ptr<Request>& req) {
     // Check payload for missing keys
     if (!checkPayloadForKeys(req, {"type", "name"})) {
@@ -741,11 +793,6 @@ void handleGadgetWriteRequest(const std::shared_ptr<Request>& req) {
         auto err_msg = std::get<1>(success_tuple);
         req->respond(false, err_msg);
     }
-    return;
-}
-
-void xddd(const std::shared_ptr<Request>& req) {
-
 }
 
 //endregion
@@ -857,34 +904,6 @@ void handleRequest(const std::shared_ptr<Request>& req) {
 }
 
 //endregion
-
-/**
- * Test-Fuction for debugging
- */
-void testStuff() {
-    logger.println("Testing Stuff");
-    logger.incIndent();
-
-    if (eeprom_active_) {
-        logger.println("testing eeprom:");
-
-        logger.println("Status-Byte:");
-        logger.println(System_Storage::hasValidID());
-        logger.println(System_Storage::hasValidWifiSSID());
-        logger.println(System_Storage::hasValidWifiPW());
-        logger.println(System_Storage::hasValidMQTTIP());
-        logger.println(System_Storage::hasValidMQTTPort());
-        logger.println(System_Storage::hasValidMQTTUsername());
-        logger.println(System_Storage::hasValidMQTTPassword());
-
-        logger.println("Done");
-
-    } else {
-        logger.println(LOG_TYPE::FATAL, "eeprom isn't initialized");
-    }
-
-    logger.decIndent();
-}
 
 //region INITIALIZATION METHODS
 
@@ -1183,7 +1202,7 @@ void handleCodeConnector(const std::shared_ptr<Code_Gadget> &gadget) {
         logger.println(com->getCode());
 
         logger.incIndent();
-        handleNewCodeFromGadget(com);
+        handleNewCodeFromConnector(com);
         logger.decIndent();
     }
 }
@@ -1325,6 +1344,37 @@ static void createTasks() {
 
 //region MAIN FUNCTIONS
 
+/**
+ * Test-Fuction for debugging
+ */
+void testStuff() {
+    logger.println("Testing Stuff");
+    logger.incIndent();
+
+    if (eeprom_active_) {
+        logger.println("testing eeprom:");
+
+        logger.println("Status-Byte:");
+        logger.println(System_Storage::hasValidID());
+        logger.println(System_Storage::hasValidWifiSSID());
+        logger.println(System_Storage::hasValidWifiPW());
+        logger.println(System_Storage::hasValidMQTTIP());
+        logger.println(System_Storage::hasValidMQTTPort());
+        logger.println(System_Storage::hasValidMQTTUsername());
+        logger.println(System_Storage::hasValidMQTTPassword());
+
+        logger.println("Done");
+
+    } else {
+        logger.println(LOG_TYPE::FATAL, "eeprom isn't initialized");
+    }
+
+    logger.decIndent();
+}
+
+/**
+ * Setup-method that is automatically called once on launch
+ */
 void setup() {
     Serial.begin(SERIAL_SPEED);
     logger.println(LOG_TYPE::INFO, "Launching...");
@@ -1364,6 +1414,9 @@ void setup() {
     createTasks();
 }
 
+/**
+ * Loop-Method that is called forever while chip is running
+ */
 void loop() {}
 
 //endregion
