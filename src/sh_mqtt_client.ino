@@ -136,25 +136,46 @@ static int gen_req_id() {
 
 //endregion
 
+//region GLOBAL VARIABLES
+
+// Name of the client to be identified in the network
 std::string client_id_;
 
-std::shared_ptr<IR_Gadget> ir_gadget;
-std::shared_ptr<Radio_Gadget> radio_gadget;
-
-std::shared_ptr<Request_Gadget> network_gadget;
-
-Gadget_Collection gadgets;
-
-CodeCommandBuffer codes;
-
+// Mode how the system should operate
 BootMode system_mode = BootMode::Unknown_Mode;
 
+// Infrared-gadget receiving and/or sending infrared codes
+std::shared_ptr<IR_Gadget> ir_gadget;
+
+// Radio-gadget receiving and/or sending 433mhz-codes
+std::shared_ptr<Radio_Gadget> radio_gadget;
+
+// Network-gadget sending and receiving requests via mqtt
+std::shared_ptr<Request_Gadget> network_gadget;
+
+// Container to contain all of the gadgets
+Gadget_Collection gadgets;
+
+// Container to handle all of the incoming ir/radio codes
+CodeCommandBuffer codes;
+
+// Whether eepro was successfully initialized
 bool eeprom_active_;
 
+// Main task, handling all of the gadgets and the main system
 TaskHandle_t main_task;
+
+// Network task, receiving and sending requests via the network gadget
 TaskHandle_t network_task;
 
+// Heartbeat task, sending a heartbeat request every 5 seconds
+TaskHandle_t heartbeat_task;
+
+// Whether gadget updates are locked or not (prevents gadget from sending an
+// update to the bridge which it has just received from the bridge)
 bool lock_gadget_updates = false;
+
+//endregion
 
 //region SYNC AND HANDLE GADGETS AND CHARACTERISTICS
 
@@ -1292,6 +1313,19 @@ void refreshNetwork() {
   network_gadget->refresh();
 }
 
+void sendHeartbeat() {
+  if (network_gadget != nullptr) {
+    DynamicJsonDocument req_doc(10);
+
+    auto heartbeat_request = std::make_shared<Request>(PATH_EVENT_UPDATE_TO_BRIDGE,
+                                                       gen_req_id(),
+                                                       client_id_,
+                                                       PATH_HEARTBEAT,
+                                                       req_doc);
+    network_gadget->sendRequest(heartbeat_request);
+  }
+}
+
 //endregion
 
 //region TASKS
@@ -1319,26 +1353,46 @@ void refreshNetwork() {
 }
 
 /**
+ * Function for the network tasks receiving and sending requests
+ * @param args Unused
+ */
+[[noreturn]] static void heartbeatTask(void *args) {
+  while (true) {
+    sendHeartbeat();
+    vTaskDelay(5000 / portTICK_PERIOD_MS);
+  }
+}
+
+/**
  * Creates and starts the tasks used by the system
  */
 static void createTasks() {
-  xTaskCreatePinnedToCore(
-      mainTask,     /* Task function. */
-      "Smarthome_Main",       /* String with name of task. */
-      10000,            /* Stack size in words. */
-      NULL,             /* Parameter passed as input of the task */
-      1,                /* Priority of the task. */
-      &main_task,
-      0);            /* Task handle. */
+//  xTaskCreatePinnedToCore(
+//      mainTask,                          Task function.
+//      "Smarthome_Main",          String with name of task.
+//      10000,                 Stack size in words.
+//      NULL,                  Parameter passed as input of the task
+//      1,                        Priority of the task.
+//      &main_task,                        Task handle.
+//      0);                        Core to run on
 
   xTaskCreatePinnedToCore(
-      networkTask,     /* Task function. */
-      "Smarthome_MQTT",       /* String with name of task. */
-      10000,            /* Stack size in words. */
-      NULL,             /* Parameter passed as input of the task */
-      1,                /* Priority of the task. */
-      &network_task,
-      1);            /* Task handle. */
+      networkTask,                      /* Task function. */
+      "Smarthome_MQTT",         /* String with name of task. */
+      10000,                /* Stack size in words. */
+      NULL,                 /* Parameter passed as input of the task */
+      1,                       /* Priority of the task. */
+      &network_task,                    /* Task handle. */
+      1);                       /* Core to run on */
+
+  xTaskCreatePinnedToCore(
+      heartbeatTask,                    /* Task function. */
+      "Smarthome_Heartbeat",    /* String with name of task. */
+      10000,                /* Stack size in words. */
+      NULL,                 /* Parameter passed as input of the task */
+      1,                       /* Priority of the task. */
+      &heartbeat_task,                    /* Task handle. */
+      1);                       /* Core to run on */
 
   //    vTaskSuspend(main_task);
   //    vTaskResume(main_task);
@@ -1419,8 +1473,11 @@ void setup() {
 }
 
 /**
- * Loop-Method that is called forever while chip is running
+ * Loop-Method that is called forever while chip is running.
+ * Used for the heartbeat sending.
  */
-void loop() {}
+void loop() {
+  refresh();
+}
 
 //endregion

@@ -19,3 +19,5 @@
 #define PATH_CONFIG_WRITE "smarthome/config/write"
 #define PATH_CONFIG_READ "smarthome/config/read"
 #define PATH_GADGET_WRITE "smarthome/gadget/add"
+
+#define PATH_HEARTBEAT "smarthome/heartbeat"
