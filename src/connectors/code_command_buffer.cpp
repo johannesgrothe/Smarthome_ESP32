@@ -2,60 +2,57 @@
 
 #include <utility>
 
-CodeCommandBuffer::CodeCommandBuffer():
-    code_list_(),
-    buffer_add_pointer_(0),
-    buffer_get_pointer_(0) {}
+CodeCommandBuffer::CodeCommandBuffer() :
+    new_codes_(),
+    code_db_() {}
 
-void CodeCommandBuffer::addCode(std::shared_ptr<CodeCommand> com) {
-    bool pointers_differ = hasNewCode();
-
-    code_list_[buffer_add_pointer_] = std::move(com);
-    buffer_add_pointer_ = nextPos(buffer_add_pointer_);
-    if (pointers_differ && !hasNewCode()) {
-        buffer_get_pointer_++;
-    }
+bool CodeCommandBuffer::addCode(const std::shared_ptr<CodeCommand>& com) {
+  if (addCodeToDb(com)) {
+    new_codes_.push_back(com);
+    return true;
+  }
+  return false;
 }
 
 bool CodeCommandBuffer::hasNewCode() const {
-    return buffer_get_pointer_ != buffer_add_pointer_;
+  return !new_codes_.empty();
 }
 
 std::shared_ptr<CodeCommand> CodeCommandBuffer::getCode() {
-    if (!hasNewCode())
-        return nullptr;
-    auto com = code_list_[buffer_get_pointer_];
-    buffer_get_pointer_ = nextPos(buffer_get_pointer_);
-    return com;
+  if (!hasNewCode())
+    return nullptr;
+  auto buf_code = new_codes_[new_codes_.size()];
+  new_codes_.pop_back();
+  return buf_code;
 }
 
-bool CodeCommandBuffer::codeIsDoubled(std::shared_ptr<CodeCommand> com) const {
-    for (byte k = 0; k < CODE_BUFFER_SIZE; k++) {
-        if (code_list_[k] != nullptr) {
-            if (code_list_[k]->getType() == com->getType() && code_list_[k]->getCode() == com->getCode()) {
-                if (code_list_[k]->getTimestamp() + CODE_TIME_GAP > com->getTimestamp()) {
-                    return true;
-                }
-            }
-        }
-    }
-    return false;
+std::string CodeCommandBuffer::toString() const {
+  std::stringstream sstr;
+  int i = 0;
+  for (const auto& code: code_db_) {
+    sstr << "[" << i << "] " << code->getTimestamp()
+         << " -> " << codeTypeToString(code->getType())
+         << "-" << code->getCode() << std::endl;
+
+    i ++;
+  }
+  return sstr.str();
 }
 
-void CodeCommandBuffer::print() const {
-    for (byte k = 0; k < CODE_BUFFER_SIZE; k++) {
-        if (code_list_[k] != nullptr) {
-            logger.print(LOG_TYPE::DATA, "");
-            logger.print(k);
-            logger.print(": ");
-            logger.print(code_list_[k]->getTimestamp());
-            logger.print(" -> ");
-            logger.println(code_list_[k]->getCode());
-        } else {
-            logger.print(LOG_TYPE::DATA, "");
-            logger.print(k);
-            logger.print(": ");
-            logger.println("null");
-        }
+bool CodeCommandBuffer::addCodeToDb(const std::shared_ptr<CodeCommand> &code) {
+  int counter = 0;
+  for (const auto &saved_code: code_db_) {
+    if (saved_code->getCode() == code->getCode() && saved_code->getType() == code->getType()) {
+      if ((saved_code->getTimestamp() + 100) < code->getTimestamp()) {
+        // Code is interpreted as "the same"
+        code_db_.at(counter) = code;
+        return false;
+      }
+      code_db_.at(counter) = code;
+      return true;
     }
+    counter++;
+  }
+  code_db_.push_back(code);
+  return true;
 }

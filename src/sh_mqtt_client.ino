@@ -259,18 +259,15 @@ void updateEventOnBridge(const string &sender, EventType type) {
 //region SYNC AND HANDLE CODES
 
 void addCodeToBuffer(const std::shared_ptr<CodeCommand> &code) {
-  if (!codes.codeIsDoubled(code)) {
-    codes.addCode(code);
-    codes.print();
-  } else {
-    logger.println(LOG_TYPE::ERR, "Ignoring: Double Code");
+  if (codes.addCode(code)) {
+    logger.println("Code added to buffer");
+    return;
   }
+  logger.println(LOG_TYPE::ERR, "Ignoring: Double Code");
 }
 
 void forwardCodeToGadgets(const std::shared_ptr<CodeCommand> &code) {
-  logger.print("Forwarding Code to ");
-  logger.print(gadgets.getGadgetCount());
-  logger.println(" Gadgets:");
+  logger.printfln("Forwarding code %d to %d gadgets", code->getCode(), gadgets.getGadgetCount());
   logger.incIndent();
   for (int i = 0; i < gadgets.getGadgetCount(); i++) {
     gadgets[i]->handleCodeUpdate(code->getCode());
