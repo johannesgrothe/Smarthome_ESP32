@@ -21,3 +21,4 @@
 #define PATH_GADGET_WRITE "smarthome/gadget/add"
 
 #define PATH_HEARTBEAT "smarthome/heartbeat"
+#define PATH_SYNC "smarthome/sync"

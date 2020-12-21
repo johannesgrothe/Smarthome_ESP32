@@ -41,6 +41,9 @@
 #include "connectors/mqtt_gadget.h"
 #include "connectors/serial_gadget.h"
 
+// External imports
+#include <cstdlib>
+
 //endregion
 
 //region STATIC METHODS
@@ -141,8 +144,11 @@ static int gen_req_id() {
 // Name of the client to be identified in the network
 std::string client_id_;
 
+// Runtime id, number generated at startup to identify reboots to network partners
+int runtime_id_;
+
 // Mode how the system should operate
-BootMode system_mode = BootMode::Unknown_Mode;
+BootMode system_mode_ = BootMode::Unknown_Mode;
 
 // Infrared-gadget receiving and/or sending infrared codes
 std::shared_ptr<IR_Gadget> ir_gadget;
@@ -820,6 +826,24 @@ void handleGadgetWriteRequest(const std::shared_ptr<Request> &req) {
   }
 }
 
+/**
+ *
+ * @param req
+ */
+void handleSyncRequest(const std::shared_ptr<Request> &req) {
+  DynamicJsonDocument data_json(4500);
+
+  data_json["runtime_id"] = runtime_id_;
+  data_json["boot_mode"] = int(system_mode_);
+
+  JsonArray json_gadgets = data_json.createNestedArray("gadgets");
+  for (int i = 0; i < gadgets.getGadgetCount(); i++) {
+    json_gadgets[i] = gadgets[i]->serialized();
+  }
+
+  req->respond(data_json);
+}
+
 //endregion
 
 //region SORTING OF REQUESTS
@@ -922,6 +946,11 @@ void handleRequest(const std::shared_ptr<Request> &req) {
 
   if (req->getPath() == PATH_CODE_UPDATE_FROM_BRIDGE) {
     handleCodeUpdateRequest(req);
+    return;
+  }
+
+  if (req->getPath() == PATH_SYNC) {
+    handleSyncRequest(req);
     return;
   }
 
@@ -1287,7 +1316,7 @@ void refreshModeComplete() {
  * Refresh method for the main task
  */
 void refresh() {
-  switch (system_mode) {
+  switch (system_mode_) {
     case BootMode::Serial_Ony:
       refreshModeSerial();
       break;
@@ -1315,7 +1344,9 @@ void refreshNetwork() {
 
 void sendHeartbeat() {
   if (network_gadget != nullptr) {
-    DynamicJsonDocument req_doc(10);
+    DynamicJsonDocument req_doc(100);
+
+    req_doc["runtime_id"] = runtime_id_;
 
     auto heartbeat_request = std::make_shared<Request>(PATH_HEARTBEAT,
                                                        gen_req_id(),
@@ -1391,7 +1422,7 @@ static void createTasks() {
       10000,                /* Stack size in words. */
       NULL,                 /* Parameter passed as input of the task */
       1,                       /* Priority of the task. */
-      &heartbeat_task,                    /* Task handle. */
+      &heartbeat_task,                  /* Task handle. */
       1);                       /* Core to run on */
 
   //    vTaskSuspend(main_task);
@@ -1437,6 +1468,8 @@ void setup() {
   Serial.begin(SERIAL_SPEED);
   logger.println(LOG_TYPE::INFO, "Launching...");
 
+  runtime_id_ = rand() % 10000;
+
   eeprom_active_ = System_Storage::initEEPROM();
   if (eeprom_active_) {
     client_id_ = System_Storage::readID();
@@ -1446,9 +1479,9 @@ void setup() {
   testStuff();
 
   logger.print(LOG_TYPE::INFO, "Boot Mode: ");
-  system_mode = getBootMode();
+  system_mode_ = getBootMode();
 
-  switch (system_mode) {
+  switch (system_mode_) {
     case BootMode::Serial_Ony:
       logger.println("Serial Only");
       initModeSerial();
