@@ -1317,10 +1317,10 @@ void sendHeartbeat() {
   if (network_gadget != nullptr) {
     DynamicJsonDocument req_doc(10);
 
-    auto heartbeat_request = std::make_shared<Request>(PATH_EVENT_UPDATE_TO_BRIDGE,
+    auto heartbeat_request = std::make_shared<Request>(PATH_HEARTBEAT,
                                                        gen_req_id(),
                                                        client_id_,
-                                                       PATH_HEARTBEAT,
+                                                       PROTOCOL_BRIDGE_NAME,
                                                        req_doc);
     network_gadget->sendRequest(heartbeat_request);
   }
