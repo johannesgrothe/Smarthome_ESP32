@@ -13,7 +13,7 @@ Request::Request(std::string req_path, int session_id, std::string sender, std::
   await_response_(await_answer),
   response_(nullptr) {}
 
-Request::Request(std::string req_path, int session_id, std::string sender, std::string receiver, DynamicJsonDocument payload, std::function<void(std::shared_ptr<Request> request)> answer_method) :
+Request::Request(std::string req_path, int session_id, std::string sender, std::string receiver, DynamicJsonDocument payload, std::function<void(Request * request)> answer_method) :
   path_(std::move(req_path)),
   session_id_(session_id),
   sender_(std::move(sender)),
@@ -87,7 +87,7 @@ bool Request::respond(const std::string& res_path, const DynamicJsonDocument& pa
   }
   auto new_sender = receiver_;
   auto new_receiver = sender_;
-  auto req = std::make_shared<Request>(res_path,
+  auto req = new Request(res_path,
                                        session_id_,
                                        new_sender,
                                        new_receiver,

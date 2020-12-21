@@ -84,7 +84,7 @@ void MQTT_Gadget::callback(char *topic, const byte *payload, const unsigned int 
     return;
   }
   using std::placeholders::_1;
-  auto req = std::make_shared<Request>(req_path,
+  auto req = new Request(req_path,
                                        doc["session_id"].as<int>(),
                                        doc["sender"].as<std::string>(),
                                        doc["receiver"].as<std::string>(),
@@ -93,7 +93,7 @@ void MQTT_Gadget::callback(char *topic, const byte *payload, const unsigned int 
   addIncomingRequest(req);
 }
 
-void MQTT_Gadget::executeRequestSending(std::shared_ptr<Request> req) {
+void MQTT_Gadget::executeRequestSending(Request * req) {
   std::string topic = req->getPath();
   std::string body = req->getBody();
   logger.print("System / MQTT", "publishing on '");

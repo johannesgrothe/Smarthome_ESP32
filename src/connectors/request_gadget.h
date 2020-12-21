@@ -26,9 +26,9 @@ protected:
 
   QueueHandle_t out_request_queue_;
 
-  void addIncomingRequest(std::shared_ptr<Request>);
+  void addIncomingRequest(Request *);
 
-  virtual void executeRequestSending(std::shared_ptr<Request>) = 0;
+  virtual void executeRequestSending(Request *) = 0;
 
   void sendQueuedItems();
 
@@ -43,11 +43,11 @@ public:
 
   bool hasRequest();
 
-  std::shared_ptr<Request> getRequest();
+  Request * getRequest();
 
-  void sendRequest(std::shared_ptr<Request> request);
+  void sendRequest(Request * request);
 
-  std::shared_ptr<Request> sendRequestAndWaitForResponse(const std::shared_ptr<Request>& request, unsigned long wait_time);
+  Request * sendRequestAndWaitForResponse(Request * request, unsigned long wait_time);
 
   /**
    * Waits for the Request with the given ID to
@@ -55,7 +55,7 @@ public:
    * @param wait_time The time in ms to wait before returning nullptr
    * @return A pointer to the response or a nullptr
    */
-  std::shared_ptr<Request> waitForResponse(int id, unsigned long wait_time);
+  Request * waitForResponse(int id, unsigned long wait_time);
 
   virtual void refresh() = 0;
 };

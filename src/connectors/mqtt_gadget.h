@@ -28,7 +28,7 @@ protected:
 
   void callback(char *, const byte *, unsigned int);
 
-  void executeRequestSending(std::shared_ptr<Request> request) override;
+  void executeRequestSending(Request * request) override;
 
   bool subscibe_to_topic(const std::string& topic);
 
