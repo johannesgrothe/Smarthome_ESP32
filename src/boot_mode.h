@@ -2,7 +2,7 @@
 
 #include "pin_profile.h"
 
-#define STATIC_BOOTMODE 0
+#define STATIC_BOOTMODE 1
 
 enum class BootMode {
   Serial_Ony = 0,
