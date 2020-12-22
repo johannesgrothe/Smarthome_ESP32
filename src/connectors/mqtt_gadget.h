@@ -5,6 +5,7 @@
 #include <cstring>
 #include "smarthome_remote_helper.h"
 #include "wifi_gadget.h"
+#include "../protocol_paths.h"
 
 // Gadget to communicate with MQTT Endpoint
 class MQTT_Gadget : public WiFiGadget, public Request_Gadget {
