@@ -32,12 +32,3 @@
 
 // System Storage
 #define GADGET_PIN_BLOCK_LEN 5
-
-// Paths that are used by broadcast requests
-static const std::vector<std::string> broadcast_request_paths = {"smarthome/broadcast/req"};
-
-// Paths that are used by system requests
-static const std::vector<std::string> system_request_paths = {"smarthome/config/read", "smarthome/config/write", "smarthome/config/reset", "smarthome/sys", "smarthome/gadget/add", "smarthome/gadget/read"};
-
-// Paths that are used by any other component but the core system
-static const std::vector<std::string> additional_request_paths = {};

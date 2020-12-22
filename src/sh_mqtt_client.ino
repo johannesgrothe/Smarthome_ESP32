@@ -826,10 +826,6 @@ void handleGadgetWriteRequest(Request *req) {
   }
 }
 
-/**
- *
- * @param req
- */
 void handleSyncRequest(Request *req) {
   DynamicJsonDocument data_json(4500);
 
