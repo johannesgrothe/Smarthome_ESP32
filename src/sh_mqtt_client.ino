@@ -1465,7 +1465,7 @@ void setup() {
   Serial.begin(SERIAL_SPEED);
   logger.println(LOG_TYPE::INFO, "Launching...");
 
-  runtime_id_ = rand() % 10000;
+  runtime_id_ = int(random(10000));
 
   eeprom_active_ = System_Storage::initEEPROM();
   if (eeprom_active_) {
