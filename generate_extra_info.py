@@ -5,7 +5,8 @@ file_name = "flash_info.h"
 
 print("Generating '{}' file to define flashing info...".format(file_name))
 
-data_str = "#pragma once\n"
+data_str = "#pragma once\n// THIS IS AN AUTO_GENERATED FILE.\n// TOUCH IT IF YOU WANT, THE GENERATOR DOESNT CARE.\n\
+// BUT HE HAS NO MERCY EITHER.\n"
 
 flash_time = '#define SW_FLASH_TIME "{}"\n'.format(date.today())
 data_str += flash_time
@@ -21,6 +22,4 @@ print("Saving...")
 out_file = open(file_name, "w")
 out_file.write(data_str)
 
-
 print("Done.")
-

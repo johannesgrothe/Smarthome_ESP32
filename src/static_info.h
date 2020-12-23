@@ -1,3 +1,8 @@
+#pragma once
+#include "pin_profile.h"
+#include "ArduinoJson.h"
+
+#define SW_DATA_DEFAULT "<unknown>"
 
 /**
  * Gets the name of the git branch of the currently running software
@@ -5,11 +10,9 @@
  */
 std::string getSoftwareGitBranch() {
   #ifdef SW_GIT_BRANCH
-  std::stringstream sstr;
-  sstr << SW_GIT_BRANCH;
-  return sstr.str();
+  return SW_GIT_BRANCH;
   #else
-  return "<unknown>";
+  return SW_DATA_DEFAULT;
   #endif
 }
 
@@ -19,11 +22,9 @@ std::string getSoftwareGitBranch() {
  */
 std::string getSoftwareGitCommit() {
   #ifdef SW_GIT_COMMIT
-  std::stringstream sstr;
-  sstr << SW_GIT_COMMIT;
-  return sstr.str();
+  return SW_GIT_COMMIT;
   #else
-  return "<unknown>";
+  return SW_DATA_DEFAULT;
   #endif
 }
 
@@ -35,10 +36,23 @@ std::string getSoftwareGitCommit() {
  */
 std::string getSoftwareFlashDate() {
   #ifdef SW_FLASH_TIME
-  std::stringstream sstr;
-  sstr << SW_FLASH_TIME;
-  return sstr.str();
+  return SW_FLASH_TIME;
   #else
-  return "<unknown>";
+  return SW_DATA_DEFAULT;
   #endif
+}
+
+/**
+ * Generates a json document containing the complete port mapping
+ * @return The port mapping as json document
+ */
+DynamicJsonDocument getPortMapping() {
+  DynamicJsonDocument doc(300);
+  for (int i = 0; i < MAX_PORT_INDEX; i++) {
+    auto pin = getPinForPort(i);
+    if (pin != 0) {
+      doc[i] = pin;
+    }
+  }
+  return doc;
 }

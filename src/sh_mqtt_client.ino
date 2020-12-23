@@ -830,9 +830,40 @@ void handleGadgetWriteRequest(Request *req) {
 void handleSyncRequest(Request *req) {
   DynamicJsonDocument data_json(4500);
 
+  // Add runtime id
   data_json["runtime_id"] = runtime_id_;
+
+  // Add boot mode
   data_json["boot_mode"] = int(system_mode_);
 
+  // Add software flash date
+  auto sw_flashed = getSoftwareFlashDate();
+  if (sw_flashed != SW_DATA_DEFAULT) {
+    data_json["sw_uploaded"] = sw_flashed;
+  } else {
+    data_json["sw_uploaded"] = (char*) nullptr;
+  }
+
+  // Add software branch name
+  auto git_branch = getSoftwareGitBranch();
+  if (git_branch != SW_DATA_DEFAULT) {
+    data_json["sw_branch"] = git_branch;
+  } else {
+    data_json["sw_branch"] = (char*) nullptr;
+  }
+
+  // Add software commit hash
+  auto git_commit = getSoftwareGitCommit();
+  if (git_commit != SW_DATA_DEFAULT) {
+    data_json["sw_commit"] = git_commit;
+  } else {
+    data_json["sw_commit"] = (char*) nullptr;
+  }
+
+  // Add port mapping
+  data_json["port_mapping"] = getPortMapping();
+
+  // Add gadgets
   JsonArray json_gadgets = data_json.createNestedArray("gadgets");
   for (int i = 0; i < gadgets.getGadgetCount(); i++) {
     json_gadgets[i] = gadgets[i]->serialized();
