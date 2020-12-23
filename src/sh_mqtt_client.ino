@@ -1502,9 +1502,9 @@ void setup() {
 
   logger.println("Software Info:");
   logger.incIndent();
-  logger.printfln("Flash Date: %s", getSoftwareFlashDate());
-  logger.printfln("Git Branch: %s", getSoftwareGitBranch());
-  logger.printfln("Git Commit: %s", getSoftwareGitCommit());
+  logger.printfln("Flash Date: %s", getSoftwareFlashDate().c_str());
+  logger.printfln("Git Branch: %s", getSoftwareGitBranch().c_str());
+  logger.printfln("Git Commit: %s", getSoftwareGitCommit().c_str());
   logger.decIndent();
 
   eeprom_active_ = System_Storage::initEEPROM();
