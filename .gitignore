@@ -9,3 +9,4 @@ CMakeLists.txt
 *.elf
 *.ino.cpp
 network_settings.h
+flash_info.h

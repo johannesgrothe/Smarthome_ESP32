@@ -23,6 +23,7 @@
 #include "console_logger.h"
 #include "system_timer.h"
 #include "boot_mode.h"
+#include "static_info.h"
 
 // External Dependencies
 #include "Client.h"
@@ -1466,6 +1467,14 @@ void setup() {
   logger.println(LOG_TYPE::INFO, "Launching...");
 
   runtime_id_ = int(random(10000));
+  logger.printfln("Runtime ID: %s", runtime_id_);
+
+  logger.println("Software Info:");
+  logger.incIndent();
+  logger.printfln("Flash Date: %s", getSoftwareFlashDate());
+  logger.printfln("Git Branch: %s", getSoftwareGitBranch());
+  logger.printfln("Git Commit: %s", getSoftwareGitCommit());
+  logger.decIndent();
 
   eeprom_active_ = System_Storage::initEEPROM();
   if (eeprom_active_) {
