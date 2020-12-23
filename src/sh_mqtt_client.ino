@@ -1495,10 +1495,10 @@ void testStuff() {
  */
 void setup() {
   Serial.begin(SERIAL_SPEED);
-  logger.println(LOG_TYPE::INFO, "Launching...");
+  logger.println("Launching...");
 
   runtime_id_ = int(random(10000));
-  logger.printfln("Runtime ID: %s", runtime_id_);
+  logger.printfln("Runtime ID: %d", runtime_id_);
 
   logger.println("Software Info:");
   logger.incIndent();
