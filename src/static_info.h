@@ -6,7 +6,7 @@
 
 /**
  * Gets the name of the git branch of the currently running software
- * @return the git branch name
+ * @return The git branch name
  */
 std::string getSoftwareGitBranch() {
   #ifdef SW_GIT_BRANCH
@@ -18,7 +18,7 @@ std::string getSoftwareGitBranch() {
 
 /**
  * Gets the git commit hash of the currently running software
- * @return
+ * @return The git commit hash
  */
 std::string getSoftwareGitCommit() {
   #ifdef SW_GIT_COMMIT

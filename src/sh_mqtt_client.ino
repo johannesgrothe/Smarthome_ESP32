@@ -828,6 +828,17 @@ void handleGadgetWriteRequest(Request *req) {
 }
 
 void handleSyncRequest(Request *req) {
+
+  auto req_payload = req->getPayload();
+
+  // Get time sync data from request
+  if (req_payload.containsKey("server_time")) {
+    auto buf_time = req_payload["server_time"].as<unsigned long long int>();
+    system_timer.setTime(buf_time, 0);
+  } else {
+    logger.println(LOG_TYPE::ERR, "Have not received server sync time");
+  }
+
   DynamicJsonDocument data_json(4500);
 
   // Add runtime id
@@ -1375,13 +1386,19 @@ void sendHeartbeat() {
   if (network_gadget != nullptr) {
     DynamicJsonDocument req_doc(100);
 
+    // Just call the method periodically to detect time rollovers
+    system_timer.getTime();
+
     req_doc["runtime_id"] = runtime_id_;
 
+    // NOT PART OF THE PROTOCOL, debugging purposes only
+    req_doc["system_time"] = system_timer.getTime();
+
     auto heartbeat_request = new Request(PATH_HEARTBEAT,
-                                                       gen_req_id(),
-                                                       client_id_,
-                                                       PROTOCOL_BRIDGE_NAME,
-                                                       req_doc);
+                                         gen_req_id(),
+                                         client_id_,
+                                         PROTOCOL_BRIDGE_NAME,
+                                         req_doc);
     network_gadget->sendRequest(heartbeat_request);
   }
 }
