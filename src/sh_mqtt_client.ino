@@ -27,7 +27,6 @@
 
 // External Dependencies
 #include "Client.h"
-#include "ArduinoJson.h"
 
 // Remotes
 #include "remote_library.h"
@@ -38,12 +37,14 @@
 #include "pin_profile.h"
 #include "color.h"
 
-#include "ArduinoJson.h"
 #include "connectors/mqtt_gadget.h"
 #include "connectors/serial_gadget.h"
 
+#include "main_system_controller.h"
+
 // External imports
 #include <cstdlib>
+#include "ArduinoJson.h"
 
 //endregion
 
@@ -159,6 +160,9 @@ std::shared_ptr<Radio_Gadget> radio_gadget;
 
 // Network-gadget sending and receiving requests via mqtt
 std::shared_ptr<Request_Gadget> network_gadget;
+
+// Controller for the main system. Given to the gadgets tio access the main system
+std::shared_ptr<MainSystemController> main_controller;
 
 // Container to contain all of the gadgets
 Gadget_Collection gadgets;
@@ -1062,6 +1066,7 @@ bool initGadgets() {
 
           buf_gadget->setGadgetRemoteCallback(std::bind(&updateCharacteristicOnBridge, _1, _2, _3));
           buf_gadget->setEventRemoteCallback(std::bind(&updateEventOnBridge, _1, _2));
+          buf_gadget->setMainController(main_controller);
 
           logger.decIndent();
         }
@@ -1470,9 +1475,6 @@ static void createTasks() {
       1,                       /* Priority of the task. */
       &heartbeat_task,                  /* Task handle. */
       1);                       /* Core to run on */
-
-  //    vTaskSuspend(main_task);
-  //    vTaskResume(main_task);
 }
 
 //endregion
@@ -1523,6 +1525,8 @@ void setup() {
   logger.printfln("Git Branch: %s", getSoftwareGitBranch().c_str());
   logger.printfln("Git Commit: %s", getSoftwareGitCommit().c_str());
   logger.decIndent();
+
+  main_controller = std::make_shared<MainSystemController>(network_task, heartbeat_task);
 
   eeprom_active_ = System_Storage::initEEPROM();
   if (eeprom_active_) {

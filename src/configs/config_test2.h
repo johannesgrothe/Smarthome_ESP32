@@ -1,7 +1,7 @@
 
-#define PORT1 15
-#define PORT2 16
-#define PORT3 17
+#define PORT1 35
+#define PORT2 32
+#define PORT3 0
 #define PORT4 0
 #define PORT5 0
 #define PORT6 0

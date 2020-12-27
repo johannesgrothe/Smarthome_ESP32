@@ -55,6 +55,7 @@ SH_Gadget::SH_Gadget::SH_Gadget(std::string  name, const GadgetType type) :
   gadget_remote_ready(false),
   name(std::move(name)),
   has_changed(true),
+  main_controller_(nullptr),
   type(type) {}
 
 void SH_Gadget::setGadgetRemoteCallback(std::function<void(std::string, GadgetCharacteristic, int)> update_method) {
@@ -67,6 +68,10 @@ void SH_Gadget::setEventRemoteCallback(std::function<void(std::string, EventType
   event_remote_callback = std::move(send_event);
   logger.println("Initialized Event Callback");
   event_remote_ready = true;
+}
+
+void SH_Gadget::setMainController(std::shared_ptr<MainSystemController> controller) {
+  main_controller_ = controller;
 }
 
 GadgetType SH_Gadget::getType() {
@@ -148,4 +153,16 @@ void SH_Gadget::handleCharacteristicUpdate(GadgetCharacteristic characteristic, 
 
 void SH_Gadget::handleEvent(std::string sender, EventType event_type) {
   logger.println("not yet implemenmted");
+}
+
+void SH_Gadget::pauseAllTasks() {
+  if (main_controller_ != nullptr) {
+    main_controller_->pause_all_tasks_except_main();
+  }
+}
+
+void SH_Gadget::resumeTasks() {
+  if (main_controller_ != nullptr) {
+    main_controller_->resume_all_tasks();
+  }
 }

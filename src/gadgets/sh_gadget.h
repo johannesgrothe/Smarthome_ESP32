@@ -14,6 +14,7 @@
 #include "../connectors/radio_gadget.h"
 #include "gadget_enums.h"
 #include "connectors/event.h"
+#include "../main_system_controller.h"
 
 // Pair for mapping
 using mapping_pair = std::tuple<GadgetMethod, std::vector<unsigned long>>;
@@ -62,7 +63,22 @@ private:
   // The radio gadget to be used
   std::shared_ptr<Radio_Gadget> radio_gadget_;
 
+  // Controller for the main system. Behaves like a bundle of callbacks of a "delegate lite"
+  std::shared_ptr<MainSystemController> main_controller_;
+
 protected:
+
+  /**
+   * Pauses all the tasks in the main system.
+   * Use with Care.
+   * Always resume the tasks after perfoming whatever action you want to perform.
+   */
+  void pauseAllTasks();
+
+  /**
+   * Resumes all tasks
+   */
+  void resumeTasks();
 
   // Type of the gadget
   const GadgetType type;
@@ -242,4 +258,9 @@ public:
    */
   bool hasRadio() const;
 
+  /**
+   * Sets the main controller for the created gadget.
+   * @param controller The controller for the main system
+   */
+  void setMainController(shared_ptr<MainSystemController> controller);
 };

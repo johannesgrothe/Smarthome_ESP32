@@ -1,7 +1,7 @@
 #pragma once
 
-#include "configs/config_test1.h"
-//#include "configs/config_test2.h"
+//#include "configs/config_test1.h"
+#include "configs/config_test2.h"
 
 // The maximum port index allowed
 #define MAX_PORT_INDEX 9
