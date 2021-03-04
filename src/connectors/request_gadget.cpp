@@ -2,9 +2,13 @@
 
 #include <utility>
 
+QueueHandle_t createRequestQueue() {
+  return xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
+}
+
 // Request_Gadget
 void Request_Gadget::addIncomingRequest(Request *request) {
-  xQueueSend(in_request_queue_, &request, portMAX_DELAY);
+  xQueueSend(buffer_in_request_queue_, &request, portMAX_DELAY);
 };
 
 void Request_Gadget::sendQueuedItems() {
@@ -22,15 +26,17 @@ void Request_Gadget::sendQueuedItems() {
 Request_Gadget::Request_Gadget() :
     type_(RequestGadgetType::NONE_G),
     request_gadget_is_ready_(false) {
-  in_request_queue_ = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
-  out_request_queue_ = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
+  buffer_in_request_queue_ = createRequestQueue();
+  in_request_queue_ = createRequestQueue();
+  out_request_queue_ = createRequestQueue();
 }
 
 Request_Gadget::Request_Gadget(RequestGadgetType t) :
     type_(t),
     request_gadget_is_ready_(false) {
-  in_request_queue_ = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
-  out_request_queue_ = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
+  buffer_in_request_queue_ = createRequestQueue();
+  in_request_queue_ = createRequestQueue();
+  out_request_queue_ = createRequestQueue();
   request_gadget_is_ready_ = true;
 }
 
@@ -93,4 +99,35 @@ void Request_Gadget::refresh() {
     return;
   }
   refresh_network();
+  if (uxQueueMessagesWaiting(buffer_in_request_queue_) > 0) {
+    Request *buf_req;
+    xQueueReceive(buffer_in_request_queue_, &buf_req, portMAX_DELAY);
+    auto req_payload = buf_req->getPayload();
+
+    // Check if the request is a normal or split one
+    if (req_payload.containsKey("package_index") && req_payload.containsKey("split_payload")) {
+
+      // Request is split, collect parts and submit it to queue after that
+      logger.println("Split request found");
+      auto p_index = req_payload["package_index"].as<int>();
+      auto split_payload = req_payload["split_payload"].as<std::string>();
+
+      logger.println(p_index);
+      logger.println(split_payload.c_str());
+
+      // Check if its the first request
+      if (p_index == 0) {
+        logger.println("First Request");
+
+      } else {
+
+
+      }
+    } else {
+
+      // Request is a normal one, put it in queue to be accessible to the outside
+      logger.println("Normal request found");
+      xQueueSend(in_request_queue_, &buf_req, portMAX_DELAY);
+    }
+  }
 };

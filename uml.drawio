@@ -944,7 +944,7 @@
         <mxCell id="Vv94dgR8Xj495JDutTfT-27" value="# request_gadget_is_ready_: bool" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="BVCmBET8UrxRTKi6fJFU-5" vertex="1">
           <mxGeometry y="52" width="360" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="Vv94dgR8Xj495JDutTfT-28" value="# in_request_queue_: QueueHandle_t" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="BVCmBET8UrxRTKi6fJFU-5" vertex="1">
+        <mxCell id="Vv94dgR8Xj495JDutTfT-28" value="# buffer_in_request_queue_: QueueHandle_t" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="BVCmBET8UrxRTKi6fJFU-5" vertex="1">
           <mxGeometry y="78" width="360" height="26" as="geometry" />
         </mxCell>
         <mxCell id="Vv94dgR8Xj495JDutTfT-29" value="# out_request_queue_: QueueHandle_t" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="BVCmBET8UrxRTKi6fJFU-5" vertex="1">

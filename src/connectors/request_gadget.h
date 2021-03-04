@@ -11,19 +11,31 @@
 #include "../system_settings.h"
 #include "../console_logger.h"
 #include "request.h"
+#include "split_request_buffer.h"
 
 enum class RequestGadgetType {
   MQTT_G, SERIAL_G, NONE_G
 };
 
 class Request_Gadget {
+private:
+  SplitRequestBuffer split_req_buffer_r;
+
 protected:
+
+  // Type of the Gadget
   RequestGadgetType type_;
 
+  // Whether all initialization was successful
   bool request_gadget_is_ready_;
 
+  // Queue for requests detected by the implementation in child class
+  QueueHandle_t buffer_in_request_queue_;
+
+  // Queue for new requests ready to be accessible by the outside
   QueueHandle_t in_request_queue_;
 
+  // Queue for requests that need to be send
   QueueHandle_t out_request_queue_;
 
   void addIncomingRequest(Request *);
