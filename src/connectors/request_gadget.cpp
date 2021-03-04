@@ -86,4 +86,11 @@ Request *Request_Gadget::waitForResponse(int id, unsigned long wait_time) {
 Request *Request_Gadget::sendRequestAndWaitForResponse(Request *request, unsigned long wait_time) {
   sendRequest(request);
   return waitForResponse(request->getID(), wait_time);
+}
+
+void Request_Gadget::refresh() {
+  if (!request_gadget_is_ready_) {
+    return;
+  }
+  refresh_network();
 };

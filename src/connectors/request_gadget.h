@@ -57,5 +57,7 @@ public:
    */
   Request * waitForResponse(int id, unsigned long wait_time);
 
-  virtual void refresh() = 0;
+  void refresh();
+
+  virtual void refresh_network() = 0;
 };

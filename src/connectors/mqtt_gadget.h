@@ -53,5 +53,5 @@ public:
               const std::string& mqtt_username,
               const std::string& mqtt_pw);
 
-  void refresh() override;
+  void refresh_network() override;
 };

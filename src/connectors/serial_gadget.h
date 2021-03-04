@@ -16,5 +16,5 @@ public:
 
   explicit Serial_Gadget();
 
-  void refresh() override;
+  void refresh_network() override;
 };

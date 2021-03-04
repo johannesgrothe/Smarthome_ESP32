@@ -13,10 +13,7 @@ Serial_Gadget::Serial_Gadget() :
   logger.decIndent();
 }
 
-void Serial_Gadget::refresh() {
-  if (!request_gadget_is_ready_) {
-    return;
-  }
+void Serial_Gadget::refresh_network() {
   receiveSerialRequest();
   sendQueuedItems();
 }

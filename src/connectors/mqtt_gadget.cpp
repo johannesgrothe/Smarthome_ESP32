@@ -183,10 +183,7 @@ MQTT_Gadget::MQTT_Gadget(const std::string& client_name,
   }
 }
 
-void MQTT_Gadget::refresh() {
-  if (!request_gadget_is_ready_) {
-    return;
-  }
+void MQTT_Gadget::refresh_network() {
   if (!mqttClient_->connected()) {
     connect_mqtt();
   }
