@@ -24,20 +24,5 @@
 #define CODE_TYPE_NAME_LEN 30
 #define CODE_STR_LEN_MAX 300
 
-// Homebridge
-#define HOMEBRIDGE_REGISTER_STR_MAX_LEN 240
-#define HOMEBRIDGE_UNREGISTER_STR_MAX_LEN 50
-#define HOMEBRIDGE_UPDATE_STR_LEN_MAX 240
-#define HOMEBRIDGE_SERVICE_TYPE_LEN_MAX 25
-
 // System Storage
 #define GADGET_PIN_BLOCK_LEN 5
-
-// Paths that are used by broadcast requests
-static const std::vector<std::string> broadcast_request_paths = {"smarthome/broadcast/req"};
-
-// Paths that are used by system requests
-static const std::vector<std::string> system_request_paths = {"smarthome/config/read", "smarthome/config/write", "smarthome/config/reset", "smarthome/sys", "smarthome/gadget/add", "smarthome/gadget/read"};
-
-// Paths that are used by any other component but the core system
-static const std::vector<std::string> additional_request_paths = {};

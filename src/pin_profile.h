@@ -1,8 +1,17 @@
 #pragma once
 
-#include "configs/config_test1.h"
-//#include "configs/config_test2.h"
+//#include "configs/config_test1.h"
+#include "configs/config_test2.h"
 
+// The maximum port index allowed
+#define MAX_PORT_INDEX 9
+
+/**
+ * Returns the configured pin for the given port.
+ * Returns 0 if the port is not configured.
+ * @param port The port to get the pin for
+ * @return The number of the physical pin mapped to the port
+ */
 static uint8_t getPinForPort(uint8_t port) {
   switch (port) {
     case 0:

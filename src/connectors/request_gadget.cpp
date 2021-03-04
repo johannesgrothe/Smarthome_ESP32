@@ -15,19 +15,20 @@ void Request_Gadget::sendQueuedItems() {
     Request *buf_req;
     xQueueReceive(out_request_queue_, &buf_req, portMAX_DELAY);
     executeRequestSending(buf_req);
+    delete buf_req;
   }
 }
 
 Request_Gadget::Request_Gadget() :
-  type_(RequestGadgetType::NONE_G),
-  request_gadget_is_ready_(false) {
+    type_(RequestGadgetType::NONE_G),
+    request_gadget_is_ready_(false) {
   in_request_queue_ = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
   out_request_queue_ = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
 }
 
 Request_Gadget::Request_Gadget(RequestGadgetType t) :
-  type_(t),
-  request_gadget_is_ready_(false) {
+    type_(t),
+    request_gadget_is_ready_(false) {
   in_request_queue_ = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
   out_request_queue_ = xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
   request_gadget_is_ready_ = true;
@@ -75,14 +76,14 @@ Request *Request_Gadget::waitForResponse(int id, unsigned long wait_time) {
         buffered_requests.push_back(buf_req);
       }
     }
-    for (auto buf_req: buffered_requests){
+    for (auto buf_req: buffered_requests) {
       xQueueSend(in_request_queue_, &buf_req, portMAX_DELAY);
     }
     return out_req;
   }
 }
 
-Request * Request_Gadget::sendRequestAndWaitForResponse(Request *request, unsigned long wait_time) {
+Request *Request_Gadget::sendRequestAndWaitForResponse(Request *request, unsigned long wait_time) {
   sendRequest(request);
   return waitForResponse(request->getID(), wait_time);
 };

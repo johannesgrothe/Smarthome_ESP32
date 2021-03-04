@@ -1,7 +1,7 @@
 #include "serial_gadget.h"
 #include <sstream>
 
-void Serial_Gadget::executeRequestSending(Request *req) {
+void Serial_Gadget::executeRequestSending(Request * req) {
   Serial.printf("!r_p[%s]_b[%s]_\n", req->getPath().c_str(), req->getBody().c_str());
 }
 
@@ -110,12 +110,12 @@ void Serial_Gadget::receiveSerialRequest() {
           return;
         }
         using std::placeholders::_1;
-        auto *req = new Request(req_path,
-                                doc["session_id"].as<int>(),
-                                doc["sender"].as<std::string>(),
-                                doc["receiver"].as<std::string>(),
-                                doc["payload"],
-                                std::bind(&Request_Gadget::sendRequest, this, _1));
+        auto req = new Request(req_path,
+                                             doc["session_id"].as<int>(),
+                                             doc["sender"].as<std::string>(),
+                                             doc["receiver"].as<std::string>(),
+                                             doc["payload"],
+                                             std::bind(&Request_Gadget::sendRequest, this, _1));
         addIncomingRequest(req);
       } else {
         logger.println(LOG_TYPE::WARN, "Received faulty request");

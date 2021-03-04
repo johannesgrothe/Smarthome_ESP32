@@ -13,6 +13,7 @@
 #include "network_library.h"
 #include "remote_library.h"
 #include "pin_profile.h"
+#include "gadgets/gadget_enums.h"
 
 // valid config bitfield
 #define VALID_CONFIG_BITFIELD_BYTE 0
@@ -86,12 +87,6 @@
 #define GADGET_NAME_LEN_POS (GADGET_PIN_BLOCK_POS + GADGET_PIN_BLOCK_LEN + 1)
 #define GADGET_JSON_LEN_POS (GADGET_NAME_LEN_POS + 1)
 #define GADGET_NAME_POS (GADGET_JSON_LEN_POS + 2)
-
-static bool validateJson(std::string new_json_str) {
-  DynamicJsonDocument json_file(2048);
-  DeserializationError err = deserializeJson(json_file, new_json_str);
-  return err == DeserializationError::Ok;
-}
 
 /**
  *

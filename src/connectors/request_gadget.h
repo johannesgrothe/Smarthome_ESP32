@@ -26,9 +26,9 @@ protected:
 
   QueueHandle_t out_request_queue_;
 
-  void addIncomingRequest(Request *request);
+  void addIncomingRequest(Request *);
 
-  virtual void executeRequestSending(Request *req) = 0;
+  virtual void executeRequestSending(Request *) = 0;
 
   void sendQueuedItems();
 
@@ -43,9 +43,9 @@ public:
 
   bool hasRequest();
 
-  Request *getRequest();
+  Request * getRequest();
 
-  void sendRequest(Request *request);
+  void sendRequest(Request * request);
 
   Request * sendRequestAndWaitForResponse(Request * request, unsigned long wait_time);
 
@@ -55,7 +55,7 @@ public:
    * @param wait_time The time in ms to wait before returning nullptr
    * @return A pointer to the response or a nullptr
    */
-  Request *waitForResponse(int id, unsigned long wait_time);
+  Request * waitForResponse(int id, unsigned long wait_time);
 
   virtual void refresh() = 0;
 };

@@ -13,7 +13,8 @@
 #include "../connectors/ir_gadget.h"
 #include "../connectors/radio_gadget.h"
 #include "gadget_enums.h"
-#include "../remotes/Event.h"
+#include "connectors/event.h"
+#include "../main_system_controller.h"
 
 // Pair for mapping
 using mapping_pair = std::tuple<GadgetMethod, std::vector<unsigned long>>;
@@ -62,7 +63,22 @@ private:
   // The radio gadget to be used
   std::shared_ptr<Radio_Gadget> radio_gadget_;
 
+  // Controller for the main system. Behaves like a bundle of callbacks of a "delegate lite"
+  std::shared_ptr<MainSystemController> main_controller_;
+
 protected:
+
+  /**
+   * Pauses all the tasks in the main system.
+   * Use with Care.
+   * Always resume the tasks after perfoming whatever action you want to perform.
+   */
+  void pauseAllTasks();
+
+  /**
+   * Resumes all tasks
+   */
+  void resumeTasks();
 
   // Type of the gadget
   const GadgetType type;
@@ -129,6 +145,22 @@ public:
    * @param type Type of the gadget
    */
   explicit SH_Gadget(std::string name, GadgetType type);
+
+
+  DynamicJsonDocument serialized() {
+      DynamicJsonDocument ser_doc(2000);
+
+      ser_doc["gadget_type"] = int(type);
+      ser_doc["gadget_name"] = name;
+
+      for (auto characteristic_data: getCharacteristics()) {
+          ser_doc[int(characteristic_data.characteristic)] = JsonObject();
+          ser_doc[int(characteristic_data.characteristic)]["max"] = characteristic_data.max;
+          ser_doc[int(characteristic_data.characteristic)]["min"] = characteristic_data.min;
+          ser_doc[int(characteristic_data.characteristic)]["step"] = characteristic_data.step;
+      }
+      return ser_doc;
+  }
 
   /**
    * Sets the callback for the gadget remote
@@ -226,4 +258,9 @@ public:
    */
   bool hasRadio() const;
 
+  /**
+   * Sets the main controller for the created gadget.
+   * @param controller The controller for the main system
+   */
+  void setMainController(shared_ptr<MainSystemController> controller);
 };
