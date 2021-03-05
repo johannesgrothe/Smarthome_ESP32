@@ -9,9 +9,12 @@ private:
 
 public:
   const int session_id_;
+  const std::string path_;
+  const std::string sender_;
+  const std::string receiver_;
   const int length_;
 
-  SplitRequestBuffer(int session_id, int length);
+  SplitRequestBuffer(int session_id, std::string path, std::string sender, std::string receiver, int length);
 
   void addData(int index, std::string payload);
 

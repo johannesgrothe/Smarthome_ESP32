@@ -121,9 +121,26 @@ void Request_Gadget::refresh() {
       if (p_index == 0) {
         logger.println("First Request");
 
+        if (req_payload.containsKey("last_index")) {
+          auto last_index = req_payload["last_index"].as<int>();
+          split_req_buffer = std::make_shared<SplitRequestBuffer>(buf_req->getID(),
+                                                                  buf_req->getPath(),
+                                                                  buf_req->getSender(),
+                                                                  buf_req->getReceiver(),
+                                                                  last_index - 1
+          );
+          split_req_buffer->addData(0, split_payload);
+        } else {
+          split_req_buffer = nullptr;
+        }
       } else {
-
-
+        split_req_buffer->addData(p_index, split_payload);
+        auto out_req = split_req_buffer->getRequest();
+        if (out_req != nullptr) {
+          logger.println("Stitched together the split request");
+          xQueueSend(in_request_queue_, &out_req, portMAX_DELAY);
+          split_req_buffer = nullptr;
+        }
       }
     } else {
 

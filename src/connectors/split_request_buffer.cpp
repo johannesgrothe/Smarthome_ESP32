@@ -1,6 +1,12 @@
 #include "split_request_buffer.h"
 
+#include <utility>
+
 std::string replaceParts(std::string in_str, const std::string& part_to_replace, const std::string& replacement) {
+  if (part_to_replace.find(replacement) != std::string::npos) {
+    logger.println(LOG_TYPE::FATAL, "Illegal replacement string");
+    return "";
+  }
   while (true) {
     auto index = in_str.find(part_to_replace);
     if (index == std::string::npos) {
@@ -10,9 +16,12 @@ std::string replaceParts(std::string in_str, const std::string& part_to_replace,
   }
 }
 
-SplitRequestBuffer::SplitRequestBuffer(int session_id, int length):
+SplitRequestBuffer::SplitRequestBuffer(int session_id, std::string path, std::string sender, std::string receiver, int length):
     data_buffer_(length),
     session_id_(session_id),
+    path_(std::move(path)),
+    sender_(std::move(sender)),
+    receiver_(std::move(receiver)),
     length_(length) {
   logger.println(data_buffer_[length-1].c_str());
 }
@@ -37,9 +46,26 @@ Request *SplitRequestBuffer::getRequest() const {
       buf_str += part;
     }
     logger.printfln("Received payload: '%s'", buf_str.c_str());
+    // Replace coded data from string to decodable json data
     auto payload_str = replaceParts(buf_str, "$*$", "\"");
     logger.printfln("Received payload: '%s'", payload_str.c_str());
-    // TODO
+    DynamicJsonDocument doc(5000);
+    auto serialization_ok = ArduinoJson::deserializeJson(doc, payload_str);
+
+    // Check if deserialization was successful
+    if (serialization_ok != DeserializationError::Ok) {
+      logger.println("Error in split request deserialization process");
+      return nullptr;
+    }
+
+    auto out_req = new Request(path_,
+                               session_id_,
+                               sender_,
+                               receiver_,
+                               doc);
+
+    return out_req;
+
   }
   return nullptr;
 }
