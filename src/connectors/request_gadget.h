@@ -38,27 +38,74 @@ protected:
   // Queue for requests that need to be send
   QueueHandle_t out_request_queue_;
 
-  void addIncomingRequest(Request *);
+  /**
+   * Adds a request to the 'incoming'-queue
+   * @param request Request to be added
+   */
+  void addIncomingRequest(Request * request);
 
-  virtual void executeRequestSending(Request *) = 0;
+  /**
+   * Sends a request to the network
+   * @param request Request to be sent
+   */
+  virtual void executeRequestSending(Request * request) = 0;
 
+  /**
+   * Sends requests queued in the out-queue
+   */
   void sendQueuedItems();
 
+  /**
+   * Method for the gadget to implement sending and receiving requests from their hardware
+   */
+  virtual void refresh_network() = 0;
+
 public:
+  /**
+   * Default constructor for the request gadget
+   */
   Request_Gadget();
 
+  /**
+   * Creates a request gadget with a specific type
+   * @param t Type of the gadget (self)
+   */
   explicit Request_Gadget(RequestGadgetType t);
 
+  /**
+   * @return Whether te gadget is ready to send and receive requests
+   */
   bool requestGadgetIsReady() const;
 
+  /**
+   * @return The gadget type of this gadget
+   */
   RequestGadgetType getGadgetType();
 
+  /**
+   * @return Whether the gadget has received a new request
+   */
   bool hasRequest();
 
+  /**
+   * Gets the oldest request the gadget has received.
+   * Returns nullptr if there is none.
+   * @return A request if there is any
+   */
   Request * getRequest();
 
+  /**
+   * Stores a request to be sent and sends it as soon as possible
+   * @param request The request to be sent
+   */
   void sendRequest(Request * request);
 
+  /**
+   * Sends a request and waits for a response to arrive.
+   * @param request Request to be sent
+   * @param wait_time The time in ms to wait before returning nullptr
+   * @return A pointer to the response or a nullptr
+   */
   Request * sendRequestAndWaitForResponse(Request * request, unsigned long wait_time);
 
   /**
@@ -69,7 +116,8 @@ public:
    */
   Request * waitForResponse(int id, unsigned long wait_time);
 
+  /**
+   * Loop-function for the request gadget
+   */
   void refresh();
-
-  virtual void refresh_network() = 0;
 };

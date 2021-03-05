@@ -93,7 +93,7 @@ void MQTT_Gadget::callback(char *topic, const byte *payload, const unsigned int 
   addIncomingRequest(req);
 }
 
-void MQTT_Gadget::executeRequestSending(Request * req) {
+void MQTT_Gadget::cexecuteRequestSending(Request * req) {
   std::string topic = req->getPath();
   std::string body = req->getBody();
   logger.print("System / MQTT", "publishing on '");
