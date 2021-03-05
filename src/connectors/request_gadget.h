@@ -19,7 +19,7 @@ enum class RequestGadgetType {
 
 class Request_Gadget {
 private:
-  SplitRequestBuffer split_req_buffer_r;
+  std::shared_ptr<SplitRequestBuffer> split_req_buffer;
 
 protected:
 

@@ -24,6 +24,7 @@ void Request_Gadget::sendQueuedItems() {
 }
 
 Request_Gadget::Request_Gadget() :
+    split_req_buffer(nullptr),
     type_(RequestGadgetType::NONE_G),
     request_gadget_is_ready_(false) {
   buffer_in_request_queue_ = createRequestQueue();
@@ -32,6 +33,7 @@ Request_Gadget::Request_Gadget() :
 }
 
 Request_Gadget::Request_Gadget(RequestGadgetType t) :
+    split_req_buffer(nullptr),
     type_(t),
     request_gadget_is_ready_(false) {
   buffer_in_request_queue_ = createRequestQueue();

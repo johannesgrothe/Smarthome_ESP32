@@ -1,7 +1,11 @@
+#include <string>
+#include <vector>
+#include "request.h"
+
 class SplitRequestBuffer {
 private:
   std::vector<std::string> data_buffer_;
-  int last_index = 0;
+  int added_packages_ = 0;
 
 public:
   const int session_id_;
@@ -11,5 +15,5 @@ public:
 
   void addData(int index, std::string payload);
 
-  Request * getRequest();
+  Request * getRequest() const;
 };
