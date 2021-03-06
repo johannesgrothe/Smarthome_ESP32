@@ -159,7 +159,7 @@ std::shared_ptr<IR_Gadget> ir_gadget;
 std::shared_ptr<Radio_Gadget> radio_gadget;
 
 // Network-gadget sending and receiving requests via mqtt
-std::shared_ptr<Request_Gadget> network_gadget;
+std::shared_ptr<RequestGadget> network_gadget;
 
 // Controller for the main system. Given to the gadgets tio access the main system
 std::shared_ptr<MainSystemController> main_controller;
@@ -1227,16 +1227,16 @@ bool initNetwork(NetworkMode mode) {
     std::string user = System_Storage::readMQTTUsername();
     std::string mqtt_pw = System_Storage::readMQTTPassword();
 
-    network_gadget = std::make_shared<MQTT_Gadget>(client_id_,
-                                                   ssid,
-                                                   wifi_pw,
-                                                   ip,
-                                                   port,
-                                                   user,
-                                                   mqtt_pw);
+    network_gadget = std::make_shared<MQTTGadget>(client_id_,
+                                                  ssid,
+                                                  wifi_pw,
+                                                  ip,
+                                                  port,
+                                                  user,
+                                                  mqtt_pw);
 
   } else if (mode == NetworkMode::Serial) {
-    network_gadget = std::make_shared<Serial_Gadget>();
+    network_gadget = std::make_shared<SerialGadget>();
   } else {
     logger.println(LOG_TYPE::ERR, "Unknown Network Settings");
     return false;

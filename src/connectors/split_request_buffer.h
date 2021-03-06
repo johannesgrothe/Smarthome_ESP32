@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 #include <vector>
 #include "request.h"
@@ -18,5 +20,5 @@ public:
 
   void addData(int index, std::string payload);
 
-  Request * getRequest() const;
+  Request *getRequest() const;
 };

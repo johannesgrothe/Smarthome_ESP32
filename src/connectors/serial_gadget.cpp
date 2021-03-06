@@ -1,24 +1,24 @@
 #include "serial_gadget.h"
 #include <sstream>
 
-void Serial_Gadget::executeRequestSending(Request * req) {
+void SerialGadget::executeRequestSending(Request * req) {
   Serial.printf("!r_p[%s]_b[%s]_\n", req->getPath().c_str(), req->getBody().c_str());
 }
 
-Serial_Gadget::Serial_Gadget() :
-  Request_Gadget(RequestGadgetType::SERIAL_G) {
+SerialGadget::SerialGadget() :
+    RequestGadget(RequestGadgetType::SERIAL_G) {
   logger.println("Creating Serial Gadget");
   logger.incIndent();
   logger.println(LOG_TYPE::DATA, "Using default Serial Connection");
   logger.decIndent();
 }
 
-void Serial_Gadget::refresh_network() {
+void SerialGadget::refresh_network() {
   receiveSerialRequest();
   sendQueuedItems();
 }
 
-void Serial_Gadget::receiveSerialRequest() {
+void SerialGadget::receiveSerialRequest() {
   std::stringstream sstr;
   bool new_msg = false;
   while (Serial.available()) {
@@ -112,7 +112,7 @@ void Serial_Gadget::receiveSerialRequest() {
                                              doc["sender"].as<std::string>(),
                                              doc["receiver"].as<std::string>(),
                                              doc["payload"],
-                                             std::bind(&Request_Gadget::sendRequest, this, _1));
+                                             std::bind(&RequestGadget::sendRequest, this, _1));
         addIncomingRequest(req);
       } else {
         logger.println(LOG_TYPE::WARN, "Received faulty request");

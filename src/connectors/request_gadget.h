@@ -17,12 +17,12 @@ enum class RequestGadgetType {
   MQTT_G, SERIAL_G, NONE_G
 };
 
-class Request_Gadget {
+class RequestGadget {
 private:
-  std::shared_ptr<SplitRequestBuffer> split_req_buffer;
+  // Buffer to store split request info until all parts are received
+  std::shared_ptr<SplitRequestBuffer> split_req_buffer_;
 
 protected:
-
   // Type of the Gadget
   RequestGadgetType type_;
 
@@ -64,13 +64,13 @@ public:
   /**
    * Default constructor for the request gadget
    */
-  Request_Gadget();
+  RequestGadget();
 
   /**
    * Creates a request gadget with a specific type
    * @param t Type of the gadget (self)
    */
-  explicit Request_Gadget(RequestGadgetType t);
+  explicit RequestGadget(RequestGadgetType t);
 
   /**
    * @return Whether te gadget is ready to send and receive requests

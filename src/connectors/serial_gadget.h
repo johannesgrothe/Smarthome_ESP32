@@ -5,7 +5,7 @@
 #include "code_gadget.h"
 #include "request_gadget.h"
 
-class Serial_Gadget : public Request_Gadget {
+class SerialGadget : public RequestGadget {
 protected:
 
   void executeRequestSending(Request * req) override;
@@ -14,7 +14,7 @@ protected:
 
 public:
 
-  explicit Serial_Gadget();
+  explicit SerialGadget();
 
   void refresh_network() override;
 };

@@ -2,7 +2,7 @@
 
 #include <utility>
 
-std::string replaceParts(std::string in_str, const std::string& part_to_replace, const std::string& replacement) {
+std::string replaceParts(std::string in_str, const std::string &part_to_replace, const std::string &replacement) {
   if (part_to_replace.find(replacement) != std::string::npos) {
     logger.println(LOG_TYPE::FATAL, "Illegal replacement string");
     return "";
@@ -16,23 +16,24 @@ std::string replaceParts(std::string in_str, const std::string& part_to_replace,
   }
 }
 
-SplitRequestBuffer::SplitRequestBuffer(int session_id, std::string path, std::string sender, std::string receiver, int length):
+SplitRequestBuffer::SplitRequestBuffer(int session_id, std::string path, std::string sender, std::string receiver,
+                                       int length) :
     data_buffer_(length),
     session_id_(session_id),
     path_(std::move(path)),
     sender_(std::move(sender)),
     receiver_(std::move(receiver)),
     length_(length) {
-  logger.println(data_buffer_[length-1].c_str());
+  logger.println(data_buffer_[length - 1].c_str());
 }
 
-void SplitRequestBuffer::addData(int index, std::string payload)  {
+void SplitRequestBuffer::addData(int index, std::string payload) {
   if (index >= length_ || index < 0) {
     return;
   }
   if (!data_buffer_[index].empty()) {
     data_buffer_[index] = std::move(payload);
-    added_packages_ ++;
+    added_packages_++;
   } else {
     logger.printfln("Data at index %d is not empty: '%s'", index, data_buffer_[index].c_str());
   }
