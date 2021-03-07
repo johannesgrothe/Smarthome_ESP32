@@ -23,9 +23,7 @@ SplitRequestBuffer::SplitRequestBuffer(int session_id, std::string path, std::st
     path_(std::move(path)),
     sender_(std::move(sender)),
     receiver_(std::move(receiver)),
-    length_(length) {
-  logger.println(data_buffer_[length - 1].c_str());
-}
+    length_(length) {}
 
 void SplitRequestBuffer::addData(int index, std::string payload) {
   if (index >= length_ || index < 0) {
@@ -46,10 +44,9 @@ Request *SplitRequestBuffer::getRequest() const {
       std::string part = data_buffer_[i];
       buf_str += part;
     }
-    logger.printfln("Received payload: '%s'", buf_str.c_str());
     // Replace coded data from string to decodable json data
     auto payload_str = replaceParts(buf_str, "$*$", "\"");
-    logger.printfln("Received payload: '%s'", payload_str.c_str());
+//    logger.printfln("Received payload: '%s'", payload_str.c_str());
     DynamicJsonDocument doc(5000);
     auto serialization_ok = ArduinoJson::deserializeJson(doc, payload_str);
 

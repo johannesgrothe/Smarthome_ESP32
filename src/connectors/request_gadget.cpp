@@ -110,16 +110,11 @@ void RequestGadget::refresh() {
     if (req_payload.containsKey("package_index") && req_payload.containsKey("split_payload")) {
 
       // Request is split, collect parts and submit it to queue after that
-      logger.println("Split request found");
       auto p_index = req_payload["package_index"].as<int>();
       auto split_payload = req_payload["split_payload"].as<std::string>();
 
-      logger.println(p_index);
-      logger.println(split_payload.c_str());
-
       // Check if its the first request
       if (p_index == 0) {
-        logger.println("First Request");
 
         if (req_payload.containsKey("last_index")) {
           auto last_index = req_payload["last_index"].as<int>();
@@ -137,7 +132,6 @@ void RequestGadget::refresh() {
         split_req_buffer_->addData(p_index, split_payload);
         auto out_req = split_req_buffer_->getRequest();
         if (out_req != nullptr) {
-          logger.println("Stitched together the split request");
           xQueueSend(in_request_queue_, &out_req, portMAX_DELAY);
           split_req_buffer_ = nullptr;
         }
@@ -145,7 +139,6 @@ void RequestGadget::refresh() {
     } else {
 
       // Request is a normal one, put it in queue to be accessible to the outside
-      logger.println("Normal request found");
       xQueueSend(in_request_queue_, &buf_req, portMAX_DELAY);
     }
   }
