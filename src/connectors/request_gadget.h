@@ -11,42 +11,101 @@
 #include "../system_settings.h"
 #include "../console_logger.h"
 #include "request.h"
+#include "split_request_buffer.h"
 
 enum class RequestGadgetType {
   MQTT_G, SERIAL_G, NONE_G
 };
 
-class Request_Gadget {
+class RequestGadget {
+private:
+  // Buffer to store split request info until all parts are received
+  std::shared_ptr<SplitRequestBuffer> split_req_buffer_;
+
 protected:
+  // Type of the Gadget
   RequestGadgetType type_;
 
+  // Whether all initialization was successful
   bool request_gadget_is_ready_;
 
+  // Queue for requests detected by the implementation in child class
+  QueueHandle_t buffer_in_request_queue_;
+
+  // Queue for new requests ready to be accessible by the outside
   QueueHandle_t in_request_queue_;
 
+  // Queue for requests that need to be send
   QueueHandle_t out_request_queue_;
 
-  void addIncomingRequest(Request *);
+  /**
+   * Adds a request to the 'incoming'-queue
+   * @param request Request to be added
+   */
+  void addIncomingRequest(Request * request);
 
-  virtual void executeRequestSending(Request *) = 0;
+  /**
+   * Sends a request to the network
+   * @param request Request to be sent
+   */
+  virtual void executeRequestSending(Request * request) = 0;
 
+  /**
+   * Sends requests queued in the out-queue
+   */
   void sendQueuedItems();
 
+  /**
+   * Method for the gadget to implement sending and receiving requests from their hardware
+   */
+  virtual void refresh_network() = 0;
+
 public:
-  Request_Gadget();
+  /**
+   * Default constructor for the request gadget
+   */
+  RequestGadget();
 
-  explicit Request_Gadget(RequestGadgetType t);
+  /**
+   * Creates a request gadget with a specific type
+   * @param t Type of the gadget (self)
+   */
+  explicit RequestGadget(RequestGadgetType t);
 
+  /**
+   * @return Whether te gadget is ready to send and receive requests
+   */
   bool requestGadgetIsReady() const;
 
+  /**
+   * @return The gadget type of this gadget
+   */
   RequestGadgetType getGadgetType();
 
+  /**
+   * @return Whether the gadget has received a new request
+   */
   bool hasRequest();
 
+  /**
+   * Gets the oldest request the gadget has received.
+   * Returns nullptr if there is none.
+   * @return A request if there is any
+   */
   Request * getRequest();
 
+  /**
+   * Stores a request to be sent and sends it as soon as possible
+   * @param request The request to be sent
+   */
   void sendRequest(Request * request);
 
+  /**
+   * Sends a request and waits for a response to arrive.
+   * @param request Request to be sent
+   * @param wait_time The time in ms to wait before returning nullptr
+   * @return A pointer to the response or a nullptr
+   */
   Request * sendRequestAndWaitForResponse(Request * request, unsigned long wait_time);
 
   /**
@@ -57,5 +116,8 @@ public:
    */
   Request * waitForResponse(int id, unsigned long wait_time);
 
-  virtual void refresh() = 0;
+  /**
+   * Loop-function for the request gadget
+   */
+  void refresh();
 };

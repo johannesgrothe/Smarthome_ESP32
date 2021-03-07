@@ -8,7 +8,7 @@
 #include "../protocol_paths.h"
 
 // Gadget to communicate with MQTT Endpoint
-class MQTT_Gadget : public WiFiGadget, public Request_Gadget {
+class MQTTGadget : public WiFiGadget, public RequestGadget {
 protected:
 
   IPAddress mqttServer_{};
@@ -31,7 +31,7 @@ protected:
 
   void executeRequestSending(Request * request) override;
 
-  bool subscibe_to_topic(const std::string& topic);
+  bool subscribe_to_topic(const std::string& topic);
 
 public:
 
@@ -45,13 +45,13 @@ public:
    * @param mqtt_username
    * @param mqtt_pw
    */
-  MQTT_Gadget(const std::string& client_name,
-              std::string wifi_ssid,
-              std::string wifi_pw,
-              const IPAddress& mqtt_ip,
-              uint16_t mqtt_port,
-              const std::string& mqtt_username,
-              const std::string& mqtt_pw);
+  MQTTGadget(const std::string& client_name,
+             std::string wifi_ssid,
+             std::string wifi_pw,
+             const IPAddress& mqtt_ip,
+             uint16_t mqtt_port,
+             const std::string& mqtt_username,
+             const std::string& mqtt_pw);
 
-  void refresh() override;
+  void refresh_network() override;
 };

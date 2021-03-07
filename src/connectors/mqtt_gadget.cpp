@@ -2,18 +2,18 @@
 #include <sstream>
 #include <utility>
 
-bool MQTT_Gadget::connect_mqtt() {
+bool MQTTGadget::connect_mqtt() {
   mqttClient_->setServer(mqttServer_, mqtt_port_);
 
   using std::placeholders::_1;
   using std::placeholders::_2;
   using std::placeholders::_3;
-  mqttClient_->setCallback(std::bind(&MQTT_Gadget::callback, this, _1, _2, _3));
+  mqttClient_->setCallback(std::bind(&MQTTGadget::callback, this, _1, _2, _3));
 
   logger.print(LOG_TYPE::DATA, "Connecting to Broker ");
   uint8_t conn_count = 0;
   while (!mqttClient_->connected()) {
-    bool connected = false;
+    bool connected;
     if (has_credentials_) {
       connected = mqttClient_->connect(client_name_.c_str(), username_.c_str(), password_.c_str());
     } else {
@@ -26,15 +26,15 @@ bool MQTT_Gadget::connect_mqtt() {
       logger.println(LOG_TYPE::DATA, "Subscribing to topics:");
       logger.incIndent();
       for (const auto& list_path: broadcast_request_paths) {
-        subscibe_to_topic(list_path);
+        subscribe_to_topic(list_path);
       }
 
       for (const auto& list_path: system_request_paths) {
-        subscibe_to_topic(list_path);
+        subscribe_to_topic(list_path);
       }
 
       for (const auto& list_path: additional_request_paths) {
-        subscibe_to_topic(list_path);
+        subscribe_to_topic(list_path);
       }
 
       logger.decIndent();
@@ -55,7 +55,7 @@ bool MQTT_Gadget::connect_mqtt() {
   return false;
 }
 
-void MQTT_Gadget::callback(char *topic, const byte *payload, const unsigned int length) {
+void MQTTGadget::callback(char *topic, const byte *payload, const unsigned int length) {
   std::stringstream local_topic;
   local_topic << topic;
 
@@ -89,17 +89,17 @@ void MQTT_Gadget::callback(char *topic, const byte *payload, const unsigned int 
                                        doc["sender"].as<std::string>(),
                                        doc["receiver"].as<std::string>(),
                                        doc["payload"],
-                                       std::bind(&Request_Gadget::sendRequest, this, _1));
+                                       std::bind(&RequestGadget::sendRequest, this, _1));
   addIncomingRequest(req);
 }
 
-void MQTT_Gadget::executeRequestSending(Request * req) {
+void MQTTGadget::executeRequestSending(Request * req) {
   std::string topic = req->getPath();
   std::string body = req->getBody();
   logger.print("System / MQTT", "publishing on '");
   logger.print(topic);
   logger.print("'");
-  bool status = true;
+  bool status;
   uint16_t msg_len = body.size();
   status = mqttClient_->beginPublish(topic.c_str(), msg_len, false);
   uint16_t k;
@@ -116,19 +116,19 @@ void MQTT_Gadget::executeRequestSending(Request * req) {
     logger.println("ERR");
 }
 
-MQTT_Gadget::MQTT_Gadget(const std::string& client_name,
-                         std::string wifi_ssid,
-                         std::string wifi_pw,
-                         const IPAddress& mqtt_ip,
-                         uint16_t mqtt_port,
-                         const std::string& mqtt_username,
-                         const std::string& mqtt_pw) :
-  WiFiGadget(std::move(wifi_ssid), std::move(wifi_pw)),
-  Request_Gadget(RequestGadgetType::MQTT_G),
-  mqttServer_(mqtt_ip),
-  mqtt_port_(mqtt_port),
-  has_credentials_(true),
-  client_name_(client_name) {
+MQTTGadget::MQTTGadget(const std::string& client_name,
+                       std::string wifi_ssid,
+                       std::string wifi_pw,
+                       const IPAddress& mqtt_ip,
+                       uint16_t mqtt_port,
+                       const std::string& mqtt_username,
+                       const std::string& mqtt_pw) :
+    WiFiGadget(std::move(wifi_ssid), std::move(wifi_pw)),
+    RequestGadget(RequestGadgetType::MQTT_G),
+    mqttServer_(mqtt_ip),
+    mqtt_port_(mqtt_port),
+    has_credentials_(true),
+    client_name_(client_name) {
   if (wifiIsInitialized()) {
     logger.println("Creating MQTT Gadget");
     logger.incIndent();
@@ -183,10 +183,7 @@ MQTT_Gadget::MQTT_Gadget(const std::string& client_name,
   }
 }
 
-void MQTT_Gadget::refresh() {
-  if (!request_gadget_is_ready_) {
-    return;
-  }
+void MQTTGadget::refresh_network() {
   if (!mqttClient_->connected()) {
     connect_mqtt();
   }
@@ -194,7 +191,7 @@ void MQTT_Gadget::refresh() {
   sendQueuedItems();
 }
 
-bool MQTT_Gadget::subscibe_to_topic(const std::string& topic) {
+bool MQTTGadget::subscribe_to_topic(const std::string& topic) {
   bool status = mqttClient_->subscribe(topic.c_str());
   if (status) {
     logger.printfln("Subscribed to %s", topic.c_str());

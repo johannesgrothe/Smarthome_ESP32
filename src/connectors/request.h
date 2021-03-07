@@ -16,7 +16,7 @@ private:
   std::string receiver_;
   DynamicJsonDocument payload_;
 
-  // respond to (incomming) request
+  // respond to (incoming) request
   bool needs_response_;
   bool can_respond_;
   std::function<void(Request *)> send_answer_;
@@ -163,7 +163,7 @@ public:
   /**
    * Checks if the request has a ack-status and an status message.
    * Returns them if there are any, returns false if there are none.
-   * @return {ack-status, stauts-message}
+   * @return {ack-status, status-message}
    */
   std::tuple<bool, std::string> getAck();
 };
