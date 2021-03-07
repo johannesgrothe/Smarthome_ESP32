@@ -31,7 +31,7 @@ void SplitRequestBuffer::addData(int index, std::string payload) {
   if (index >= length_ || index < 0) {
     return;
   }
-  if (!data_buffer_[index].empty()) {
+  if (data_buffer_[index].empty()) {
     data_buffer_[index] = std::move(payload);
     added_packages_++;
   } else {

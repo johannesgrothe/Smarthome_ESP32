@@ -127,7 +127,7 @@ void RequestGadget::refresh() {
                                                                    buf_req->getPath(),
                                                                    buf_req->getSender(),
                                                                    buf_req->getReceiver(),
-                                                                  last_index - 1
+                                                                   last_index
           );
           split_req_buffer_->addData(0, split_payload);
         } else {
