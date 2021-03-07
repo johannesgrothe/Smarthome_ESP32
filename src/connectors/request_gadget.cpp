@@ -9,7 +9,7 @@ QueueHandle_t createRequestQueue() {
 // RequestGadget
 void RequestGadget::addIncomingRequest(Request *request) {
   xQueueSend(buffer_in_request_queue_, &request, portMAX_DELAY);
-};
+}
 
 void RequestGadget::sendQueuedItems() {
   if (!request_gadget_is_ready_) {
@@ -142,4 +142,4 @@ void RequestGadget::refresh() {
       xQueueSend(in_request_queue_, &buf_req, portMAX_DELAY);
     }
   }
-};
+}

@@ -13,7 +13,7 @@ bool MQTTGadget::connect_mqtt() {
   logger.print(LOG_TYPE::DATA, "Connecting to Broker ");
   uint8_t conn_count = 0;
   while (!mqttClient_->connected()) {
-    bool connected = false;
+    bool connected;
     if (has_credentials_) {
       connected = mqttClient_->connect(client_name_.c_str(), username_.c_str(), password_.c_str());
     } else {
@@ -26,15 +26,15 @@ bool MQTTGadget::connect_mqtt() {
       logger.println(LOG_TYPE::DATA, "Subscribing to topics:");
       logger.incIndent();
       for (const auto& list_path: broadcast_request_paths) {
-        subscibe_to_topic(list_path);
+        subscribe_to_topic(list_path);
       }
 
       for (const auto& list_path: system_request_paths) {
-        subscibe_to_topic(list_path);
+        subscribe_to_topic(list_path);
       }
 
       for (const auto& list_path: additional_request_paths) {
-        subscibe_to_topic(list_path);
+        subscribe_to_topic(list_path);
       }
 
       logger.decIndent();
@@ -99,7 +99,7 @@ void MQTTGadget::executeRequestSending(Request * req) {
   logger.print("System / MQTT", "publishing on '");
   logger.print(topic);
   logger.print("'");
-  bool status = true;
+  bool status;
   uint16_t msg_len = body.size();
   status = mqttClient_->beginPublish(topic.c_str(), msg_len, false);
   uint16_t k;
@@ -191,7 +191,7 @@ void MQTTGadget::refresh_network() {
   sendQueuedItems();
 }
 
-bool MQTTGadget::subscibe_to_topic(const std::string& topic) {
+bool MQTTGadget::subscribe_to_topic(const std::string& topic) {
   bool status = mqttClient_->subscribe(topic.c_str());
   if (status) {
     logger.printfln("Subscribed to %s", topic.c_str());

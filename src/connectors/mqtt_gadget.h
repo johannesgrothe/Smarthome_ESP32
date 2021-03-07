@@ -31,7 +31,7 @@ protected:
 
   void executeRequestSending(Request * request) override;
 
-  bool subscibe_to_topic(const std::string& topic);
+  bool subscribe_to_topic(const std::string& topic);
 
 public:
 
