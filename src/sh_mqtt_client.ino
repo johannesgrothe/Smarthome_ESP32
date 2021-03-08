@@ -84,7 +84,7 @@ static bool checkPayloadForKeys(Request *req, const std::vector<std::string> &ke
 
   for (const auto &key: key_list) {
     if (!json_body.containsKey(key)) {
-      logger.printfln(LOG_TYPE::ERR, "'%s' missing in request", key);
+      logger.printfln(LOG_TYPE::ERR, "'%s' missing in request", key.c_str());
       std::stringstream sstr;
       sstr << "Key missing in payload: '" << key << "'." << std::endl;
       req->respond(false, sstr.str());
@@ -651,14 +651,16 @@ bool writeConfig(DynamicJsonDocument config) {
         uint8_t uint_value = preference_data[param_name];
 
         auto result = writeConfigParam(param_name, string_value, uint_value);
+        logger.incIndent();
         if (result) {
-          logger.printfln(LOG_TYPE::INFO, "Writing '%s' was successful", param_name);
+          logger.printfln(LOG_TYPE::DATA, "Writing '%s' was successful", param_name.c_str());
         } else {
-          logger.printfln(LOG_TYPE::ERR, "Writing '%s' failed", param_name);
+          logger.printfln(LOG_TYPE::ERR, "Writing '%s' failed", param_name.c_str());
           writing_data_successful = false;
         }
+        logger.decIndent();
       } else {
-        logger.printfln(LOG_TYPE::DATA, "Skipped '%s'", param_name);
+        logger.printfln(LOG_TYPE::DATA, "Skipped '%s'", param_name.c_str());
       }
     }
   } else {
@@ -678,14 +680,15 @@ bool writeConfig(DynamicJsonDocument config) {
         status_tuple result_tuple = writeGadget(gadget_data);
         bool success = std::get<0>(result_tuple);
         std::string gadget_name = gadget_data["name"];
-
+        logger.incIndent();
         if (success) {
-          logger.printfln(LOG_TYPE::INFO, "Writing '%s' was successful", gadget_name);
+          logger.printfln(LOG_TYPE::INFO, "Writing '%s' was successful", gadget_name.c_str());
         } else {
           auto err_msg = std::get<1>(result_tuple);
-          logger.printfln(LOG_TYPE::ERR, "Writing '%s' failed: %s", gadget_name, err_msg);
+          logger.printfln(LOG_TYPE::ERR, "Writing '%s' failed: %s", gadget_name.c_str(), err_msg.c_str());
           writing_data_successful = false;
         }
+        logger.decIndent();
       } else {
         logger.println(LOG_TYPE::ERR, "'type' or 'name' missing in gadget config");
       }
@@ -696,7 +699,8 @@ bool writeConfig(DynamicJsonDocument config) {
 
   logger.decIndent();
   logger.decIndent();
-  return true;
+
+  return writing_data_successful;
 }
 
 /**
@@ -1459,7 +1463,12 @@ void handleNetwork() {
       type = "Serial";
     else
       type = "<o.O>";
-    logger.printfln("[%s] '%s': %s", type.c_str(), req->getPath().c_str(), req->getBody().c_str());
+
+    std::string r_body = req->getBody();
+    if (r_body.length() > 400) {
+      r_body = "[Body too long]";
+    }
+    logger.printfln("[%s] '%s': %s", type.c_str(), req->getPath().c_str(), r_body.c_str());
     handleRequest(req);
     delete req;
   }
