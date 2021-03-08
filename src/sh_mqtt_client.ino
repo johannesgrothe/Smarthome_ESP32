@@ -8,6 +8,9 @@
 #include "user_settings.h"
 #include "system_settings.h"
 
+// Config Writing
+#include "config_writing/config_keys.h"
+
 // Network Gadgets
 #include "network_library.h"
 #include "protocol_paths.h"
@@ -118,20 +121,6 @@ static gadget_tuple readGadget(uint8_t index) {
 }
 
 /**
- * Writes a gadget to the eeprom
- * @param gadget_type type of the gadget
- * @param remote_bf bitfield for the remotes
- * @param ports ports used by the gadget to connect hardware
- * @param gadget_config base config for the gadget
- * @param code_config config for the code mapping
- * @return whether writing was successful
- */
-static status_tuple writeGadget(uint8_t gadget_type, bitfield_set remote_bf, pin_set ports, const std::string &name,
-                                const std::string &gadget_config, const std::string &code_config) {
-  return System_Storage::writeGadget(gadget_type, remote_bf, ports, name, gadget_config, code_config);
-}
-
-/**
  * Generates a unique random int
  * @return Random int
  */
@@ -234,10 +223,10 @@ void updateCharacteristicOnBridge(const std::string &gadget_name, GadgetCharacte
   req_doc["value"] = value;
 
   auto out_req = new Request(PATH_CHARACTERISTIC_UPDATE_TO_BRIDGE,
-                                           gen_req_id(),
-                                           client_id_,
-                                           PROTOCOL_BRIDGE_NAME,
-                                           req_doc);
+                             gen_req_id(),
+                             client_id_,
+                             PROTOCOL_BRIDGE_NAME,
+                             req_doc);
 
   network_gadget->sendRequest(out_req);
 }
@@ -276,10 +265,10 @@ void updateEventOnBridge(const string &sender, EventType type) {
   req_doc["event_type"] = int(event_buf->getType());
 
   auto out_req = new Request(PATH_EVENT_UPDATE_TO_BRIDGE,
-                                           gen_req_id(),
-                                           client_id_,
-                                           PROTOCOL_BRIDGE_NAME,
-                                           req_doc);
+                             gen_req_id(),
+                             client_id_,
+                             PROTOCOL_BRIDGE_NAME,
+                             req_doc);
 
   network_gadget->sendRequest(out_req);
 
@@ -331,10 +320,10 @@ void sendCodeToRemote(const std::shared_ptr<CodeCommand> &code) {
   doc["timestamp"] = code->getTimestamp();
 
   network_gadget->sendRequest(new Request(PATH_CODE_UPDATE_TO_BRIDGE,
-                                                        ident,
-                                                        client_id_,
-                                                        PROTOCOL_BRIDGE_NAME,
-                                                        doc));
+                                          ident,
+                                          client_id_,
+                                          PROTOCOL_BRIDGE_NAME,
+                                          doc));
 }
 
 void handleNewCodeFromConnector(const std::shared_ptr<CodeCommand> &code) {
@@ -510,25 +499,27 @@ void handleConfigResetRequest(Request *req) {
 }
 
 /**
- * Handles a request that contains config write information
- * @param req Request that contains config write information
+ * Writes a gadget to the eeprom
+ * @param gadget_type type of the gadget
+ * @param remote_bf bitfield for the remotes
+ * @param ports ports used by the gadget to connect hardware
+ * @param gadget_config base config for the gadget
+ * @param code_config config for the code mapping
+ * @return whether writing was successful
  */
-void handleConfigWriteRequest(Request *req) {
+static status_tuple writeGadget(uint8_t gadget_type, bitfield_set remote_bf, pin_set ports, const std::string &name,
+                                const std::string &gadget_config, const std::string &code_config) {
+  return System_Storage::writeGadget(gadget_type, remote_bf, ports, name, gadget_config, code_config);
+}
 
-  // Check payload for missing keys
-  if (!checkPayloadForKeys(req, {"param", "value"})) {
-    return;
-  }
-
-  DynamicJsonDocument json_body = req->getPayload();
-
-  // Parameter to write
-  auto param_name = json_body["param"].as<std::string>();
-  // Value to write as std::string
-  auto param_val = json_body["value"].as<std::string>();
-  // Value to write as uint8_t
-  auto param_val_uint = json_body["value"].as<uint8_t>();
-
+/**
+ * Writes the value of a param to the eeprom
+ * @param param_name Name of the param to write
+ * @param param_val Value of the param as string
+ * @param param_val_uint Value of the param as uint
+ * @return whether writing was successful
+ */
+bool writeConfigParam(const std::string& param_name, const std::string& param_val, uint8_t param_val_uint) {
   logger.printfln("Write param '%s'", param_name.c_str());
   bool write_successful = false;
 
@@ -632,10 +623,142 @@ void handleConfigWriteRequest(Request *req) {
     }
   }
 
-  req->respond(write_successful);
+  return write_successful;
+}
 
-  if (param_name == "id" && write_successful) {
-    client_id_ = param_val;
+/**
+ * Writes and applies complete config file
+ * @param config Config to write
+ * @return Whether writing was successful
+ */
+bool writeConfig(DynamicJsonDocument config) {
+  logger.println("Writing config");
+  logger.incIndent();
+
+  logger.println("Writing system preferences");
+  logger.incIndent();
+
+  bool writing_data_successful = true;
+
+  // Write system preferences
+  if (config.containsKey("data")) {
+    const JsonObject preference_data = config["data"];
+    for (auto param_name: config_keys) {
+      if (preference_data.containsKey(param_name)) {
+
+        // Extract Data
+        std::string string_value = preference_data[param_name];
+        uint8_t uint_value = preference_data[param_name];
+
+        auto result = writeConfigParam(param_name, string_value, uint_value);
+        if (result) {
+          logger.printfln(LOG_TYPE::INFO, "Writing '%s' was successful", param_name);
+        } else {
+          logger.printfln(LOG_TYPE::ERR, "Writing '%s' failed", param_name);
+          writing_data_successful = false;
+        }
+      } else {
+        logger.printfln(LOG_TYPE::DATA, "Skipped '%s'", param_name);
+      }
+    }
+  } else {
+    logger.println(LOG_TYPE::DATA, "No 'data' in config");
+  }
+
+  logger.decIndent();
+
+  logger.println("Writing gadgets");
+  logger.incIndent();
+
+  // Write Gadgets
+  if (config.containsKey("gadgets")) {
+    JsonArray gadgets_list = config["gadgets"];
+    for (auto gadget_data: gadgets_list) {
+      if (gadget_data.containsKey("type") && gadget_data.containsKey("name")) {
+        status_tuple result_tuple = writeGadget(gadget_data);
+        bool success = std::get<0>(result_tuple);
+        std::string gadget_name = gadget_data["name"];
+
+        if (success) {
+          logger.printfln(LOG_TYPE::INFO, "Writing '%s' was successful", gadget_name);
+        } else {
+          auto err_msg = std::get<1>(result_tuple);
+          logger.printfln(LOG_TYPE::ERR, "Writing '%s' failed: %s", gadget_name, err_msg);
+          writing_data_successful = false;
+        }
+      } else {
+        logger.println(LOG_TYPE::ERR, "'type' or 'name' missing in gadget config");
+      }
+    }
+  } else {
+    logger.println(LOG_TYPE::DATA, "No 'gadgets' in config");
+  }
+
+  logger.decIndent();
+  logger.decIndent();
+  return true;
+}
+
+/**
+ * Handles a request that contains config write information
+ * @param req Request that contains config write information
+ */
+void handleConfigWriteRequest(Request *req) {
+
+  // Check payload for missing keys
+  if (!checkPayloadForKeys(req, {"type"})) {
+    return;
+  }
+
+  DynamicJsonDocument json_body = req->getPayload();
+  std::string cfg_write_mode = json_body["type"].as<std::string>();
+
+  if (cfg_write_mode == "complete") {
+
+    // Check payload for missing keys
+    if (!checkPayloadForKeys(req, {"config", "reset_config", "reset_gadgets"})) {
+      return;
+    }
+
+    auto reset_config = json_body["reset_config"].as<bool>();
+    auto reset_gadgets = json_body["reset_gadgets"].as<bool>();
+    auto config = json_body["config"].as<JsonObject>();
+
+    if (reset_config) {
+      System_Storage::resetContentFlag();
+    }
+
+    if (reset_gadgets) {
+      System_Storage::resetGadgets();
+    }
+
+    auto status = writeConfig(config);
+
+    req->respond(status);
+
+  } else if (cfg_write_mode == "param") {
+
+    // Check payload for missing keys
+    if (!checkPayloadForKeys(req, {"param", "value"})) {
+      return;
+    }
+
+    // Parameter to write
+    auto param_name = json_body["param"].as<std::string>();
+    // Value to write as std::string
+    auto param_val = json_body["value"].as<std::string>();
+    // Value to write as uint8_t
+    auto param_val_uint = json_body["value"].as<uint8_t>();
+
+    bool write_successful = writeConfigParam(param_name, param_val, param_val_uint);
+
+    req->respond(write_successful);
+
+    if (param_name == "id" && write_successful) {
+      client_id_ = param_val;
+    }
+  } else {
+    logger.printfln(LOG_TYPE::ERR, "Unknown config write mode '%s'", cfg_write_mode.c_str());
   }
 }
 
@@ -753,17 +876,11 @@ void handleConfigReadRequest(Request *req) {
 }
 
 /**
- * Handles a request that contains gadget write information
- * @param req Request that contains gadget write information
+ * Writes a gadget from the config json body
+ * @param json_body JSON-data to save the gadget from
+ * @return (Whether writing was successful | Status-Message)
  */
-void handleGadgetWriteRequest(Request *req) {
-  // Check payload for missing keys
-  if (!checkPayloadForKeys(req, {"type", "name"})) {
-    return;
-  }
-
-  DynamicJsonDocument json_body = req->getPayload();
-
+status_tuple writeGadget(DynamicJsonDocument json_body) {
   auto type = json_body["type"].as<uint8_t>();
 
   auto name = json_body["name"].as<std::string>();
@@ -822,7 +939,23 @@ void handleGadgetWriteRequest(Request *req) {
   }
 
   auto success_tuple = writeGadget(type, remote_bf, pins, name, gadget_config, code_config);
+  return success_tuple;
+}
+
+/**
+ * Handles a request that contains gadget write information
+ * @param req Request that contains gadget write information
+ */
+void handleGadgetWriteRequest(Request *req) {
+  // Check payload for missing keys
+  if (!checkPayloadForKeys(req, {"type", "name"})) {
+    return;
+  }
+
+  DynamicJsonDocument json_body = req->getPayload();
+  auto success_tuple = writeGadget(json_body);
   bool success = std::get<0>(success_tuple);
+
   if (success) {
     req->respond(true);
   } else {
@@ -831,6 +964,10 @@ void handleGadgetWriteRequest(Request *req) {
   }
 }
 
+/**
+ * Handles a request to sync settings between client and bridge
+ * @param req Request that contains the sync information
+ */
 void handleSyncRequest(Request *req) {
 
   auto req_payload = req->getPayload();
@@ -856,7 +993,7 @@ void handleSyncRequest(Request *req) {
   if (sw_flashed != SW_DATA_DEFAULT) {
     data_json["sw_uploaded"] = sw_flashed;
   } else {
-    data_json["sw_uploaded"] = (char*) nullptr;
+    data_json["sw_uploaded"] = (char *) nullptr;
   }
 
   // Add software branch name
@@ -864,7 +1001,7 @@ void handleSyncRequest(Request *req) {
   if (git_branch != SW_DATA_DEFAULT) {
     data_json["sw_branch"] = git_branch;
   } else {
-    data_json["sw_branch"] = (char*) nullptr;
+    data_json["sw_branch"] = (char *) nullptr;
   }
 
   // Add software commit hash
@@ -872,7 +1009,7 @@ void handleSyncRequest(Request *req) {
   if (git_commit != SW_DATA_DEFAULT) {
     data_json["sw_commit"] = git_commit;
   } else {
-    data_json["sw_commit"] = (char*) nullptr;
+    data_json["sw_commit"] = (char *) nullptr;
   }
 
   // Add port mapping
@@ -997,7 +1134,7 @@ void handleRequest(Request *req) {
     return;
   }
 
-  logger.printfln(LOG_TYPE::ERR, "Received request to unconfigured path");
+  logger.printfln(LOG_TYPE::ERR, "Received request to unhandled path");
 }
 
 //endregion
