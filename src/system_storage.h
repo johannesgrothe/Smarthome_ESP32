@@ -14,6 +14,7 @@
 #include "remote_library.h"
 #include "pin_profile.h"
 #include "gadgets/gadget_enums.h"
+#include "status_codes.h"
 
 // valid config bitfield
 #define VALID_CONFIG_BITFIELD_BYTE 0
@@ -327,7 +328,7 @@ private:
    * @param code_json The code-mapping config
    * @return whether writing was successful
    */
-  static status_tuple writeNewGadget(uint8_t gadget_type, bitfield_set config_bf, pin_set ports, const std::string& name, const std::string& gadget_json, const std::string& code_json) {
+  static WriteGadgetStatus writeNewGadget(uint8_t gadget_type, bitfield_set config_bf, pin_set ports, const std::string& name, const std::string& gadget_json, const std::string& code_json) {
 
     // Check if updating gadget is possible
     uint8_t gadget_index = getGadgetCount();
@@ -338,7 +339,7 @@ private:
     // Check if maximum gadget count is reached
     if (gadget_index >= GADGET_MAX_COUNT) {
       logger.println(LOG_TYPE::ERR, "Cannot save gadget: maximum count of gadgets reached");
-      return status_tuple(false, "maximum count of gadgets reached");
+      return WriteGadgetStatus::MaxGadgetCountReached;
     }
 
     // Check if name exist and quit if name is already taken
@@ -346,7 +347,7 @@ private:
     for (const auto& list_name: existing_names) {
       if (name == list_name) {
         logger.printfln(LOG_TYPE::ERR, "Cannot save gadget: gadget name '%s' is already in use", name.c_str());
-        return status_tuple(false, "gadget name is already in use");
+        return WriteGadgetStatus::NameAlreadyInUse;
       }
     }
 
@@ -357,14 +358,14 @@ private:
       auto buf_pin = getPinForPort(gadget_port);
       if (!buf_pin && gadget_port) {
         logger.printfln(LOG_TYPE::ERR, "Cannot save gadget: port %d is not configured on this system", gadget_port);
-        return status_tuple(false, "gadget tries to use port not configured on this system");
+        return WriteGadgetStatus::PortNotConfigured;
       }
 
       // Check if port is already in use on the system
       for (auto existing_port: existing_ports) {
         if (gadget_port == existing_port) {
           logger.printfln(LOG_TYPE::ERR, "Cannot save gadget: gadget tries to use port already occupied (%d)", gadget_port);
-          return status_tuple(false, "gadget tries to use port already occupied");
+          return WriteGadgetStatus::PortAlreadyInUse;
         }
       }
     }
@@ -393,7 +394,7 @@ private:
 
     if (end_index > EEPROM_SIZE) {
       logger.println(LOG_TYPE::ERR, "Cannot save gadget: missing space in eeprom");
-      return status_tuple(false, "missing space in eeprom");
+      return WriteGadgetStatus::MissingEEPROMSpace;
     }
 
     // Create the bitfield
@@ -426,18 +427,18 @@ private:
 
     if (!success) {
       logger.println(LOG_TYPE::ERR, "Cannot save gadget: error writing content");
-      return status_tuple(false, "error writing content");
+      return WriteGadgetStatus::ErrorWritingContent;
     }
 
     // set the starting point for the next gadget
     if (!setGadgetMemoryEnd(gadget_index, end_index)) {
       logger.println(LOG_TYPE::ERR, "Cannot save gadget: error saving gadget memory end");
-      return status_tuple(false, "error saving gadget memory end");;
+      return WriteGadgetStatus::ErrorSavingMemoryEnd;
     }
 
     // increment gadget count to formally "save" the gadget
     writeGadgetCount(gadget_index + 1);
-    return status_tuple(true, "");
+    return WriteGadgetStatus::WritingOK;
   }
 
 public:
@@ -607,18 +608,18 @@ public:
    * @param code_json the code-mapping config
    * @return whether writing was successful
    */
-  static status_tuple writeGadget(uint8_t gadget_type, bitfield_set config_bf, pin_set ports, const std::string& name, const std::string& gadget_json, const std::string& code_json) {
+  static WriteGadgetStatus writeGadget(uint8_t gadget_type, bitfield_set config_bf, pin_set ports, const std::string& name, const std::string& gadget_json, const std::string& code_json) {
 
     if (gadget_type >= GadgetIdentifierCount) {
       logger.printfln(LOG_TYPE::ERR, "Unknown gadget identifier '%d'", gadget_type);
-      return status_tuple(false, "not saving gadget with err-type 0");
+      return WriteGadgetStatus::GadgetTypeError0;
     }
 
     auto type = (GadgetIdentifier) gadget_type;
 
     if (type == GadgetIdentifier::None) {
       logger.println(LOG_TYPE::ERR, "Cannot save gadget: gadget has err-type 0");
-      return status_tuple(false, "not saving gadget with err-type 0");
+      return WriteGadgetStatus::GadgetTypeErrorUnknown;
     } else {
       logger.printfln("Saving gadget '%s' with type %d", name.c_str(), gadget_type);
     }
@@ -630,7 +631,7 @@ public:
       auto err = deserializeJson(buf_doc, gadget_json);
       if (err != DeserializationError::Ok) {
         logger.printfln(LOG_TYPE::ERR, "Cannot save gadget: received faulty gadget config");
-        return status_tuple(false, "received faulty gadget config");
+        return WriteGadgetStatus::FaultyConfigJSON;
       }
     }
 
@@ -639,7 +640,7 @@ public:
       auto err = deserializeJson(buf_doc, code_json);
       if (err != DeserializationError::Ok) {
         logger.printfln(LOG_TYPE::ERR, "Cannot save gadget: received faulty code config");
-        return status_tuple(false, "received faulty code config");
+        return WriteGadgetStatus::FaultyCodeConfig;
       }
     }
 
@@ -648,7 +649,7 @@ public:
 
     if (index != -1) {
       if (!(deleteGadget(index))) {
-        return status_tuple(false, "failed to delete gadget for rewriting");
+        return WriteGadgetStatus::DeletionFailed;
       }
     }
 
@@ -702,9 +703,8 @@ public:
       auto e6 = std::get<5>(buf_gadget);
 
       auto status = writeGadget(e1, e2, e3, e4, e5, e6);
-      bool success = std::get<0>(status);
 
-      if (!success) {
+      if (status != WriteGadgetStatus::WritingOK) {
         logger.println(LOG_TYPE::ERR, "Error in in deletion process: moving gadgets failed");
         return false;
       }

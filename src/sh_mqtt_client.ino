@@ -507,7 +507,7 @@ void handleConfigResetRequest(Request *req) {
  * @param code_config config for the code mapping
  * @return whether writing was successful
  */
-static status_tuple writeGadget(uint8_t gadget_type, bitfield_set remote_bf, pin_set ports, const std::string &name,
+static WriteGadgetStatus writeGadget(uint8_t gadget_type, bitfield_set remote_bf, pin_set ports, const std::string &name,
                                 const std::string &gadget_config, const std::string &code_config) {
   return System_Storage::writeGadget(gadget_type, remote_bf, ports, name, gadget_config, code_config);
 }
@@ -677,14 +677,14 @@ bool writeConfig(DynamicJsonDocument config) {
     JsonArray gadgets_list = config["gadgets"];
     for (auto gadget_data: gadgets_list) {
       if (gadget_data.containsKey("type") && gadget_data.containsKey("name")) {
-        status_tuple result_tuple = writeGadget(gadget_data);
-        bool success = std::get<0>(result_tuple);
+        auto write_status = writeGadget(gadget_data);
+
         std::string gadget_name = gadget_data["name"];
         logger.incIndent();
-        if (success) {
+        if (write_status == WriteGadgetStatus::WritingOK) {
           logger.printfln(LOG_TYPE::INFO, "Writing '%s' was successful", gadget_name.c_str());
         } else {
-          auto err_msg = std::get<1>(result_tuple);
+          auto err_msg = writeGadgetStatusToString(write_status);
           logger.printfln(LOG_TYPE::ERR, "Writing '%s' failed: %s", gadget_name.c_str(), err_msg.c_str());
           writing_data_successful = false;
         }
@@ -884,7 +884,7 @@ void handleConfigReadRequest(Request *req) {
  * @param json_body JSON-data to save the gadget from
  * @return (Whether writing was successful | Status-Message)
  */
-status_tuple writeGadget(DynamicJsonDocument json_body) {
+WriteGadgetStatus writeGadget(DynamicJsonDocument json_body) {
   auto type = json_body["type"].as<uint8_t>();
 
   auto name = json_body["name"].as<std::string>();
@@ -942,8 +942,8 @@ status_tuple writeGadget(DynamicJsonDocument json_body) {
     }
   }
 
-  auto success_tuple = writeGadget(type, remote_bf, pins, name, gadget_config, code_config);
-  return success_tuple;
+  auto status = writeGadget(type, remote_bf, pins, name, gadget_config, code_config);
+  return status;
 }
 
 /**
@@ -957,13 +957,12 @@ void handleGadgetWriteRequest(Request *req) {
   }
 
   DynamicJsonDocument json_body = req->getPayload();
-  auto success_tuple = writeGadget(json_body);
-  bool success = std::get<0>(success_tuple);
+  auto write_status = writeGadget(json_body);
 
-  if (success) {
+  if (write_status == WriteGadgetStatus::WritingOK) {
     req->respond(true);
   } else {
-    auto err_msg = std::get<1>(success_tuple);
+    auto err_msg = writeGadgetStatusToString(write_status);
     req->respond(false, err_msg);
   }
 }
