@@ -333,9 +333,6 @@ private:
     // Check if updating gadget is possible
     uint8_t gadget_index = getGadgetCount();
 
-    Serial.println(gadget_index);
-    Serial.println(GADGET_MAX_COUNT);
-
     // Check if maximum gadget count is reached
     if (gadget_index >= GADGET_MAX_COUNT) {
       logger.println(LOG_TYPE::ERR, "Cannot save gadget: maximum count of gadgets reached");
