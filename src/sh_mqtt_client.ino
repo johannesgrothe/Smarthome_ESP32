@@ -1153,23 +1153,32 @@ void handleRequest(Request *req) {
  * @return Whether initializing all gadgets was successful or not
  */
 bool initGadgets() {
-  logger.print("Initializing Gadgets: ");
-
   auto eeprom_gadgets = System_Storage::readAllGadgets();
 
-  logger.println(eeprom_gadgets.size());
+  logger.printfln("Initializing Gadgets: %d", eeprom_gadgets.size());
   logger.incIndent();
 
   for (auto gadget: eeprom_gadgets) {
     auto gadget_ident = (GadgetIdentifier) std::get<0>(gadget);
     auto remote_bf = std::get<1>(gadget);
-    auto pins = std::get<2>(gadget);
+    auto ports = std::get<2>(gadget);
     auto name = std::get<3>(gadget);
     auto gadget_config_str = std::get<4>(gadget);
     auto code_config_str = std::get<5>(gadget);
 
     logger.printfln("Initializing %s", name.c_str());
     logger.incIndent();
+
+    // Translate stored ports to actual pins
+    pin_set pins;
+    for (int i = 0; i < pins.size(); i++) {
+      uint8_t buf_port = ports[i];
+      uint8_t pin = 0;
+      if (buf_port != 0) {
+        pin = getPinForPort(buf_port);
+      }
+      pins[i] = pin;
+    }
 
     DynamicJsonDocument gadget_config(2500);
     DynamicJsonDocument code_config(2500);
