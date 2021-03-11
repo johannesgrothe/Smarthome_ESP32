@@ -1512,7 +1512,8 @@ void refreshModeComplete() {
   handleCodeConnector(ir_gadget);
 
   for (byte c = 0; c < gadgets.getGadgetCount(); c++) {
-    gadgets.getGadget(c)->refresh();
+    // TODO
+//    gadgets.getGadget(c)->refresh();
   }
 }
 

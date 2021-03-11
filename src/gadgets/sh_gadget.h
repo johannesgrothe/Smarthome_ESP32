@@ -161,6 +161,7 @@ public:
       ser_doc["characteristics"][counter]["max"] = characteristic_data.max;
       ser_doc["characteristics"][counter]["min"] = characteristic_data.min;
       ser_doc["characteristics"][counter]["step"] = characteristic_data.step;
+      ser_doc["characteristics"][counter]["value"] = characteristic_data.value;
       counter ++;
     }
 
