@@ -1025,7 +1025,8 @@ void handleSyncRequest(Request *req) {
   // Add gadgets
   JsonArray json_gadgets = data_json.createNestedArray("gadgets");
   for (int i = 0; i < gadgets.getGadgetCount(); i++) {
-    json_gadgets[i] = gadgets[i]->serialized();
+    auto characteristic_data = gadgets[i]->serialized();
+    json_gadgets[i] = characteristic_data;
   }
 
   req->respond(data_json);
