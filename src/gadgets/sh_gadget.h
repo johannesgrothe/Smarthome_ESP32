@@ -146,27 +146,10 @@ public:
    */
   explicit SH_Gadget(std::string name, GadgetType type);
 
-
-  DynamicJsonDocument serialized() {
-    DynamicJsonDocument ser_doc(4000);
-
-    ser_doc["gadget_type"] = int(type);
-    ser_doc["gadget_name"] = name;
-    ser_doc["characteristics"] = JsonArray();
-
-    int counter = 0;
-    for (auto characteristic_data: getCharacteristics()) {
-      ser_doc["characteristics"].createNestedObject();
-      ser_doc["characteristics"][counter]["type"] = int(characteristic_data.characteristic);
-      ser_doc["characteristics"][counter]["max"] = characteristic_data.max;
-      ser_doc["characteristics"][counter]["min"] = characteristic_data.min;
-      ser_doc["characteristics"][counter]["step"] = characteristic_data.step;
-      ser_doc["characteristics"][counter]["value"] = characteristic_data.value;
-      counter ++;
-    }
-
-    return ser_doc;
-  }
+  /**
+   * @return A serialized JSON representation of this gadget
+   */
+  DynamicJsonDocument serialized();
 
   /**
    * Sets the callback for the gadget remote
@@ -174,6 +157,10 @@ public:
    */
   void setGadgetRemoteCallback(std::function<void(std::string, GadgetCharacteristic, int)> update_method);
 
+  /**
+   * Sets the callback for the event remote
+   * @param update_method Method used to update the remote
+   */
   void setEventRemoteCallback(function<void(string, EventType)> send_event);
 
   /**
