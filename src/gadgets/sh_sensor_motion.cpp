@@ -29,7 +29,11 @@ void SH_Sensor_Motion::executeCharacteristicUpdate(GadgetCharacteristic characte
 }
 
 vector<GadgetCharacteristicSettings> SH_Sensor_Motion::getCharacteristics() {
-  return {GadgetCharacteristicSettings(GadgetCharacteristic::status, 0, 1, 1)};
+  return {GadgetCharacteristicSettings(GadgetCharacteristic::status,
+                                       0,
+                                       1,
+                                       1,
+                                       int(sensor_status_))};
 }
 
 void SH_Sensor_Motion::handleMethodUpdate(GadgetMethod method) {}

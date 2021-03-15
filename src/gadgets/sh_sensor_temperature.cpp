@@ -43,8 +43,16 @@ void SH_Sensor_Temperature::executeCharacteristicUpdate(GadgetCharacteristic cha
 }
 
 vector<GadgetCharacteristicSettings> SH_Sensor_Temperature::getCharacteristics() {
-  return {GadgetCharacteristicSettings(GadgetCharacteristic::humidity, 0, 100, 1),
-          GadgetCharacteristicSettings(GadgetCharacteristic::temperature, -50, 100, 1)};
+  return {GadgetCharacteristicSettings(GadgetCharacteristic::humidity,
+                                       0,
+                                       100,
+                                       1,
+                                       int(humidity_)),
+          GadgetCharacteristicSettings(GadgetCharacteristic::temperature,
+                                       -50,
+                                       100,
+                                       1,
+                                       int(temperature_))};
 }
 
 void SH_Sensor_Temperature::handleMethodUpdate(GadgetMethod) {}

@@ -38,7 +38,7 @@ public:
    * Gets the brightness of the lamp
    * @return The brightness
    */
-  float getBrightness();
+  byte getBrightness();
 
   /**
    * Sets the color of the lamp

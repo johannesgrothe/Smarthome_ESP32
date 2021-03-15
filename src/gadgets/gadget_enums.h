@@ -56,15 +56,17 @@ enum class GadgetCharacteristic {
 class GadgetCharacteristicSettings {
 public:
   const GadgetCharacteristic characteristic;
-  const uint16_t min;
-  const uint16_t max;
-  const uint16_t step;
+  const int min;
+  const int max;
+  const int step;
+  const long value;
 
-  GadgetCharacteristicSettings(GadgetCharacteristic characteristic, uint16_t min, uint16_t max, uint16_t step):
+  GadgetCharacteristicSettings(GadgetCharacteristic characteristic, int min, int max, int step, long value):
   characteristic(characteristic),
   min(min),
   max(max),
-  step(step){}
+  step(step),
+  value(value) {}
 };
 
 // Count of the gadget characteristics

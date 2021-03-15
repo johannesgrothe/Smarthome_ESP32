@@ -166,3 +166,24 @@ void SH_Gadget::resumeTasks() {
     main_controller_->resume_all_tasks();
   }
 }
+
+DynamicJsonDocument SH_Gadget::serialized() {
+  DynamicJsonDocument ser_doc(4000);
+
+  ser_doc["type"] = int(type);
+  ser_doc["name"] = name;
+  ser_doc["characteristics"] = JsonArray();
+
+  int counter = 0;
+  for (auto characteristic_data: getCharacteristics()) {
+    ser_doc["characteristics"].createNestedObject();
+    ser_doc["characteristics"][counter]["type"] = int(characteristic_data.characteristic);
+    ser_doc["characteristics"][counter]["max"] = characteristic_data.max;
+    ser_doc["characteristics"][counter]["min"] = characteristic_data.min;
+    ser_doc["characteristics"][counter]["step"] = characteristic_data.step;
+    ser_doc["characteristics"][counter]["value"] = characteristic_data.value;
+    counter ++;
+  }
+
+  return ser_doc;
+}

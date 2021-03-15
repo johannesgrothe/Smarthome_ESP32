@@ -18,8 +18,8 @@ public:
    */
   void pause_all_tasks_except_main() {
     logger.println("Pausing all tasks except main...");
-    vTaskSuspend(network_task_);
-    vTaskResume(heartbeat_task_);
+//    vTaskSuspend(network_task_);
+//    vTaskResume(heartbeat_task_);
   }
 
   /**
@@ -27,8 +27,8 @@ public:
    */
   void resume_all_tasks() {
     logger.println("Resuming all tasks...");
-    vTaskResume(network_task_);
-    vTaskResume(heartbeat_task_);
+//    vTaskResume(network_task_);
+//    vTaskResume(heartbeat_task_);
   }
 
 };

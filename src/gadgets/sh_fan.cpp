@@ -74,8 +74,16 @@ void SH_Fan::executeCharacteristicUpdate(GadgetCharacteristic characteristic, in
 
 vector<GadgetCharacteristicSettings> SH_Fan::getCharacteristics() {
   byte steps = (FAN_ROTATION_SPEED_MAX / levels_);
-  return {GadgetCharacteristicSettings(GadgetCharacteristic::status, 0, 1, 1),
-          GadgetCharacteristicSettings(GadgetCharacteristic::fanSpeed, 0, FAN_ROTATION_SPEED_MAX, steps)};
+  return {GadgetCharacteristicSettings(GadgetCharacteristic::status,
+                                       0,
+                                       1,
+                                       1,
+                                       int(rotation_speed_ > 0)),
+          GadgetCharacteristicSettings(GadgetCharacteristic::fanSpeed,
+                                       0,
+                                       FAN_ROTATION_SPEED_MAX,
+                                       steps,
+                                       int(rotation_speed_))};
 }
 
 void SH_Fan::handleMethodUpdate(GadgetMethod method) {

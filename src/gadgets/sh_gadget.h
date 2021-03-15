@@ -146,27 +146,21 @@ public:
    */
   explicit SH_Gadget(std::string name, GadgetType type);
 
-
-  DynamicJsonDocument serialized() {
-      DynamicJsonDocument ser_doc(2000);
-
-      ser_doc["gadget_type"] = int(type);
-      ser_doc["gadget_name"] = name;
-
-      for (auto characteristic_data: getCharacteristics()) {
-          ser_doc[int(characteristic_data.characteristic)] = JsonObject();
-          ser_doc[int(characteristic_data.characteristic)]["max"] = characteristic_data.max;
-          ser_doc[int(characteristic_data.characteristic)]["min"] = characteristic_data.min;
-          ser_doc[int(characteristic_data.characteristic)]["step"] = characteristic_data.step;
-      }
-      return ser_doc;
-  }
+  /**
+   * @return A serialized JSON representation of this gadget
+   */
+  DynamicJsonDocument serialized();
 
   /**
    * Sets the callback for the gadget remote
    * @param update_method Method used to update the remote
    */
   void setGadgetRemoteCallback(std::function<void(std::string, GadgetCharacteristic, int)> update_method);
+
+  /**
+   * Sets the callback for the event remote
+   * @param update_method Method used to update the remote
+   */
   void setEventRemoteCallback(function<void(string, EventType)> send_event);
 
   /**
@@ -238,7 +232,7 @@ public:
    * Initialized the IR capabilities of the gadget
    * @param new_ir_gadget The IR_Gadget to be used
    */
-  void setIR(const std::shared_ptr<IR_Gadget>& new_ir_gadget);
+  void setIR(const std::shared_ptr<IR_Gadget> &new_ir_gadget);
 
   /**
    * Returns whether the gadget has IR access or not
@@ -250,7 +244,7 @@ public:
    * Initialized the radio capabilities of the gadget
    * @param new_radio_gadget The Radio_Gadget to be used
    */
-  void setRadio(const std::shared_ptr<Radio_Gadget>& new_radio_gadget);
+  void setRadio(const std::shared_ptr<Radio_Gadget> &new_radio_gadget);
 
   /**
    * Returns whether the gadget has radio access or not

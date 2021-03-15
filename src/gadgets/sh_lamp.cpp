@@ -4,7 +4,7 @@
 
 SH_Lamp::SH_Lamp(std::string name, SHLampType lamp_type) :
   SH_Gadget(std::move(name), GadgetType::Lightbulb),
-  lamp_color_(0, 0, 0),
+  lamp_color_(0xff, 0xff, 0),
   default_brightness_(75),
   min_brightness_(10),
   last_brightness_(75),
@@ -16,7 +16,7 @@ void SH_Lamp::setBrightness(byte new_brightness) {
   updateCharacteristic(GadgetCharacteristic::brightness, (int) new_brightness);
 }
 
-float SH_Lamp::getBrightness() {
+byte SH_Lamp::getBrightness() {
   return lamp_color_.getBrightness();
 }
 
@@ -90,19 +90,50 @@ void SH_Lamp::executeCharacteristicUpdate(GadgetCharacteristic characteristic, i
 }
 
 vector<GadgetCharacteristicSettings> SH_Lamp::getCharacteristics() {
-  std::vector<GadgetCharacteristicSettings> settings = {GadgetCharacteristicSettings(GadgetCharacteristic::status, 0, 1, 1)};
+  lamp_color_ = Color(0xff, 0, 0xff);
+  lamp_color_.setBrightness(77);
+
+  std::vector<GadgetCharacteristicSettings> settings = {GadgetCharacteristicSettings(GadgetCharacteristic::status,
+                                                        0,
+                                                        1,
+                                                        1,
+                                                        long(getStatus()))};
   switch (lamp_type_) {
     case SHLampType::BRI_ONLY :
-      settings.push_back(GadgetCharacteristicSettings(GadgetCharacteristic::brightness, 0, 100, 1));
+      settings.push_back(GadgetCharacteristicSettings(GadgetCharacteristic::brightness,
+                                                      0,
+                                                      100,
+                                                      1,
+                                                      long(getBrightness())));
       break;
     case SHLampType::CLR_ONLY :
-      settings.push_back(GadgetCharacteristicSettings(GadgetCharacteristic::hue, 0, 100, 1));
-      settings.push_back(GadgetCharacteristicSettings(GadgetCharacteristic::saturation, 0, 100, 1));
+      settings.push_back(GadgetCharacteristicSettings(GadgetCharacteristic::hue,
+                                                      0,
+                                                      100,
+                                                      1,
+                                                      long(getHue())));
+      settings.push_back(GadgetCharacteristicSettings(GadgetCharacteristic::saturation,
+                                                      0,
+                                                      100,
+                                                      1,
+                                                      long(lamp_color_.getHSV()->getSaturation())));
       break;
     case SHLampType::CLR_BRI :
-      settings.push_back(GadgetCharacteristicSettings(GadgetCharacteristic::brightness, 0, 100, 1));
-      settings.push_back(GadgetCharacteristicSettings(GadgetCharacteristic::hue, 0, 100, 1));
-      settings.push_back(GadgetCharacteristicSettings(GadgetCharacteristic::saturation, 0, 100, 1));
+      settings.push_back(GadgetCharacteristicSettings(GadgetCharacteristic::brightness,
+                                                      0,
+                                                      100,
+                                                      1,
+                                                      long(getBrightness())));
+      settings.push_back(GadgetCharacteristicSettings(GadgetCharacteristic::hue,
+                                                      0,
+                                                      100,
+                                                      1,
+                                                      long(getHue())));
+      settings.push_back(GadgetCharacteristicSettings(GadgetCharacteristic::saturation,
+                                                      0,
+                                                      100,
+                                                      1,
+                                                      long(lamp_color_.getHSV()->getSaturation())));
       break;
     default :
       break;
