@@ -17,7 +17,7 @@
 
 // Gadget-Lib
 #include "gadgets/gadget_library.h"
-#include "gadgets/gadget_enums.h"
+#include "gadgets/gadget_characteristic_settings.h"
 
 // Code-Buffer
 #include "connectors/code_command_buffer.h"
@@ -483,7 +483,7 @@ bool gadgetUpdatesAreLocked() { return lock_gadget_updates; }
  * @param characteristic Characteristic to be updated
  * @param value New value of the characteristic
  */
-void updateCharacteristicOnBridge(const std::string &gadget_name, GadgetCharacteristic characteristic, int value) {
+void updateCharacteristicOnBridge(const std::string &gadget_name, CharacteristicIdentifier characteristic, int value) {
   if (gadgetUpdatesAreLocked()) return;
   auto target_gadget = gadgets.getGadget(gadget_name);
 
@@ -633,8 +633,8 @@ void handleGadgetCharacteristicUpdateRequest(Request *req) {
   logger.print("System / Gadget-Remote", "Received characteristic update");
   auto target_gadget = gadgets.getGadget(req_body["name"]);
   if (target_gadget != nullptr) {
-    auto characteristic = getCharacteristicFromInt(req_body["characteristic"].as<int>());
-    if (characteristic != GadgetCharacteristic::None) {
+    auto characteristic = getCharacteristicIdentifierFromInt(req_body["characteristic"].as<int>());
+    if (characteristic != CharacteristicIdentifier::err_type) {
       logger.incIndent();
       lockGadgetUpdates();
       int value = req_body["value"].as<int>();

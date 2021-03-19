@@ -20,7 +20,7 @@ protected:
    */
   void setTemperature(int new_temperature);
 
-  void executeCharacteristicUpdate(GadgetCharacteristic, int) override;
+  void executeCharacteristicUpdate(CharacteristicIdentifier, int) override;
 
 public:
   /**

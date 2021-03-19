@@ -10,14 +10,14 @@ SH_Sensor_Temperature::SH_Sensor_Temperature(std::string name) :
 void SH_Sensor_Temperature::setHumidity(int new_humiditiy) {
   if (new_humiditiy != humidity_) {
     humidity_ = new_humiditiy;
-    updateCharacteristic(GadgetCharacteristic::humidity, new_humiditiy);
+    updateCharacteristic(CharacteristicIdentifier::humidity, new_humiditiy);
   }
 }
 
 void SH_Sensor_Temperature::setTemperature(int new_temperature) {
   if (new_temperature != temperature_) {
     temperature_ = new_temperature;
-    updateCharacteristic(GadgetCharacteristic::humidity, new_temperature);
+    updateCharacteristic(CharacteristicIdentifier::humidity, new_temperature);
   }
 }
 
@@ -29,12 +29,12 @@ int SH_Sensor_Temperature::getTemperature() const {
   return temperature_;
 }
 
-void SH_Sensor_Temperature::executeCharacteristicUpdate(GadgetCharacteristic characteristic, int value) {
+void SH_Sensor_Temperature::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, int value) {
   switch (characteristic) {
-    case GadgetCharacteristic::humidity:
+    case CharacteristicIdentifier::humidity:
       setHumidity(value);
       break;
-    case GadgetCharacteristic::temperature:
+    case CharacteristicIdentifier::temperature:
       setTemperature(value);
       break;
     default:
@@ -43,12 +43,12 @@ void SH_Sensor_Temperature::executeCharacteristicUpdate(GadgetCharacteristic cha
 }
 
 vector<GadgetCharacteristicSettings> SH_Sensor_Temperature::getCharacteristics() {
-  return {GadgetCharacteristicSettings(GadgetCharacteristic::humidity,
+  return {GadgetCharacteristicSettings(CharacteristicIdentifier::humidity,
                                        0,
                                        100,
                                        1,
                                        int(humidity_)),
-          GadgetCharacteristicSettings(GadgetCharacteristic::temperature,
+          GadgetCharacteristicSettings(CharacteristicIdentifier::temperature,
                                        -50,
                                        100,
                                        1,

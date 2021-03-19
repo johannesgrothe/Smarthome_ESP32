@@ -38,28 +38,28 @@
  */
 static std::shared_ptr<SH_Gadget> createGadgetHelper(GadgetIdentifier gadget_type, pin_set pins, const std::string& name, JsonObject gadget_config) {
   switch (gadget_type) {
-    case GadgetIdentifier::sh_doorbell_basic:
+    case GadgetIdentifier::doorbell_basic:
       return createSHDoorbellBasic(name, pins, gadget_config);
 
-    case GadgetIdentifier::sh_lamp_neopixel_basic:
+    case GadgetIdentifier::lamp_neopixel_basic:
       return createSHLampNeoPixelBasic(name, pins, gadget_config);
 
-    case GadgetIdentifier::sh_lamp_basic:
+    case GadgetIdentifier::lamp_basic:
       return createSHLampBasic(name, pins, gadget_config);
 
-    case GadgetIdentifier::sh_fan_westinghouse_ir:
+    case GadgetIdentifier::fan_westinghouse_ir:
       return createSHFanWestinghouseIR(name, pins, gadget_config);
 
-    case GadgetIdentifier::sh_lamp_westinghouse_ir:
+    case GadgetIdentifier::lamp_westinghouse_ir:
       return createSHLampWestinghouseIR(name, pins, gadget_config);
 
-    case GadgetIdentifier::sh_wallswitch_basic:
+    case GadgetIdentifier::wallswitch_basic:
       return createSHWallswitchBasic(name, pins, gadget_config);
 
-    case GadgetIdentifier::sh_sensor_motion_hr501:
+    case GadgetIdentifier::sensor_motion_hr501:
       return createSHSensorMotionHR501(name, pins, gadget_config);
 
-    case GadgetIdentifier::sh_sensor_temperature_dht:
+    case GadgetIdentifier::sensor_temperature_dht:
       return createSHSensorTemperatureDHT(name, pins, gadget_config);
 
     default:
@@ -93,8 +93,8 @@ static std::shared_ptr<SH_Gadget> createGadget(GadgetIdentifier gadget_type, pin
  */
 static bool gadgetRequiresIR(GadgetIdentifier gadget) {
   switch (gadget) {
-    case GadgetIdentifier::sh_fan_westinghouse_ir:
-    case GadgetIdentifier::sh_lamp_westinghouse_ir:
+    case GadgetIdentifier::fan_westinghouse_ir:
+    case GadgetIdentifier::lamp_westinghouse_ir:
       return true;
     default:
       return false;
@@ -108,7 +108,7 @@ static bool gadgetRequiresIR(GadgetIdentifier gadget) {
  */
 static bool gadgetRequiresRadio(GadgetIdentifier gadget) {
   switch (gadget) {
-//    case GadgetIdentifier::sh_lamp_westinghouse_ir:
+//    case GadgetIdentifier::lamp_westinghouse_ir:
 //      return true;
     default:
       return false;

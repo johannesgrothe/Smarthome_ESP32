@@ -25,11 +25,11 @@ void SH_Fan::setStatus(bool status) {
     if (rotation_speed_ == 0) {
       rotation_speed_ = last_rotation_speed_;
     }
-    updateCharacteristic(GadgetCharacteristic::fanSpeed, rotation_speed_);
+    updateCharacteristic(CharacteristicIdentifier::fanSpeed, rotation_speed_);
   } else {
     last_rotation_speed_ = rotation_speed_;
     rotation_speed_ = 0;
-    updateCharacteristic(GadgetCharacteristic::fanSpeed, rotation_speed_);
+    updateCharacteristic(CharacteristicIdentifier::fanSpeed, rotation_speed_);
   }
   setGadgetHasChanged();
 }
@@ -51,20 +51,20 @@ void SH_Fan::setRotationSpeed(byte new_speed) {
   if (new_speed == 0) {
     last_rotation_speed_ = rotation_speed_;
     rotation_speed_ = 0;
-    updateCharacteristic(GadgetCharacteristic::fanSpeed, rotation_speed_);
+    updateCharacteristic(CharacteristicIdentifier::fanSpeed, rotation_speed_);
   } else {
     rotation_speed_ = new_speed;
-    updateCharacteristic(GadgetCharacteristic::fanSpeed, rotation_speed_);
+    updateCharacteristic(CharacteristicIdentifier::fanSpeed, rotation_speed_);
   }
   setGadgetHasChanged();
 }
 
-void SH_Fan::executeCharacteristicUpdate(GadgetCharacteristic characteristic, int value) {
+void SH_Fan::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, int value) {
   switch(characteristic) {
-    case GadgetCharacteristic::status:
+    case CharacteristicIdentifier::status:
       setStatus((bool) value);
       break;
-    case GadgetCharacteristic::fanSpeed:
+    case CharacteristicIdentifier::fanSpeed:
       setRotationSpeed(value);
       break;
     default:
@@ -74,12 +74,12 @@ void SH_Fan::executeCharacteristicUpdate(GadgetCharacteristic characteristic, in
 
 vector<GadgetCharacteristicSettings> SH_Fan::getCharacteristics() {
   byte steps = (FAN_ROTATION_SPEED_MAX / levels_);
-  return {GadgetCharacteristicSettings(GadgetCharacteristic::status,
+  return {GadgetCharacteristicSettings(CharacteristicIdentifier::status,
                                        0,
                                        1,
                                        1,
                                        int(rotation_speed_ > 0)),
-          GadgetCharacteristicSettings(GadgetCharacteristic::fanSpeed,
+          GadgetCharacteristicSettings(CharacteristicIdentifier::fanSpeed,
                                        0,
                                        FAN_ROTATION_SPEED_MAX,
                                        steps,

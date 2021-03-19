@@ -8,7 +8,7 @@ SH_Sensor_Motion::SH_Sensor_Motion(std::string name) :
 
 void SH_Sensor_Motion::setStatus(bool status) {
   if (status != sensor_status_) {
-    updateCharacteristic(GadgetCharacteristic::status, (int) status);
+    updateCharacteristic(CharacteristicIdentifier::status, (int) status);
     sensor_status_ = status;
   }
   if (status) {
@@ -22,14 +22,14 @@ void SH_Sensor_Motion::setStatus(bool status) {
   }
 }
 
-void SH_Sensor_Motion::executeCharacteristicUpdate(GadgetCharacteristic characteristic, int value) {
-  if (characteristic == GadgetCharacteristic::status) {
+void SH_Sensor_Motion::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, int value) {
+  if (characteristic == CharacteristicIdentifier::status) {
     setStatus(value);
   }
 }
 
 vector<GadgetCharacteristicSettings> SH_Sensor_Motion::getCharacteristics() {
-  return {GadgetCharacteristicSettings(GadgetCharacteristic::status,
+  return {GadgetCharacteristicSettings(CharacteristicIdentifier::status,
                                        0,
                                        1,
                                        1,

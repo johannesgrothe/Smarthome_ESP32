@@ -10,7 +10,7 @@ protected:
   uint8_t last_rotation_speed_;
   uint8_t levels_;
 
-  void executeCharacteristicUpdate(GadgetCharacteristic characteristic, int value) override;
+  void executeCharacteristicUpdate(CharacteristicIdentifier characteristic, int value) override;
 
 public:
 

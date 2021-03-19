@@ -8,7 +8,7 @@
 class SH_Doorbell : public SH_Gadget {
 protected:
 
-  void executeCharacteristicUpdate(GadgetCharacteristic characteristic, int value) override;
+  void executeCharacteristicUpdate(CharacteristicIdentifier characteristic, int value) override;
 
 public:
 
