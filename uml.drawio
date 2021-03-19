@@ -567,7 +567,7 @@
         <mxCell id="TxLPmFs_sCvqqsQRuhD0-4" value="+ Remote(gadget: RequestGadget *, data: JsonObject)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-1" vertex="1">
           <mxGeometry y="346" width="705" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="TxLPmFs_sCvqqsQRuhD0-5" value="+ handleRequest(req: Request *): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-1" vertex="1">
+        <mxCell id="TxLPmFs_sCvqqsQRuhD0-5" value="+ handleRequest(req: std::shared_ptr<Request>): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-1" vertex="1">
           <mxGeometry y="372" width="705" height="26" as="geometry" />
         </mxCell>
         <mxCell id="TxLPmFs_sCvqqsQRuhD0-3" value="+ addGadget(new_gadget: SH_Gadget *): bool" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-1" vertex="1">
@@ -953,10 +953,10 @@
         <mxCell id="BVCmBET8UrxRTKi6fJFU-7" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="BVCmBET8UrxRTKi6fJFU-5" vertex="1">
           <mxGeometry y="130" width="360" height="8" as="geometry" />
         </mxCell>
-        <mxCell id="BVCmBET8UrxRTKi6fJFU-8" value="# addIncomingRequest(request: Request *): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="BVCmBET8UrxRTKi6fJFU-5" vertex="1">
+        <mxCell id="BVCmBET8UrxRTKi6fJFU-8" value="# addIncomingRequest(request: std::shared_ptr<Request>): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="BVCmBET8UrxRTKi6fJFU-5" vertex="1">
           <mxGeometry y="138" width="360" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="Vv94dgR8Xj495JDutTfT-32" value="# executeRequestSending(req: Request *): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=2" parent="BVCmBET8UrxRTKi6fJFU-5" vertex="1">
+        <mxCell id="Vv94dgR8Xj495JDutTfT-32" value="# executeRequestSending(req: std::shared_ptr<Request>): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=2" parent="BVCmBET8UrxRTKi6fJFU-5" vertex="1">
           <mxGeometry y="164" width="360" height="26" as="geometry" />
         </mxCell>
         <mxCell id="Vv94dgR8Xj495JDutTfT-33" value="# sendQueuedItems(): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="BVCmBET8UrxRTKi6fJFU-5" vertex="1">
@@ -977,10 +977,10 @@
         <mxCell id="Vv94dgR8Xj495JDutTfT-39" value="+ hasRequest(): bool" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="BVCmBET8UrxRTKi6fJFU-5" vertex="1">
           <mxGeometry y="320" width="360" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="Vv94dgR8Xj495JDutTfT-40" value="+ getRequest(): Request *" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="BVCmBET8UrxRTKi6fJFU-5" vertex="1">
+        <mxCell id="Vv94dgR8Xj495JDutTfT-40" value="+ getRequest(): std::shared_ptr<Request>" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="BVCmBET8UrxRTKi6fJFU-5" vertex="1">
           <mxGeometry y="346" width="360" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="Vv94dgR8Xj495JDutTfT-41" value="+ sendRequest(request: Request *): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="BVCmBET8UrxRTKi6fJFU-5" vertex="1">
+        <mxCell id="Vv94dgR8Xj495JDutTfT-41" value="+ sendRequest(request: std::shared_ptr<Request>): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="BVCmBET8UrxRTKi6fJFU-5" vertex="1">
           <mxGeometry y="372" width="360" height="26" as="geometry" />
         </mxCell>
         <mxCell id="Vv94dgR8Xj495JDutTfT-42" value="+ refresh(): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=2" parent="BVCmBET8UrxRTKi6fJFU-5" vertex="1">
@@ -1043,7 +1043,7 @@
         <mxCell id="Vv94dgR8Xj495JDutTfT-13" value="- path: [char]" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="Vv94dgR8Xj495JDutTfT-9" vertex="1">
           <mxGeometry y="52" width="560" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="Vv94dgR8Xj495JDutTfT-14" value="- send_answer_: std::function&lt;void(Request *)&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="Vv94dgR8Xj495JDutTfT-9" vertex="1">
+        <mxCell id="Vv94dgR8Xj495JDutTfT-14" value="- send_answer_: std::function&lt;void(std::shared_ptr<Request>)&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="Vv94dgR8Xj495JDutTfT-9" vertex="1">
           <mxGeometry y="78" width="560" height="26" as="geometry" />
         </mxCell>
         <mxCell id="Vv94dgR8Xj495JDutTfT-12" value="# can_respond_: bool" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="Vv94dgR8Xj495JDutTfT-9" vertex="1">
@@ -1058,7 +1058,7 @@
         <mxCell id="Vv94dgR8Xj495JDutTfT-16" value="Request(req_path: const char *, req_body: const char *)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="Vv94dgR8Xj495JDutTfT-9" vertex="1">
           <mxGeometry y="164" width="560" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="Vv94dgR8Xj495JDutTfT-17" value="Request(req_path: const char *, req_body: const char *, send_answer_: std::function&lt;void(Request *)&gt;)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="Vv94dgR8Xj495JDutTfT-9" vertex="1">
+        <mxCell id="Vv94dgR8Xj495JDutTfT-17" value="Request(req_path: const char *, req_body: const char *, send_answer_: std::function&lt;void(std::shared_ptr<Request>)&gt;)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="Vv94dgR8Xj495JDutTfT-9" vertex="1">
           <mxGeometry y="190" width="560" height="26" as="geometry" />
         </mxCell>
         <mxCell id="Vv94dgR8Xj495JDutTfT-18" value="~Request()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="Vv94dgR8Xj495JDutTfT-9" vertex="1">

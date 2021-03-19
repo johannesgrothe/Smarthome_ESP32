@@ -20,5 +20,5 @@ public:
 
   void addData(int index, std::string payload);
 
-  Request *getRequest() const;
+  std::shared_ptr<Request>getRequest() const;
 };

@@ -37,7 +37,7 @@ void SplitRequestBuffer::addData(int index, std::string payload) {
   }
 }
 
-Request *SplitRequestBuffer::getRequest() const {
+std::shared_ptr<Request>SplitRequestBuffer::getRequest() const {
   if (added_packages_ == length_) {
     std::string buf_str;
     for (int i = 0; i < length_; i++) {
@@ -56,7 +56,7 @@ Request *SplitRequestBuffer::getRequest() const {
       return nullptr;
     }
 
-    auto out_req = new Request(path_,
+    auto out_req = std::make_shared<Request>(path_,
                                session_id_,
                                sender_,
                                receiver_,

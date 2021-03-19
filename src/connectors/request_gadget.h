@@ -42,13 +42,13 @@ protected:
    * Adds a request to the 'incoming'-queue
    * @param request Request to be added
    */
-  void addIncomingRequest(Request * request);
+  void addIncomingRequest(std::shared_ptr<Request> request);
 
   /**
    * Sends a request to the network
    * @param request Request to be sent
    */
-  virtual void executeRequestSending(Request * request) = 0;
+  virtual void executeRequestSending(std::shared_ptr<Request> request) = 0;
 
   /**
    * Sends requests queued in the out-queue
@@ -92,13 +92,13 @@ public:
    * Returns nullptr if there is none.
    * @return A request if there is any
    */
-  Request * getRequest();
+  std::shared_ptr<Request> getRequest();
 
   /**
    * Stores a request to be sent and sends it as soon as possible
    * @param request The request to be sent
    */
-  void sendRequest(Request * request);
+  void sendRequest(std::shared_ptr<Request> request);
 
   /**
    * Sends a request and waits for a response to arrive.
@@ -106,7 +106,7 @@ public:
    * @param wait_time The time in ms to wait before returning nullptr
    * @return A pointer to the response or a nullptr
    */
-  Request * sendRequestAndWaitForResponse(Request * request, unsigned long wait_time);
+  std::shared_ptr<Request> sendRequestAndWaitForResponse(std::shared_ptr<Request> request, unsigned long wait_time);
 
   /**
    * Waits for the Request with the given ID to
@@ -114,7 +114,7 @@ public:
    * @param wait_time The time in ms to wait before returning nullptr
    * @return A pointer to the response or a nullptr
    */
-  Request * waitForResponse(int id, unsigned long wait_time);
+  std::shared_ptr<Request> waitForResponse(int id, unsigned long wait_time);
 
   /**
    * Loop-function for the request gadget

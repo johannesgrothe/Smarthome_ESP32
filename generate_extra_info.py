@@ -1,4 +1,5 @@
 import os
+import re
 from datetime import datetime
 
 file_name = "flash_info.h"
@@ -17,7 +18,9 @@ git_commit = os.popen("git rev-parse HEAD").read().strip("\n")
 git_commit_str = '#define SW_GIT_COMMIT "{}"\n'.format(git_commit)
 data_str += git_commit_str
 
-git_branch = os.popen("git for-each-ref --format='%(upstream:short)' $(git symbolic-ref -q HEAD)").read().strip("\n")
+
+selected_branch = [x.strip('*').strip() for x in os.popen("git branch").read().split("\n") if x.startswith('*')]
+git_branch = selected_branch[0] if len(selected_branch) == 1 else "None"
 git_branch_str = '#define SW_GIT_BRANCH "{}"\n'.format(git_branch)
 data_str += git_branch_str
 
