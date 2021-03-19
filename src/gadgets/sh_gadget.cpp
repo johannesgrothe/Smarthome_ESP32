@@ -12,7 +12,7 @@ GadgetMethod SH_Gadget::getMethodForCode(unsigned long code) {
       }
     }
   }
-  return GadgetMethod::None;
+  return GadgetMethod::err_type;
 }
 
 bool SH_Gadget::setMethodForCode(GadgetMethod method, unsigned long code) {
@@ -45,7 +45,7 @@ void SH_Gadget::printMapping() {
   logger.decIndent();
 }
 
-void SH_Gadget::updateCharacteristic(GadgetCharacteristic characteristic, int value) {
+void SH_Gadget::updateCharacteristic(CharacteristicIdentifier characteristic, int value) {
   gadget_remote_callback(getName(), characteristic, value);
 }
 
@@ -58,7 +58,7 @@ SH_Gadget::SH_Gadget::SH_Gadget(std::string  name, const GadgetType type) :
   main_controller_(nullptr),
   type(type) {}
 
-void SH_Gadget::setGadgetRemoteCallback(std::function<void(std::string, GadgetCharacteristic, int)> update_method) {
+void SH_Gadget::setGadgetRemoteCallback(std::function<void(std::string, CharacteristicIdentifier, int)> update_method) {
   gadget_remote_callback = std::move(update_method);
   logger.println("Initialized Gadget Remote Callback");
   gadget_remote_ready = true;
@@ -84,7 +84,7 @@ std::string SH_Gadget::getName() {
 
 void SH_Gadget::handleCodeUpdate(unsigned long code) {
   GadgetMethod method = getMethodForCode(code);
-  if (method != GadgetMethod::None) {
+  if (method != GadgetMethod::err_type) {
     logger.print(name, "Applying Method: ");
     logger.printfln("'%d'", (uint8_t) method);
     logger.incIndent();
@@ -145,7 +145,7 @@ bool SH_Gadget::hasRadio() const {
   return radio_gadget_ != nullptr;
 }
 
-void SH_Gadget::handleCharacteristicUpdate(GadgetCharacteristic characteristic, int value) {
+void SH_Gadget::handleCharacteristicUpdate(CharacteristicIdentifier characteristic, int value) {
   logger.println(getName(), "Updating Characteristic: ");
   logger.printfln("%d", int(characteristic));
   executeCharacteristicUpdate(characteristic, value);

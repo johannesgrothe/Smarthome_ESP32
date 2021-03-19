@@ -17,7 +17,7 @@ protected:
 
   SHLampType lamp_type_;
 
-  void executeCharacteristicUpdate(GadgetCharacteristic, int) override;
+  void executeCharacteristicUpdate(CharacteristicIdentifier, int) override;
 
 public:
 

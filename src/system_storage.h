@@ -13,7 +13,7 @@
 #include "network_library.h"
 #include "remote_library.h"
 #include "pin_profile.h"
-#include "gadgets/gadget_enums.h"
+#include "gadgets/gadget_characteristic_settings.h"
 #include "status_codes.h"
 
 // valid config bitfield
@@ -614,7 +614,7 @@ public:
 
     auto type = (GadgetIdentifier) gadget_type;
 
-    if (type == GadgetIdentifier::None) {
+    if (type == GadgetIdentifier::err_type) {
       logger.println(LOG_TYPE::ERR, "Cannot save gadget: gadget has err-type 0");
       return WriteGadgetStatus::GadgetTypeErrorUnknown;
     } else {

@@ -7,7 +7,7 @@ protected:
 
   void switchTriggered();
 
-  void executeCharacteristicUpdate(GadgetCharacteristic, int) override;
+  void executeCharacteristicUpdate(CharacteristicIdentifier, int) override;
 
 public:
   explicit SH_Wallswitch(std::string name);

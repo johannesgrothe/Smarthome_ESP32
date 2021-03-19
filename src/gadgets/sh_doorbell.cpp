@@ -10,7 +10,7 @@ void SH_Doorbell::doorbellTriggered() {
   // TODO: event remote needed
 }
 
-void SH_Doorbell::executeCharacteristicUpdate(GadgetCharacteristic characteristic, int value) {}
+void SH_Doorbell::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, int value) {}
 
 vector<GadgetCharacteristicSettings> SH_Doorbell::getCharacteristics() { return {}; };
 

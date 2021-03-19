@@ -13,7 +13,7 @@ SH_Lamp::SH_Lamp(std::string name, SHLampType lamp_type) :
 void SH_Lamp::setBrightness(byte new_brightness) {
   lamp_color_.setBrightness(new_brightness);
   setGadgetHasChanged();
-  updateCharacteristic(GadgetCharacteristic::brightness, (int) new_brightness);
+  updateCharacteristic(CharacteristicIdentifier::brightness, (int) new_brightness);
 }
 
 byte SH_Lamp::getBrightness() {
@@ -44,7 +44,7 @@ void SH_Lamp::getColor(uint8_t color_buffer[]) {
 void SH_Lamp::setHue(unsigned int new_hue) {
   lamp_color_.setHue(new_hue);
   setGadgetHasChanged();
-  updateCharacteristic(GadgetCharacteristic::hue, (int) new_hue);
+  updateCharacteristic(CharacteristicIdentifier::hue, (int) new_hue);
 }
 
 unsigned int SH_Lamp::getHue() {
@@ -70,18 +70,18 @@ void SH_Lamp::setStatus(bool new_status) {
     }
   }
   setGadgetHasChanged();
-  updateCharacteristic(GadgetCharacteristic::status, new_status);
+  updateCharacteristic(CharacteristicIdentifier::status, new_status);
 }
 
-void SH_Lamp::executeCharacteristicUpdate(GadgetCharacteristic characteristic, int value) {
+void SH_Lamp::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, int value) {
   switch(characteristic) {
-    case GadgetCharacteristic::status:
+    case CharacteristicIdentifier::status:
       setStatus((bool) value);
       break;
-    case GadgetCharacteristic::brightness:
+    case CharacteristicIdentifier::brightness:
       setBrightness(value);
       break;
-    case GadgetCharacteristic::hue:
+    case CharacteristicIdentifier::hue:
       setHue((unsigned int) value);
       break;
     default:
@@ -93,43 +93,43 @@ vector<GadgetCharacteristicSettings> SH_Lamp::getCharacteristics() {
   lamp_color_ = Color(0xff, 0, 0xff);
   lamp_color_.setBrightness(77);
 
-  std::vector<GadgetCharacteristicSettings> settings = {GadgetCharacteristicSettings(GadgetCharacteristic::status,
-                                                        0,
-                                                        1,
-                                                        1,
-                                                        long(getStatus()))};
+  std::vector<GadgetCharacteristicSettings> settings = {GadgetCharacteristicSettings(CharacteristicIdentifier::status,
+                                                                                     0,
+                                                                                     1,
+                                                                                     1,
+                                                                                     long(getStatus()))};
   switch (lamp_type_) {
     case SHLampType::BRI_ONLY :
-      settings.push_back(GadgetCharacteristicSettings(GadgetCharacteristic::brightness,
+      settings.push_back(GadgetCharacteristicSettings(CharacteristicIdentifier::brightness,
                                                       0,
                                                       100,
                                                       1,
                                                       long(getBrightness())));
       break;
     case SHLampType::CLR_ONLY :
-      settings.push_back(GadgetCharacteristicSettings(GadgetCharacteristic::hue,
+      settings.push_back(GadgetCharacteristicSettings(CharacteristicIdentifier::hue,
                                                       0,
                                                       100,
                                                       1,
                                                       long(getHue())));
-      settings.push_back(GadgetCharacteristicSettings(GadgetCharacteristic::saturation,
+      settings.push_back(GadgetCharacteristicSettings(CharacteristicIdentifier::saturation,
                                                       0,
                                                       100,
                                                       1,
                                                       long(lamp_color_.getHSV()->getSaturation())));
       break;
     case SHLampType::CLR_BRI :
-      settings.push_back(GadgetCharacteristicSettings(GadgetCharacteristic::brightness,
+      settings.push_back(GadgetCharacteristicSettings(CharacteristicIdentifier::brightness,
                                                       0,
                                                       100,
                                                       1,
                                                       long(getBrightness())));
-      settings.push_back(GadgetCharacteristicSettings(GadgetCharacteristic::hue,
+      settings.push_back(GadgetCharacteristicSettings(CharacteristicIdentifier::hue,
                                                       0,
                                                       100,
                                                       1,
                                                       long(getHue())));
-      settings.push_back(GadgetCharacteristicSettings(GadgetCharacteristic::saturation,
+      settings.push_back(GadgetCharacteristicSettings(CharacteristicIdentifier::saturation,
                                                       0,
                                                       100,
                                                       1,

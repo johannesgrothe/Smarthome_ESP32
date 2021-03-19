@@ -14,7 +14,7 @@ protected:
    */
   void setStatus(bool);
 
-  void executeCharacteristicUpdate(GadgetCharacteristic, int) override;
+  void executeCharacteristicUpdate(CharacteristicIdentifier, int) override;
 
 public:
   /**

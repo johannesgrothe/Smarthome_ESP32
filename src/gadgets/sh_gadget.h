@@ -12,7 +12,7 @@
 
 #include "../connectors/ir_gadget.h"
 #include "../connectors/radio_gadget.h"
-#include "gadget_enums.h"
+#include "gadget_characteristic_settings.h"
 #include "connectors/event.h"
 #include "../main_system_controller.h"
 
@@ -42,7 +42,7 @@ private:
   bool init_error;
 
   // Callback to update a characteristic on the gadget remote
-  std::function<void(std::string, GadgetCharacteristic, int)> gadget_remote_callback;
+  std::function<void(std::string, CharacteristicIdentifier, int)> gadget_remote_callback;
   std::function<void(std::string, EventType)> event_remote_callback;
   // Flag to determine if the gadget remote is correctly initialized
   bool gadget_remote_ready;
@@ -105,7 +105,7 @@ protected:
    * @param characteristic Characteristic to update
    * @param value Value for the characteristic
    */
-  void updateCharacteristic(GadgetCharacteristic characteristic, int value);
+  void updateCharacteristic(CharacteristicIdentifier characteristic, int value);
 
   /**
    * Returns the method for the passed code
@@ -135,7 +135,7 @@ protected:
    * @param characteristic Characteristic the gadget should be updated with
    * @param value The value the characteristic should be updated with
    */
-  virtual void executeCharacteristicUpdate(GadgetCharacteristic characteristic, int value) = 0;
+  virtual void executeCharacteristicUpdate(CharacteristicIdentifier characteristic, int value) = 0;
 
 public:
 
@@ -155,7 +155,7 @@ public:
    * Sets the callback for the gadget remote
    * @param update_method Method used to update the remote
    */
-  void setGadgetRemoteCallback(std::function<void(std::string, GadgetCharacteristic, int)> update_method);
+  void setGadgetRemoteCallback(std::function<void(std::string, CharacteristicIdentifier, int)> update_method);
 
   /**
    * Sets the callback for the event remote
@@ -204,7 +204,7 @@ public:
    * @param characteristic Characteristic the gadget should be updated with
    * @param value The value the characteristic should be updated with
    */
-  virtual void handleCharacteristicUpdate(GadgetCharacteristic characteristic, int value);
+  virtual void handleCharacteristicUpdate(CharacteristicIdentifier characteristic, int value);
 
   virtual void handleEvent(std::string sender, EventType event_type);
 

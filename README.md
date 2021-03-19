@@ -104,11 +104,11 @@ The json has the following structure at root:
 
 ### Gadgets
 
-#### sh_lamp_basic
+#### lamp_basic
 
 ```
 {
- "type": "sh_lamp_basic",
+ "type": "lamp_basic",
  "name": "Testlampe 2",
  "lamp_type_": 0,
  "pin": 2,
@@ -121,11 +121,11 @@ The json has the following structure at root:
 }
 ```
 
-#### sh_lamp_neopixel_basic
+#### lamp_neopixel_basic
 
 ```
 {
-  "type": "sh_lamp_neopixel_basic",
+  "type": "lamp_neopixel_basic",
   "name": "Testlampe NP",
   "lamp_type_": 0,
   "pin": xx,
