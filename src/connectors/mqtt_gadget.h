@@ -29,7 +29,7 @@ protected:
 
   void callback(char *, const byte *, unsigned int);
 
-  void executeRequestSending(Request * request) override;
+  void executeRequestSending(std::shared_ptr<Request> request) override;
 
   bool subscribe_to_topic(const std::string& topic);
 

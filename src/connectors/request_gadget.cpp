@@ -3,11 +3,11 @@
 #include <utility>
 
 QueueHandle_t createRequestQueue() {
-  return xQueueCreate(REQUEST_QUEUE_LEN, sizeof(Request *));
+  return xQueueCreate(REQUEST_QUEUE_LEN, sizeof(std::shared_ptr<Request>));
 }
 
 // RequestGadget
-void RequestGadget::addIncomingRequest(Request *request) {
+void RequestGadget::addIncomingRequest(std::shared_ptr<Request>request) {
   xQueueSend(buffer_in_request_queue_, &request, portMAX_DELAY);
 }
 
@@ -16,10 +16,13 @@ void RequestGadget::sendQueuedItems() {
     return;
   }
   if (uxQueueMessagesWaiting(out_request_queue_) > 0) {
-    Request *buf_req;
+    Serial.println("b");
+    std::shared_ptr<Request>buf_req;
+    Serial.println("c");
     xQueueReceive(out_request_queue_, &buf_req, portMAX_DELAY);
+    Serial.println("d");
     executeRequestSending(buf_req);
-    delete buf_req;
+    Serial.println("e");
   }
 }
 
@@ -54,27 +57,27 @@ bool RequestGadget::hasRequest() {
   return uxQueueMessagesWaiting(in_request_queue_) > 0;
 }
 
-Request *RequestGadget::getRequest() {
-  Request *buf_req;
+std::shared_ptr<Request>RequestGadget::getRequest() {
+  std::shared_ptr<Request>buf_req;
   xQueueReceive(in_request_queue_, &buf_req, portMAX_DELAY);
   return buf_req;
 }
 
-void RequestGadget::sendRequest(Request *request) {
+void RequestGadget::sendRequest(std::shared_ptr<Request>request) {
   xQueueSend(out_request_queue_, &request, portMAX_DELAY);
 }
 
-Request *RequestGadget::waitForResponse(int id, unsigned long wait_time) {
+std::shared_ptr<Request>RequestGadget::waitForResponse(int id, unsigned long wait_time) {
   {
     unsigned long end_time = millis() + wait_time;
 
-    std::vector<Request *> buffered_requests;
+    std::vector<std::shared_ptr<Request>> buffered_requests;
 
-    Request *out_req = nullptr;
+    std::shared_ptr<Request>out_req = nullptr;
 
     while (millis() < end_time) {
 
-      Request *buf_req;
+      std::shared_ptr<Request>buf_req;
       xQueueReceive(in_request_queue_, &buf_req, portMAX_DELAY);
 
       if (buf_req->getID() == id) {
@@ -91,7 +94,7 @@ Request *RequestGadget::waitForResponse(int id, unsigned long wait_time) {
   }
 }
 
-Request *RequestGadget::sendRequestAndWaitForResponse(Request *request, unsigned long wait_time) {
+std::shared_ptr<Request>RequestGadget::sendRequestAndWaitForResponse(std::shared_ptr<Request>request, unsigned long wait_time) {
   sendRequest(request);
   return waitForResponse(request->getID(), wait_time);
 }
@@ -102,7 +105,7 @@ void RequestGadget::refresh() {
   }
   refresh_network();
   if (uxQueueMessagesWaiting(buffer_in_request_queue_) > 0) {
-    Request *buf_req;
+    std::shared_ptr<Request>buf_req;
     xQueueReceive(buffer_in_request_queue_, &buf_req, portMAX_DELAY);
     auto req_payload = buf_req->getPayload();
 

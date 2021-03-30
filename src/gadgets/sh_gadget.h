@@ -173,7 +173,7 @@ public:
    * Returns the unique name of the gadget
    * @return the name of the gadget
    */
-  std::string getName();
+  std::string getName() const;
 
   /**
    * Prints the mapping to the console

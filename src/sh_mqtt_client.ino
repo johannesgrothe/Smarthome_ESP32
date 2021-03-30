@@ -79,7 +79,7 @@ static void rebootChip(const std::string &reason) {
  * @param key_list The list of all the keys that need to be present
  * @return Whether all keys were present
  */
-static bool checkPayloadForKeys(Request *req, const std::vector<std::string> &key_list) {
+static bool checkPayloadForKeys(std::shared_ptr<Request>req, const std::vector<std::string> &key_list) {
   DynamicJsonDocument json_body = req->getPayload();
 
   for (const auto &key: key_list) {
@@ -498,7 +498,7 @@ void updateCharacteristicOnBridge(const std::string &gadget_name, Characteristic
   req_doc["characteristic"] = int(characteristic);
   req_doc["value"] = value;
 
-  auto out_req = new Request(PATH_CHARACTERISTIC_UPDATE_TO_BRIDGE,
+  auto out_req = std::make_shared<Request>(PATH_CHARACTERISTIC_UPDATE_TO_BRIDGE,
                              gen_req_id(),
                              client_id_,
                              PROTOCOL_BRIDGE_NAME,
@@ -540,7 +540,7 @@ void updateEventOnBridge(const string &sender, EventType type) {
   req_doc["timestamp"] = event_buf->getTimestamp();
   req_doc["event_type"] = int(event_buf->getType());
 
-  auto out_req = new Request(PATH_EVENT_UPDATE_TO_BRIDGE,
+  auto out_req = std::make_shared<Request>(PATH_EVENT_UPDATE_TO_BRIDGE,
                              gen_req_id(),
                              client_id_,
                              PROTOCOL_BRIDGE_NAME,
@@ -595,7 +595,7 @@ void sendCodeToRemote(const std::shared_ptr<CodeCommand> &code) {
   doc["code"] = code->getCode();
   doc["timestamp"] = code->getTimestamp();
 
-  network_gadget->sendRequest(new Request(PATH_CODE_UPDATE_TO_BRIDGE,
+  network_gadget->sendRequest(std::make_shared<Request>(PATH_CODE_UPDATE_TO_BRIDGE,
                                           ident,
                                           client_id_,
                                           PROTOCOL_BRIDGE_NAME,
@@ -621,7 +621,7 @@ void handleNewCodeFromRequest(const std::shared_ptr<CodeCommand> &code) {
  * Handles a request to receive a characteristic update
  * @param req Request that contains the characteristic update information
  */
-void handleGadgetCharacteristicUpdateRequest(Request *req) {
+void handleGadgetCharacteristicUpdateRequest(std::shared_ptr<Request>req) {
 
   // Check payload for missing keys
   if (!checkPayloadForKeys(req, {"name", "characteristic", "value"})) {
@@ -653,7 +653,7 @@ void handleGadgetCharacteristicUpdateRequest(Request *req) {
  * Handles a request to receive a event from the bridge
  * @param req Request that contains the event information
  */
-void handleEventUpdateRequest(Request *req) {
+void handleEventUpdateRequest(std::shared_ptr<Request>req) {
 
   // Check payload for missing keys
   if (!checkPayloadForKeys(req, {"name", "timestamp", "event_type"})) {
@@ -676,7 +676,7 @@ void handleEventUpdateRequest(Request *req) {
  * Handles a request to receive a code from the bridge
  * @param req Request that contains the code information
  */
-void handleCodeUpdateRequest(Request *req) {
+void handleCodeUpdateRequest(std::shared_ptr<Request>req) {
 
   // Check payload for missing keys
   if (!checkPayloadForKeys(req, {"type", "code", "timestamp"})) {
@@ -695,7 +695,7 @@ void handleCodeUpdateRequest(Request *req) {
  * Handles a broadcast request
  * @param req Request that contains the broadcast request information
  */
-void handleBroadcastRequest(Request *req) {
+void handleBroadcastRequest(std::shared_ptr<Request>req) {
   logger.println("Broadcast");
   DynamicJsonDocument doc(10);
   req->respond("smarthome/broadcast/res", doc);
@@ -705,7 +705,7 @@ void handleBroadcastRequest(Request *req) {
  * Handles a request that contains system control information
  * @param req Request that contains system control information
  */
-void handleSystemControlRequest(Request *req) {
+void handleSystemControlRequest(std::shared_ptr<Request>req) {
 
   // Check payload for missing keys
   if (!checkPayloadForKeys(req, {"subject"})) {
@@ -730,7 +730,7 @@ void handleSystemControlRequest(Request *req) {
  * Handles a request that contains config reset information
  * @param req Request that contains config reset command information
  */
-void handleConfigResetRequest(Request *req) {
+void handleConfigResetRequest(std::shared_ptr<Request>req) {
 
   // Check payload for missing keys
   if (!checkPayloadForKeys(req, {"reset_option"})) {
@@ -778,7 +778,7 @@ void handleConfigResetRequest(Request *req) {
  * Handles a request that contains config write information
  * @param req Request that contains config write information
  */
-void handleConfigWriteRequest(Request *req) {
+void handleConfigWriteRequest(std::shared_ptr<Request>req) {
 
   // Check payload for missing keys
   if (!checkPayloadForKeys(req, {"type"})) {
@@ -841,7 +841,7 @@ void handleConfigWriteRequest(Request *req) {
  * Handles a request that contains config read information
  * @param req Request that contains config read information
  */
-void handleConfigReadRequest(Request *req) {
+void handleConfigReadRequest(std::shared_ptr<Request>req) {
 
   // Check payload for missing keys
   if (!checkPayloadForKeys(req, {"param"})) {
@@ -954,7 +954,7 @@ void handleConfigReadRequest(Request *req) {
  * Handles a request that contains gadget write information
  * @param req Request that contains gadget write information
  */
-void handleGadgetWriteRequest(Request *req) {
+void handleGadgetWriteRequest(std::shared_ptr<Request>req) {
   // Check payload for missing keys
   if (!checkPayloadForKeys(req, {"type", "name"})) {
     return;
@@ -975,7 +975,7 @@ void handleGadgetWriteRequest(Request *req) {
  * Handles a request to sync settings between client and bridge
  * @param req Request that contains the sync information
  */
-void handleSyncRequest(Request *req) {
+void handleSyncRequest(std::shared_ptr<Request>req) {
 
   auto req_payload = req->getPayload();
 
@@ -1036,7 +1036,7 @@ void handleSyncRequest(Request *req) {
 
 //region SORTING OF REQUESTS
 
-void handleSystemRequest(Request *req) {
+void handleSystemRequest(std::shared_ptr<Request>req) {
 
   DynamicJsonDocument json_body = req->getPayload();
 
@@ -1094,7 +1094,7 @@ void handleSystemRequest(Request *req) {
  * Handles a request gotten from the network gadget
  * @param req Request to handle
  */
-void handleRequest(Request *req) {
+void handleRequest(std::shared_ptr<Request>req) {
   std::string req_path = req->getPath();
   if (!req->hasReceiver()) {
     req->updateReceiver(client_id_);
@@ -1468,7 +1468,7 @@ void handleNetwork() {
   }
   if (network_gadget->hasRequest()) {
     std::string type;
-    Request *req = network_gadget->getRequest();
+    std::shared_ptr<Request>req = network_gadget->getRequest();
     RequestGadgetType g_type = network_gadget->getGadgetType();
     if (g_type == RequestGadgetType::MQTT_G)
       type = "MQTT";
@@ -1483,7 +1483,6 @@ void handleNetwork() {
     }
     logger.printfln("[%s] '%s': %s", type.c_str(), req->getPath().c_str(), r_body.c_str());
     handleRequest(req);
-    delete req;
   }
 }
 
@@ -1559,7 +1558,7 @@ void sendHeartbeat() {
     // NOT PART OF THE PROTOCOL, debugging purposes only
     req_doc["system_time"] = system_timer.getTime();
 
-    auto heartbeat_request = new Request(PATH_HEARTBEAT,
+    auto heartbeat_request = std::make_shared<Request>(PATH_HEARTBEAT,
                                          gen_req_id(),
                                          client_id_,
                                          PROTOCOL_BRIDGE_NAME,

@@ -84,7 +84,7 @@ void MQTTGadget::callback(char *topic, const byte *payload, const unsigned int l
     return;
   }
   using std::placeholders::_1;
-  auto req = new Request(req_path,
+  auto req = std::make_shared<Request>(req_path,
                                        doc["session_id"].as<int>(),
                                        doc["sender"].as<std::string>(),
                                        doc["receiver"].as<std::string>(),
@@ -93,23 +93,23 @@ void MQTTGadget::callback(char *topic, const byte *payload, const unsigned int l
   addIncomingRequest(req);
 }
 
-void MQTTGadget::executeRequestSending(Request * req) {
+void MQTTGadget::executeRequestSending(std::shared_ptr<Request> req) {
   std::string topic = req->getPath();
   std::string body = req->getBody();
-  logger.print("System / MQTT", "publishing on '");
-  logger.print(topic);
-  logger.print("'");
+  logger.printfln("System / MQTT", "publishing on '%s': ", topic.c_str());
   bool status;
   uint16_t msg_len = body.size();
-  status = mqttClient_->beginPublish(topic.c_str(), msg_len, false);
-  uint16_t k;
-  for (
-    k = 0;
-    k < msg_len;
-    k++) {
-    status = status && mqttClient_->write(body[k]);
-  }
-  status = status && mqttClient_->endPublish();
+  status = mqttClient_->publish(topic.c_str(), body.c_str());
+  mqttClient_->endPublish();
+//  status = mqttClient_->beginPublish(topic.c_str(), msg_len, false);
+//  uint16_t k;
+//  for (
+//    k = 0;
+//    k < msg_len;
+//    k++) {
+//    status = status && mqttClient_->write(body[k]);
+//  }
+//  status = status && mqttClient_->endPublish();
   if (status)
     logger.println("OK");
   else

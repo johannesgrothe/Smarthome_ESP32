@@ -1,7 +1,7 @@
 #include "serial_gadget.h"
 #include <sstream>
 
-void SerialGadget::executeRequestSending(Request * req) {
+void SerialGadget::executeRequestSending(std::shared_ptr<Request> req) {
   Serial.printf("!r_p[%s]_b[%s]_\n", req->getPath().c_str(), req->getBody().c_str());
 }
 
@@ -107,7 +107,7 @@ void SerialGadget::receiveSerialRequest() {
           return;
         }
         using std::placeholders::_1;
-        auto req = new Request(req_path,
+        auto req = std::make_shared<Request>(req_path,
                                              doc["session_id"].as<int>(),
                                              doc["sender"].as<std::string>(),
                                              doc["receiver"].as<std::string>(),

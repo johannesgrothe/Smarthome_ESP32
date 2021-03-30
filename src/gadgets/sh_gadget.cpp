@@ -78,7 +78,7 @@ GadgetType SH_Gadget::getType() {
   return type;
 }
 
-std::string SH_Gadget::getName() {
+std::string SH_Gadget::getName() const {
   return name;
 }
 
