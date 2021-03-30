@@ -100,7 +100,7 @@ void Request::dontRespond() {
 
 std::string Request::getBody() const {
   std::stringstream out_str;
-  char bufchrarr[1022];
+  char bufchrarr[6000];
   serializeJson(payload_, bufchrarr);
   out_str << R"({"session_id": )" << session_id_
           << R"(, "sender": ")" << sender_
