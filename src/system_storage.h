@@ -183,7 +183,7 @@ private:
   /**
    * Reads a uint8_t (one byte) from the selected part of the memory
    * @param pos position to read from
-   * @return the uint16_t value
+   * @return the uint8_t value
    */
   static uint8_t readUInt8(int pos) {
     return EEPROM.readByte(pos);
