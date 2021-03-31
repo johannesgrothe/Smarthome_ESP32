@@ -6,8 +6,8 @@ file_name = "flash_info.h"
 
 print("Generating '{}' file to define flashing info...".format(file_name))
 
-data_str = "#pragma once\n// THIS IS AN AUTO_GENERATED FILE.\n// TOUCH IT IF YOU WANT, THE GENERATOR DOESNT CARE.\n\
-// BUT HE HAS NO MERCY EITHER.\n"
+data_str = "#pragma once\n// THIS IS AN AUTO_GENERATED FILE.\n\
+// TOUCH IT IF YOU WANT, BUT BEWARE ANY CHANGES COULD BE OVERWRITTEN AT ANY TIME IN THE FUTURE.\n"
 
 
 flash_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

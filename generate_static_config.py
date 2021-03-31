@@ -6,6 +6,7 @@ from datetime import datetime
 
 file_name = "static_config.h"
 
+
 def parse_args():
     """Parses the arguments given to the script"""
     parser = argparse.ArgumentParser()
@@ -106,6 +107,7 @@ if __name__ == "__main__":
         with open(args.config_path, "r") as file:
             try:
                 loaded_config = json.load(file)
+                print(f"Generating config from '{args.config_path}'")
                 main(loaded_config)
             except ValueError:
                 print("JSON from file path could not be decoded")

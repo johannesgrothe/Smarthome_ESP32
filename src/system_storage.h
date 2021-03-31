@@ -90,7 +90,7 @@
 #define GADGET_NAME_POS (GADGET_JSON_LEN_POS + 2)
 
 /**
- *
+ * System storage class handling EEPROM saving
  */
 class System_Storage {
 private:

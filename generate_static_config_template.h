@@ -1,16 +1,21 @@
 #pragma once
+// THIS IS AN AUTO_GENERATED FILE.
+// TOUCH IT IF YOU WANT, BUT BEWARE ANY CHANGES COULD BE OVERWRITTEN AT ANY TIME IN THE FUTURE.
 
 #include "datatypes.h"
 
 #define STATIC_CONFIG_ACTIVE
 
+/**
+ * Auto-generated class to contain static configuration info
+ */
 class Static_Storage {
 public:
 
-/**
- * Reads all gadgets from the eeprom
- * @return a vector containing all gadget information
- */
+  /**
+   * Returns the static gadget configuration
+   * @return a vector containing all gadget information
+   */
   static std::vector <gadget_tuple> readAllGadgets() {
     std::vector <gadget_tuple> gadgets;
 
@@ -36,3 +41,4 @@ public:
 
     return gadgets;
   }
+}
