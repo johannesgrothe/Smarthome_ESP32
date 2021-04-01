@@ -11,4 +11,4 @@ CMakeLists.txt
 network_settings.h
 flash_info.h
 doc
-static_config.h
+static_storage.h

@@ -35,7 +35,7 @@
 #include "remote_library.h"
 
 #include "gadget_collection.h"
-#include "system_storage.h"
+#include "storage/system_storage.h"
 
 #include "pin_profile.h"
 #include "color.h"
@@ -44,10 +44,6 @@
 #include "connectors/serial_gadget.h"
 
 #include "main_system_controller.h"
-
-#ifdef STATIC_CONFIG_ACTIVE
-#include "static_config.h"
-#endif
 
 // External imports
 #include <cstdlib>
@@ -343,33 +339,6 @@ bool writeConfigParam(const std::string& param_name, const std::string& param_va
   else if (param_name == "network_mode") {
     if (param_val_uint < NetworkModeCount) {
       write_successful = System_Storage::writeNetworkMode((NetworkMode) param_val_uint);
-    } else {
-      write_successful = false;
-    }
-  }
-
-    // Write gadget remote
-  else if (param_name == "gadget_remote") {
-    if (param_val_uint < GadgetRemoteModeCount) {
-      write_successful = System_Storage::writeGadgetRemote((GadgetRemoteMode) param_val_uint);
-    } else {
-      write_successful = false;
-    }
-  }
-
-    // Write code remote
-  else if (param_name == "code_remote") {
-    if (param_val_uint < CodeRemoteModeCount) {
-      write_successful = System_Storage::writeCodeRemote((CodeRemoteMode) param_val_uint);
-    } else {
-      write_successful = false;
-    }
-  }
-
-    // Write event remote
-  else if (param_name == "event_remote") {
-    if (param_val_uint < EventRemoteModeCount) {
-      write_successful = System_Storage::writeEventRemote((EventRemoteMode) param_val_uint);
     } else {
       write_successful = false;
     }
@@ -751,21 +720,21 @@ void handleConfigResetRequest(std::shared_ptr<Request>req) {
   // reset complete config
   if (reset_option == "erase") {
     System_Storage::writeTestEEPROM();
-    System_Storage::resetContentFlag();
+    System_Storage::reset();
     System_Storage::resetGadgets();
     success = true;
   }
 
     // reset the complete config
   else if (reset_option == "complete") {
-    System_Storage::resetContentFlag();
+    System_Storage::reset();
     System_Storage::resetGadgets();
     success = true;
   }
 
     // reset the system config only
   else if (reset_option == "config") {
-    System_Storage::resetContentFlag();
+    System_Storage::reset();
     success = true;
   }
 
@@ -804,7 +773,7 @@ void handleConfigWriteRequest(std::shared_ptr<Request>req) {
     auto config = json_body["config"].as<JsonObject>();
 
     if (reset_config) {
-      System_Storage::resetContentFlag();
+      System_Storage::reset();
     }
 
     if (reset_gadgets) {
@@ -925,24 +894,6 @@ void handleConfigReadRequest(std::shared_ptr<Request>req) {
   else if (param_name == "network_mode") {
     read_successful = true;
     read_val_uint = (uint8_t) System_Storage::readNetworkMode();
-  }
-
-    // read gadget remote
-  else if (param_name == "gadget_remote") {
-    read_successful = true;
-    read_val_uint = (uint8_t) System_Storage::readGadgetRemote();
-  }
-
-    // read code remote
-  else if (param_name == "code_remote") {
-    read_successful = true;
-    read_val_uint = (uint8_t) System_Storage::readCodeRemote();
-  }
-
-    // read event_remote
-  else if (param_name == "event_remote") {
-    read_successful = true;
-    read_val_uint = (uint8_t) System_Storage::readEventRemote();
   }
 
   // send response if read was successful
@@ -1695,16 +1646,21 @@ void setup() {
   logger.println("Using static, pre-compiled config");
   #else
   logger.println("Using dynamic, EEPROM config");
+  eeprom_active_ = System_Storage::init();
+  if (eeprom_active_) {
+    logger.printfln("EEPROM usage: %d / %d bytes\n", System_Storage::getEEPROMUsage(), EEPROM_SIZE);
+  } else {
+    logger.println("EEPROM is not initialized, rebooting in 15s");
+    delay(15000);
+    rebootChip("EEPROM Error");
+  }
   #endif
   logger.decIndent();
 
   main_controller = std::make_shared<MainSystemController>(network_task, heartbeat_task);
 
-  eeprom_active_ = System_Storage::initEEPROM();
-  if (eeprom_active_) {
-    client_id_ = System_Storage::readID();
-    logger.printfln("Client ID: '%s'", client_id_.c_str());
-  }
+  client_id_ = System_Storage::readID();
+  logger.printfln("Client ID: '%s'", client_id_.c_str());
 
   testStuff();
 
@@ -1729,7 +1685,6 @@ void setup() {
       break;
   }
 
-  logger.printfln("EEPROM usage: %d / %d bytes\n", System_Storage::getEEPROMUsage(), EEPROM_SIZE);
   logger.printfln("Free Heap: %d", ESP.getFreeHeap());
 
   createTasks();

@@ -6,15 +6,15 @@
 #include <utility>
 #include <cmath>
 #include <string>
-#include "system_settings.h"
-#include "console_logger.h"
-#include "datatypes.h"
+#include "../system_settings.h"
+#include "../console_logger.h"
+#include "../datatypes.h"
 
-#include "network_library.h"
-#include "remote_library.h"
-#include "pin_profile.h"
-#include "gadgets/gadget_characteristic_settings.h"
-#include "status_codes.h"
+#include "../network_library.h"
+#include "../remote_library.h"
+#include "../pin_profile.h"
+#include "../gadgets/gadget_characteristic_settings.h"
+#include "../status_codes.h"
 
 // valid config bitfield
 #define VALID_CONFIG_BITFIELD_BYTE 0
@@ -82,7 +82,7 @@
 #define GADGET_MAX_COUNT 8
 #define GADGET_BLOCK_START (GADGET_POS_START + ((GADGET_MAX_COUNT + 1) * 2))
 
-#define GADADGET_BF_POS 0
+#define GADGET_BF_POS 0
 #define GADGET_TYPE_POS 1
 #define GADGET_PIN_BLOCK_POS 2
 #define GADGET_NAME_LEN_POS (GADGET_PIN_BLOCK_POS + GADGET_PIN_BLOCK_LEN + 1)
@@ -92,7 +92,7 @@
 /**
  * System storage class handling EEPROM saving
  */
-class System_Storage {
+class EEPROM_Storage {
 private:
 
   /**
@@ -340,7 +340,7 @@ private:
     }
 
     // Check if name exist and quit if name is already taken
-    auto existing_names = System_Storage::readAllGadgetNames();
+    auto existing_names = EEPROM_Storage::readAllGadgetNames();
     for (const auto& list_name: existing_names) {
       if (name == list_name) {
         logger.printfln(LOG_TYPE::ERR, "Cannot save gadget: gadget name '%s' is already in use", name.c_str());
@@ -348,7 +348,7 @@ private:
       }
     }
 
-    auto existing_ports = System_Storage::readAllGadgetPorts();
+    auto existing_ports = EEPROM_Storage::readAllGadgetPorts();
 
     for (auto gadget_port: ports) {
       // Check if port is configured on the system
@@ -401,7 +401,7 @@ private:
     }
 
     // write the config bitfield
-    auto success = writeUInt8(g_start_addr + GADADGET_BF_POS, buf_bitfield);
+    auto success = writeUInt8(g_start_addr + GADGET_BF_POS, buf_bitfield);
 
     // Write the gadget type
     success = success && writeUInt8(g_start_addr + GADGET_TYPE_POS, gadget_type);
@@ -509,7 +509,7 @@ public:
       return gadget_tuple(0, remote_bf, pins, "", "", "");
     }
 
-    auto config_bf = readUInt8(addr + GADADGET_BF_POS);
+    auto config_bf = readUInt8(addr + GADGET_BF_POS);
     auto gadget_type = readUInt8(addr + GADGET_TYPE_POS);
     auto gadget_name_len = readUInt8(addr + GADGET_NAME_LEN_POS);
     auto gadget_json_len = readUInt16(addr + GADGET_JSON_LEN_POS);
