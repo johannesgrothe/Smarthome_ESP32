@@ -45,6 +45,10 @@
 
 #include "main_system_controller.h"
 
+#ifdef STATIC_CONFIG_ACTIVE
+#include "static_config.h"
+#endif
+
 // External imports
 #include <cstdlib>
 #include "ArduinoJson.h"
@@ -1683,6 +1687,15 @@ void setup() {
   logger.printfln("Flash Date: %s", getSoftwareFlashDate().c_str());
   logger.printfln("Git Branch: %s", getSoftwareGitBranch().c_str());
   logger.printfln("Git Commit: %s", getSoftwareGitCommit().c_str());
+  logger.decIndent();
+
+  logger.println("Configuration setting:");
+  logger.incIndent();
+  #ifdef STATIC_CONFIG_ACTIVE
+  logger.println("Using static, pre-compiled config");
+  #else
+  logger.println("Using dynamic, EEPROM config");
+  #endif
   logger.decIndent();
 
   main_controller = std::make_shared<MainSystemController>(network_task, heartbeat_task);

@@ -4,8 +4,6 @@
 
 #include "datatypes.h"
 
-#define STATIC_CONFIG_ACTIVE
-
 /**
  * Auto-generated class to contain static configuration info
  */

@@ -5,6 +5,7 @@ import json
 from datetime import datetime
 
 file_name = "static_config.h"
+file_path = os.path.join("src", file_name)
 
 
 def parse_args():
@@ -87,8 +88,8 @@ def main(config: dict):
 
     print("Saving...")
 
-    out_file = open(file_name, "w")
-    out_file.writelines(out_lines)
+    with open(file_path, "w") as out_file:
+        out_file.writelines(out_lines)
 
     print("Done.")
 
@@ -114,6 +115,6 @@ if __name__ == "__main__":
     else:
         print("No config name passed, deleting file")
         try:
-            os.remove(file_name)
+            os.remove(file_path)
         except FileNotFoundError:
             pass
