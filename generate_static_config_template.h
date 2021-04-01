@@ -17,7 +17,7 @@ public:
    * @return a vector containing all gadget information
    */
   static std::vector <gadget_tuple> readAllGadgets() {
-    std::vector <gadget_tuple> gadgets;
+    std::vector<gadget_tuple> gadgets;
 
     /*<gadget_block_start>*/
     {
@@ -34,11 +34,11 @@ public:
 
       /*<remote_block>*/remote_bf[/*<remote_index>*/] = /*<remote_value>*/;
 
-      local_gadget = gadget_tuple(gadget_type, remote_bf, pins, gadget_name, gadget_json, code_json);
-      gadgets.append(local_gadget);
+      auto local_gadget = gadget_tuple(gadget_type, remote_bf, pins, gadget_name, gadget_json, code_json);
+      gadgets.push_back(local_gadget);
     }
     /*<gadget_block_end>*/
 
     return gadgets;
   }
-}
+};
