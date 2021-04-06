@@ -107,6 +107,9 @@ int runtime_id_;
 // Mode how the system should operate
 BootMode system_mode_ = BootMode::Unknown_Mode;
 
+// Config used by the system
+std::shared_ptr<IR_Gadget> system_config = nullptr;
+
 // Infrared-gadget receiving and/or sending infrared codes
 std::shared_ptr<IR_Gadget> ir_gadget;
 
