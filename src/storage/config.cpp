@@ -53,11 +53,11 @@ Optional<uint8_t> Config::getIRSendPin() const {
   return ir_send_pin_;
 }
 
-Optional<uint8_t> Config::readRadioRecvPin() const {
+Optional<uint8_t> Config::getRadioRecvPin() const {
   return radio_recv_pin_;
 }
 
-Optional<uint8_t> Config::readRadioSendPin() const {
+Optional<uint8_t> Config::getRadioSendPin() const {
   return radio_send_pin_;
 }
 

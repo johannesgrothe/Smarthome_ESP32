@@ -25,4 +25,8 @@ public:
   bool has_value() const {
     return has_value_;
   }
+
+  T get() const {
+    return data_;
+  }
 };

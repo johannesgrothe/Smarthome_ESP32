@@ -108,7 +108,7 @@ int runtime_id_;
 BootMode system_mode_ = BootMode::Unknown_Mode;
 
 // Config used by the system
-std::shared_ptr<IR_Gadget> system_config = nullptr;
+std::shared_ptr<Config> system_config = nullptr;
 
 // Infrared-gadget receiving and/or sending infrared codes
 std::shared_ptr<IR_Gadget> ir_gadget;
@@ -149,282 +149,11 @@ bool lock_gadget_updates = false;
 // region CONFIG HELPER METHODS
 
 /**
- * Reads the gadget with the selected index
- * @param index index of the gadget to load
- * @return the gadget
- */
-static gadget_tuple readGadget(uint8_t index) {
-  auto gadget = System_Storage::readGadget(index);
-  gadget_tuple err_gadget(0, {false, false, false, false, false, false}, {0, 0, 0, 0, 0}, "", "", "");
-  auto type = std::get<0>(gadget);
-  if (type) {
-    auto ports = std::get<2>(gadget);
-    for (int i = 0; i < GADGET_PIN_BLOCK_LEN; i++) {
-      auto buf_pin = getPinForPort(ports[i]);
-      if (!buf_pin) {
-        return err_gadget;
-      }
-      ports[i] = buf_pin;
-    }
-
-    return gadget_tuple(type, std::get<1>(gadget), ports, std::get<3>(gadget), std::get<4>(gadget),
-                        std::get<5>(gadget));
-  } else {
-    return err_gadget;
-  }
-}
-
-/**
  * Generates a unique random int
  * @return Random int
  */
 static int gen_req_id() {
   return int(millis());
-}
-
-/**
- * Writes a gadget to the eeprom
- * @param gadget_type type of the gadget
- * @param remote_bf bitfield for the remotes
- * @param ports ports used by the gadget to connect hardware
- * @param gadget_config base config for the gadget
- * @param code_config config for the code mapping
- * @return whether writing was successful
- */
-static WriteGadgetStatus writeGadget(uint8_t gadget_type, bitfield_set remote_bf, pin_set ports, const std::string &name,
-                                     const std::string &gadget_config, const std::string &code_config) {
-  return System_Storage::writeGadget(gadget_type, remote_bf, ports, name, gadget_config, code_config);
-}
-
-/**
- * Writes a gadget from the config json body
- * @param json_body JSON-data to save the gadget from
- * @return (Whether writing was successful | Status-Message)
- */
-WriteGadgetStatus writeGadget(DynamicJsonDocument json_body) {
-  auto type = json_body["type"].as<uint8_t>();
-
-  auto name = json_body["name"].as<std::string>();
-
-  uint8_t port0 = 0;
-  uint8_t port1 = 0;
-  uint8_t port2 = 0;
-  uint8_t port3 = 0;
-  uint8_t port4 = 0;
-
-  if (json_body.containsKey("ports")) {
-    JsonObject ports = json_body["ports"].as<JsonObject>();
-    if (ports.containsKey("port0")) {
-      port0 = ports["port0"].as<uint8_t>();
-    }
-    if (ports.containsKey("port1")) {
-      port1 = ports["port1"].as<uint8_t>();
-    }
-    if (ports.containsKey("port2")) {
-      port2 = ports["port2"].as<uint8_t>();
-    }
-    if (ports.containsKey("port3")) {
-      port3 = ports["port3"].as<uint8_t>();
-    }
-    if (ports.containsKey("port4")) {
-      port4 = ports["port4"].as<uint8_t>();
-    }
-  }
-
-  pin_set pins = {port0, port1, port2, port3, port4};
-
-  std::string gadget_config;
-  std::string code_config;
-
-  if (json_body.containsKey("config")) {
-    gadget_config = json_body["config"].as<std::string>();
-  }
-  if (json_body.containsKey("codes")) {
-    code_config = json_body["codes"].as<std::string>();
-  }
-
-  // Create bitfield
-  bitfield_set remote_bf = {false, false, false, false, false, false, false, false};
-
-  if (json_body.containsKey("remotes")) {
-    JsonObject remote_json = json_body["remotes"].as<JsonObject>();
-    if (remote_json.containsKey("gadget")) {
-      remote_bf[0] = remote_json["gadget"].as<bool>();
-    }
-    if (remote_json.containsKey("code")) {
-      remote_bf[1] = remote_json["code"].as<bool>();
-    }
-    if (remote_json.containsKey("event")) {
-      remote_bf[2] = remote_json["event"].as<bool>();
-    }
-  }
-
-  auto status = writeGadget(type, remote_bf, pins, name, gadget_config, code_config);
-  return status;
-}
-
-/**
- * Writes the value of a param to the eeprom
- * @param param_name Name of the param to write
- * @param param_val Value of the param as string
- * @param param_val_uint Value of the param as uint
- * @return whether writing was successful
- */
-bool writeConfigParam(const std::string& param_name, const std::string& param_val, uint8_t param_val_uint) {
-  logger.printfln("Write param '%s'", param_name.c_str());
-  bool write_successful = false;
-
-  // write ID
-  if (param_name == "id") {
-    write_successful = System_Storage::writeID(param_val);
-    if (write_successful) {
-      client_id_ = param_val;
-    }
-  }
-
-    // Write Wifi SSID
-  else if (param_name == "wifi_ssid") {
-    write_successful = System_Storage::writeWifiSSID(param_val);
-  }
-
-    // Write Wifi PW
-  else if (param_name == "wifi_pw") {
-    write_successful = System_Storage::writeWifiPW(param_val);
-  }
-
-    // Write MQTT IP
-  else if (param_name == "mqtt_ip") {
-    if (param_val == "null") {
-      write_successful = System_Storage::writeMQTTIP(IPAddress(0, 0, 0, 0));
-    } else {
-      IPAddress buf_ip;
-      buf_ip.fromString(param_val.c_str());
-      write_successful = System_Storage::writeMQTTIP(buf_ip);
-    }
-  }
-
-    // Write MQTT Port
-  else if (param_name == "mqtt_port") {
-    write_successful = System_Storage::writeMQTTPort((uint16_t) atoi(param_val.c_str()));
-  }
-
-    // Write MQTT User
-  else if (param_name == "mqtt_user") {
-    write_successful = System_Storage::writeMQTTUsername(param_val);
-  }
-
-    // Write MQTT PW
-  else if (param_name == "mqtt_pw") {
-    write_successful = System_Storage::writeMQTTPassword(param_val);
-  }
-
-    // Write IR recv
-  else if (param_name == "irrecv_pin") {
-    write_successful = System_Storage::writeIRrecvPin(param_val_uint);
-  }
-
-    // Write IR send
-  else if (param_name == "irsend_pin") {
-    write_successful = System_Storage::writeIRsendPin(param_val_uint);
-  }
-
-    // Write radio receiver pin
-  else if (param_name == "radio_recv_pin") {
-    write_successful = System_Storage::writeRadioRecvPin(param_val_uint);
-  }
-
-    // Write radio sender pin
-  else if (param_name == "radio_send_pin") {
-    write_successful = System_Storage::writeRadioSendPin(param_val_uint);
-  }
-
-    // Write network mode
-  else if (param_name == "network_mode") {
-    if (param_val_uint < NetworkModeCount) {
-      write_successful = System_Storage::writeNetworkMode((NetworkMode) param_val_uint);
-    } else {
-      write_successful = false;
-    }
-  }
-
-  return write_successful;
-}
-
-/**
- * Writes and applies complete config file
- * @param config Config to write
- * @return Whether writing was successful
- */
-bool writeConfig(DynamicJsonDocument config) {
-  logger.println("Writing config");
-  logger.incIndent();
-
-  logger.println("Writing system preferences");
-  logger.incIndent();
-
-  bool writing_data_successful = true;
-
-  // Write system preferences
-  if (config.containsKey("data")) {
-    const JsonObject preference_data = config["data"];
-    for (auto param_name: config_keys) {
-      if (preference_data.containsKey(param_name)) {
-
-        // Extract Data
-        std::string string_value = preference_data[param_name];
-        uint8_t uint_value = preference_data[param_name];
-
-        auto result = writeConfigParam(param_name, string_value, uint_value);
-        logger.incIndent();
-        if (result) {
-          logger.printfln(LOG_TYPE::DATA, "Writing '%s' was successful", param_name.c_str());
-        } else {
-          logger.printfln(LOG_TYPE::ERR, "Writing '%s' failed", param_name.c_str());
-          writing_data_successful = false;
-        }
-        logger.decIndent();
-      } else {
-        logger.printfln(LOG_TYPE::DATA, "Skipped '%s'", param_name.c_str());
-      }
-    }
-  } else {
-    logger.println(LOG_TYPE::DATA, "No 'data' in config");
-  }
-
-  logger.decIndent();
-
-  logger.println("Writing gadgets");
-  logger.incIndent();
-
-  // Write Gadgets
-  if (config.containsKey("gadgets")) {
-    JsonArray gadgets_list = config["gadgets"];
-    for (auto gadget_data: gadgets_list) {
-      if (gadget_data.containsKey("type") && gadget_data.containsKey("name")) {
-        auto write_status = writeGadget(gadget_data);
-
-        std::string gadget_name = gadget_data["name"];
-        logger.incIndent();
-        if (write_status == WriteGadgetStatus::WritingOK) {
-          logger.printfln(LOG_TYPE::INFO, "Writing '%s' was successful", gadget_name.c_str());
-        } else {
-          auto err_msg = writeGadgetStatusToString(write_status);
-          logger.printfln(LOG_TYPE::ERR, "Writing '%s' failed: %s", gadget_name.c_str(), err_msg.c_str());
-          writing_data_successful = false;
-        }
-        logger.decIndent();
-      } else {
-        logger.println(LOG_TYPE::ERR, "'type' or 'name' missing in gadget config");
-      }
-    }
-  } else {
-    logger.println(LOG_TYPE::DATA, "No 'gadgets' in config");
-  }
-
-  logger.decIndent();
-  logger.decIndent();
-
-  return writing_data_successful;
 }
 
 // endregion
@@ -720,30 +449,33 @@ void handleConfigResetRequest(std::shared_ptr<Request>req) {
 
   bool success = false;
 
+  // TODO: Remove if everything works again
+  req->respond(success);
+
   // reset complete config
   if (reset_option == "erase") {
-    System_Storage::writeTestEEPROM();
-    System_Storage::reset();
-    System_Storage::resetGadgets();
+//    system_config->writeTestEEPROM();
+//    system_config->reset();
+//    system_config->resetGadgets();
     success = true;
   }
 
     // reset the complete config
   else if (reset_option == "complete") {
-    System_Storage::reset();
-    System_Storage::resetGadgets();
+//    system_config->reset();
+//    system_config->resetGadgets();
     success = true;
   }
 
     // reset the system config only
   else if (reset_option == "config") {
-    System_Storage::reset();
+//    system_config->reset();
     success = true;
   }
 
     // reset the complete config
   else if (reset_option == "gadgets") {
-    System_Storage::resetGadgets();
+//    system_config->resetGadgets();
     success = true;
   }
 
@@ -768,49 +500,37 @@ void handleConfigWriteRequest(std::shared_ptr<Request>req) {
 
     // Check payload for missing keys
     if (!checkPayloadForKeys(req, {"config", "reset_config", "reset_gadgets"})) {
+      logger.println(LOG_TYPE::ERR, "Keys missing in config write request");
+      req->respond(false);
       return;
     }
 
     auto reset_config = json_body["reset_config"].as<bool>();
     auto reset_gadgets = json_body["reset_gadgets"].as<bool>();
-    auto config = json_body["config"].as<JsonObject>();
 
-    if (reset_config) {
-      System_Storage::reset();
-    }
+    auto config = System_Storage::createConfigFromJson(json_body["config"].as<JsonObject>());
 
-    if (reset_gadgets) {
-      System_Storage::resetGadgets();
-    }
-
-    auto status = writeConfig(config);
-
-    req->respond(status);
-
-  } else if (cfg_write_mode == "param") {
-
-    // Check payload for missing keys
-    if (!checkPayloadForKeys(req, {"param", "value"})) {
+    if (config == nullptr) {
+      logger.println(LOG_TYPE::ERR, "Failed to create config object from json");
+      req->respond(false);
       return;
     }
 
-    // Parameter to write
-    auto param_name = json_body["param"].as<std::string>();
-    // Value to write as std::string
-    auto param_val = json_body["value"].as<std::string>();
-    // Value to write as uint8_t
-    auto param_val_uint = json_body["value"].as<uint8_t>();
-
-    bool write_successful = writeConfigParam(param_name, param_val, param_val_uint);
-
-    req->respond(write_successful);
-
-    if (param_name == "id" && write_successful) {
-      client_id_ = param_val;
+    if (reset_config) {
+//      system_config->reset();
     }
-  } else {
-    logger.printfln(LOG_TYPE::ERR, "Unknown config write mode '%s'", cfg_write_mode.c_str());
+
+    if (reset_gadgets) {
+//      system_config->resetGadgets();
+    }
+
+    auto status = System_Storage::saveConfig(*config.get());
+
+    req->respond(status);
+    return;
   }
+
+  req->respond(false);
 }
 
 /**
@@ -836,14 +556,14 @@ void handleConfigReadRequest(std::shared_ptr<Request>req) {
   // read wifi ssid
   if (param_name == "wifi_ssid") {
     read_successful = true;
-    read_val_str = System_Storage::readWifiSSID();
+    read_val_str = system_config->getWifiSSID().get();
   }
 
   // read mqtt ip
   if (param_name == "mqtt_ip") {
     read_successful = true;
     std::stringstream sstr;
-    sstr << System_Storage::readMQTTIP().toString().c_str();
+    sstr << system_config->getMqttIP().get().toString().c_str();
     read_val_str = sstr.str();
   }
 
@@ -851,14 +571,14 @@ void handleConfigReadRequest(std::shared_ptr<Request>req) {
   if (param_name == "mqtt_port") {
     read_successful = true;
     std::stringstream sstr;
-    sstr << System_Storage::readMQTTPort();
+    sstr << system_config->getMqttPort().get();
     read_val_str = sstr.str();
   }
 
   // read mqtt username
   if (param_name == "mqtt_user") {
     read_successful = true;
-    read_val_str = System_Storage::readMQTTUsername();
+    read_val_str = system_config->getMqttUsername().get();
   }
 
   // send response if read was successful
@@ -872,31 +592,31 @@ void handleConfigReadRequest(std::shared_ptr<Request>req) {
   // read irrecv pin
   if (param_name == "irrecv_pin") {
     read_successful = true;
-    read_val_uint = System_Storage::readIRrecvPin();
+    read_val_uint = system_config->getIRRecvPin().get();
   }
 
     // read irsend pin
   else if (param_name == "irsend_pin") {
     read_successful = true;
-    read_val_uint = System_Storage::readIRsendPin();
+    read_val_uint = system_config->getIRSendPin().get();
   }
 
     // read radio recv pin
   else if (param_name == "radio_recv_pin") {
     read_successful = true;
-    read_val_uint = System_Storage::readRadioRecvPin();
+    read_val_uint = system_config->getRadioRecvPin().get();
   }
 
     // read radio send pin
   else if (param_name == "radio_send_pin") {
     read_successful = true;
-    read_val_uint = System_Storage::readRadioSendPin();
+    read_val_uint = system_config->getRadioSendPin().get();
   }
 
     // read network mode
   else if (param_name == "network_mode") {
     read_successful = true;
-    read_val_uint = (uint8_t) System_Storage::readNetworkMode();
+    read_val_uint = (uint8_t) system_config->getNetworkMode();
   }
 
   // send response if read was successful
@@ -905,27 +625,6 @@ void handleConfigReadRequest(std::shared_ptr<Request>req) {
     doc["value"] = read_val_uint;
     req->respond(doc);
     return;
-  }
-}
-
-/**
- * Handles a request that contains gadget write information
- * @param req Request that contains gadget write information
- */
-void handleGadgetWriteRequest(std::shared_ptr<Request>req) {
-  // Check payload for missing keys
-  if (!checkPayloadForKeys(req, {"type", "name"})) {
-    return;
-  }
-
-  DynamicJsonDocument json_body = req->getPayload();
-  auto write_status = writeGadget(json_body);
-
-  if (write_status == WriteGadgetStatus::WritingOK) {
-    req->respond(true);
-  } else {
-    auto err_msg = writeGadgetStatusToString(write_status);
-    req->respond(false, err_msg);
   }
 }
 
@@ -1039,12 +738,6 @@ void handleSystemRequest(std::shared_ptr<Request>req) {
     return;
   }
 
-  // Write gadget
-  if (req->getPath() == PATH_GADGET_WRITE) {
-    handleGadgetWriteRequest(req);
-    return;
-  }
-
   req->respond(false);
 }
 
@@ -1112,7 +805,7 @@ void handleRequest(std::shared_ptr<Request>req) {
  * @return Whether initializing all gadgets was successful or not
  */
 bool initGadgets() {
-  auto eeprom_gadgets = System_Storage::readAllGadgets();
+  auto eeprom_gadgets = system_config->getGadgets();
 
   logger.printfln("Initializing Gadgets: %d", eeprom_gadgets.size());
   logger.incIndent();
@@ -1270,8 +963,8 @@ bool initGadgets() {
 bool initConnectors() {
   logger.println("Initializing Connectors: ");
 
-  int ir_recv = System_Storage::readIRrecvPin();
-  int ir_send = System_Storage::readIRsendPin();
+  int ir_recv = system_config->getIRRecvPin().get();
+  int ir_send = system_config->getIRSendPin().get();
   int radio = 0;
 
   logger.println("Creating IR-Gadget: ");
@@ -1312,32 +1005,32 @@ bool initNetwork(NetworkMode mode) {
   // initialize Network
   if (mode == NetworkMode::MQTT) {
 
-    if (!System_Storage::hasValidWifiSSID()) {
+    if (!system_config->getWifiSSID().has_value()) {
       logger.println(LOG_TYPE::ERR, "Config has no valid wifi ssid");
       return false;
     }
 
-    if (!System_Storage::hasValidWifiPW()) {
+    if (!system_config->getWifiPW().has_value()) {
       logger.println(LOG_TYPE::ERR, "Config has no valid wifi password");
       return false;
     }
 
-    if (!System_Storage::hasValidMQTTIP()) {
+    if (!system_config->getMqttIP().has_value()) {
       logger.println(LOG_TYPE::ERR, "Config has no valid mqtt ip");
       return false;
     }
 
-    if (!System_Storage::hasValidMQTTPort()) {
+    if (!system_config->getMqttPassword().has_value()) {
       logger.println(LOG_TYPE::ERR, "Config has no valid mqtt port");
       return false;
     }
 
-    std::string ssid = System_Storage::readWifiSSID();
-    std::string wifi_pw = System_Storage::readWifiPW();
-    uint16_t port = System_Storage::readMQTTPort();
-    IPAddress ip = System_Storage::readMQTTIP();
-    std::string user = System_Storage::readMQTTUsername();
-    std::string mqtt_pw = System_Storage::readMQTTPassword();
+    std::string ssid = system_config->getWifiSSID().get();
+    std::string wifi_pw = system_config->getWifiPW().get();
+    uint16_t port = system_config->getMqttPort().get();
+    IPAddress ip = system_config->getMqttIP().get();
+    std::string user = system_config->getMqttUsername().get();
+    std::string mqtt_pw = system_config->getMqttPassword().get();
 
     network_gadget = std::make_shared<MQTTGadget>(client_id_,
                                                   ssid,
@@ -1374,7 +1067,7 @@ void initModeSerial() {
  */
 void initModeNetwork() {
   if (eeprom_active_) {
-    auto mode = System_Storage::readNetworkMode();
+    auto mode = system_config->getNetworkMode();
     initNetwork(mode);
   } else {
     logger.println(LOG_TYPE::ERR, "network type could not be loaded");
@@ -1386,7 +1079,7 @@ void initModeNetwork() {
  */
 void initModeComplete() {
   if (eeprom_active_) {
-    auto mode = System_Storage::readNetworkMode();
+    auto mode = system_config->getNetworkMode();
     initNetwork(mode);
   } else {
     logger.println(LOG_TYPE::ERR, "network type could not be loaded");
@@ -1608,14 +1301,14 @@ void testStuff() {
   if (eeprom_active_) {
     logger.println("testing eeprom:");
 
-    logger.println("Status-Byte:");
-    logger.println(System_Storage::hasValidID());
-    logger.println(System_Storage::hasValidWifiSSID());
-    logger.println(System_Storage::hasValidWifiPW());
-    logger.println(System_Storage::hasValidMQTTIP());
-    logger.println(System_Storage::hasValidMQTTPort());
-    logger.println(System_Storage::hasValidMQTTUsername());
-    logger.println(System_Storage::hasValidMQTTPassword());
+//    logger.println("Status-Byte:");
+//    logger.println(system_config->hasValidID());
+//    logger.println(system_config->hasValidWifiSSID());
+//    logger.println(system_config->hasValidWifiPW());
+//    logger.println(system_config->hasValidMQTTIP());
+//    logger.println(system_config->hasValidMQTTPort());
+//    logger.println(system_config->hasValidMQTTUsername());
+//    logger.println(system_config->hasValidMQTTPassword());
 
     logger.println("Done");
 
@@ -1649,20 +1342,21 @@ void setup() {
   logger.println("Using static, pre-compiled config");
   #else
   logger.println("Using dynamic, EEPROM config");
-  eeprom_active_ = System_Storage::init();
+  eeprom_active_ = EEPROM_Storage::initEEPROM();
   if (eeprom_active_) {
-    logger.printfln("EEPROM usage: %d / %d bytes\n", System_Storage::getEEPROMUsage(), EEPROM_SIZE);
+    logger.printfln("EEPROM usage: %d / %d bytes\n", EEPROM_Storage::getEEPROMUsage(), EEPROM_SIZE);
   } else {
     logger.println("EEPROM is not initialized, rebooting in 15s");
     delay(15000);
     rebootChip("EEPROM Error");
   }
   #endif
+  
   logger.decIndent();
 
   main_controller = std::make_shared<MainSystemController>(network_task, heartbeat_task);
 
-  client_id_ = System_Storage::readID();
+  client_id_ = system_config->getID();
   logger.printfln("Client ID: '%s'", client_id_.c_str());
 
   testStuff();

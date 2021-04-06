@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <tuple>
-#include <datatypes.h>
+#include "datatypes.h"
 #include "../optional.h"
 #include "../network_library.h"
 
@@ -94,13 +94,13 @@ public:
    * Reads the radio receiver pin
    * @return The radio receiver pin
    */
-  Optional<uint8_t> readRadioRecvPin() const;
+  Optional<uint8_t> getRadioRecvPin() const;
 
   /**
    * Reads the radio send pin
    * @return The radio send pin
    */
-  Optional<uint8_t> readRadioSendPin() const;
+  Optional<uint8_t> getRadioSendPin() const;
 
   /**
    * Reads the network mode
