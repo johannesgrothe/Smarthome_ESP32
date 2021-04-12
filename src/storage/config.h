@@ -3,7 +3,6 @@
 #include <vector>
 #include <tuple>
 #include "datatypes.h"
-#include "../optional.h"
 #include "../network_library.h"
 
 
@@ -13,20 +12,20 @@ private:
   NetworkMode network_mode_;
   std::vector<gadget_tuple> gadgets_;
 
-  Optional<uint8_t> ir_recv_pin_;
-  Optional<uint8_t> ir_send_pin_;
+  std::shared_ptr<uint8_t> ir_recv_pin_;
+  std::shared_ptr<uint8_t> ir_send_pin_;
 
-  Optional<uint8_t> radio_recv_pin_;
-  Optional<uint8_t> radio_send_pin_;
+  std::shared_ptr<uint8_t> radio_recv_pin_;
+  std::shared_ptr<uint8_t> radio_send_pin_;
 
-  Optional<std::string> wifi_ssid_;
-  Optional<std::string> wifi_pw_;
+  std::shared_ptr<std::string> wifi_ssid_;
+  std::shared_ptr<std::string> wifi_pw_;
 
-  Optional<IPAddress> mqtt_ip_;
-  Optional<uint16_t> mqtt_port_;
+  std::shared_ptr<IPAddress> mqtt_ip_;
+  std::shared_ptr<uint16_t> mqtt_port_;
 
-  Optional<std::string> mqtt_username_;
-  Optional<std::string> mqtt_password_;
+  std::shared_ptr<std::string> mqtt_username_;
+  std::shared_ptr<std::string> mqtt_password_;
 
 public:
 
@@ -49,16 +48,16 @@ public:
   Config(std::string id,
          NetworkMode network_mode,
          std::vector<gadget_tuple> gadgets,
-         Optional<uint8_t> ir_recv_pin,
-         Optional<uint8_t> ir_send_pin,
-         Optional<uint8_t> radio_recv_pin,
-         Optional<uint8_t> radio_send_pin,
-         Optional<std::string> wifi_ssid,
-         Optional<std::string> wifi_pw,
-         Optional<IPAddress> mqtt_ip,
-         Optional<uint16_t> mqtt_port,
-         Optional<std::string> mqtt_username,
-         Optional<std::string> mqtt_password);
+         std::shared_ptr<uint8_t> ir_recv_pin,
+         std::shared_ptr<uint8_t> ir_send_pin,
+         std::shared_ptr<uint8_t> radio_recv_pin,
+         std::shared_ptr<uint8_t> radio_send_pin,
+         std::shared_ptr<std::string> wifi_ssid,
+         std::shared_ptr<std::string> wifi_pw,
+         std::shared_ptr<IPAddress> mqtt_ip,
+         std::shared_ptr<uint16_t> mqtt_port,
+         std::shared_ptr<std::string> mqtt_username,
+         std::shared_ptr<std::string> mqtt_password);
 
   /**
    * Returns all gadgets
@@ -82,25 +81,25 @@ public:
    * Reads the ir receive pin
    * @return The ir recv pin
    */
-  Optional<uint8_t> getIRRecvPin() const;
+  std::shared_ptr<uint8_t> getIRRecvPin() const;
 
   /**
    * Reads the ir send pin
    * @return The ir send pin
    */
-  Optional<uint8_t> getIRSendPin() const;
+  std::shared_ptr<uint8_t> getIRSendPin() const;
 
   /**
    * Reads the radio receiver pin
    * @return The radio receiver pin
    */
-  Optional<uint8_t> getRadioRecvPin() const;
+  std::shared_ptr<uint8_t> getRadioRecvPin() const;
 
   /**
    * Reads the radio send pin
    * @return The radio send pin
    */
-  Optional<uint8_t> getRadioSendPin() const;
+  std::shared_ptr<uint8_t> getRadioSendPin() const;
 
   /**
    * Reads the network mode
@@ -118,35 +117,35 @@ public:
    * Reads the WIFI SSID
    * @return The wifi ssid
    */
-  Optional<std::string> getWifiSSID() const;
+  std::shared_ptr<std::string> getWifiSSID() const;
 
   /**
    * Reads the WIFI Password
    * @return The wifi password
    */
-  Optional<std::string> getWifiPW() const;
+  std::shared_ptr<std::string> getWifiPW() const;
 
   /**
    * Reads the MQTT IP-Address
    * @return The mqtt ip
    */
-  Optional<IPAddress> getMqttIP() const;
+  std::shared_ptr<IPAddress> getMqttIP() const;
 
   /**
    * Reads the MQTT port
    * @return The port
    */
-  Optional<uint16_t> getMqttPort() const;
+  std::shared_ptr<uint16_t> getMqttPort() const;
 
   /**
    * Reads the MQTT username
    * @return The username
    */
-  Optional<std::string> getMqttUsername() const;
+  std::shared_ptr<std::string> getMqttUsername() const;
 
   /**
    * Reads the MQTT password
    * @return The password
    */
-  Optional<std::string> getMqttPassword();
+  std::shared_ptr<std::string> getMqttPassword();
 };

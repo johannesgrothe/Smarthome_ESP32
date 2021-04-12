@@ -341,25 +341,23 @@ public:
     #else
 
     std::string k = "not_implemented";
-    Optional<char *> i = nullptr;
+    auto i = nullptr;
 
-    return nullptr;
-
-//    return std::make_shared<Config>(
-//        k,
-//        NetworkMode::None,
-//        std::vector<gadget_tuple>(),
-//        i,
-//        i,
-//        i,
-//        i,
-//        i,
-//        i,
-//        i,
-//        i,
-//        i,
-//        i
-//    );
+    return std::make_shared<Config>(
+        k,
+        NetworkMode::None,
+        std::vector<gadget_tuple>(),
+        i,
+        i,
+        i,
+        i,
+        i,
+        i,
+        i,
+        i,
+        i,
+        i
+    );
 
     #endif
   }

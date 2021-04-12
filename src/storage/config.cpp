@@ -1,10 +1,18 @@
 #include "config.h"
 
-Config::Config(std::string id, NetworkMode network_mode, std::vector<gadget_tuple> gadgets,
-               Optional<uint8_t> ir_recv_pin, Optional<uint8_t> ir_send_pin, Optional<uint8_t> radio_recv_pin,
-               Optional<uint8_t> radio_send_pin, Optional<std::string> wifi_ssid, Optional<std::string> wifi_pw,
-               Optional<IPAddress> mqtt_ip, Optional<uint16_t> mqtt_port, Optional<std::string> mqtt_username,
-               Optional<std::string> mqtt_password):
+Config::Config(std::string id,
+               NetworkMode network_mode,
+               std::vector<gadget_tuple> gadgets,
+               std::shared_ptr<uint8_t> ir_recv_pin,
+               std::shared_ptr<uint8_t> ir_send_pin,
+               std::shared_ptr<uint8_t> radio_recv_pin,
+               std::shared_ptr<uint8_t> radio_send_pin,
+               std::shared_ptr<std::string> wifi_ssid,
+               std::shared_ptr<std::string> wifi_pw,
+               std::shared_ptr<IPAddress> mqtt_ip,
+               std::shared_ptr<uint16_t> mqtt_port,
+               std::shared_ptr<std::string> mqtt_username,
+               std::shared_ptr<std::string> mqtt_password):
                id_(id),
                network_mode_(network_mode),
                gadgets_(gadgets),
@@ -39,25 +47,25 @@ std::vector<gadget_tuple> Config::getGadgets() const {
 std::vector<std::string> Config::getGadgetNames() const {
   std::vector<std::string> names;
   for (auto gadget: gadgets_) {
-    auto buf_name = std::get<3>(gadget);
+    std::string buf_name = std::get<3>(gadget);
     names.push_back(buf_name);
   }
   return names;
 }
 
-Optional<uint8_t> Config::getIRRecvPin() const {
+std::shared_ptr<uint8_t> Config::getIRRecvPin() const {
   return ir_recv_pin_;
 }
 
-Optional<uint8_t> Config::getIRSendPin() const {
+std::shared_ptr<uint8_t> Config::getIRSendPin() const {
   return ir_send_pin_;
 }
 
-Optional<uint8_t> Config::getRadioRecvPin() const {
+std::shared_ptr<uint8_t> Config::getRadioRecvPin() const {
   return radio_recv_pin_;
 }
 
-Optional<uint8_t> Config::getRadioSendPin() const {
+std::shared_ptr<uint8_t> Config::getRadioSendPin() const {
   return radio_send_pin_;
 }
 
@@ -69,26 +77,26 @@ std::string Config::getID() const {
   return id_;
 }
 
-Optional<std::string> Config::getWifiSSID() const {
+std::shared_ptr<std::string> Config::getWifiSSID() const {
   return wifi_ssid_;
 }
 
-Optional<std::string> Config::getWifiPW() const {
+std::shared_ptr<std::string> Config::getWifiPW() const {
   return wifi_pw_;
 }
 
-Optional<IPAddress> Config::getMqttIP() const {
+std::shared_ptr<IPAddress> Config::getMqttIP() const {
   return mqtt_ip_;
 }
 
-Optional<uint16_t> Config::getMqttPort() const {
+std::shared_ptr<uint16_t> Config::getMqttPort() const {
   return mqtt_port_;
 }
 
-Optional<std::string> Config::getMqttUsername() const {
+std::shared_ptr<std::string> Config::getMqttUsername() const {
   return mqtt_username_;
 }
 
-Optional<std::string> Config::getMqttPassword() {
+std::shared_ptr<std::string> Config::getMqttPassword() {
   return mqtt_password_;
 }

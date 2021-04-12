@@ -53,11 +53,16 @@
 
 //region STATIC METHODS
 
+static void waitFor(unsigned int delay) {
+  unsigned long end_timestamp = millis() + delay;
+  while(millis() < end_timestamp) {}
+}
+
 /**
  * Reboots the chip and prints out the given message
  * @param reason The reason to print to the terminal
  */
-static void rebootChip(const std::string &reason) {
+static void rebootChip(const std::string &reason, uint8_t delay = 5) {
   if (!reason.empty()) {
     logger.print("Rebooting Chip because: '");
     logger.print(reason);
@@ -65,10 +70,10 @@ static void rebootChip(const std::string &reason) {
   } else {
     logger.println("Rebooting Chip in ");
   }
-  for (byte k = 0; k < 5; k++) {
-    logger.print(5 - k);
-    logger.print(" ");
-    delay(1000);
+  for (byte k = delay; k > 0; k--) {
+    logger.println(k);
+    waitFor(1000);
+//    delay(1000);
   }
   ESP.restart();
 }
@@ -555,30 +560,40 @@ void handleConfigReadRequest(std::shared_ptr<Request>req) {
 
   // read wifi ssid
   if (param_name == "wifi_ssid") {
-    read_successful = true;
-    read_val_str = system_config->getWifiSSID().get();
+    auto read_val = system_config->getWifiSSID();
+    if (read_val != nullptr) {
+      read_successful = true;
+      read_val_str = *read_val;
+    }
   }
 
   // read mqtt ip
   if (param_name == "mqtt_ip") {
-    read_successful = true;
-    std::stringstream sstr;
-    sstr << system_config->getMqttIP().get().toString().c_str();
-    read_val_str = sstr.str();
+    auto read_val = system_config->getMqttIP();
+    if (read_val != nullptr) {
+      read_successful = true;
+      read_val_str = *read_val;
+    }
   }
 
   // read mqtt port
   if (param_name == "mqtt_port") {
-    read_successful = true;
-    std::stringstream sstr;
-    sstr << system_config->getMqttPort().get();
-    read_val_str = sstr.str();
+    auto read_val = system_config->getMqttPort();
+    if (read_val != nullptr) {
+      read_successful = true;
+      std::stringstream sstr;
+      sstr << *read_val;
+      read_val_str = sstr.str();
+    }
   }
 
   // read mqtt username
   if (param_name == "mqtt_user") {
-    read_successful = true;
-    read_val_str = system_config->getMqttUsername().get();
+    auto read_val = system_config->getMqttUsername();
+    if (read_val != nullptr) {
+      read_successful = true;
+      read_val_str = *read_val;
+    }
   }
 
   // send response if read was successful
@@ -591,32 +606,45 @@ void handleConfigReadRequest(std::shared_ptr<Request>req) {
 
   // read irrecv pin
   if (param_name == "irrecv_pin") {
-    read_successful = true;
-    read_val_uint = system_config->getIRRecvPin().get();
+    auto read_val = system_config->getIRRecvPin();
+    if (read_val != nullptr) {
+      read_successful = true;
+      read_val_uint = *read_val;
+    }
   }
 
-    // read irsend pin
+  // read irsend pin
   else if (param_name == "irsend_pin") {
-    read_successful = true;
-    read_val_uint = system_config->getIRSendPin().get();
+    auto read_val = system_config->getIRSendPin();
+    if (read_val != nullptr) {
+      read_successful = true;
+      read_val_uint = *read_val;
+    }
   }
 
     // read radio recv pin
   else if (param_name == "radio_recv_pin") {
-    read_successful = true;
-    read_val_uint = system_config->getRadioRecvPin().get();
+    auto read_val = system_config->getRadioRecvPin();
+    if (read_val != nullptr) {
+      read_successful = true;
+      read_val_uint = *read_val;
+    }
   }
 
     // read radio send pin
   else if (param_name == "radio_send_pin") {
-    read_successful = true;
-    read_val_uint = system_config->getRadioSendPin().get();
+    auto read_val = system_config->getRadioSendPin();
+    if (read_val != nullptr) {
+      read_successful = true;
+      read_val_uint = *read_val;
+    }
   }
 
     // read network mode
   else if (param_name == "network_mode") {
+    auto read_val = system_config->getNetworkMode();
     read_successful = true;
-    read_val_uint = (uint8_t) system_config->getNetworkMode();
+    read_val_uint = (uint8_t) read_val;
   }
 
   // send response if read was successful
@@ -963,9 +991,18 @@ bool initGadgets() {
 bool initConnectors() {
   logger.println("Initializing Connectors: ");
 
-  int ir_recv = system_config->getIRRecvPin().get();
-  int ir_send = system_config->getIRSendPin().get();
-  int radio = 0;
+  uint8_t ir_recv = 0;
+  uint8_t ir_send = 0;
+  uint8_t radio_recv = 0;
+  uint8_t radio_send = 0;
+
+  if (system_config->getIRRecvPin()) {
+    ir_recv = *system_config->getIRRecvPin();
+  }
+
+  if (system_config->getIRSendPin()) {
+    ir_send = *system_config->getIRSendPin();
+  }
 
   logger.println("Creating IR-Gadget: ");
   logger.incIndent();
@@ -979,7 +1016,7 @@ bool initConnectors() {
 
   logger.println("Creating Radio-Gadget:");
   logger.incIndent();
-  if (radio) {
+  if (radio_recv || radio_send) {
     logger.println("Radio Configured bot not implemented");
   } else {
     logger.println("No Radio Configured");
@@ -1005,32 +1042,32 @@ bool initNetwork(NetworkMode mode) {
   // initialize Network
   if (mode == NetworkMode::MQTT) {
 
-    if (!system_config->getWifiSSID().has_value()) {
+    if (system_config->getWifiSSID() == nullptr) {
       logger.println(LOG_TYPE::ERR, "Config has no valid wifi ssid");
       return false;
     }
 
-    if (!system_config->getWifiPW().has_value()) {
+    if (system_config->getWifiPW() == nullptr) {
       logger.println(LOG_TYPE::ERR, "Config has no valid wifi password");
       return false;
     }
 
-    if (!system_config->getMqttIP().has_value()) {
+    if (system_config->getMqttIP() == nullptr) {
       logger.println(LOG_TYPE::ERR, "Config has no valid mqtt ip");
       return false;
     }
 
-    if (!system_config->getMqttPassword().has_value()) {
+    if (system_config->getMqttPassword() == nullptr) {
       logger.println(LOG_TYPE::ERR, "Config has no valid mqtt port");
       return false;
     }
 
-    std::string ssid = system_config->getWifiSSID().get();
-    std::string wifi_pw = system_config->getWifiPW().get();
-    uint16_t port = system_config->getMqttPort().get();
-    IPAddress ip = system_config->getMqttIP().get();
-    std::string user = system_config->getMqttUsername().get();
-    std::string mqtt_pw = system_config->getMqttPassword().get();
+    std::string ssid = *system_config->getWifiSSID();
+    std::string wifi_pw = *system_config->getWifiPW();
+    uint16_t port = *system_config->getMqttPort();
+    IPAddress ip = *system_config->getMqttIP();
+    std::string user = *system_config->getMqttUsername();
+    std::string mqtt_pw = *system_config->getMqttPassword();
 
     network_gadget = std::make_shared<MQTTGadget>(client_id_,
                                                   ssid,
@@ -1346,12 +1383,19 @@ void setup() {
   if (eeprom_active_) {
     logger.printfln("EEPROM usage: %d / %d bytes\n", EEPROM_Storage::getEEPROMUsage(), EEPROM_SIZE);
   } else {
-    logger.println("EEPROM is not initialized, rebooting in 15s");
-    delay(15000);
-    rebootChip("EEPROM Error");
+    logger.println("EEPROM is not initialized");
+    rebootChip("EEPROM error", 15);
   }
   #endif
-  
+
+  logger.print("Loading config: ");
+  system_config = System_Storage::loadConfig();
+  if (system_config == nullptr) {
+    logger.println("Failed");
+    rebootChip("Config loading error", 15);
+  }
+  logger.println("OK");
+
   logger.decIndent();
 
   main_controller = std::make_shared<MainSystemController>(network_task, heartbeat_task);
