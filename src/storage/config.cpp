@@ -3,10 +3,10 @@
 Config::Config(std::string id,
                NetworkMode network_mode,
                std::vector<gadget_tuple> gadgets,
-               std::shared_ptr<uint8_t> ir_recv_pin,
-               std::shared_ptr<uint8_t> ir_send_pin,
-               std::shared_ptr<uint8_t> radio_recv_pin,
-               std::shared_ptr<uint8_t> radio_send_pin,
+               uint8_t ir_recv_pin,
+               uint8_t ir_send_pin,
+               uint8_t radio_recv_pin,
+               uint8_t radio_send_pin,
                std::shared_ptr<std::string> wifi_ssid,
                std::shared_ptr<std::string> wifi_pw,
                std::shared_ptr<IPAddress> mqtt_ip,
@@ -53,19 +53,19 @@ std::vector<std::string> Config::getGadgetNames() const {
   return names;
 }
 
-std::shared_ptr<uint8_t> Config::getIRRecvPin() const {
+uint8_t Config::getIRRecvPin() const {
   return ir_recv_pin_;
 }
 
-std::shared_ptr<uint8_t> Config::getIRSendPin() const {
+uint8_t Config::getIRSendPin() const {
   return ir_send_pin_;
 }
 
-std::shared_ptr<uint8_t> Config::getRadioRecvPin() const {
+uint8_t Config::getRadioRecvPin() const {
   return radio_recv_pin_;
 }
 
-std::shared_ptr<uint8_t> Config::getRadioSendPin() const {
+uint8_t Config::getRadioSendPin() const {
   return radio_send_pin_;
 }
 

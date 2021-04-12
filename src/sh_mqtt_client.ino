@@ -606,38 +606,26 @@ void handleConfigReadRequest(std::shared_ptr<Request>req) {
 
   // read irrecv pin
   if (param_name == "irrecv_pin") {
-    auto read_val = system_config->getIRRecvPin();
-    if (read_val != nullptr) {
-      read_successful = true;
-      read_val_uint = *read_val;
-    }
+    read_successful = true;
+    read_val_uint = system_config->getIRRecvPin();
   }
 
   // read irsend pin
   else if (param_name == "irsend_pin") {
-    auto read_val = system_config->getIRSendPin();
-    if (read_val != nullptr) {
-      read_successful = true;
-      read_val_uint = *read_val;
-    }
+    read_successful = true;
+    read_val_uint = system_config->getIRSendPin();
   }
 
     // read radio recv pin
   else if (param_name == "radio_recv_pin") {
-    auto read_val = system_config->getRadioRecvPin();
-    if (read_val != nullptr) {
-      read_successful = true;
-      read_val_uint = *read_val;
-    }
+    read_successful = true;
+    read_val_uint = system_config->getRadioRecvPin();
   }
 
     // read radio send pin
   else if (param_name == "radio_send_pin") {
-    auto read_val = system_config->getRadioSendPin();
-    if (read_val != nullptr) {
-      read_successful = true;
-      read_val_uint = *read_val;
-    }
+    read_successful = true;
+    read_val_uint = system_config->getRadioSendPin();
   }
 
     // read network mode
@@ -991,18 +979,10 @@ bool initGadgets() {
 bool initConnectors() {
   logger.println("Initializing Connectors: ");
 
-  uint8_t ir_recv = 0;
-  uint8_t ir_send = 0;
-  uint8_t radio_recv = 0;
-  uint8_t radio_send = 0;
-
-  if (system_config->getIRRecvPin()) {
-    ir_recv = *system_config->getIRRecvPin();
-  }
-
-  if (system_config->getIRSendPin()) {
-    ir_send = *system_config->getIRSendPin();
-  }
+  uint8_t ir_recv = system_config->getIRRecvPin();
+  uint8_t ir_send = system_config->getIRSendPin();
+  uint8_t radio_recv = system_config->getRadioRecvPin();
+  uint8_t radio_send = system_config->getRadioSendPin();
 
   logger.println("Creating IR-Gadget: ");
   logger.incIndent();

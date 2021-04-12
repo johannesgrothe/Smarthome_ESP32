@@ -340,24 +340,65 @@ public:
 
     #else
 
-    std::string k = "not_implemented";
-    auto i = nullptr;
+    std::string id = EEPROM_Storage::readID();
+    NetworkMode network_mode = EEPROM_Storage::readNetworkMode();
+    auto gadgets = EEPROM_Storage::readAllGadgets();
 
-    return std::make_shared<Config>(
-        k,
-        NetworkMode::None,
-        std::vector<gadget_tuple>(),
-        i,
-        i,
-        i,
-        i,
-        i,
-        i,
-        i,
-        i,
-        i,
-        i
-    );
+    uint8_t ir_recv = EEPROM_Storage::readIRrecvPin();
+    uint8_t ir_send = EEPROM_Storage::readIRsendPin();
+
+    uint8_t radio_recv = EEPROM_Storage::readRadioRecvPin();
+    uint8_t radio_send = EEPROM_Storage::readRadioSendPin();
+
+    std::shared_ptr<std::string> wifi_ssid = nullptr;
+    std::shared_ptr<std::string> wifi_pw = nullptr;
+
+    std::shared_ptr<IPAddress> mqtt_ip = nullptr;
+    std::shared_ptr<uint16_t> mqtt_port = nullptr;
+
+    std::shared_ptr<std::string> mqtt_username = nullptr;
+    std::shared_ptr<std::string> mqtt_pw = nullptr;
+
+    if (EEPROM_Storage::hasValidWifiSSID()) {
+      wifi_ssid = std::make_shared<std::string>(EEPROM_Storage::readWifiSSID());
+    }
+
+    if (EEPROM_Storage::hasValidWifiPW()) {
+      wifi_pw = std::make_shared<std::string>(EEPROM_Storage::readWifiPW());
+    }
+
+    if (EEPROM_Storage::hasValidMQTTIP()) {
+      mqtt_ip = std::make_shared<IPAddress>(EEPROM_Storage::readMQTTIP());
+    }
+
+    if (EEPROM_Storage::hasValidMQTTPort()) {
+      mqtt_port = std::make_shared<uint16_t>(EEPROM_Storage::readMQTTPort());
+    }
+
+    if (EEPROM_Storage::hasValidMQTTUsername()) {
+      mqtt_username = std::make_shared<std::string>(EEPROM_Storage::readMQTTUsername());
+    }
+
+    if (EEPROM_Storage::hasValidMQTTPassword()) {
+      mqtt_pw = std::make_shared<std::string>(EEPROM_Storage::readMQTTPassword());
+    }
+
+    auto cfg = Config(
+        id,
+        network_mode,
+        gadgets,
+        ir_recv,
+        ir_send,
+        radio_recv,
+        radio_send,
+        wifi_ssid,
+        wifi_pw,
+        mqtt_ip,
+        mqtt_port,
+        mqtt_username,
+        mqtt_pw);
+
+    return std::make_shared<Config>(cfg);
 
     #endif
   }

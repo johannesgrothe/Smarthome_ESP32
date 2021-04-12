@@ -12,11 +12,11 @@ private:
   NetworkMode network_mode_;
   std::vector<gadget_tuple> gadgets_;
 
-  std::shared_ptr<uint8_t> ir_recv_pin_;
-  std::shared_ptr<uint8_t> ir_send_pin_;
+  uint8_t ir_recv_pin_;
+  uint8_t ir_send_pin_;
 
-  std::shared_ptr<uint8_t> radio_recv_pin_;
-  std::shared_ptr<uint8_t> radio_send_pin_;
+  uint8_t radio_recv_pin_;
+  uint8_t radio_send_pin_;
 
   std::shared_ptr<std::string> wifi_ssid_;
   std::shared_ptr<std::string> wifi_pw_;
@@ -48,10 +48,10 @@ public:
   Config(std::string id,
          NetworkMode network_mode,
          std::vector<gadget_tuple> gadgets,
-         std::shared_ptr<uint8_t> ir_recv_pin,
-         std::shared_ptr<uint8_t> ir_send_pin,
-         std::shared_ptr<uint8_t> radio_recv_pin,
-         std::shared_ptr<uint8_t> radio_send_pin,
+         uint8_t ir_recv_pin,
+         uint8_t ir_send_pin,
+         uint8_t radio_recv_pin,
+         uint8_t radio_send_pin,
          std::shared_ptr<std::string> wifi_ssid,
          std::shared_ptr<std::string> wifi_pw,
          std::shared_ptr<IPAddress> mqtt_ip,
@@ -81,25 +81,25 @@ public:
    * Reads the ir receive pin
    * @return The ir recv pin
    */
-  std::shared_ptr<uint8_t> getIRRecvPin() const;
+  uint8_t getIRRecvPin() const;
 
   /**
    * Reads the ir send pin
    * @return The ir send pin
    */
-  std::shared_ptr<uint8_t> getIRSendPin() const;
+  uint8_t getIRSendPin() const;
 
   /**
    * Reads the radio receiver pin
    * @return The radio receiver pin
    */
-  std::shared_ptr<uint8_t> getRadioRecvPin() const;
+  uint8_t getRadioRecvPin() const;
 
   /**
    * Reads the radio send pin
    * @return The radio send pin
    */
-  std::shared_ptr<uint8_t> getRadioSendPin() const;
+  uint8_t getRadioSendPin() const;
 
   /**
    * Reads the network mode
