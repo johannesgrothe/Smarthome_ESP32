@@ -31,9 +31,6 @@
 // External Dependencies
 #include "Client.h"
 
-// Remotes
-#include "remote_library.h"
-
 #include "gadget_collection.h"
 #include "storage/system_storage.h"
 

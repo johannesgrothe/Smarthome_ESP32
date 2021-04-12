@@ -11,7 +11,6 @@
 #include "../datatypes.h"
 
 #include "../network_library.h"
-#include "../remote_library.h"
 #include "../pin_profile.h"
 #include "../gadgets/gadget_characteristic_settings.h"
 #include "../status_codes.h"
@@ -438,6 +437,97 @@ private:
     return WriteGadgetStatus::WritingOK;
   }
 
+  /**
+   * Returns the index for an specific gadget name or -1 it name was not found.
+   * @param name The name you're searching for
+   * @return The index of the gadget or -1 if the name wasnt found
+   */
+  static int getGadgetIndexForName(const std::string& name) {
+    auto gadget_count = getGadgetCount();
+    for (uint8_t i = 0; i < gadget_count; i++) {
+      gadget_tuple buf_g = readGadget(i);
+      auto gadget_name = std::get<3>(buf_g);
+      if (gadget_name == name) {
+        return int(i);
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * Reads the data for a gadget from the eeprom
+   * @param gadget_index the position of the gadget
+   * @return the data for the gadget
+   */
+  static gadget_tuple readGadget(uint8_t gadget_index) {
+    auto addr = getGadgetMemoryStart(gadget_index);
+    auto addr_end = getGadgetMemoryEnd(gadget_index);
+    auto stored_gadgets = readUInt8(GADGET_COUNT_POS);
+
+    pin_set pins = {0, 0, 0, 0, 0};
+    bitfield_set remote_bf = {false, false, false, false, false, false, false, false};
+
+    if (!addr || !addr_end || gadget_index >= stored_gadgets) {
+      return gadget_tuple(0, remote_bf, pins, "", "", "");
+    }
+
+    auto config_bf = readUInt8(addr + GADGET_BF_POS);
+    auto gadget_type = readUInt8(addr + GADGET_TYPE_POS);
+    auto gadget_name_len = readUInt8(addr + GADGET_NAME_LEN_POS);
+    auto gadget_json_len = readUInt16(addr + GADGET_JSON_LEN_POS);
+
+    uint16_t name_start = addr + GADGET_NAME_POS;
+    uint16_t config_start = name_start + gadget_name_len + 1;
+    uint16_t code_start = config_start + gadget_json_len + 1;
+
+    auto gadget_name = readString(name_start, gadget_name_len);
+    auto gadget_json = readString(config_start, gadget_json_len);
+    auto code_json = readString(code_start, addr_end);
+
+    for (uint8_t i = 0; i < GADGET_PIN_BLOCK_LEN; i++) {
+      pins[i] = readUInt8(addr + GADGET_PIN_BLOCK_POS + i);
+    }
+
+    for (uint8_t i = 0; i < 8; i++) {
+      remote_bf[i] = getValueFromContentFlag(i, config_bf);
+    }
+
+    return gadget_tuple(gadget_type, remote_bf, pins, gadget_name, gadget_json, code_json);
+  }
+
+
+  /**
+   * Collects all used ports from all gadgets
+   * @return the used ports
+   */
+  static std::vector<uint8_t> readAllGadgetPorts() {
+    auto gadgets = readAllGadgets();
+    std::vector<uint8_t> ports;
+    for (auto gadget: gadgets) {
+      auto buf_ports = std::get<2>(gadget);
+      for (auto port: buf_ports) {
+        if (port != 0) {
+          ports.push_back(port);
+        }
+      }
+    }
+    return ports;
+  }
+
+  /**
+   * Collects all the names from the gadgets
+   * @return the gadget names
+   */
+  static std::vector<std::string> readAllGadgetNames() {
+    auto gadgets = readAllGadgets();
+    std::vector<std::string> names;
+    for (auto gadget: gadgets) {
+      auto buf_name = std::get<3>(gadget);
+      names.push_back(buf_name);
+    }
+    return names;
+  }
+
 public:
 
   /**
@@ -493,47 +583,6 @@ public:
 
   // read and write gadgets
   /**
-   * Reads the data for a gadget from the eeprom
-   * @param gadget_index the position of the gadget
-   * @return the data for the gadget
-   */
-  static gadget_tuple readGadget(uint8_t gadget_index) {
-    auto addr = getGadgetMemoryStart(gadget_index);
-    auto addr_end = getGadgetMemoryEnd(gadget_index);
-    auto stored_gadgets = readUInt8(GADGET_COUNT_POS);
-
-    pin_set pins = {0, 0, 0, 0, 0};
-    bitfield_set remote_bf = {false, false, false, false, false, false, false, false};
-
-    if (!addr || !addr_end || gadget_index >= stored_gadgets) {
-      return gadget_tuple(0, remote_bf, pins, "", "", "");
-    }
-
-    auto config_bf = readUInt8(addr + GADGET_BF_POS);
-    auto gadget_type = readUInt8(addr + GADGET_TYPE_POS);
-    auto gadget_name_len = readUInt8(addr + GADGET_NAME_LEN_POS);
-    auto gadget_json_len = readUInt16(addr + GADGET_JSON_LEN_POS);
-
-    uint16_t name_start = addr + GADGET_NAME_POS;
-    uint16_t config_start = name_start + gadget_name_len + 1;
-    uint16_t code_start = config_start + gadget_json_len + 1;
-
-    auto gadget_name = readString(name_start, gadget_name_len);
-    auto gadget_json = readString(config_start, gadget_json_len);
-    auto code_json = readString(code_start, addr_end);
-
-    for (uint8_t i = 0; i < GADGET_PIN_BLOCK_LEN; i++) {
-      pins[i] = readUInt8(addr + GADGET_PIN_BLOCK_POS + i);
-    }
-
-    for (uint8_t i = 0; i < 8; i++) {
-      remote_bf[i] = getValueFromContentFlag(i, config_bf);
-    }
-
-    return gadget_tuple(gadget_type, remote_bf, pins, gadget_name, gadget_json, code_json);
-  }
-
-  /**
    * Reads all gadgets from the eeprom
    * @return a vector containing all gadget information
    */
@@ -545,55 +594,6 @@ public:
       gadgets.push_back(buf_g);
     }
     return gadgets;
-  }
-
-  /**
-   * Collects all used ports from all gadgets
-   * @return the used ports
-   */
-  static std::vector<uint8_t> readAllGadgetPorts() {
-    auto gadgets = readAllGadgets();
-    std::vector<uint8_t> ports;
-    for (auto gadget: gadgets) {
-      auto buf_ports = std::get<2>(gadget);
-      for (auto port: buf_ports) {
-        if (port != 0) {
-          ports.push_back(port);
-        }
-      }
-    }
-    return ports;
-  }
-
-  /**
-   * Collects all the names from the gadgets
-   * @return the gadget names
-   */
-  static std::vector<std::string> readAllGadgetNames() {
-    auto gadgets = readAllGadgets();
-    std::vector<std::string> names;
-    for (auto gadget: gadgets) {
-      auto buf_name = std::get<3>(gadget);
-      names.push_back(buf_name);
-    }
-    return names;
-  }
-
-  /**
-   * Returns the index for an specific gadget name or -1 it name was not found.
-   * @param name The name you're searching for
-   * @return The index of the gadget or -1 if the name wasnt found
-   */
-  static int getGadgetIndexForName(const std::string& name) {
-    auto gadget_count = getGadgetCount();
-    for (uint8_t i = 0; i < gadget_count; i++) {
-      gadget_tuple buf_g = readGadget(i);
-      auto gadget_name = std::get<3>(buf_g);
-      if (gadget_name == name) {
-        return int(i);
-      }
-    }
-    return -1;
   }
 
   /**
@@ -807,75 +807,6 @@ public:
       return (NetworkMode) mode;
     }
     return NetworkMode::None;
-  }
-
-  // read + write gadget remote
-  /**
-   * Writes the gadget remote mode to the eeprom.
-   * Writing a 0 is interpreted as 'no remote used'.
-   * @param mode the mode used for the gadget remote
-   * @return whether writing was successful
-   */
-  static bool writeGadgetRemote(GadgetRemoteMode mode) {
-    return writeUInt8(GADGET_REMOTE_POS, (uint8_t) mode);
-  }
-
-  /**
-   * Reads the gadget remote mode from the eeprom
-   * @return the gadget remote mode
-   */
-  static GadgetRemoteMode readGadgetRemote() {
-    uint8_t mode = readUInt8(GADGET_REMOTE_POS);
-    if (mode < GadgetRemoteModeCount) {
-      return (GadgetRemoteMode) mode;
-    }
-    return GadgetRemoteMode::None;
-  }
-
-  // read + write code remote
-  /**
-   * Writes the code remote mode to the eeprom.
-   * Writing a 0 is interpreted as 'no remote used'.
-   * @param mode the mode used for the code remote
-   * @return whether writing was successful
-   */
-  static bool writeCodeRemote(CodeRemoteMode mode) {
-    return writeUInt8(CODE_REMOTE_POS, (uint8_t) mode);
-  }
-
-  /**
-   * Reads the code remote mode from the eeprom
-   * @return the code remote mode
-   */
-  static CodeRemoteMode readCodeRemote() {
-    uint8_t mode = readUInt8(CODE_REMOTE_POS);
-    if (mode < CodeRemoteModeCount) {
-      return (CodeRemoteMode) mode;
-    }
-    return CodeRemoteMode::None;
-  }
-
-  // read + write event remote
-  /**
-   * Writes the event remote mode to the eeprom.
-   * Writing a 0 is interpreted as 'no remote used'.
-   * @param mode the mode used for the event remote
-   * @return whether writing was successful
-   */
-  static bool writeEventRemote(EventRemoteMode mode) {
-    return writeUInt8(EVENT_REMOTE_POS, (uint8_t) mode);
-  }
-
-  /**
-   * Reads the event remote mode from the eeprom
-   * @return the gadget remote mode
-   */
-  static EventRemoteMode readEventRemote() {
-    uint8_t mode = readUInt8(EVENT_REMOTE_POS);
-    if (mode < EventRemoteModeCount) {
-      return (EventRemoteMode) mode;
-    }
-    return EventRemoteMode::None;
   }
 
   // read + write ID
@@ -1121,14 +1052,6 @@ public:
    */
   static bool hasValidMQTTPassword() {
     return getContentFlag(CONFIG_CHECK_INDEX_MQTT_PW);
-  }
-
-  /**
-   * Checks the EEPROM for valid wifi ssid + password and mqtt ip + port
-   * @return whether all of these four are valid
-   */
-  static bool hasValidNetworkConfig() {
-    return (hasValidWifiSSID() && hasValidWifiPW() && hasValidMQTTIP() && hasValidMQTTPort());
   }
 
   /**
