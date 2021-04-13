@@ -1,6 +1,6 @@
 #pragma once
 
-//#include <memory>
+#include "../json_check.h"
 
 #ifdef STATIC_CONFIG_ACTIVE
 #include "static_storage.h"
@@ -266,7 +266,7 @@ private:
    * @param json_body JSON-data to save the gadget from
    * @return (Whether writing was successful | Status-Message)
    */
-  gadget_tuple getGadgetDataFromJson(DynamicJsonDocument json_body) {
+  static gadget_tuple getGadgetDataFromJson(DynamicJsonDocument json_body) {
     auto type = json_body["type"].as<uint8_t>();
 
     auto name = json_body["name"].as<std::string>();
@@ -350,14 +350,14 @@ public:
     uint8_t radio_recv = EEPROM_Storage::readRadioRecvPin();
     uint8_t radio_send = EEPROM_Storage::readRadioSendPin();
 
-    std::shared_ptr<std::string> wifi_ssid = nullptr;
-    std::shared_ptr<std::string> wifi_pw = nullptr;
+    std::shared_ptr <std::string> wifi_ssid = nullptr;
+    std::shared_ptr <std::string> wifi_pw = nullptr;
 
-    std::shared_ptr<IPAddress> mqtt_ip = nullptr;
-    std::shared_ptr<uint16_t> mqtt_port = nullptr;
+    std::shared_ptr <IPAddress> mqtt_ip = nullptr;
+    std::shared_ptr <uint16_t> mqtt_port = nullptr;
 
-    std::shared_ptr<std::string> mqtt_username = nullptr;
-    std::shared_ptr<std::string> mqtt_pw = nullptr;
+    std::shared_ptr <std::string> mqtt_username = nullptr;
+    std::shared_ptr <std::string> mqtt_pw = nullptr;
 
     if (EEPROM_Storage::hasValidWifiSSID()) {
       wifi_ssid = std::make_shared<std::string>(EEPROM_Storage::readWifiSSID());
@@ -410,8 +410,10 @@ public:
    */
   static bool saveConfig(Config config) {
     #ifdef STATIC_CONFIG_ACTIVE
+    logger.println("Config is not saved: Using static config.");
     return false;
     #else
+    logger.println(LOG_TYPE::ERR, "Saving config isn't implemented");
     return false;
     #endif
   }
@@ -421,7 +423,97 @@ public:
    * @param config Config json to get data from
    * @return The config if creating was successful, nullptr otherwise
    */
-  static std::shared_ptr<Config> createConfigFromJson(DynamicJsonDocument config) {
-    return nullptr;
+  static std::shared_ptr <Config> createConfigFromJson(DynamicJsonDocument config) {
+
+    if (!checkJsonForKeys(config, {"data", "gadgets"})) {
+      return nullptr;
+    }
+
+    JsonObject json_config_data = config["data"];
+    JsonArray json_gadget_data = config["gadgets"];
+
+    if (!checkJsonForKeys(json_config_data, {"id",
+                                             "network_mode",
+                                             "irrecv_pin",
+                                             "irsend_pin",
+                                             "radiorecv_pin",
+                                             "radiosend_pin",
+                                             "wifi_ssid",
+                                             "wifi_pw",
+                                             "mqtt_ip,"
+                                             "mqtt_port",
+                                             "mqtt_user",
+                                             "mqtt_pw"})) {
+      return nullptr;
+    }
+
+    std::vector <gadget_tuple> gadgets;
+    for (const auto gadget_data: json_gadget_data) {
+      if (checkJsonForKeys(gadget_data, {"name", "type"})) {
+        gadget_tuple out_data = getGadgetDataFromJson(gadget_data);
+        gadgets.push_back(out_data);
+      }
+    }
+
+    std::string id = json_config_data["id"];
+
+    NetworkMode network_mode = (NetworkMode) json_config_data["network_mode"].as<uint8_t>();
+
+    uint8_t ir_recv = json_config_data["irrecv_pin"];
+    uint8_t ir_send = json_config_data["irsend_pin"];
+
+    uint8_t radio_recv = json_config_data["radiorecv_pin"];
+    uint8_t radio_send = json_config_data["radiosend_pin"];
+
+    std::shared_ptr <std::string> wifi_ssid = nullptr;
+    std::shared_ptr <std::string> wifi_pw = nullptr;
+
+    std::shared_ptr <IPAddress> mqtt_ip = nullptr;
+    std::shared_ptr <uint16_t> mqtt_port = nullptr;
+
+    std::shared_ptr <std::string> mqtt_username = nullptr;
+    std::shared_ptr <std::string> mqtt_pw = nullptr;
+
+    if (json_config_data["wifi_ssid"]) {
+      wifi_ssid = std::make_shared<std::string>(json_config_data["wifi_ssid"].as<std::string>());
+    }
+
+    if (json_config_data["wifi_pw"]) {
+      wifi_pw = std::make_shared<std::string>(json_config_data["wifi_pw"].as<std::string>());
+    }
+
+    if (json_config_data["mqtt_ip"]) {
+      IPAddress buf_ip;
+      buf_ip.fromString(json_config_data["mqtt_ip"].as<std::string>().c_str());
+      mqtt_ip = std::make_shared<IPAddress>(buf_ip);
+    }
+
+    if (json_config_data["mqtt_port"]) {
+      mqtt_port = std::make_shared<uint16_t>(json_config_data["mqtt_port"].as<uint16_t>());
+    }
+
+    if (json_config_data["mqtt_user"]) {
+      mqtt_username = std::make_shared<std::string>(json_config_data["mqtt_user"].as<std::string>());
+    }
+
+    if (json_config_data["mqtt_pw"]) {
+      mqtt_pw = std::make_shared<std::string>(json_config_data["mqtt_pw"].as<std::string>());
+    }
+
+    auto buf_config = Config(id,
+                             network_mode,
+                             gadgets,
+                             ir_recv,
+                             ir_send,
+                             radio_recv,
+                             radio_send,
+                             wifi_ssid,
+                             wifi_pw,
+                             mqtt_ip,
+                             mqtt_port,
+                             mqtt_username,
+                             mqtt_pw);
+
+    return std::make_shared<Config>(buf_config);
   }
 };

@@ -76,7 +76,7 @@ static void rebootChip(const std::string &reason, uint8_t delay = 5) {
 }
 
 /**
- * Method to check if request payload contains all of the selected keys. respondes a false ack if any of them misses
+ * Method to check if request payload contains all of the selected keys. responds a false ack if any of them misses
  * @param req Request to ckeck payload off
  * @param key_list The list of all the keys that need to be present
  * @return Whether all keys were present
