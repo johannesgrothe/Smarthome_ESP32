@@ -13,13 +13,16 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_path', type=str, help='Path of the json the config should be generated from')
     parser.add_argument('--config', type=str, help='The complete config as string')
+    parser.add_argument('--json_str_config',
+                        help='Only includes the json string instead of functions',
+                        action='store_true')
     return parser.parse_args()
 
 
-def main(config: dict):
+def generate_functions_config(config: dict):
     """Generates the config"""
 
-    print("Generating '{}' file to define static config...".format(file_name))
+    print("Generating '{}' file to define static functions config...".format(file_name))
 
     data_template: [str]
     start_lines: [str] = []
@@ -28,8 +31,8 @@ def main(config: dict):
 
     gadget_repeat_block: [str] = []
 
-    with open("generate_static_config_template.h", "r") as file:
-        data_template = file.readlines()
+    with open("static_functions_config_template.h", "r") as file_h:
+        data_template = file_h.readlines()
 
     block_status = 0
     for line in data_template:
@@ -94,13 +97,39 @@ def main(config: dict):
     print("Done.")
 
 
+def generate_string_config(config: dict):
+    print("Generating '{}' file to define static string config...".format(file_name))
+
+    data_template: [str]
+    out_lines: [str] = []
+
+    config_str = json.dumps(config).replace('"', r'\"')
+
+    with open("static_string_config_template.h", "r") as file_h:
+        data_template = file_h.readlines()
+
+    for line in data_template:
+        buf_line = line.replace("/*<config_str>*/", config_str)
+        out_lines.append(buf_line)
+
+    print("Saving...")
+
+    with open(file_path, "w") as out_file:
+        out_file.writelines(out_lines)
+
+    print("Done.")
+
+
 if __name__ == "__main__":
     args = parse_args()
 
     if args.config:
         try:
             loaded_config = json.loads(args.config)
-            main(loaded_config)
+            if args.json_str_config:
+                generate_string_config(loaded_config)
+            else:
+                generate_functions_config(loaded_config)
         except ValueError:
             print("Given JSON could not be decoded")
 
@@ -109,7 +138,10 @@ if __name__ == "__main__":
             try:
                 loaded_config = json.load(file)
                 print(f"Generating config from '{args.config_path}'")
-                main(loaded_config)
+                if args.json_str_config:
+                    generate_string_config(loaded_config)
+                else:
+                    generate_functions_config(loaded_config)
             except ValueError:
                 print("JSON from file path could not be decoded")
     else:
