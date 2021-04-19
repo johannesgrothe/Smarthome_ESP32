@@ -14,6 +14,7 @@
 #include "../pin_profile.h"
 #include "../gadgets/gadget_characteristic_settings.h"
 #include "../status_codes.h"
+#include "config.h"
 
 // valid config bitfield
 #define VALID_CONFIG_BITFIELD_BYTE 0
@@ -1172,22 +1173,7 @@ public:
 
 
 
-
-
-  /**
- * Writes a gadget to the eeprom
- * @param gadget_type type of the gadget
- * @param remote_bf bitfield for the remotes
- * @param ports ports used by the gadget to connect hardware
- * @param gadget_config base config for the gadget
- * @param code_config config for the code mapping
- * @return whether writing was successful
- */
-  static WriteGadgetStatus
-  writeGadget(uint8_t gadget_type, bitfield_set remote_bf, pin_set ports, const std::string &name,
-              const std::string &gadget_config, const std::string &code_config) {
-    return EEPROM_Storage::writeGadget(gadget_type, remote_bf, ports, name, gadget_config, code_config);
-  }
+  
 
 /**
  * Writes a gadget from the config json body
