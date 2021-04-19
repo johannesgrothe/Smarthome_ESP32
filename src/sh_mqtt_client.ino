@@ -52,7 +52,7 @@
 
 static void waitFor(unsigned int delay) {
   unsigned long end_timestamp = millis() + delay;
-  while(millis() < end_timestamp) {}
+  while (millis() < end_timestamp) {}
 }
 
 /**
@@ -81,7 +81,7 @@ static void rebootChip(const std::string &reason, uint8_t delay = 5) {
  * @param key_list The list of all the keys that need to be present
  * @return Whether all keys were present
  */
-static bool checkPayloadForKeys(std::shared_ptr<Request>req, const std::vector<std::string> &key_list) {
+static bool checkPayloadForKeys(std::shared_ptr<Request> req, const std::vector<std::string> &key_list) {
   DynamicJsonDocument json_body = req->getPayload();
 
   for (const auto &key: key_list) {
@@ -130,8 +130,8 @@ Gadget_Collection gadgets;
 // Container to handle all of the incoming ir/radio codes
 CodeCommandBuffer codes;
 
-// Whether eepro was successfully initialized
-bool eeprom_active_;
+// Whether eeprom was successfully initialized
+bool eeprom_active_ = false;
 
 // Main task, handling all of the gadgets and the main system
 TaskHandle_t main_task;
@@ -206,10 +206,10 @@ void updateCharacteristicOnBridge(const std::string &gadget_name, Characteristic
   req_doc["value"] = value;
 
   auto out_req = std::make_shared<Request>(PATH_CHARACTERISTIC_UPDATE_TO_BRIDGE,
-                             gen_req_id(),
-                             client_id_,
-                             PROTOCOL_BRIDGE_NAME,
-                             req_doc);
+                                           gen_req_id(),
+                                           client_id_,
+                                           PROTOCOL_BRIDGE_NAME,
+                                           req_doc);
 
   network_gadget->sendRequest(out_req);
 }
@@ -248,10 +248,10 @@ void updateEventOnBridge(const string &sender, EventType type) {
   req_doc["event_type"] = int(event_buf->getType());
 
   auto out_req = std::make_shared<Request>(PATH_EVENT_UPDATE_TO_BRIDGE,
-                             gen_req_id(),
-                             client_id_,
-                             PROTOCOL_BRIDGE_NAME,
-                             req_doc);
+                                           gen_req_id(),
+                                           client_id_,
+                                           PROTOCOL_BRIDGE_NAME,
+                                           req_doc);
 
   network_gadget->sendRequest(out_req);
 
@@ -303,10 +303,10 @@ void sendCodeToRemote(const std::shared_ptr<CodeCommand> &code) {
   doc["timestamp"] = code->getTimestamp();
 
   network_gadget->sendRequest(std::make_shared<Request>(PATH_CODE_UPDATE_TO_BRIDGE,
-                                          ident,
-                                          client_id_,
-                                          PROTOCOL_BRIDGE_NAME,
-                                          doc));
+                                                        ident,
+                                                        client_id_,
+                                                        PROTOCOL_BRIDGE_NAME,
+                                                        doc));
 }
 
 void handleNewCodeFromConnector(const std::shared_ptr<CodeCommand> &code) {
@@ -328,7 +328,7 @@ void handleNewCodeFromRequest(const std::shared_ptr<CodeCommand> &code) {
  * Handles a request to receive a characteristic update
  * @param req Request that contains the characteristic update information
  */
-void handleGadgetCharacteristicUpdateRequest(std::shared_ptr<Request>req) {
+void handleGadgetCharacteristicUpdateRequest(std::shared_ptr<Request> req) {
 
   // Check payload for missing keys
   if (!checkPayloadForKeys(req, {"name", "characteristic", "value"})) {
@@ -360,7 +360,7 @@ void handleGadgetCharacteristicUpdateRequest(std::shared_ptr<Request>req) {
  * Handles a request to receive a event from the bridge
  * @param req Request that contains the event information
  */
-void handleEventUpdateRequest(std::shared_ptr<Request>req) {
+void handleEventUpdateRequest(std::shared_ptr<Request> req) {
 
   // Check payload for missing keys
   if (!checkPayloadForKeys(req, {"name", "timestamp", "event_type"})) {
@@ -383,7 +383,7 @@ void handleEventUpdateRequest(std::shared_ptr<Request>req) {
  * Handles a request to receive a code from the bridge
  * @param req Request that contains the code information
  */
-void handleCodeUpdateRequest(std::shared_ptr<Request>req) {
+void handleCodeUpdateRequest(std::shared_ptr<Request> req) {
 
   // Check payload for missing keys
   if (!checkPayloadForKeys(req, {"type", "code", "timestamp"})) {
@@ -402,7 +402,7 @@ void handleCodeUpdateRequest(std::shared_ptr<Request>req) {
  * Handles a broadcast request
  * @param req Request that contains the broadcast request information
  */
-void handleBroadcastRequest(std::shared_ptr<Request>req) {
+void handleBroadcastRequest(std::shared_ptr<Request> req) {
   logger.println("Broadcast");
   DynamicJsonDocument doc(10);
   req->respond("smarthome/broadcast/res", doc);
@@ -412,7 +412,7 @@ void handleBroadcastRequest(std::shared_ptr<Request>req) {
  * Handles a request that contains system control information
  * @param req Request that contains system control information
  */
-void handleSystemControlRequest(std::shared_ptr<Request>req) {
+void handleSystemControlRequest(std::shared_ptr<Request> req) {
 
   // Check payload for missing keys
   if (!checkPayloadForKeys(req, {"subject"})) {
@@ -437,7 +437,7 @@ void handleSystemControlRequest(std::shared_ptr<Request>req) {
  * Handles a request that contains config reset information
  * @param req Request that contains config reset command information
  */
-void handleConfigResetRequest(std::shared_ptr<Request>req) {
+void handleConfigResetRequest(std::shared_ptr<Request> req) {
 
   // Check payload for missing keys
   if (!checkPayloadForKeys(req, {"reset_option"})) {
@@ -488,7 +488,7 @@ void handleConfigResetRequest(std::shared_ptr<Request>req) {
  * Handles a request that contains config write information
  * @param req Request that contains config write information
  */
-void handleConfigWriteRequest(std::shared_ptr<Request>req) {
+void handleConfigWriteRequest(std::shared_ptr<Request> req) {
 
   // Check payload for missing keys
   if (!checkPayloadForKeys(req, {"type"})) {
@@ -539,7 +539,7 @@ void handleConfigWriteRequest(std::shared_ptr<Request>req) {
  * Handles a request that contains config read information
  * @param req Request that contains config read information
  */
-void handleConfigReadRequest(std::shared_ptr<Request>req) {
+void handleConfigReadRequest(std::shared_ptr<Request> req) {
 
   // Check payload for missing keys
   if (!checkPayloadForKeys(req, {"param"})) {
@@ -607,7 +607,7 @@ void handleConfigReadRequest(std::shared_ptr<Request>req) {
     read_val_uint = system_config->getIRRecvPin();
   }
 
-  // read irsend pin
+    // read irsend pin
   else if (param_name == "irsend_pin") {
     read_successful = true;
     read_val_uint = system_config->getIRSendPin();
@@ -645,7 +645,7 @@ void handleConfigReadRequest(std::shared_ptr<Request>req) {
  * Handles a request to sync settings between client and bridge
  * @param req Request that contains the sync information
  */
-void handleSyncRequest(std::shared_ptr<Request>req) {
+void handleSyncRequest(std::shared_ptr<Request> req) {
 
   auto req_payload = req->getPayload();
 
@@ -706,7 +706,7 @@ void handleSyncRequest(std::shared_ptr<Request>req) {
 
 //region SORTING OF REQUESTS
 
-void handleSystemRequest(std::shared_ptr<Request>req) {
+void handleSystemRequest(std::shared_ptr<Request> req) {
 
   DynamicJsonDocument json_body = req->getPayload();
 
@@ -758,7 +758,7 @@ void handleSystemRequest(std::shared_ptr<Request>req) {
  * Handles a request gotten from the network gadget
  * @param req Request to handle
  */
-void handleRequest(std::shared_ptr<Request>req) {
+void handleRequest(std::shared_ptr<Request> req) {
   std::string req_path = req->getPath();
   if (!req->hasReceiver()) {
     req->updateReceiver(client_id_);
@@ -1034,7 +1034,7 @@ bool initNetwork(NetworkMode mode) {
       return false;
     }
 
-    if (system_config->getMqttPassword() == nullptr) {
+    if (system_config->getMqttPort() == nullptr) {
       logger.println(LOG_TYPE::ERR, "Config has no valid mqtt port");
       return false;
     }
@@ -1080,11 +1080,11 @@ void initModeSerial() {
  * Initializes the chip in network only mode using the network mode loaded from eeprom
  */
 void initModeNetwork() {
-  if (eeprom_active_) {
-    auto mode = system_config->getNetworkMode();
-    initNetwork(mode);
-  } else {
-    logger.println(LOG_TYPE::ERR, "network type could not be loaded");
+  auto mode = system_config->getNetworkMode();
+  auto status = initNetwork(mode);
+
+  if (!status) {
+    rebootChip("Network initialization failed.", 15);
   }
 }
 
@@ -1092,12 +1092,11 @@ void initModeNetwork() {
  * Initializes the chip with all gadgets and connectors loaded
  */
 void initModeComplete() {
-  if (eeprom_active_) {
-    auto mode = system_config->getNetworkMode();
-    initNetwork(mode);
-  } else {
-    logger.println(LOG_TYPE::ERR, "network type could not be loaded");
-    return;
+  auto mode = system_config->getNetworkMode();
+  auto status = initNetwork(mode);
+
+  if (!status) {
+    rebootChip("Network initialization failed.", 15);
   }
 
   initConnectors();
@@ -1133,7 +1132,7 @@ void handleNetwork() {
   }
   if (network_gadget->hasRequest()) {
     std::string type;
-    std::shared_ptr<Request>req = network_gadget->getRequest();
+    std::shared_ptr<Request> req = network_gadget->getRequest();
     RequestGadgetType g_type = network_gadget->getGadgetType();
     if (g_type == RequestGadgetType::MQTT_G)
       type = "MQTT";
@@ -1224,10 +1223,10 @@ void sendHeartbeat() {
     req_doc["system_time"] = system_timer.getTime();
 
     auto heartbeat_request = std::make_shared<Request>(PATH_HEARTBEAT,
-                                         gen_req_id(),
-                                         client_id_,
-                                         PROTOCOL_BRIDGE_NAME,
-                                         req_doc);
+                                                       gen_req_id(),
+                                                       client_id_,
+                                                       PROTOCOL_BRIDGE_NAME,
+                                                       req_doc);
     network_gadget->sendRequest(heartbeat_request);
   }
 }

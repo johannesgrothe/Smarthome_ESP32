@@ -90,6 +90,10 @@ private:
 
 public:
 
+  System_Storage() {
+
+  }
+
   /**
    * Creates a Config object from a json config
    * @param config Config json to get data from
@@ -108,11 +112,11 @@ public:
                                              "network_mode",
                                              "irrecv_pin",
                                              "irsend_pin",
-                                             "radiorecv_pin",
-                                             "radiosend_pin",
+                                             "radio_recv_pin",
+                                             "radio_send_pin",
                                              "wifi_ssid",
                                              "wifi_pw",
-                                             "mqtt_ip,"
+                                             "mqtt_ip",
                                              "mqtt_port",
                                              "mqtt_user",
                                              "mqtt_pw"})) {
@@ -134,8 +138,8 @@ public:
     uint8_t ir_recv = json_config_data["irrecv_pin"];
     uint8_t ir_send = json_config_data["irsend_pin"];
 
-    uint8_t radio_recv = json_config_data["radiorecv_pin"];
-    uint8_t radio_send = json_config_data["radiosend_pin"];
+    uint8_t radio_recv = json_config_data["radio_recv_pin"];
+    uint8_t radio_send = json_config_data["radio_send_pin"];
 
     std::shared_ptr <std::string> wifi_ssid = nullptr;
     std::shared_ptr <std::string> wifi_pw = nullptr;
@@ -206,69 +210,15 @@ public:
 
     auto config = createConfigFromJson(static_json_config);
 
+    if (config == nullptr) {
+      logger.printfln(LOG_TYPE::ERR, "Could not load static config: Config Loading Error");
+    }
+
     return config;
 
     #else
 
-    std::string id = EEPROM_Storage::readID();
-    NetworkMode network_mode = EEPROM_Storage::readNetworkMode();
-    auto gadgets = EEPROM_Storage::readAllGadgets();
-
-    uint8_t ir_recv = EEPROM_Storage::readIRrecvPin();
-    uint8_t ir_send = EEPROM_Storage::readIRsendPin();
-
-    uint8_t radio_recv = EEPROM_Storage::readRadioRecvPin();
-    uint8_t radio_send = EEPROM_Storage::readRadioSendPin();
-
-    std::shared_ptr <std::string> wifi_ssid = nullptr;
-    std::shared_ptr <std::string> wifi_pw = nullptr;
-
-    std::shared_ptr <IPAddress> mqtt_ip = nullptr;
-    std::shared_ptr <uint16_t> mqtt_port = nullptr;
-
-    std::shared_ptr <std::string> mqtt_username = nullptr;
-    std::shared_ptr <std::string> mqtt_pw = nullptr;
-
-    if (EEPROM_Storage::hasValidWifiSSID()) {
-      wifi_ssid = std::make_shared<std::string>(EEPROM_Storage::readWifiSSID());
-    }
-
-    if (EEPROM_Storage::hasValidWifiPW()) {
-      wifi_pw = std::make_shared<std::string>(EEPROM_Storage::readWifiPW());
-    }
-
-    if (EEPROM_Storage::hasValidMQTTIP()) {
-      mqtt_ip = std::make_shared<IPAddress>(EEPROM_Storage::readMQTTIP());
-    }
-
-    if (EEPROM_Storage::hasValidMQTTPort()) {
-      mqtt_port = std::make_shared<uint16_t>(EEPROM_Storage::readMQTTPort());
-    }
-
-    if (EEPROM_Storage::hasValidMQTTUsername()) {
-      mqtt_username = std::make_shared<std::string>(EEPROM_Storage::readMQTTUsername());
-    }
-
-    if (EEPROM_Storage::hasValidMQTTPassword()) {
-      mqtt_pw = std::make_shared<std::string>(EEPROM_Storage::readMQTTPassword());
-    }
-
-    auto cfg = Config(
-        id,
-        network_mode,
-        gadgets,
-        ir_recv,
-        ir_send,
-        radio_recv,
-        radio_send,
-        wifi_ssid,
-        wifi_pw,
-        mqtt_ip,
-        mqtt_port,
-        mqtt_username,
-        mqtt_pw);
-
-    return std::make_shared<Config>(cfg);
+    return EEPROM_Storage::loadConfig();
 
     #endif
   }

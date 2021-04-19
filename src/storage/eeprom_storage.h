@@ -528,58 +528,6 @@ private:
     return names;
   }
 
-public:
-
-  /**
-   * Prints the whole eeprom layout to the console
-   */
-  static void printEEPROMLayout() {
-    std::stringstream ss;
-    ss << "EEPROM config:";
-    ss << "\nvalid config bitfield: " << VALID_CONFIG_BITFIELD_BYTE;
-    ss << "\ngadget count: " << GADGET_COUNT_POS;
-    ss << "\nsystem settings bitfield: " << SYSTEM_SETTINGS_BITFIELD_BYTE;
-    ss << "\nir_recv pin: " << IR_RECV_PIN_POS;
-    ss << "\nir_send pin: " << IR_SEND_PIN_POS;
-    ss << "\nradio_recv pin: " << RADIO_RECV_POS;
-    ss << "\nradio_send pin: " << RADIO_SEND_POS;
-    ss << "\nnetwork mode: " << NETWORK_MODE_POS;
-    ss << "\ngadget remote: " << GADGET_REMOTE_POS;
-    ss << "\ncode remote: " << CODE_REMOTE_POS;
-    ss << "\nevent remote: " << EVENT_REMOTE_POS;
-    ss << "\nid: " << ID_POS << " - " << ID_POS + ID_MAX_LEN;
-    ss << "\nwifi_ssid: " << WIFI_SSID_POS << " - " << WIFI_SSID_POS + WIFI_SSID_MAX_LEN;
-    ss << "\nwifi_pw: " << WIFI_PW_POS << " - " << WIFI_PW_POS + WIFI_PW_MAX_LEN;
-    ss << "\nmqtt_ip: " << MQTT_IP_POS << " - " << MQTT_IP_POS + MQTT_IP_MAX_LEN;
-    ss << "\nmqtt_port: " << MQTT_PORT_POS << " - " << MQTT_PORT_POS + MQTT_PORT_MAX_LEN;
-    ss << "\nmqtt_user: " << MQTT_USER_POS << " - " << MQTT_USER_POS + MQTT_USER_MAX_LEN;
-    ss << "\nmqtt_pw: " << MQTT_PW_POS << " - " << MQTT_PW_POS + MQTT_PW_MAX_LEN;
-    Serial.println(ss.str().c_str());
-  }
-
-  /**
-   * Resets the valid content flag to 0
-   */
-  static void resetContentFlag() {
-    uint8_t content_flag = 0;
-    EEPROM.writeByte(VALID_CONFIG_BITFIELD_BYTE, content_flag);
-    EEPROM.commit();
-  }
-
-  // init eeprom
-  /**
-   * Initializes the system EEPROM
-   * @return whether the EEPROM was correctly initialized
-   */
-  static bool initEEPROM() {
-    logger.println("Initializing EEPROM...");
-
-    if (!EEPROM.begin(EEPROM_SIZE)) {
-      logger.println(LOG_TYPE::ERR, "failed to initialize EEPROM");
-      return false;
-    }
-    return true;
-  }
 
   // read and write gadgets
   /**
@@ -1093,12 +1041,131 @@ public:
   }
 
   /**
+ * Resets the valid content flag to 0
+ */
+  static void resetContentFlag() {
+    uint8_t content_flag = 0;
+    EEPROM.writeByte(VALID_CONFIG_BITFIELD_BYTE, content_flag);
+    EEPROM.commit();
+  }
+
+public:
+
+  // init eeprom
+  /**
+   * Initializes the system EEPROM
+   * @return whether the EEPROM was correctly initialized
+   */
+  static bool initEEPROM() {
+    logger.println("Initializing EEPROM...");
+
+    if (!EEPROM.begin(EEPROM_SIZE)) {
+      logger.println(LOG_TYPE::ERR, "failed to initialize EEPROM");
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Prints the whole eeprom layout to the console
+   */
+  static void printEEPROMLayout() {
+    std::stringstream ss;
+    ss << "EEPROM config:";
+    ss << "\nvalid config bitfield: " << VALID_CONFIG_BITFIELD_BYTE;
+    ss << "\ngadget count: " << GADGET_COUNT_POS;
+    ss << "\nsystem settings bitfield: " << SYSTEM_SETTINGS_BITFIELD_BYTE;
+    ss << "\nir_recv pin: " << IR_RECV_PIN_POS;
+    ss << "\nir_send pin: " << IR_SEND_PIN_POS;
+    ss << "\nradio_recv pin: " << RADIO_RECV_POS;
+    ss << "\nradio_send pin: " << RADIO_SEND_POS;
+    ss << "\nnetwork mode: " << NETWORK_MODE_POS;
+    ss << "\ngadget remote: " << GADGET_REMOTE_POS;
+    ss << "\ncode remote: " << CODE_REMOTE_POS;
+    ss << "\nevent remote: " << EVENT_REMOTE_POS;
+    ss << "\nid: " << ID_POS << " - " << ID_POS + ID_MAX_LEN;
+    ss << "\nwifi_ssid: " << WIFI_SSID_POS << " - " << WIFI_SSID_POS + WIFI_SSID_MAX_LEN;
+    ss << "\nwifi_pw: " << WIFI_PW_POS << " - " << WIFI_PW_POS + WIFI_PW_MAX_LEN;
+    ss << "\nmqtt_ip: " << MQTT_IP_POS << " - " << MQTT_IP_POS + MQTT_IP_MAX_LEN;
+    ss << "\nmqtt_port: " << MQTT_PORT_POS << " - " << MQTT_PORT_POS + MQTT_PORT_MAX_LEN;
+    ss << "\nmqtt_user: " << MQTT_USER_POS << " - " << MQTT_USER_POS + MQTT_USER_MAX_LEN;
+    ss << "\nmqtt_pw: " << MQTT_PW_POS << " - " << MQTT_PW_POS + MQTT_PW_MAX_LEN;
+    Serial.println(ss.str().c_str());
+  }
+
+  /**
    * Returns the address of the last used byte in the eeprom.
    * The maximum eeprom is EEPROM_SIZE
    * @return the address of the last used byte in the eeprom
    */
   static uint16_t getEEPROMUsage() {
     return getGadgetMemoryEnd(getGadgetCount() - 1);
+  }
+
+  /**
+   * Loads the system config
+   * @return The loaded Config
+   */
+  static std::shared_ptr<Config> loadConfig() {
+    std::string id = EEPROM_Storage::readID();
+    NetworkMode network_mode = EEPROM_Storage::readNetworkMode();
+    auto gadgets = EEPROM_Storage::readAllGadgets();
+
+    uint8_t ir_recv = EEPROM_Storage::readIRrecvPin();
+    uint8_t ir_send = EEPROM_Storage::readIRsendPin();
+
+    uint8_t radio_recv = EEPROM_Storage::readRadioRecvPin();
+    uint8_t radio_send = EEPROM_Storage::readRadioSendPin();
+
+    std::shared_ptr <std::string> wifi_ssid = nullptr;
+    std::shared_ptr <std::string> wifi_pw = nullptr;
+
+    std::shared_ptr <IPAddress> mqtt_ip = nullptr;
+    std::shared_ptr <uint16_t> mqtt_port = nullptr;
+
+    std::shared_ptr <std::string> mqtt_username = nullptr;
+    std::shared_ptr <std::string> mqtt_pw = nullptr;
+
+    if (EEPROM_Storage::hasValidWifiSSID()) {
+      wifi_ssid = std::make_shared<std::string>(EEPROM_Storage::readWifiSSID());
+    }
+
+    if (EEPROM_Storage::hasValidWifiPW()) {
+      wifi_pw = std::make_shared<std::string>(EEPROM_Storage::readWifiPW());
+    }
+
+    if (EEPROM_Storage::hasValidMQTTIP()) {
+      mqtt_ip = std::make_shared<IPAddress>(EEPROM_Storage::readMQTTIP());
+    }
+
+    if (EEPROM_Storage::hasValidMQTTPort()) {
+      mqtt_port = std::make_shared<uint16_t>(EEPROM_Storage::readMQTTPort());
+    }
+
+    if (EEPROM_Storage::hasValidMQTTUsername()) {
+      mqtt_username = std::make_shared<std::string>(EEPROM_Storage::readMQTTUsername());
+    }
+
+    if (EEPROM_Storage::hasValidMQTTPassword()) {
+      mqtt_pw = std::make_shared<std::string>(EEPROM_Storage::readMQTTPassword());
+    }
+
+    auto cfg = Config(
+        id,
+        network_mode,
+        gadgets,
+        ir_recv,
+        ir_send,
+        radio_recv,
+        radio_send,
+        wifi_ssid,
+        wifi_pw,
+        mqtt_ip,
+        mqtt_port,
+        mqtt_username,
+        mqtt_pw);
+
+    return std::make_shared<Config>(cfg);
   }
 
 
