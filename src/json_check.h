@@ -1,3 +1,7 @@
+#pragma once
+
+#include "ArduinoJson.h"
+#include <vector>
 
 /**
  * Method to check if json contains all of the selected keys.

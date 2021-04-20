@@ -1,9 +1,8 @@
 #pragma once
 
-#include "../json_check.h"
-
 #include "eeprom_storage.h"
 #include "static_storage.h"
+#include "system_storage_handler.h"
 
 #include "config.h"
 #include "../datatypes.h"
@@ -15,20 +14,31 @@
 class System_Storage {
 public:
 
-  System_Storage() {
+  std::shared_ptr<SystemStorageHandler> handler;
 
+  System_Storage():
+  handler(nullptr) {
+    #ifdef STATIC_CONFIG_ACTIVE
+    logger.println("Using static, pre-compiled config");
+    handler = std::make_shared<StaticStorage>();
+    #else
+    logger.println("Using dynamic, EEPROM config");
+    handler = std::make_shared<EEPROM_Storage>();
+    #endif
+    if (!handler->isInitialized()) {
+      handler = nullptr;
+    }
   }
 
   /**
    * Loads the system config (either from EEPROM or static config)
    * @return The loaded Config
    */
-  static std::shared_ptr <Config> loadConfig() {
-    #ifdef STATIC_CONFIG_ACTIVE
-    return StaticStorage::loadConfig();
-    #else
-    return EEPROM_Storage::loadConfig();
-    #endif
+  std::shared_ptr <Config> loadConfig() {
+    if (handler == nullptr) {
+      return nullptr;
+    }
+    return handler->loadConfig();
   }
 
   /**
@@ -36,13 +46,18 @@ public:
    * @param config The config to save
    * @return Whether saving was successful
    */
-  static bool saveConfig(Config config) {
-    #ifdef STATIC_CONFIG_ACTIVE
-    logger.println("Config is not saved: Using static config.");
-    return false;
-    #else
-    logger.println(LOG_TYPE::ERR, "Saving config isn't implemented");
-    return false;
-    #endif
+   bool saveConfig(Config config) {
+    if (handler == nullptr) {
+      return false;
+    }
+    return handler->writeConfig(config);
+  }
+
+  /**
+   * Returns whether the system sorage was successfully initialized
+   * @return Initialization status
+   */
+  bool isInitialized() const {
+    return handler != nullptr;
   }
 };

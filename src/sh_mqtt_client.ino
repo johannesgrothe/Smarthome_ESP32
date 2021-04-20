@@ -106,11 +106,14 @@ std::string client_id_;
 // Runtime id, number generated at startup to identify reboots to network partners
 int runtime_id_;
 
+// System config management object
+std::shared_ptr<System_Storage> system_storage_ = nullptr;
+
 // Mode how the system should operate
 BootMode system_mode_ = BootMode::Unknown_Mode;
 
 // Config used by the system
-std::shared_ptr<Config> system_config = nullptr;
+std::shared_ptr<Config> system_config_ = nullptr;
 
 // Infrared-gadget receiving and/or sending infrared codes
 std::shared_ptr<IR_Gadget> ir_gadget;
@@ -526,7 +529,7 @@ void handleConfigWriteRequest(std::shared_ptr<Request> req) {
 //      system_config->resetGadgets();
     }
 
-    auto status = System_Storage::saveConfig(*config.get());
+    auto status = system_storage_->saveConfig(*config.get());
 
     req->respond(status);
     return;
@@ -557,7 +560,7 @@ void handleConfigReadRequest(std::shared_ptr<Request> req) {
 
   // read wifi ssid
   if (param_name == "wifi_ssid") {
-    auto read_val = system_config->getWifiSSID();
+    auto read_val = system_config_->getWifiSSID();
     if (read_val != nullptr) {
       read_successful = true;
       read_val_str = *read_val;
@@ -566,7 +569,7 @@ void handleConfigReadRequest(std::shared_ptr<Request> req) {
 
   // read mqtt ip
   if (param_name == "mqtt_ip") {
-    auto read_val = system_config->getMqttIP();
+    auto read_val = system_config_->getMqttIP();
     if (read_val != nullptr) {
       read_successful = true;
       read_val_str = *read_val;
@@ -575,7 +578,7 @@ void handleConfigReadRequest(std::shared_ptr<Request> req) {
 
   // read mqtt port
   if (param_name == "mqtt_port") {
-    auto read_val = system_config->getMqttPort();
+    auto read_val = system_config_->getMqttPort();
     if (read_val != nullptr) {
       read_successful = true;
       std::stringstream sstr;
@@ -586,7 +589,7 @@ void handleConfigReadRequest(std::shared_ptr<Request> req) {
 
   // read mqtt username
   if (param_name == "mqtt_user") {
-    auto read_val = system_config->getMqttUsername();
+    auto read_val = system_config_->getMqttUsername();
     if (read_val != nullptr) {
       read_successful = true;
       read_val_str = *read_val;
@@ -604,30 +607,30 @@ void handleConfigReadRequest(std::shared_ptr<Request> req) {
   // read irrecv pin
   if (param_name == "irrecv_pin") {
     read_successful = true;
-    read_val_uint = system_config->getIRRecvPin();
+    read_val_uint = system_config_->getIRRecvPin();
   }
 
     // read irsend pin
   else if (param_name == "irsend_pin") {
     read_successful = true;
-    read_val_uint = system_config->getIRSendPin();
+    read_val_uint = system_config_->getIRSendPin();
   }
 
     // read radio recv pin
   else if (param_name == "radio_recv_pin") {
     read_successful = true;
-    read_val_uint = system_config->getRadioRecvPin();
+    read_val_uint = system_config_->getRadioRecvPin();
   }
 
     // read radio send pin
   else if (param_name == "radio_send_pin") {
     read_successful = true;
-    read_val_uint = system_config->getRadioSendPin();
+    read_val_uint = system_config_->getRadioSendPin();
   }
 
     // read network mode
   else if (param_name == "network_mode") {
-    auto read_val = system_config->getNetworkMode();
+    auto read_val = system_config_->getNetworkMode();
     read_successful = true;
     read_val_uint = (uint8_t) read_val;
   }
@@ -818,7 +821,7 @@ void handleRequest(std::shared_ptr<Request> req) {
  * @return Whether initializing all gadgets was successful or not
  */
 bool initGadgets() {
-  auto eeprom_gadgets = system_config->getGadgets();
+  auto eeprom_gadgets = system_config_->getGadgets();
 
   logger.printfln("Initializing Gadgets: %d", eeprom_gadgets.size());
   logger.incIndent();
@@ -976,10 +979,10 @@ bool initGadgets() {
 bool initConnectors() {
   logger.println("Initializing Connectors: ");
 
-  uint8_t ir_recv = system_config->getIRRecvPin();
-  uint8_t ir_send = system_config->getIRSendPin();
-  uint8_t radio_recv = system_config->getRadioRecvPin();
-  uint8_t radio_send = system_config->getRadioSendPin();
+  uint8_t ir_recv = system_config_->getIRRecvPin();
+  uint8_t ir_send = system_config_->getIRSendPin();
+  uint8_t radio_recv = system_config_->getRadioRecvPin();
+  uint8_t radio_send = system_config_->getRadioSendPin();
 
   logger.println("Creating IR-Gadget: ");
   logger.incIndent();
@@ -1019,32 +1022,32 @@ bool initNetwork(NetworkMode mode) {
   // initialize Network
   if (mode == NetworkMode::MQTT) {
 
-    if (system_config->getWifiSSID() == nullptr) {
+    if (system_config_->getWifiSSID() == nullptr) {
       logger.println(LOG_TYPE::ERR, "Config has no valid wifi ssid");
       return false;
     }
 
-    if (system_config->getWifiPW() == nullptr) {
+    if (system_config_->getWifiPW() == nullptr) {
       logger.println(LOG_TYPE::ERR, "Config has no valid wifi password");
       return false;
     }
 
-    if (system_config->getMqttIP() == nullptr) {
+    if (system_config_->getMqttIP() == nullptr) {
       logger.println(LOG_TYPE::ERR, "Config has no valid mqtt ip");
       return false;
     }
 
-    if (system_config->getMqttPort() == nullptr) {
+    if (system_config_->getMqttPort() == nullptr) {
       logger.println(LOG_TYPE::ERR, "Config has no valid mqtt port");
       return false;
     }
 
-    std::string ssid = *system_config->getWifiSSID();
-    std::string wifi_pw = *system_config->getWifiPW();
-    uint16_t port = *system_config->getMqttPort();
-    IPAddress ip = *system_config->getMqttIP();
-    std::string user = *system_config->getMqttUsername();
-    std::string mqtt_pw = *system_config->getMqttPassword();
+    std::string ssid = *system_config_->getWifiSSID();
+    std::string wifi_pw = *system_config_->getWifiPW();
+    uint16_t port = *system_config_->getMqttPort();
+    IPAddress ip = *system_config_->getMqttIP();
+    std::string user = *system_config_->getMqttUsername();
+    std::string mqtt_pw = *system_config_->getMqttPassword();
 
     network_gadget = std::make_shared<MQTTGadget>(client_id_,
                                                   ssid,
@@ -1080,7 +1083,7 @@ void initModeSerial() {
  * Initializes the chip in network only mode using the network mode loaded from eeprom
  */
 void initModeNetwork() {
-  auto mode = system_config->getNetworkMode();
+  auto mode = system_config_->getNetworkMode();
   auto status = initNetwork(mode);
 
   if (!status) {
@@ -1092,7 +1095,7 @@ void initModeNetwork() {
  * Initializes the chip with all gadgets and connectors loaded
  */
 void initModeComplete() {
-  auto mode = system_config->getNetworkMode();
+  auto mode = system_config_->getNetworkMode();
   auto status = initNetwork(mode);
 
   if (!status) {
@@ -1349,24 +1352,17 @@ void setup() {
   logger.printfln("Git Commit: %s", getSoftwareGitCommit().c_str());
   logger.decIndent();
 
-  logger.println("Configuration setting:");
-  logger.incIndent();
-  #ifdef STATIC_CONFIG_ACTIVE
-  logger.println("Using static, pre-compiled config");
-  #else
-  logger.println("Using dynamic, EEPROM config");
-  eeprom_active_ = EEPROM_Storage::initEEPROM();
-  if (eeprom_active_) {
-    logger.printfln("EEPROM usage: %d / %d bytes\n", EEPROM_Storage::getEEPROMUsage(), EEPROM_SIZE);
-  } else {
-    logger.println("EEPROM is not initialized");
-    rebootChip("EEPROM error", 15);
+  logger.print("Initializing Storage: ");
+  system_storage_ = std::make_shared<System_Storage>();
+  if (!system_storage_->isInitialized()) {
+    logger.println("Failed");
+    rebootChip("System storage initialization error", 15);
   }
-  #endif
+  logger.println("OK");
 
   logger.print("Loading config: ");
-  system_config = System_Storage::loadConfig();
-  if (system_config == nullptr) {
+  system_config_ = system_storage_->loadConfig();
+  if (system_config_ == nullptr) {
     logger.println("Failed");
     rebootChip("Config loading error", 15);
   }
@@ -1376,7 +1372,7 @@ void setup() {
 
   main_controller = std::make_shared<MainSystemController>(network_task, heartbeat_task);
 
-  client_id_ = system_config->getID();
+  client_id_ = system_config_->getID();
   logger.printfln("Client ID: '%s'", client_id_.c_str());
 
   testStuff();

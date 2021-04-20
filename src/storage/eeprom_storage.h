@@ -15,6 +15,7 @@
 #include "../gadgets/gadget_characteristic_settings.h"
 #include "../status_codes.h"
 #include "config.h"
+#include "system_storage_handler.h"
 
 // valid config bitfield
 #define VALID_CONFIG_BITFIELD_BYTE 0
@@ -92,7 +93,7 @@
 /**
  * System storage class handling EEPROM saving
  */
-class EEPROM_Storage {
+class EEPROM_Storage: SystemStorageHandler {
 private:
 
   /**
@@ -1140,10 +1141,6 @@ private:
     return write_successful;
   }
 
-
-public:
-
-  // init eeprom
   /**
    * Initializes the system EEPROM
    * @return whether the EEPROM was correctly initialized
@@ -1156,6 +1153,16 @@ public:
       return false;
     }
     return true;
+  }
+
+public:
+
+  EEPROM_Storage() {
+    initialized_ = initEEPROM();
+
+    if (initialized_) {
+      logger.printfln("EEPROM usage: %d / %d bytes\n", getEEPROMUsage(), EEPROM_SIZE);
+    }
   }
 
   /**
@@ -1198,7 +1205,7 @@ public:
    * Loads the system config from the EEPROM
    * @return The loaded Config as shared_ptr, nullptr if config could not be loaded
    */
-  static std::shared_ptr<Config> loadConfig() {
+  std::shared_ptr<Config> loadConfig() override {
     std::string id = EEPROM_Storage::readID();
     NetworkMode network_mode = EEPROM_Storage::readNetworkMode();
     auto gadgets = EEPROM_Storage::readAllGadgets();
@@ -1265,7 +1272,7 @@ public:
    * @param config The config to write
    * @return Whether saving was successful
    */
-  static bool writeConfig(Config config) {
+  bool writeConfig(Config config) override {
 
     // Write ID
     bool write_successful = writeID(config.getID());

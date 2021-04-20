@@ -3,37 +3,29 @@
 //#define STATIC_CONFIG_ACTIVE
 
 #include "config_from_json.h"
+#include "system_storage_handler.h"
 
 #ifdef STATIC_CONFIG_ACTIVE
 #include "static_config.h"
 #endif
 
-class StaticStorage {
+class StaticStorage: SystemStorageHandler {
 public:
 
+  StaticStorage() {
+    initialized_ = true;
+  }
+
   /**
-   * Loads the system config from the EEPROM
+   * Loads the system config from the static config string
    * @return The loaded Config as shared_ptr, nullptr if config could not be loaded
    */
-  static std::shared_ptr<Config> loadConfig() {
-    #ifdef STATIC_CONFIG_ACTIVE
-    DynamicJsonDocument static_json_config(5000);
+  std::shared_ptr<Config> loadConfig() override;
 
-    auto err = deserializeJson(static_json_config, STATIC_CONFIG_STR);
-    if (err != DeserializationError::Ok) {
-      logger.printfln(LOG_TYPE::ERR, "Could not load static config: Deserialization Error");
-      return nullptr;
-    }
-
-    auto config = createConfigFromJson(static_json_config);
-
-    if (config == nullptr) {
-      logger.printfln(LOG_TYPE::ERR, "Could not load static config: Config Loading Error");
-    }
-
-    return config;
-    #else
-    return nullptr;
-    #endif
-  }
+  /**
+   * In static config mode, configs cannot be saved. Always returns false.
+   * @param config Config one would want to save
+   * @return Always False.
+   */
+  bool writeConfig(Config config) override;
 };

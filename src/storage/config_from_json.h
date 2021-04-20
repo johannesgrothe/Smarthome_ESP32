@@ -1,5 +1,10 @@
 #pragma once
 
+#include "ArduinoJson.h"
+#include "datatypes.h"
+#include "config.h"
+#include "../json_check.h"
+
 /**
  * Writes a gadget from the config json body
  * @param json_body JSON-data to save the gadget from
