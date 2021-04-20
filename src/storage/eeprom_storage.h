@@ -766,7 +766,7 @@ private:
    */
   static bool writeID(const std::string& id) {
     bool success;
-    if (id == "null") {
+    if (id == "") {
       setContentFlag(CONFIG_CHECK_INDEX_ID, false);
       success = true;
     } else {
@@ -804,7 +804,7 @@ private:
    */
   static bool writeWifiSSID(const std::string& ssid) {
     bool success;
-    if (ssid == "null") {
+    if (ssid == "") {
       setContentFlag(CONFIG_CHECK_INDEX_WIFI_SSID, false);
       success = true;
     } else {
@@ -837,7 +837,7 @@ private:
    */
   static bool writeWifiPW(const std::string& pw) {
     bool success;
-    if (pw == "null") {
+    if (pw == "") {
       setContentFlag(CONFIG_CHECK_INDEX_WIFI_PW, false);
       success = true;
     } else {
@@ -945,7 +945,7 @@ private:
   static bool writeMQTTUsername(const std::string &username) {
     bool success;
     success = writeString(MQTT_USER_POS, MQTT_USER_MAX_LEN, username);
-    if (username == "null") {
+    if (username == "") {
       setContentFlag(CONFIG_CHECK_INDEX_MQTT_USER, false);
       success = true;
     } else {
@@ -978,7 +978,7 @@ private:
   static bool writeMQTTPassword(const std::string &pw) {
     bool success;
     success = writeString(MQTT_PW_POS, MQTT_PW_MAX_LEN, pw);
-    if (pw == "null") {
+    if (pw == "") {
       setContentFlag(CONFIG_CHECK_INDEX_MQTT_PW, false);
       success = true;
     } else {
@@ -1050,6 +1050,97 @@ private:
     EEPROM.commit();
   }
 
+  /**
+ * Writes the value of a param to the eeprom
+ * @param param_name Name of the param to write
+ * @param param_val Value of the param as string
+ * @param param_val_uint Value of the param as uint
+ * @return whether writing was successful
+ */
+  bool writeConfigParam(const std::string &param_name, const std::string &param_val, uint8_t param_val_uint) {
+    logger.printfln("Write param '%s': ", param_name.c_str());
+    bool write_successful = false;
+
+    // write ID
+    if (param_name == "id") {
+      write_successful = EEPROM_Storage::writeID(param_val);
+    }
+
+      // Write Wifi SSID
+    else if (param_name == "wifi_ssid") {
+      write_successful = EEPROM_Storage::writeWifiSSID(param_val);
+    }
+
+      // Write Wifi PW
+    else if (param_name == "wifi_pw") {
+      write_successful = EEPROM_Storage::writeWifiPW(param_val);
+    }
+
+      // Write MQTT IP
+    else if (param_name == "mqtt_ip") {
+      if (param_val == "") {
+        write_successful = EEPROM_Storage::writeMQTTIP(IPAddress(0, 0, 0, 0));
+      } else {
+        IPAddress buf_ip;
+        buf_ip.fromString(param_val.c_str());
+        write_successful = EEPROM_Storage::writeMQTTIP(buf_ip);
+      }
+    }
+
+      // Write MQTT Port
+    else if (param_name == "mqtt_port") {
+      write_successful = EEPROM_Storage::writeMQTTPort((uint16_t) atoi(param_val.c_str()));
+    }
+
+      // Write MQTT User
+    else if (param_name == "mqtt_user") {
+      write_successful = EEPROM_Storage::writeMQTTUsername(param_val);
+    }
+
+      // Write MQTT PW
+    else if (param_name == "mqtt_pw") {
+      write_successful = EEPROM_Storage::writeMQTTPassword(param_val);
+    }
+
+      // Write IR recv
+    else if (param_name == "irrecv_pin") {
+      write_successful = EEPROM_Storage::writeIRrecvPin(param_val_uint);
+    }
+
+      // Write IR send
+    else if (param_name == "irsend_pin") {
+      write_successful = EEPROM_Storage::writeIRsendPin(param_val_uint);
+    }
+
+      // Write radio receiver pin
+    else if (param_name == "radio_recv_pin") {
+      write_successful = EEPROM_Storage::writeRadioRecvPin(param_val_uint);
+    }
+
+      // Write radio sender pin
+    else if (param_name == "radio_send_pin") {
+      write_successful = EEPROM_Storage::writeRadioSendPin(param_val_uint);
+    }
+
+      // Write network mode
+    else if (param_name == "network_mode") {
+      if (param_val_uint < NetworkModeCount) {
+        write_successful = EEPROM_Storage::writeNetworkMode((NetworkMode) param_val_uint);
+      } else {
+        write_successful = false;
+      }
+    }
+
+    if (write_successful) {
+      logger.println("OK");
+    } else {
+      logger.println(LOG_TYPE::ERR, "Failed");
+    }
+
+    return write_successful;
+  }
+
+
 public:
 
   // init eeprom
@@ -1104,8 +1195,8 @@ public:
   }
 
   /**
-   * Loads the system config
-   * @return The loaded Config
+   * Loads the system config from the EEPROM
+   * @return The loaded Config as shared_ptr, nullptr if config could not be loaded
    */
   static std::shared_ptr<Config> loadConfig() {
     std::string id = EEPROM_Storage::readID();
@@ -1169,238 +1260,83 @@ public:
     return std::make_shared<Config>(cfg);
   }
 
+  /**
+   * Saves the config to the EEPROM
+   * @param config The config to write
+   * @return Whether saving was successful
+   */
+  static bool writeConfig(Config config) {
 
+    // Write ID
+    bool write_successful = writeID(config.getID());
 
+    // Write Network Mode
+    write_successful &= writeNetworkMode(config.getNetworkMode());
 
+    // Write Pins
+    write_successful &= writeIRrecvPin(config.getIRRecvPin());
+    write_successful &= writeIRsendPin(config.getIRSendPin());
+    write_successful &= writeRadioRecvPin(config.getRadioRecvPin());
+    write_successful &= writeRadioSendPin(config.getRadioSendPin());
 
-  
-
-/**
- * Writes a gadget from the config json body
- * @param json_body JSON-data to save the gadget from
- * @return (Whether writing was successful | Status-Message)
- */
-  WriteGadgetStatus writeGadget(DynamicJsonDocument json_body) {
-    auto type = json_body["type"].as<uint8_t>();
-
-    auto name = json_body["name"].as<std::string>();
-
-    uint8_t port0 = 0;
-    uint8_t port1 = 0;
-    uint8_t port2 = 0;
-    uint8_t port3 = 0;
-    uint8_t port4 = 0;
-
-    if (json_body.containsKey("ports")) {
-      JsonObject ports = json_body["ports"].as<JsonObject>();
-      if (ports.containsKey("port0")) {
-        port0 = ports["port0"].as<uint8_t>();
-      }
-      if (ports.containsKey("port1")) {
-        port1 = ports["port1"].as<uint8_t>();
-      }
-      if (ports.containsKey("port2")) {
-        port2 = ports["port2"].as<uint8_t>();
-      }
-      if (ports.containsKey("port3")) {
-        port3 = ports["port3"].as<uint8_t>();
-      }
-      if (ports.containsKey("port4")) {
-        port4 = ports["port4"].as<uint8_t>();
-      }
+    // Write Wifi SSID
+    if (config.getWifiSSID() != nullptr && ((hasValidWifiSSID() && *config.getWifiSSID() != readWifiSSID()) || !hasValidWifiSSID())) {
+      write_successful &= writeWifiSSID(*config.getWifiSSID());
+    } else if (config.getWifiSSID() == nullptr && hasValidWifiSSID()) {
+      write_successful &= writeWifiSSID("");
     }
 
-    pin_set pins = {port0, port1, port2, port3, port4};
-
-    std::string gadget_config;
-    std::string code_config;
-
-    if (json_body.containsKey("config")) {
-      gadget_config = json_body["config"].as<std::string>();
-    }
-    if (json_body.containsKey("codes")) {
-      code_config = json_body["codes"].as<std::string>();
+    // Write Wifi PW
+    if (config.getWifiPW() != nullptr && ((hasValidWifiPW() && *config.getWifiPW() != readWifiPW()) || !hasValidWifiPW())) {
+      write_successful &= writeWifiPW(*config.getWifiPW());
+    } else if (config.getWifiPW() == nullptr && hasValidWifiPW()) {
+      write_successful &= writeWifiPW("");
     }
 
-    // Create bitfield
-    bitfield_set remote_bf = {false, false, false, false, false, false, false, false};
-
-    if (json_body.containsKey("remotes")) {
-      JsonObject remote_json = json_body["remotes"].as<JsonObject>();
-      if (remote_json.containsKey("gadget")) {
-        remote_bf[0] = remote_json["gadget"].as<bool>();
-      }
-      if (remote_json.containsKey("code")) {
-        remote_bf[1] = remote_json["code"].as<bool>();
-      }
-      if (remote_json.containsKey("event")) {
-        remote_bf[2] = remote_json["event"].as<bool>();
-      }
+    // Write MQTT IP
+    if (config.getMqttIP() != nullptr && ((hasValidMQTTIP() && *config.getMqttIP() != readMQTTIP()) || !hasValidMQTTIP())) {
+      write_successful &= writeMQTTIP(*config.getMqttIP());
+    } else if (config.getMqttIP() == nullptr && hasValidMQTTIP()) {
+      write_successful &= writeMQTTIP(IPAddress(0, 0, 0, 0));
     }
 
-    auto status = writeGadget(type, remote_bf, pins, name, gadget_config, code_config);
-    return status;
-  }
-
-/**
- * Writes the value of a param to the eeprom
- * @param param_name Name of the param to write
- * @param param_val Value of the param as string
- * @param param_val_uint Value of the param as uint
- * @return whether writing was successful
- */
-  bool writeConfigParam(const std::string &param_name, const std::string &param_val, uint8_t param_val_uint) {
-    logger.printfln("Write param '%s'", param_name.c_str());
-    bool write_successful = false;
-
-    // write ID
-    if (param_name == "id") {
-      write_successful = EEPROM_Storage::writeID(param_val);
+    // Write MQTT Port
+    if (config.getMqttPort() != nullptr && ((hasValidMQTTPort() && *config.getMqttPort() != readMQTTPort()) || !hasValidMQTTPort())) {
+      write_successful &= writeMQTTPort(*config.getMqttPort());
+    } else if (config.getMqttPort() == nullptr && hasValidMQTTPort()) {
+      write_successful &= writeMQTTPort(0);
     }
 
-      // Write Wifi SSID
-    else if (param_name == "wifi_ssid") {
-      write_successful = EEPROM_Storage::writeWifiSSID(param_val);
+    // Write MQTT Username
+    if (config.getMqttUsername() != nullptr && ((hasValidMQTTUsername() && *config.getMqttUsername() != readMQTTUsername()) || !hasValidMQTTUsername())) {
+      write_successful &= writeMQTTUsername(*config.getMqttUsername());
+    } else if (config.getMqttUsername() == nullptr && hasValidMQTTUsername()) {
+      write_successful &= writeMQTTUsername(0);
     }
 
-      // Write Wifi PW
-    else if (param_name == "wifi_pw") {
-      write_successful = EEPROM_Storage::writeWifiPW(param_val);
+    // Write MQTT PW
+    if (config.getMqttPassword() != nullptr && ((hasValidMQTTPassword() && *config.getMqttPassword() != readMQTTPassword()) || !hasValidMQTTPassword())) {
+      write_successful &= writeMQTTPassword(*config.getMqttPassword());
+    } else if (config.getMqttPassword() == nullptr && hasValidMQTTPassword()) {
+      write_successful &= writeMQTTPassword(0);
     }
 
-      // Write MQTT IP
-    else if (param_name == "mqtt_ip") {
-      if (param_val == "null") {
-        write_successful = EEPROM_Storage::writeMQTTIP(IPAddress(0, 0, 0, 0));
-      } else {
-        IPAddress buf_ip;
-        buf_ip.fromString(param_val.c_str());
-        write_successful = EEPROM_Storage::writeMQTTIP(buf_ip);
-      }
-    }
+    resetGadgets();
 
-      // Write MQTT Port
-    else if (param_name == "mqtt_port") {
-      write_successful = EEPROM_Storage::writeMQTTPort((uint16_t) atoi(param_val.c_str()));
-    }
+    for (auto gadget_data: config.getGadgets()) {
+      uint8_t type = std::get<0>(gadget_data);
+      bitfield_set bitfield = std::get<1>(gadget_data);
+      pin_set ports = std::get<2>(gadget_data);
+      std::string name = std::get<3>(gadget_data);
+      std::string gadget_config = std::get<4>(gadget_data);
+      std::string code_config = std::get<5>(gadget_data);
 
-      // Write MQTT User
-    else if (param_name == "mqtt_user") {
-      write_successful = EEPROM_Storage::writeMQTTUsername(param_val);
-    }
-
-      // Write MQTT PW
-    else if (param_name == "mqtt_pw") {
-      write_successful = EEPROM_Storage::writeMQTTPassword(param_val);
-    }
-
-      // Write IR recv
-    else if (param_name == "irrecv_pin") {
-      write_successful = EEPROM_Storage::writeIRrecvPin(param_val_uint);
-    }
-
-      // Write IR send
-    else if (param_name == "irsend_pin") {
-      write_successful = EEPROM_Storage::writeIRsendPin(param_val_uint);
-    }
-
-      // Write radio receiver pin
-    else if (param_name == "radio_recv_pin") {
-      write_successful = EEPROM_Storage::writeRadioRecvPin(param_val_uint);
-    }
-
-      // Write radio sender pin
-    else if (param_name == "radio_send_pin") {
-      write_successful = EEPROM_Storage::writeRadioSendPin(param_val_uint);
-    }
-
-      // Write network mode
-    else if (param_name == "network_mode") {
-      if (param_val_uint < NetworkModeCount) {
-        write_successful = EEPROM_Storage::writeNetworkMode((NetworkMode) param_val_uint);
-      } else {
+      auto status = writeGadget(type, bitfield, ports, name, gadget_config, code_config);
+      if (status != WriteGadgetStatus::WritingOK) {
         write_successful = false;
       }
     }
 
     return write_successful;
   }
-
-  /**
-   * Writes and applies complete config file
-   * @param config Config to write
-   * @return Whether writing was successful
-   */
-  bool writeConfig(DynamicJsonDocument config) {
-    logger.println("Writing config");
-    logger.incIndent();
-
-    logger.println("Writing system preferences");
-    logger.incIndent();
-
-    bool writing_data_successful = true;
-
-    // Write system preferences
-    if (config.containsKey("data")) {
-      const JsonObject preference_data = config["data"];
-      for (auto param_name: config_keys) {
-        if (preference_data.containsKey(param_name)) {
-
-          // Extract Data
-          std::string string_value = preference_data[param_name];
-          uint8_t uint_value = preference_data[param_name];
-
-          auto result = writeConfigParam(param_name, string_value, uint_value);
-          logger.incIndent();
-          if (result) {
-            logger.printfln(LOG_TYPE::DATA, "Writing '%s' was successful", param_name.c_str());
-          } else {
-            logger.printfln(LOG_TYPE::ERR, "Writing '%s' failed", param_name.c_str());
-            writing_data_successful = false;
-          }
-          logger.decIndent();
-        } else {
-          logger.printfln(LOG_TYPE::DATA, "Skipped '%s'", param_name.c_str());
-        }
-      }
-    } else {
-      logger.println(LOG_TYPE::DATA, "No 'data' in config");
-    }
-
-    logger.decIndent();
-
-    logger.println("Writing gadgets");
-    logger.incIndent();
-
-    // Write Gadgets
-    if (config.containsKey("gadgets")) {
-      JsonArray gadgets_list = config["gadgets"];
-      for (auto gadget_data: gadgets_list) {
-        if (gadget_data.containsKey("type") && gadget_data.containsKey("name")) {
-          auto write_status = writeGadget(gadget_data);
-
-          std::string gadget_name = gadget_data["name"];
-          logger.incIndent();
-          if (write_status == WriteGadgetStatus::WritingOK) {
-            logger.printfln(LOG_TYPE::INFO, "Writing '%s' was successful", gadget_name.c_str());
-          } else {
-            auto err_msg = writeGadgetStatusToString(write_status);
-            logger.printfln(LOG_TYPE::ERR, "Writing '%s' failed: %s", gadget_name.c_str(), err_msg.c_str());
-            writing_data_successful = false;
-          }
-          logger.decIndent();
-        } else {
-          logger.println(LOG_TYPE::ERR, "'type' or 'name' missing in gadget config");
-        }
-      }
-    } else {
-      logger.println(LOG_TYPE::DATA, "No 'gadgets' in config");
-    }
-
-    logger.decIndent();
-    logger.decIndent();
-
-    return writing_data_successful;
-  }
-
 };

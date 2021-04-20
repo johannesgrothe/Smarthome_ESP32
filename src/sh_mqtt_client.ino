@@ -510,7 +510,7 @@ void handleConfigWriteRequest(std::shared_ptr<Request> req) {
     auto reset_config = json_body["reset_config"].as<bool>();
     auto reset_gadgets = json_body["reset_gadgets"].as<bool>();
 
-    auto config = System_Storage::createConfigFromJson(json_body["config"].as<JsonObject>());
+    auto config = createConfigFromJson(json_body["config"].as<JsonObject>());
 
     if (config == nullptr) {
       logger.println(LOG_TYPE::ERR, "Failed to create config object from json");

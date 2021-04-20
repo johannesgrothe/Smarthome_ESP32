@@ -4,7 +4,7 @@ import argparse
 import json
 from datetime import datetime
 
-file_name = "static_storage.h"
+file_name = "static_config.h"
 file_path = os.path.join("src", "storage", file_name)
 
 
