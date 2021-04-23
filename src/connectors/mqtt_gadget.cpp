@@ -25,15 +25,15 @@ bool MQTTGadget::connect_mqtt() {
 
       logger.println(LOG_TYPE::DATA, "Subscribing to topics:");
       logger.incIndent();
-      for (const auto& list_path: broadcast_request_paths) {
+      for (const auto &list_path: broadcast_request_paths) {
         subscribe_to_topic(list_path);
       }
 
-      for (const auto& list_path: system_request_paths) {
+      for (const auto &list_path: system_request_paths) {
         subscribe_to_topic(list_path);
       }
 
-      for (const auto& list_path: additional_request_paths) {
+      for (const auto &list_path: additional_request_paths) {
         subscribe_to_topic(list_path);
       }
 
@@ -94,85 +94,41 @@ void MQTTGadget::callback(char *topic, const byte *payload, const unsigned int l
 }
 
 void MQTTGadget::executeRequestSending(std::shared_ptr<Request> req) {
+  Serial.println("p");
   std::string topic = req->getPath();
+  Serial.println("queue");
   std::string body = req->getBody();
-  logger.printfln("System / MQTT", "publishing on '%s': ", topic.c_str());
-  bool status;
-  uint16_t msg_len = body.size();
-  status = mqttClient_->publish(topic.c_str(), body.c_str());
+  Serial.println("r");
+  logger.printfln("MQTT publishing on '%s': ", topic.c_str());
+  bool status = mqttClient_->publish(topic.c_str(), body.c_str());
   mqttClient_->endPublish();
-//  status = mqttClient_->beginPublish(topic.c_str(), msg_len, false);
-//  uint16_t k;
-//  for (
-//    k = 0;
-//    k < msg_len;
-//    k++) {
-//    status = status && mqttClient_->write(body[k]);
-//  }
-//  status = status && mqttClient_->endPublish();
   if (status)
     logger.println("OK");
   else
     logger.println("ERR");
 }
 
-MQTTGadget::MQTTGadget(const std::string& client_name,
+MQTTGadget::MQTTGadget(const std::string &client_name,
                        std::string wifi_ssid,
                        std::string wifi_pw,
-                       const IPAddress& mqtt_ip,
+                       const IPAddress &mqtt_ip,
                        uint16_t mqtt_port,
-                       const std::string& mqtt_username,
-                       const std::string& mqtt_pw) :
+                       const std::string &mqtt_username,
+                       const std::string &mqtt_pw) :
     WiFiGadget(std::move(wifi_ssid), std::move(wifi_pw)),
     RequestGadget(RequestGadgetType::MQTT_G),
     mqttServer_(mqtt_ip),
     mqtt_port_(mqtt_port),
+    username_(),
+    password_(),
     has_credentials_(true),
     client_name_(client_name) {
   if (wifiIsInitialized()) {
-    logger.println("Creating MQTT Gadget");
-    logger.incIndent();
-    mqttClient_ = new PubSubClient(network_client_);
-    bool everything_ok = true;
+    bool everything_ok = initMqttClient(mqttServer_, mqtt_port_);
 
-    // Check IP
-    if (mqtt_ip == IPAddress(0, 0, 0, 0)) {
-      everything_ok = false;
-      logger.println(LOG_TYPE::ERR, "'ip' is null");
-    } else {
-      logger.printfln("IP: %s", mqtt_ip.toString().c_str());
-    }
+    logger.printfln(LOG_TYPE::DATA, "Username: %s", username_.c_str());
 
-    // Check port
-    if (mqtt_port != 0) {
-      mqtt_port_ = mqtt_port;
-      logger.print(LOG_TYPE::DATA, "Port: ");
-      logger.println(mqtt_port_);
-    } else {
-      everything_ok = false;
-      logger.println(LOG_TYPE::ERR, "'port' is 0");
-    }
-
-    // Check username
-    if (mqtt_username != "null") {
-      username_ = mqtt_username;
-      logger.print(LOG_TYPE::DATA, "Username: ");
-      logger.println(username_);
-    } else {
-      // everything_ok = false;
-      has_credentials_ = false;
-      logger.println(LOG_TYPE::WARN, "no 'username' configured.");
-    }
-
-    // Check password
-    if (mqtt_pw != "null") {
-      password_ = mqtt_pw;
-      logger.print(LOG_TYPE::DATA, "Password: ");
-      logger.println(password_);
-    } else {
-      has_credentials_ = false;
-      logger.println(LOG_TYPE::WARN, "no 'password' configured.");
-    }
+    logger.printfln(LOG_TYPE::DATA, "Password: %s", password_.c_str());
 
     connect_mqtt();
     logger.decIndent();
@@ -183,6 +139,56 @@ MQTTGadget::MQTTGadget(const std::string& client_name,
   }
 }
 
+MQTTGadget::MQTTGadget(const string &client_name, std::string wifi_ssid, std::string wifi_pw, const IPAddress &mqtt_ip,
+                       uint16_t mqtt_port) :
+    WiFiGadget(std::move(wifi_ssid), std::move(wifi_pw)),
+    RequestGadget(RequestGadgetType::MQTT_G),
+    mqttServer_(mqtt_ip),
+    mqtt_port_(mqtt_port),
+    username_(),
+    password_(),
+    has_credentials_(false),
+    client_name_(client_name) {
+  if (wifiIsInitialized()) {
+    bool everything_ok = initMqttClient(mqttServer_, mqtt_port_);
+
+    connect_mqtt();
+    logger.decIndent();
+    request_gadget_is_ready_ = everything_ok;
+  } else {
+    logger.println(LOG_TYPE::ERR, "Cannot initialize MQTT: WiFi not working.");
+    request_gadget_is_ready_ = false;
+  }
+}
+
+bool
+MQTTGadget::initMqttClient(const IPAddress &mqtt_ip, uint16_t mqtt_port) {
+
+  logger.println("Creating MQTT Gadget");
+  logger.incIndent();
+  mqttClient_ = new PubSubClient(network_client_);
+  bool everything_ok = true;
+
+  // Check IP
+  if (mqtt_ip == IPAddress(0, 0, 0, 0)) {
+    everything_ok = false;
+    logger.println(LOG_TYPE::ERR, "'ip' is null");
+  } else {
+    logger.printfln("IP: %s", mqtt_ip.toString().c_str());
+  }
+
+  // Check port
+  if (mqtt_port != 0) {
+    mqtt_port_ = mqtt_port;
+    logger.printfln(LOG_TYPE::DATA, "Port: %d", mqtt_port_);
+  } else {
+    everything_ok = false;
+    logger.println(LOG_TYPE::ERR, "'port' is 0");
+  }
+
+  return everything_ok;
+}
+
 void MQTTGadget::refresh_network() {
   if (!mqttClient_->connected()) {
     connect_mqtt();
@@ -191,7 +197,7 @@ void MQTTGadget::refresh_network() {
   sendQueuedItems();
 }
 
-bool MQTTGadget::subscribe_to_topic(const std::string& topic) {
+bool MQTTGadget::subscribe_to_topic(const std::string &topic) {
   bool status = mqttClient_->subscribe(topic.c_str());
   if (status) {
     logger.printfln("Subscribed to %s", topic.c_str());

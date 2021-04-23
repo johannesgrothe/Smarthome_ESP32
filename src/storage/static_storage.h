@@ -3,18 +3,22 @@
 //#define STATIC_CONFIG_ACTIVE
 
 #include "config_from_json.h"
-#include "system_storage_handler.h"
+#include "system_storage.h"
 
 #ifdef STATIC_CONFIG_ACTIVE
 #include "static_config.h"
 #endif
 
-class StaticStorage: SystemStorageHandler {
+class StaticStorage: public SystemStorage {
 public:
 
-  StaticStorage() {
-    initialized_ = true;
-  }
+  StaticStorage();
+
+  /**
+   * Checks whether a static config string is available for loading
+   * @return Whether a static config string is available for loading
+   */
+  static bool staticConfigStringAvailable();
 
   /**
    * Loads the system config from the static config string
@@ -27,5 +31,5 @@ public:
    * @param config Config one would want to save
    * @return Always False.
    */
-  bool writeConfig(Config config) override;
+  bool saveConfig(Config config) override;
 };

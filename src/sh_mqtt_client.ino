@@ -32,6 +32,8 @@
 #include "Client.h"
 
 #include "gadget_collection.h"
+#include "storage/static_storage.h"
+#include "storage/eeprom_storage.h"
 #include "storage/system_storage.h"
 
 #include "pin_profile.h"
@@ -107,13 +109,13 @@ std::string client_id_;
 int runtime_id_;
 
 // System config management object
-std::shared_ptr<System_Storage> system_storage_ = nullptr;
-
-// Mode how the system should operate
-BootMode system_mode_ = BootMode::Unknown_Mode;
+std::shared_ptr<SystemStorage> system_storage_ = nullptr;
 
 // Config used by the system
 std::shared_ptr<Config> system_config_ = nullptr;
+
+// Mode how the system should operate
+BootMode system_mode_ = BootMode::Unknown_Mode;
 
 // Infrared-gadget receiving and/or sending infrared codes
 std::shared_ptr<IR_Gadget> ir_gadget;
@@ -1014,10 +1016,13 @@ bool initConnectors() {
  * @return Whether initializing network was successful or not
  */
 bool initNetwork(NetworkMode mode) {
+  Serial.println(int(mode));
   if (mode == NetworkMode::None) {
     logger.println(LOG_TYPE::ERR, "No network configured.");
     return false;
   }
+
+  Serial.println("y");
 
   // initialize Network
   if (mode == NetworkMode::MQTT) {
@@ -1042,20 +1047,37 @@ bool initNetwork(NetworkMode mode) {
       return false;
     }
 
-    std::string ssid = *system_config_->getWifiSSID();
-    std::string wifi_pw = *system_config_->getWifiPW();
-    uint16_t port = *system_config_->getMqttPort();
-    IPAddress ip = *system_config_->getMqttIP();
-    std::string user = *system_config_->getMqttUsername();
-    std::string mqtt_pw = *system_config_->getMqttPassword();
+    Serial.println("z");
 
-    network_gadget = std::make_shared<MQTTGadget>(client_id_,
-                                                  ssid,
-                                                  wifi_pw,
-                                                  ip,
-                                                  port,
-                                                  user,
-                                                  mqtt_pw);
+    std::string ssid = *system_config_->getWifiSSID();
+    Serial.println("*");
+    std::string wifi_pw = *system_config_->getWifiPW();
+    Serial.println("*");
+    uint16_t port = *system_config_->getMqttPort();
+    Serial.println("*");
+    IPAddress ip = *system_config_->getMqttIP();
+    Serial.println("*");
+
+    if (!system_config_->getMqttUsername() || system_config_->getMqttPassword()) {
+      logger.println("Establishing MQTT connection without credentials");
+      network_gadget = std::make_shared<MQTTGadget>(client_id_,
+                                                    ssid,
+                                                    wifi_pw,
+                                                    ip,
+                                                    port);
+    } else {
+      logger.println("Establishing MQTT connection using credentials");
+      std::string user = *system_config_->getMqttUsername();
+      std::string mqtt_pw = *system_config_->getMqttPassword();
+
+      network_gadget = std::make_shared<MQTTGadget>(client_id_,
+                                                    ssid,
+                                                    wifi_pw,
+                                                    ip,
+                                                    port,
+                                                    user,
+                                                    mqtt_pw);
+    }
 
   } else if (mode == NetworkMode::Serial) {
     network_gadget = std::make_shared<SerialGadget>();
@@ -1352,13 +1374,22 @@ void setup() {
   logger.printfln("Git Commit: %s", getSoftwareGitCommit().c_str());
   logger.decIndent();
 
-  logger.print("Initializing Storage: ");
-  system_storage_ = std::make_shared<System_Storage>();
+  logger.println("Initializing Storage:");
+  logger.incIndent();
+
+  auto yolo = std::make_shared<StaticStorage>();
+
+  if (StaticStorage::staticConfigStringAvailable()) {
+    logger.println("Using static, pre-compiled config");
+    system_storage_ = std::make_shared<StaticStorage>();
+  } else {
+    logger.println("Using dynamic, EEPROM config");
+    system_storage_ = std::make_shared<EepromStorage>();
+  }
+
   if (!system_storage_->isInitialized()) {
-    logger.println("Failed");
     rebootChip("System storage initialization error", 15);
   }
-  logger.println("OK");
 
   logger.print("Loading config: ");
   system_config_ = system_storage_->loadConfig();

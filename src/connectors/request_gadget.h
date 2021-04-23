@@ -12,6 +12,7 @@
 #include "../console_logger.h"
 #include "request.h"
 #include "split_request_buffer.h"
+#include "request_queue.h"
 
 enum class RequestGadgetType {
   MQTT_G, SERIAL_G, NONE_G
@@ -30,13 +31,13 @@ protected:
   bool request_gadget_is_ready_;
 
   // Queue for requests detected by the implementation in child class
-  QueueHandle_t buffer_in_request_queue_;
+  RequestQueue buffer_in_request_queue_;
 
   // Queue for new requests ready to be accessible by the outside
-  QueueHandle_t in_request_queue_;
+  RequestQueue in_request_queue_;
 
   // Queue for requests that need to be send
-  QueueHandle_t out_request_queue_;
+  RequestQueue out_request_queue_;
 
   /**
    * Adds a request to the 'incoming'-queue

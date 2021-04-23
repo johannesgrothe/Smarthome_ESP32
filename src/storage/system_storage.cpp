@@ -1,8 +1,8 @@
-#include "system_storage_handler.h"
+#include "system_storage.h"
 
-bool SystemStorageHandler::isInitialized() const {
+bool SystemStorage::isInitialized() const {
   return initialized_;
 }
 
-SystemStorageHandler::SystemStorageHandler() :
+SystemStorage::SystemStorage() :
     initialized_(false) {}

@@ -1,27 +1,46 @@
 #include "static_storage.h"
+#include <strstream>
 
-std::shared_ptr <Config> StaticStorage::loadConfig() {
-  #ifdef STATIC_CONFIG_ACTIVE
-  DynamicJsonDocument static_json_config(5000);
-
-    auto err = deserializeJson(static_json_config, STATIC_CONFIG_STR);
-    if (err != DeserializationError::Ok) {
-      logger.printfln(LOG_TYPE::ERR, "Could not load static config: Deserialization Error");
-      return nullptr;
-    }
-
-    auto config = createConfigFromJson(static_json_config);
-
-    if (config == nullptr) {
-      logger.printfln(LOG_TYPE::ERR, "Could not load static config: Config Loading Error");
-    }
-
-    return config;
-  #else
-  return nullptr;
-  #endif
+StaticStorage::StaticStorage() {
+  initialized_ = staticConfigStringAvailable();
 }
 
-bool StaticStorage::writeConfig(Config config) {
+std::shared_ptr <Config> StaticStorage::loadConfig() {
+
+  std::stringstream ss;
+
+  #ifdef STATIC_CONFIG_ACTIVE
+  ss << STATIC_CONFIG_STR;
+  #else
+  logger.printfln(LOG_TYPE::ERR, "Could not load static config: No static config found");
+  return nullptr;
+  #endif
+
+  DynamicJsonDocument static_json_config(5000);
+
+  auto err = deserializeJson(static_json_config, ss.str());
+  if (err != DeserializationError::Ok) {
+    logger.printfln(LOG_TYPE::ERR, "Could not load static config: Deserialization Error");
+    return nullptr;
+  }
+
+  auto config = createConfigFromJson(static_json_config);
+
+  if (config == nullptr) {
+    logger.printfln(LOG_TYPE::ERR, "Could not load static config: Failed to create config from json");
+  }
+
+  return config;
+}
+
+bool StaticStorage::saveConfig(Config config) {
   return false;
+}
+
+bool StaticStorage::staticConfigStringAvailable() {
+  #ifdef STATIC_CONFIG_ACTIVE
+  return true;
+  #else
+  return false;
+  #endif
 }

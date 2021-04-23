@@ -2,7 +2,7 @@
 
 #include "config.h"
 
-class SystemStorageHandler {
+class SystemStorage {
 protected:
   bool initialized_;
 
@@ -11,7 +11,7 @@ public:
   /**
    * Constructor for this meta class
    */
-  SystemStorageHandler();
+  SystemStorage();
 
   /**
    * Whether the storage implementation was successfully initialized and is ready to use
@@ -30,5 +30,5 @@ public:
    * @param config The config to write
    * @return Whether saving was successful
    */
-  virtual bool writeConfig(Config config) = 0;
+  virtual bool saveConfig(Config config) = 0;
 };

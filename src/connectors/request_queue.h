@@ -31,4 +31,10 @@ public:
    * @return The first element in the queue
    */
   std::shared_ptr<Request> pop();
+
+  /**
+   * Checks if the queue is empty
+   * @return Whether the queue is empty or not
+   */
+  bool isEmpty() const;
 };

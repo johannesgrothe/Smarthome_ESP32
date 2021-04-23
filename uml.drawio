@@ -1169,7 +1169,7 @@
         <mxCell id="FZHaBAz50RAus1CbGzk9-4" value="+ readConfig(buffer: char *): bool" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="FZHaBAz50RAus1CbGzk9-1" vertex="1">
           <mxGeometry y="26" width="430" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="FZHaBAz50RAus1CbGzk9-5" value="+ writeConfig(config_data: const char *): bool" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="FZHaBAz50RAus1CbGzk9-1" vertex="1">
+        <mxCell id="FZHaBAz50RAus1CbGzk9-5" value="+ saveConfig(config_data: const char *): bool" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="FZHaBAz50RAus1CbGzk9-1" vertex="1">
           <mxGeometry y="52" width="430" height="26" as="geometry" />
         </mxCell>
         <mxCell id="FZHaBAz50RAus1CbGzk9-11" value="+ updateConfig(category: const char *, config_data: JsonObject): bool" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="FZHaBAz50RAus1CbGzk9-1" vertex="1">

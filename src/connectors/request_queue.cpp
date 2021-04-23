@@ -15,3 +15,7 @@ std::shared_ptr<Request> RequestQueue::pop() {
   queue_.pop();
   return val;
 }
+
+bool RequestQueue::isEmpty() const {
+  return queue_.empty();
+}

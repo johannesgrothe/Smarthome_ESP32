@@ -2,48 +2,36 @@
 
 #include <utility>
 
-QueueHandle_t createRequestQueue() {
-  return xQueueCreate(REQUEST_QUEUE_LEN, sizeof(std::shared_ptr<Request>));
-}
-
 // RequestGadget
-void RequestGadget::addIncomingRequest(std::shared_ptr<Request>request) {
-  xQueueSend(buffer_in_request_queue_, &request, portMAX_DELAY);
+void RequestGadget::addIncomingRequest(std::shared_ptr<Request> request) {
+  buffer_in_request_queue_.push(request);
 }
 
 void RequestGadget::sendQueuedItems() {
   if (!request_gadget_is_ready_) {
     return;
   }
-  if (uxQueueMessagesWaiting(out_request_queue_) > 0) {
-    Serial.println("b");
-    std::shared_ptr<Request>buf_req;
-    Serial.println("c");
-    xQueueReceive(out_request_queue_, &buf_req, portMAX_DELAY);
-    Serial.println("d");
+  auto buf_req = out_request_queue_.pop();
+  if (buf_req) {
     executeRequestSending(buf_req);
-    Serial.println("e");
   }
 }
 
 RequestGadget::RequestGadget() :
     split_req_buffer_(nullptr),
     type_(RequestGadgetType::NONE_G),
-    request_gadget_is_ready_(false) {
-  buffer_in_request_queue_ = createRequestQueue();
-  in_request_queue_ = createRequestQueue();
-  out_request_queue_ = createRequestQueue();
-}
+    request_gadget_is_ready_(false),
+    buffer_in_request_queue_(),
+    in_request_queue_(),
+    out_request_queue_() {}
 
 RequestGadget::RequestGadget(RequestGadgetType t) :
     split_req_buffer_(nullptr),
     type_(t),
-    request_gadget_is_ready_(false) {
-  buffer_in_request_queue_ = createRequestQueue();
-  in_request_queue_ = createRequestQueue();
-  out_request_queue_ = createRequestQueue();
-  request_gadget_is_ready_ = true;
-}
+    request_gadget_is_ready_(false),
+    buffer_in_request_queue_(),
+    in_request_queue_(),
+    out_request_queue_() {}
 
 bool RequestGadget::requestGadgetIsReady() const {
   return request_gadget_is_ready_;
@@ -54,31 +42,28 @@ RequestGadgetType RequestGadget::getGadgetType() {
 }
 
 bool RequestGadget::hasRequest() {
-  return uxQueueMessagesWaiting(in_request_queue_) > 0;
+  return !in_request_queue_.isEmpty();
 }
 
-std::shared_ptr<Request>RequestGadget::getRequest() {
-  std::shared_ptr<Request>buf_req;
-  xQueueReceive(in_request_queue_, &buf_req, portMAX_DELAY);
-  return buf_req;
+std::shared_ptr<Request> RequestGadget::getRequest() {
+  return in_request_queue_.pop();
 }
 
-void RequestGadget::sendRequest(std::shared_ptr<Request>request) {
-  xQueueSend(out_request_queue_, &request, portMAX_DELAY);
+void RequestGadget::sendRequest(std::shared_ptr<Request> request) {
+  out_request_queue_.push(request);
 }
 
-std::shared_ptr<Request>RequestGadget::waitForResponse(int id, unsigned long wait_time) {
+std::shared_ptr<Request> RequestGadget::waitForResponse(int id, unsigned long wait_time) {
   {
     unsigned long end_time = millis() + wait_time;
 
     std::vector<std::shared_ptr<Request>> buffered_requests;
 
-    std::shared_ptr<Request>out_req = nullptr;
+    std::shared_ptr<Request> out_req = nullptr;
 
     while (millis() < end_time) {
 
-      std::shared_ptr<Request>buf_req;
-      xQueueReceive(in_request_queue_, &buf_req, portMAX_DELAY);
+      auto buf_req = in_request_queue_.pop();
 
       if (buf_req->getID() == id) {
         out_req = buf_req;
@@ -88,13 +73,14 @@ std::shared_ptr<Request>RequestGadget::waitForResponse(int id, unsigned long wai
       }
     }
     for (auto buf_req: buffered_requests) {
-      xQueueSend(in_request_queue_, &buf_req, portMAX_DELAY);
+      in_request_queue_.push(buf_req);
     }
     return out_req;
   }
 }
 
-std::shared_ptr<Request>RequestGadget::sendRequestAndWaitForResponse(std::shared_ptr<Request>request, unsigned long wait_time) {
+std::shared_ptr<Request>
+RequestGadget::sendRequestAndWaitForResponse(std::shared_ptr<Request> request, unsigned long wait_time) {
   sendRequest(request);
   return waitForResponse(request->getID(), wait_time);
 }
@@ -104,9 +90,8 @@ void RequestGadget::refresh() {
     return;
   }
   refresh_network();
-  if (uxQueueMessagesWaiting(buffer_in_request_queue_) > 0) {
-    std::shared_ptr<Request>buf_req;
-    xQueueReceive(buffer_in_request_queue_, &buf_req, portMAX_DELAY);
+  if (!buffer_in_request_queue_.isEmpty()) {
+    auto buf_req = buffer_in_request_queue_.pop();
     auto req_payload = buf_req->getPayload();
 
     // Check if the request is a normal or split one
@@ -135,14 +120,14 @@ void RequestGadget::refresh() {
         split_req_buffer_->addData(p_index, split_payload);
         auto out_req = split_req_buffer_->getRequest();
         if (out_req != nullptr) {
-          xQueueSend(in_request_queue_, &out_req, portMAX_DELAY);
+          in_request_queue_.push(out_req);
           split_req_buffer_ = nullptr;
         }
       }
     } else {
 
       // Request is a normal one, put it in queue to be accessible to the outside
-      xQueueSend(in_request_queue_, &buf_req, portMAX_DELAY);
+      in_request_queue_.push(buf_req);
     }
   }
 }

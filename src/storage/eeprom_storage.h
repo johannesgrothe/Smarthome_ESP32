@@ -15,7 +15,9 @@
 #include "../gadgets/gadget_characteristic_settings.h"
 #include "../status_codes.h"
 #include "config.h"
-#include "system_storage_handler.h"
+#include "system_storage.h"
+
+// region CONSTANTS
 
 // valid config bitfield
 #define VALID_CONFIG_BITFIELD_BYTE 0
@@ -90,10 +92,12 @@
 #define GADGET_JSON_LEN_POS (GADGET_NAME_LEN_POS + 1)
 #define GADGET_NAME_POS (GADGET_JSON_LEN_POS + 2)
 
+// endregion
+
 /**
  * System storage class handling EEPROM saving
  */
-class EEPROM_Storage: SystemStorageHandler {
+class EepromStorage: public SystemStorage {
 private:
 
   /**
@@ -341,7 +345,7 @@ private:
     }
 
     // Check if name exist and quit if name is already taken
-    auto existing_names = EEPROM_Storage::readAllGadgetNames();
+    auto existing_names = readAllGadgetNames();
     for (const auto& list_name: existing_names) {
       if (name == list_name) {
         logger.printfln(LOG_TYPE::ERR, "Cannot save gadget: gadget name '%s' is already in use", name.c_str());
@@ -349,7 +353,7 @@ private:
       }
     }
 
-    auto existing_ports = EEPROM_Storage::readAllGadgetPorts();
+    auto existing_ports = readAllGadgetPorts();
 
     for (auto gadget_port: ports) {
       // Check if port is configured on the system
@@ -1064,69 +1068,69 @@ private:
 
     // write ID
     if (param_name == "id") {
-      write_successful = EEPROM_Storage::writeID(param_val);
+      write_successful = EepromStorage::writeID(param_val);
     }
 
       // Write Wifi SSID
     else if (param_name == "wifi_ssid") {
-      write_successful = EEPROM_Storage::writeWifiSSID(param_val);
+      write_successful = EepromStorage::writeWifiSSID(param_val);
     }
 
       // Write Wifi PW
     else if (param_name == "wifi_pw") {
-      write_successful = EEPROM_Storage::writeWifiPW(param_val);
+      write_successful = EepromStorage::writeWifiPW(param_val);
     }
 
       // Write MQTT IP
     else if (param_name == "mqtt_ip") {
       if (param_val == "") {
-        write_successful = EEPROM_Storage::writeMQTTIP(IPAddress(0, 0, 0, 0));
+        write_successful = EepromStorage::writeMQTTIP(IPAddress(0, 0, 0, 0));
       } else {
         IPAddress buf_ip;
         buf_ip.fromString(param_val.c_str());
-        write_successful = EEPROM_Storage::writeMQTTIP(buf_ip);
+        write_successful = EepromStorage::writeMQTTIP(buf_ip);
       }
     }
 
       // Write MQTT Port
     else if (param_name == "mqtt_port") {
-      write_successful = EEPROM_Storage::writeMQTTPort((uint16_t) atoi(param_val.c_str()));
+      write_successful = EepromStorage::writeMQTTPort((uint16_t) atoi(param_val.c_str()));
     }
 
       // Write MQTT User
     else if (param_name == "mqtt_user") {
-      write_successful = EEPROM_Storage::writeMQTTUsername(param_val);
+      write_successful = EepromStorage::writeMQTTUsername(param_val);
     }
 
       // Write MQTT PW
     else if (param_name == "mqtt_pw") {
-      write_successful = EEPROM_Storage::writeMQTTPassword(param_val);
+      write_successful = EepromStorage::writeMQTTPassword(param_val);
     }
 
       // Write IR recv
     else if (param_name == "irrecv_pin") {
-      write_successful = EEPROM_Storage::writeIRrecvPin(param_val_uint);
+      write_successful = EepromStorage::writeIRrecvPin(param_val_uint);
     }
 
       // Write IR send
     else if (param_name == "irsend_pin") {
-      write_successful = EEPROM_Storage::writeIRsendPin(param_val_uint);
+      write_successful = EepromStorage::writeIRsendPin(param_val_uint);
     }
 
       // Write radio receiver pin
     else if (param_name == "radio_recv_pin") {
-      write_successful = EEPROM_Storage::writeRadioRecvPin(param_val_uint);
+      write_successful = EepromStorage::writeRadioRecvPin(param_val_uint);
     }
 
       // Write radio sender pin
     else if (param_name == "radio_send_pin") {
-      write_successful = EEPROM_Storage::writeRadioSendPin(param_val_uint);
+      write_successful = EepromStorage::writeRadioSendPin(param_val_uint);
     }
 
       // Write network mode
     else if (param_name == "network_mode") {
       if (param_val_uint < NetworkModeCount) {
-        write_successful = EEPROM_Storage::writeNetworkMode((NetworkMode) param_val_uint);
+        write_successful = EepromStorage::writeNetworkMode((NetworkMode) param_val_uint);
       } else {
         write_successful = false;
       }
@@ -1157,7 +1161,7 @@ private:
 
 public:
 
-  EEPROM_Storage() {
+  EepromStorage() {
     initialized_ = initEEPROM();
 
     if (initialized_) {
@@ -1206,15 +1210,15 @@ public:
    * @return The loaded Config as shared_ptr, nullptr if config could not be loaded
    */
   std::shared_ptr<Config> loadConfig() override {
-    std::string id = EEPROM_Storage::readID();
-    NetworkMode network_mode = EEPROM_Storage::readNetworkMode();
-    auto gadgets = EEPROM_Storage::readAllGadgets();
+    std::string id = readID();
+    NetworkMode network_mode = readNetworkMode();
+    auto gadgets = readAllGadgets();
 
-    uint8_t ir_recv = EEPROM_Storage::readIRrecvPin();
-    uint8_t ir_send = EEPROM_Storage::readIRsendPin();
+    uint8_t ir_recv = readIRrecvPin();
+    uint8_t ir_send = readIRsendPin();
 
-    uint8_t radio_recv = EEPROM_Storage::readRadioRecvPin();
-    uint8_t radio_send = EEPROM_Storage::readRadioSendPin();
+    uint8_t radio_recv = readRadioRecvPin();
+    uint8_t radio_send = readRadioSendPin();
 
     std::shared_ptr <std::string> wifi_ssid = nullptr;
     std::shared_ptr <std::string> wifi_pw = nullptr;
@@ -1225,28 +1229,28 @@ public:
     std::shared_ptr <std::string> mqtt_username = nullptr;
     std::shared_ptr <std::string> mqtt_pw = nullptr;
 
-    if (EEPROM_Storage::hasValidWifiSSID()) {
-      wifi_ssid = std::make_shared<std::string>(EEPROM_Storage::readWifiSSID());
+    if (hasValidWifiSSID()) {
+      wifi_ssid = std::make_shared<std::string>(readWifiSSID());
     }
 
-    if (EEPROM_Storage::hasValidWifiPW()) {
-      wifi_pw = std::make_shared<std::string>(EEPROM_Storage::readWifiPW());
+    if (hasValidWifiPW()) {
+      wifi_pw = std::make_shared<std::string>(readWifiPW());
     }
 
-    if (EEPROM_Storage::hasValidMQTTIP()) {
-      mqtt_ip = std::make_shared<IPAddress>(EEPROM_Storage::readMQTTIP());
+    if (hasValidMQTTIP()) {
+      mqtt_ip = std::make_shared<IPAddress>(readMQTTIP());
     }
 
-    if (EEPROM_Storage::hasValidMQTTPort()) {
-      mqtt_port = std::make_shared<uint16_t>(EEPROM_Storage::readMQTTPort());
+    if (hasValidMQTTPort()) {
+      mqtt_port = std::make_shared<uint16_t>(readMQTTPort());
     }
 
-    if (EEPROM_Storage::hasValidMQTTUsername()) {
-      mqtt_username = std::make_shared<std::string>(EEPROM_Storage::readMQTTUsername());
+    if (hasValidMQTTUsername()) {
+      mqtt_username = std::make_shared<std::string>(readMQTTUsername());
     }
 
-    if (EEPROM_Storage::hasValidMQTTPassword()) {
-      mqtt_pw = std::make_shared<std::string>(EEPROM_Storage::readMQTTPassword());
+    if (hasValidMQTTPassword()) {
+      mqtt_pw = std::make_shared<std::string>(readMQTTPassword());
     }
 
     auto cfg = Config(
@@ -1272,7 +1276,7 @@ public:
    * @param config The config to write
    * @return Whether saving was successful
    */
-  bool writeConfig(Config config) override {
+  bool saveConfig(Config config) override {
 
     // Write ID
     bool write_successful = writeID(config.getID());
