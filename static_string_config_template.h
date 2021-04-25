@@ -2,4 +2,4 @@
 // THIS IS AN AUTO_GENERATED FILE.
 // TOUCH IT IF YOU WANT, BUT BEWARE ANY CHANGES COULD BE OVERWRITTEN AT ANY TIME IN THE FUTURE.
 
-extern const std::string STATIC_CONFIG_STR = "/*<config_str>*/";
+#define STATIC_CONFIG_STR "/*<config_str>*/";
