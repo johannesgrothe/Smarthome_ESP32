@@ -1016,13 +1016,10 @@ bool initConnectors() {
  * @return Whether initializing network was successful or not
  */
 bool initNetwork(NetworkMode mode) {
-  Serial.println(int(mode));
   if (mode == NetworkMode::None) {
     logger.println(LOG_TYPE::ERR, "No network configured.");
     return false;
   }
-
-  Serial.println("y");
 
   // initialize Network
   if (mode == NetworkMode::MQTT) {
@@ -1047,16 +1044,10 @@ bool initNetwork(NetworkMode mode) {
       return false;
     }
 
-    Serial.println("z");
-
     std::string ssid = *system_config_->getWifiSSID();
-    Serial.println("*");
     std::string wifi_pw = *system_config_->getWifiPW();
-    Serial.println("*");
     uint16_t port = *system_config_->getMqttPort();
-    Serial.println("*");
     IPAddress ip = *system_config_->getMqttIP();
-    Serial.println("*");
 
     if (!system_config_->getMqttUsername() || system_config_->getMqttPassword()) {
       logger.println("Establishing MQTT connection without credentials");

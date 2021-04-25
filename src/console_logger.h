@@ -2,14 +2,16 @@
 
 #include <string>
 #include <iostream>
-#include <stdarg.h>
 #include <sstream>
 #include <vector>
 #include <functional>
 #include "user_settings.h"
 #include <cstdio>
-#include "Arduino.h"
 #include "system_settings.h"
+
+#ifndef UNIT_TEST
+#include "Arduino.h"
+#endif
 
 #define INDENT_LEN 3
 
@@ -26,30 +28,30 @@ protected:
 //  char core_0_name_[LOGGER_MAX_NAME]{};
 //  unsigned int core_0_buffer_ptr_{};
 //  LOG_TYPE core_0_log_type_;
-//  byte core_0_indent_{};
+//  uint8_t core_0_indent_{};
 
   string core_0_name_;
   bool core_0_has_name_;
   stringstream core_0_buffer_;
   LOG_TYPE core_0_log_type_;
-  byte core_0_indent_{};
+  uint8_t core_0_indent_{};
   bool callback_status_[8]{false};
 
 //  char core_1_buffer_[LOGGER_MAX_BUFFER_LEN]{};
 //  char core_1_name_[LOGGER_MAX_NAME]{};
 //  unsigned int core_1_buffer_ptr_{};
 //  LOG_TYPE core_1_log_type_;
-//  byte core_1_indent_{};
+//  uint8_t core_1_indent_{};
 
   string core_1_name_;
   bool core_1_has_name_;
   stringstream core_1_buffer_;
   LOG_TYPE core_1_log_type_;
-  byte core_1_indent_{};
+  uint8_t core_1_indent_{};
 
 
   char indent_char_;
-  byte indent_len_{};
+  uint8_t indent_len_{};
   bool logging_active_;
   std::function<void(LOG_TYPE ,string ,string ,int )> callback_;
 

@@ -19,6 +19,7 @@ bool CodeCommandBuffer::hasNewCode() const {
 }
 
 std::shared_ptr<CodeCommand> CodeCommandBuffer::getCode() {
+  //TODO: Threw exception, check
   if (!hasNewCode())
     return nullptr;
   auto buf_code = new_codes_[new_codes_.size()];

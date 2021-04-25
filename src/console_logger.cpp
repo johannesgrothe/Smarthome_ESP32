@@ -3,7 +3,11 @@
 #include <utility>
 
 void Console_Logger::printOut(string str) {
+  #ifdef UNIT_TEST
+  std::cout << str;
+  #else
   Serial.print(str.c_str());
+  #endif
 }
 
 void Console_Logger::printOut(char c) {
