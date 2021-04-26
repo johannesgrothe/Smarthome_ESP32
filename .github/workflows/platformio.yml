@@ -4,11 +4,15 @@ on: [push]
 
 jobs:
   build:
+  
+    name: Build PlatformIO Project
 
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v2
+
     - name: Cache pip
       uses: actions/cache@v2
       with:
@@ -16,16 +20,67 @@ jobs:
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
         restore-keys: |
           ${{ runner.os }}-pip-
+
     - name: Cache PlatformIO
       uses: actions/cache@v2
       with:
         path: ~/.platformio
         key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+
     - name: Set up Python
       uses: actions/setup-python@v2
+
     - name: Install PlatformIO
       run: |
         python -m pip install --upgrade pip
         pip install --upgrade platformio
-    - name: Run PlatformIO
+
+    - name: Init PlatformIO Project
+      run: pio init
+      
+    - name: Install PlatformIO Libraries
+      run: pio lib install
+
+    - name: Compile PlatformIO Project
       run: pio run
+
+  static_tests:
+  
+    name: Run Static Unit Tests
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      
+    - name: Cache pip
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Cache PlatformIO
+      uses: actions/cache@v2
+      with:
+        path: ~/.platformio
+        key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      
+    - name: Install PlatformIO
+      run: |
+        python -m pip install --upgrade pip
+        pip install --upgrade platformio
+
+    - name: Init PlatformIO Project
+      run: pio init
+      
+    - name: Install PlatformIO Libraries
+      run: pio lib install
+
+    - name: Run Tests
+      run: cd test_static && python3 run_static_tests.py

@@ -25,8 +25,6 @@ Request::Request(std::string req_path, int session_id, std::string sender, std::
   await_response_(false),
   response_(nullptr) {}
 
-Request::~Request() {}
-
 std::string Request::getPath() const {
   return path_;
 }
@@ -100,7 +98,7 @@ void Request::dontRespond() {
 
 std::string Request::getBody() const {
   std::stringstream out_str;
-  char bufchrarr[6000];
+  char bufchrarr[12000];
   serializeJson(payload_, bufchrarr);
   out_str << R"({"session_id": )" << session_id_
           << R"(, "sender": ")" << sender_
@@ -123,4 +121,12 @@ std::tuple<bool, std::string> Request::getAck() {
     }
   }
   return std::tuple<bool, std::string>(ack, status_msg);
+}
+
+bool Request::operator==(const Request &rhs) const {
+  return getPath() == rhs.getPath() &&
+         getID() == rhs.getID() &&
+         getSender() == rhs.getSender() &&
+         getReceiver() == rhs.getReceiver() &&
+         getPayload() == rhs.getPayload();
 }

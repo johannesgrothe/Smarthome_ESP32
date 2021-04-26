@@ -55,10 +55,11 @@ protected:
   bool logging_active_;
   std::function<void(LOG_TYPE ,string ,string ,int )> callback_;
 
-
   static void printOut(string);
 
-  void printOut(char );
+  uint32_t getTaskID();
+
+  void printOut(char);
 
   void printIndent();
 

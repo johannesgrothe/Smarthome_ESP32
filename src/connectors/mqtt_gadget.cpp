@@ -96,7 +96,7 @@ void MQTTGadget::callback(char *topic, const byte *payload, const unsigned int l
 void MQTTGadget::executeRequestSending(std::shared_ptr<Request> req) {
   std::string topic = req->getPath();
   std::string body = req->getBody();
-  logger.printfln("MQTT publishing on '%s': ", topic.c_str());
+  logger.printfln("MQTT publishing on '%s': %s", topic.c_str(), body.c_str());
   bool status = mqttClient_->publish(topic.c_str(), body.c_str());
   mqttClient_->endPublish();
   if (status)

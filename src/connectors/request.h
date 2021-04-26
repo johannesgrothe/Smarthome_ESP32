@@ -28,29 +28,28 @@ private:
 public:
   /**
    * Constructor for the Request if there should ba an option to send an answer.
-   * This constructor should only be used by the receiving gadgets to attach their response-methods
-   * @param req_path the path the request should be send to
-   * @param session_id the session id the request should use to identify itself
-   * @param sender the sender of the request
-   * @param receiver the receiver of the request
-   * @param payload the payload that should be send within the request
-   * @param await_answer whether the sender awaits an answer or not. Defaults to false.
+   * @param req_path The path the request should be send to
+   * @param session_id The session id the request should use to identify itself
+   * @param sender The sender of the request
+   * @param receiver The receiver of the request
+   * @param payload The payload that should be send within the request
+   * @param await_answer Whether the sender awaits an answer or not. Defaults to false.
    */
   Request(std::string req_path,
           int session_id,
           std::string sender,
           std::string receiver,
           DynamicJsonDocument payload,
-          bool await_answer=false);
+          bool await_answer = false);
 
   /**
    * Constructor for the Request if there should ba an option to send an answer.
    * This constructor should only be used by the receiving gadgets to attach their response-methods
-   * @param req_path the path the request should be send to
-   * @param session_id the session id the request should use to identify itself
-   * @param sender the sender of the request
-   * @param receiver the receiver of the request
-   * @param payload the payload that should be send within the request
+   * @param req_path The path the request should be send to
+   * @param session_id The session id the request should use to identify itself
+   * @param sender The sender of the request
+   * @param receiver The receiver of the request
+   * @param payload The payload that should be send within the request
    * @param answer_method the method that the internal answer()-methods use to respond to an incoming request
    */
   Request(std::string req_path,
@@ -59,11 +58,6 @@ public:
           std::string receiver,
           DynamicJsonDocument payload,
           std::function<void(std::shared_ptr<Request> request)> answer_method);
-
-  /**
-   * Destructor
-   */
-  virtual ~Request();
 
   /**
    * Method to access the path of the request
@@ -129,7 +123,7 @@ public:
    * @param path the path the response should be sent to
    * @return whether responding was successful
    */
-  bool respond(bool ack, const std::string& path);
+  bool respond(bool ack, const std::string &path);
 
   /**
    * Responds to this request with the given path and a simple ack body
@@ -138,14 +132,14 @@ public:
    * @param path the path the response should be sent to
    * @return whether responding was successful
    */
-  bool respond(bool ack, const std::string& status_msg, const std::string& path);
+  bool respond(bool ack, const std::string &status_msg, const std::string &path);
 
   /**
    * Responds to this request with the original path and payload.
    * @param payload the payload that should be sent
    * @return whether responding was successful
    */
-  bool respond(const DynamicJsonDocument& payload);
+  bool respond(const DynamicJsonDocument &payload);
 
   /**
    * Responds to this request with the given path and payload.
@@ -153,7 +147,7 @@ public:
    * @param payload the payload that should be sent
    * @return whether responding was successful
    */
-  bool respond(const std::string& path, const DynamicJsonDocument& payload);
+  bool respond(const std::string &path, const DynamicJsonDocument &payload);
 
   /**
    * Discards the 'needs response'-flag without actually sending one
@@ -166,4 +160,11 @@ public:
    * @return {ack-status, status-message}
    */
   std::tuple<bool, std::string> getAck();
+
+  /**
+   * Compares two Requests
+   * @param rhs Request to compare the first request with
+   * @return Whether the two requests are identical
+   */
+  bool operator==(const Request &rhs) const;
 };

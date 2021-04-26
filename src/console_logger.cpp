@@ -18,23 +18,23 @@ void Console_Logger::printOut(char c) {
 
 void Console_Logger::printIndent() {
   stringstream sstr;
-  sstr << xPortGetCoreID();
-  if (xPortGetCoreID() == 0 || xPortGetCoreID() == 1) {
+  sstr << getTaskID();
+  if (getTaskID() == 0 || getTaskID() == 1) {
     printOut(sstr.str());
     printOut(" | ");
   } else {
     printOut("? | ");
   }
 
-  byte local_indent;
-  if (xPortGetCoreID() == 0) {
+  uint8_t local_indent;
+  if (getTaskID() == 0) {
     local_indent = core_0_indent_;
   } else {
     local_indent = core_1_indent_;
   }
 
-  for (byte k = 0; k < local_indent; k++) {
-    for (byte j = 0; j < indent_len_; j++) {
+  for (uint8_t k = 0; k < local_indent; k++) {
+    for (uint8_t j = 0; j < indent_len_; j++) {
       printOut(indent_char_);
     }
   }
@@ -97,7 +97,7 @@ void Console_Logger::deactivateLogging() {
 }
 
 void Console_Logger::incIndent() {
-  if (xPortGetCoreID() == 0) {
+  if (getTaskID() == 0) {
     core_0_indent_++;
   } else {
     core_1_indent_++;
@@ -105,7 +105,7 @@ void Console_Logger::incIndent() {
 };
 
 void Console_Logger::decIndent() {
-  if (xPortGetCoreID() == 0) {
+  if (getTaskID() == 0) {
     if (core_0_indent_ > 0)
       core_0_indent_--;
   } else {
@@ -115,7 +115,7 @@ void Console_Logger::decIndent() {
 };
 
 void Console_Logger::setName(const string& name) {
-  if (xPortGetCoreID() == 0) {
+  if (getTaskID() == 0) {
     core_0_name_ = name;
     core_0_has_name_ = true;
   } else {
@@ -125,7 +125,7 @@ void Console_Logger::setName(const string& name) {
 }
 
 void Console_Logger::setLogType(const LOG_TYPE type) {
-  if (xPortGetCoreID() == 0) {
+  if (getTaskID() == 0) {
     core_0_log_type_ = type;
   } else {
     core_1_log_type_ = type;
@@ -148,7 +148,7 @@ void Console_Logger::callCallback(LOG_TYPE type, string message, string name, in
 
 
 void Console_Logger::addToBuffer(string s) {
-  if (xPortGetCoreID() == 0) {
+  if (getTaskID() == 0) {
     for(char c:s) {
       if (c != '\n')
         core_0_buffer_ << c;
@@ -162,7 +162,7 @@ void Console_Logger::addToBuffer(string s) {
 }
 
 void Console_Logger::flushBuffer(){
-  if (xPortGetCoreID() == 0) {
+  if (getTaskID() == 0) {
     if(core_0_buffer_.str().size() == 0) return;
     printIndent();
     printBeginning(core_0_log_type_);
@@ -189,6 +189,14 @@ void Console_Logger::flushBuffer(){
     core_1_buffer_.str(string());
     setLogType(LOG_TYPE::INFO);
   }
+}
+
+uint32_t Console_Logger::getTaskID() {
+  #ifdef UNIT_TEST
+  return 0;
+  #else
+  return xPortGetCoreID();
+  #endif
 }
 
 Console_Logger logger;

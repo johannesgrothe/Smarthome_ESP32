@@ -135,9 +135,6 @@ Gadget_Collection gadgets;
 // Container to handle all of the incoming ir/radio codes
 CodeCommandBuffer codes;
 
-// Whether eeprom was successfully initialized
-bool eeprom_active_ = false;
-
 // Main task, handling all of the gadgets and the main system
 TaskHandle_t main_task;
 

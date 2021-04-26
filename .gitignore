@@ -5,10 +5,11 @@
 cmake-build-esp32cam
 cmake-build-debug
 CMakeListsPrivate.txt
-CMakeLists.txt
+/CMakeLists.txt
 *.elf
 *.ino.cpp
 network_settings.h
 flash_info.h
 doc
 static_config.h
+/test_static/build/
