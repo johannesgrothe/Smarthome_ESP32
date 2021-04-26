@@ -1,7 +1,5 @@
 #include "request.h"
 
-#include <utility>
-
 Request::Request(std::string req_path, int session_id, std::string sender, std::string receiver, DynamicJsonDocument payload, bool await_answer):
   path_(std::move(req_path)),
   session_id_(session_id),

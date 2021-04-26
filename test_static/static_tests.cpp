@@ -42,10 +42,10 @@ bool execute_test(std::string test_name, std::function<bool()> test_method) {
 
   if (test_result) {
 //    logger.printfln(LOG_TYPE::INFO, "'%s' test passed", test_name.c_str());
-//    logger << "'" << test_name << "' test passed" << std::endl;
+    logger << "'" << test_name << "' test passed" << "\n";
   } else {
 //    logger.printfln(LOG_TYPE::ERR, "'%s' test failed to pass", test_name.c_str());
-//    logger.setLevel(LOG_TYPE::ERR) << "'" << test_name << "' test passed" << std::endl;
+    logger.setLevel(LOG_TYPE::ERR) << "'" << test_name << "' test passed" << "\n";
   }
 
   return test_result;
@@ -59,10 +59,10 @@ int main() {
   all_passed &= execute_test("RequestQueue", test_request_queue);
 
   if (all_passed) {
-//    logger << "All tests passed" << std::endl;
+    logger << "All tests passed" << "\n";
     return 0;
   }
 
-//  logger << "Finished with failed tests" << std::endl;
+  logger << "Finished with failed tests" << "\n";
   return 1;
 }

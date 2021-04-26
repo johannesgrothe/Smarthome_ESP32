@@ -51,33 +51,6 @@ Console_Logger &Console_Logger::operator--() noexcept {
   return *this;
 }
 
-//template<class T>
-//Console_Logger &Console_Logger::operator<<(T data) noexcept {
-//  auto thread = getTaskID();
-//  auto state = logger_states_[thread];
-//  if (data == "\n") {
-//    flushData(state, thread);
-//    state->resetData();
-//    state->resetLevel();
-//  } else {
-//    state->appendData(data);
-//  }
-//  return *this;
-//}
-
-Console_Logger &Console_Logger::operator<<(std::string data) noexcept {
-  auto thread = getTaskID();
-  auto state = logger_states_[thread];
-  if (data == "\n") {
-    flushData(state, thread);
-    state->resetData();
-    state->resetLevel();
-  } else {
-    state->appendData(data);
-  }
-  return *this;
-}
-
 std::string Console_Logger::logLvlToString(LOG_TYPE loglevel) {
   switch (loglevel) {
     case LOG_TYPE::INFO:
@@ -122,8 +95,7 @@ void Console_Logger::flushData(std::shared_ptr<LoggerState> data, uint32_t task_
   if (data->getSender() != "") {
     out_stream << " (" << data->getSender() << ")";
   }
-  out_stream << ": " << data->getData()
-             << "\n";
+  out_stream << ": " << data->getData();
   printOut(out_stream.str());
 }
 
@@ -153,11 +125,6 @@ void LoggerState::reset() {
   resetData();
   resetLevel();
   resetSender();
-}
-
-template<class T>
-void LoggerState::appendData(T data) {
-  data_ << data;
 }
 
 std::string LoggerState::getData() const {

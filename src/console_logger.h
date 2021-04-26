@@ -63,6 +63,11 @@ public:
   uint8_t getIndent() const;
 };
 
+template<class T>
+void LoggerState::appendData(T data) {
+  data_ << data;
+}
+
 class Console_Logger {
 protected:
 
@@ -95,15 +100,31 @@ public:
 
   Console_Logger& operator--() noexcept;
 
-  Console_Logger& operator<<(std::string data) noexcept;
+//  Console_Logger& operator<<(std::string data) noexcept;
 
-//  template<class T>
-//  Console_Logger& operator<<(T data) noexcept;
+  template<class T>
+  Console_Logger& operator<<(T data) noexcept;
 
   Console_Logger& setLevel(LOG_TYPE log_lvl);
 
   Console_Logger& setSender(std::string name);
 
 };
+
+template<class T>
+Console_Logger& Console_Logger::operator<<(T data) noexcept {
+  auto thread = getTaskID();
+  auto state = logger_states_[thread];
+  std::stringstream sstr;
+  sstr << data;
+  auto data_str = sstr.str();
+  state->appendData(data_str);
+
+  if (data_str.back() == '\n') {
+    flushData(state, thread);
+    state->reset();
+  }
+  return *this;
+}
 
 extern Console_Logger logger;
