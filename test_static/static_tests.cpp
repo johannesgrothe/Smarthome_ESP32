@@ -1,4 +1,3 @@
-#include <cassert>
 #include <stdexcept>
 
 #include "../src/console_logger.h"
@@ -12,7 +11,8 @@ static void soft_assert(bool assert_value) {
 
 bool test_request_queue() {
   RequestQueue queue;
-  assert(queue.isEmpty());
+
+  soft_assert(queue.isEmpty());
 
   auto test_req = std::make_shared<Request>("/test",
                                             12345,

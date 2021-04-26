@@ -712,12 +712,6 @@ void handleSystemRequest(std::shared_ptr<Request> req) {
 
   DynamicJsonDocument json_body = req->getPayload();
 
-  if (!eeprom_active_) {
-    logger.print(LOG_TYPE::ERR, "EEPROM is broken, cannot deal with system requests.");
-    req->respond(false);
-    return;
-  }
-
   logger.println("System command received");
 
   // React to broadcast
@@ -1323,24 +1317,6 @@ static void createTasks() {
 void testStuff() {
   logger.println("Testing Stuff");
   logger.incIndent();
-
-  if (eeprom_active_) {
-    logger.println("testing eeprom:");
-
-//    logger.println("Status-Byte:");
-//    logger.println(system_config->hasValidID());
-//    logger.println(system_config->hasValidWifiSSID());
-//    logger.println(system_config->hasValidWifiPW());
-//    logger.println(system_config->hasValidMQTTIP());
-//    logger.println(system_config->hasValidMQTTPort());
-//    logger.println(system_config->hasValidMQTTUsername());
-//    logger.println(system_config->hasValidMQTTPassword());
-
-    logger.println("Done");
-
-  } else {
-    logger.println(LOG_TYPE::FATAL, "eeprom isn't initialized");
-  }
 
   logger.decIndent();
 }
