@@ -24,7 +24,7 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    
+
     if args.compiler:
         test_status = run_tests(args.compiler)
     else:
