@@ -79,7 +79,9 @@ std::string Console_Logger::logLvlToString(LOG_TYPE loglevel) {
 std::string Console_Logger::getIndentationStr(uint8_t indentation) const {
   std::stringstream out_str;
   for (uint8_t i = 0; i < indentation; i++) {
-    out_str << indent_char_;
+    for (uint8_t j = 0; j < INDENT_LEN; j++) {
+      out_str << indent_char_;
+    }
   }
   return out_str.str();
 }

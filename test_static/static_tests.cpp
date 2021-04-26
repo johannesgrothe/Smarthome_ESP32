@@ -50,9 +50,13 @@ bool execute_test(std::string test_name, std::function<bool()> test_method) {
 int main() {
   logger.setSender("Testsuite") << "Starting Tests" << "\n";
 
+  ++ logger;
+
   bool all_passed = true;
 
   all_passed &= execute_test("RequestQueue", test_request_queue);
+
+  -- logger;
 
   if (all_passed) {
     logger.setSender("Testsuite") << "All tests passed" << "\n";

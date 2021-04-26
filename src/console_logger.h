@@ -100,8 +100,6 @@ public:
 
   Console_Logger& operator--() noexcept;
 
-//  Console_Logger& operator<<(std::string data) noexcept;
-
   template<class T>
   Console_Logger& operator<<(T data) noexcept;
 
