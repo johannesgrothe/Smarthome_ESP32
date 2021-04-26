@@ -6,8 +6,6 @@
 #include <vector>
 #include <functional>
 #include "user_settings.h"
-#include <cstdio>
-#include "system_settings.h"
 
 #ifndef UNIT_TEST
 #include "Arduino.h"
