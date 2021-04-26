@@ -4,6 +4,7 @@
 #include <cstring>
 #include <utility>
 #include <sstream>
+#include <functional>
 #include <memory>
 
 class Request {
