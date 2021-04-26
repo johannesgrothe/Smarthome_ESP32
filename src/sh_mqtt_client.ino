@@ -274,11 +274,11 @@ void addCodeToBuffer(const std::shared_ptr<CodeCommand> &code) {
 
 void forwardCodeToGadgets(const std::shared_ptr<CodeCommand> &code) {
   logger.printfln("Forwarding code %d to %d gadgets", code->getCode(), gadgets.getGadgetCount());
-  logger.incIndent();
+  ++ logger;
   for (int i = 0; i < gadgets.getGadgetCount(); i++) {
     gadgets[i]->handleCodeUpdate(code->getCode());
   }
-  logger.decIndent();
+  -- logger;
 }
 
 void forwardAllCodes() {
@@ -344,12 +344,12 @@ void handleGadgetCharacteristicUpdateRequest(std::shared_ptr<Request> req) {
   if (target_gadget != nullptr) {
     auto characteristic = getCharacteristicIdentifierFromInt(req_body["characteristic"].as<int>());
     if (characteristic != CharacteristicIdentifier::err_type) {
-      logger.incIndent();
+      ++ logger;
       lockGadgetUpdates();
       int value = req_body["value"].as<int>();
       target_gadget->handleCharacteristicUpdate(characteristic, value);
       unlockGadgetUpdates();
-      logger.decIndent();
+      -- logger;
     } else {
       logger.print(LOG_TYPE::ERR, "Illegal err_characteristic 0");
     }
@@ -372,13 +372,13 @@ void handleEventUpdateRequest(std::shared_ptr<Request> req) {
   auto req_body = req->getPayload();
 
   logger.print("System / Event-Remote", "Received event_type update");
-  logger.incIndent();
+  ++ logger;
   auto sender = req_body["name"].as<string>();
   auto timestamp = req_body["timestamp"].as<unsigned long long>();
   auto type = EventType(req_body["event_type"].as<int>());
   auto event_buf = std::make_shared<Event>(sender, timestamp, type);
   forwardEvent(event_buf);
-  logger.decIndent();
+  -- logger;
 }
 
 /**
@@ -817,7 +817,7 @@ bool initGadgets() {
   auto eeprom_gadgets = system_config_->getGadgets();
 
   logger.printfln("Initializing Gadgets: %d", eeprom_gadgets.size());
-  logger.incIndent();
+  ++ logger;
 
   for (auto gadget: eeprom_gadgets) {
     auto gadget_ident = (GadgetIdentifier) std::get<0>(gadget);
@@ -828,7 +828,7 @@ bool initGadgets() {
     auto code_config_str = std::get<5>(gadget);
 
     logger.printfln("Initializing %s", name.c_str());
-    logger.incIndent();
+    ++ logger;
 
     // Translate stored ports to actual pins
     pin_set pins;
@@ -864,15 +864,15 @@ bool initGadgets() {
 
     if (deserialization_ok) {
       logger.println(LOG_TYPE::DATA, "Creating Gadget");
-      logger.incIndent();
+      ++ logger;
       auto buf_gadget = createGadget(gadget_ident, pins, name, gadget_config.as<JsonObject>());
-      logger.decIndent();
+      -- logger;
 
       if (buf_gadget != nullptr) {
         // Gadget Remote
         if (remote_bf[0]) {
           logger.println(LOG_TYPE::DATA, "Linking Gadget Remote");
-          logger.incIndent();
+          ++ logger;
 
           using std::placeholders::_1;
           using std::placeholders::_2;
@@ -882,15 +882,15 @@ bool initGadgets() {
           buf_gadget->setEventRemoteCallback(std::bind(&updateEventOnBridge, _1, _2));
           buf_gadget->setMainController(main_controller);
 
-          logger.decIndent();
+          -- logger;
         }
 
         // Code Remote
         if (remote_bf[1]) {
           logger.println(LOG_TYPE::DATA, "Linking Code Remote");
-          logger.incIndent();
+          ++ logger;
 
-          logger.decIndent();
+          -- logger;
 
           for (int method_index = 0; method_index < GadgetMethodCount; method_index++) {
             std::stringstream ss;
@@ -911,11 +911,11 @@ bool initGadgets() {
         // Event Remote
         if (remote_bf[2]) {
           logger.println(LOG_TYPE::DATA, "Linking Gadget Remote");
-          logger.incIndent();
+          ++ logger;
           // TODO: init event remote on gadgets
           logger.println(LOG_TYPE::ERR, "Not Implemented");
 
-          logger.decIndent();
+          -- logger;
         }
 
         // IR Gadget
@@ -959,9 +959,9 @@ bool initGadgets() {
     } else {
       logger.println(LOG_TYPE::ERR, "Error in config deserialization process");
     }
-    logger.decIndent();
+    -- logger;
   }
-  logger.decIndent();
+  -- logger;
   return true;
 }
 
@@ -978,26 +978,26 @@ bool initConnectors() {
   uint8_t radio_send = system_config_->getRadioSendPin();
 
   logger.println("Creating IR-Gadget: ");
-  logger.incIndent();
+  ++ logger;
   if (ir_recv || ir_send) {
     ir_gadget = std::make_shared<IR_Gadget>(ir_recv, ir_send);
   } else {
     logger.println("No IR Configured");
     ir_gadget = nullptr;
   }
-  logger.decIndent();
+  -- logger;
 
   logger.println("Creating Radio-Gadget:");
-  logger.incIndent();
+  ++ logger;
   if (radio_recv || radio_send) {
     logger.println("Radio Configured bot not implemented");
   } else {
     logger.println("No Radio Configured");
     radio_gadget = nullptr;
   }
-  logger.decIndent();
+  -- logger;
 
-  logger.decIndent();
+  -- logger;
   return true;
 }
 
@@ -1067,7 +1067,7 @@ bool initNetwork(NetworkMode mode) {
     logger.println(LOG_TYPE::ERR, "Unknown Network Settings");
     return false;
   }
-  logger.decIndent();
+  -- logger;
   return true;
 }
 
@@ -1124,9 +1124,9 @@ void handleCodeConnector(const std::shared_ptr<Code_Gadget> &gadget) {
     logger.print("Command: ");
     logger.println(com->getCode());
 
-    logger.incIndent();
+    ++ logger;
     handleNewCodeFromConnector(com);
-    logger.decIndent();
+    -- logger;
   }
 }
 
@@ -1316,9 +1316,9 @@ static void createTasks() {
  */
 void testStuff() {
   logger.println("Testing Stuff");
-  logger.incIndent();
+  ++ logger;
 
-  logger.decIndent();
+  -- logger;
 }
 
 /**
@@ -1332,14 +1332,14 @@ void setup() {
   logger.printfln("Runtime ID: %d", runtime_id_);
 
   logger.println("Software Info:");
-  logger.incIndent();
+  ++ logger;
   logger.printfln("Flash Date: %s", getSoftwareFlashDate().c_str());
   logger.printfln("Git Branch: %s", getSoftwareGitBranch().c_str());
   logger.printfln("Git Commit: %s", getSoftwareGitCommit().c_str());
-  logger.decIndent();
+  -- logger;
 
   logger.println("Initializing Storage:");
-  logger.incIndent();
+  ++ logger;
 
   auto yolo = std::make_shared<StaticStorage>();
 
@@ -1363,7 +1363,7 @@ void setup() {
   }
   logger.println("OK");
 
-  logger.decIndent();
+  -- logger;
 
   main_controller = std::make_shared<MainSystemController>(network_task, heartbeat_task);
 

@@ -67,9 +67,6 @@ jobs:
       with:
         path: ~/.platformio
         key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
-        
-    - name: Install Clang
-      run: sudo apt-get install clang
 
     - name: Set up Python
       uses: actions/setup-python@v2

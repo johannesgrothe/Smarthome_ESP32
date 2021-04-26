@@ -26,7 +26,7 @@ static std::shared_ptr<SH_Doorbell_Basic> createSHDoorbellBasic(std::string name
   if (pins[0] != 0) {
     pin = pins[0];
   } else {
-    logger.println(LOG_TYPE::ERR, "No pin set");
+    logger.setSender("DoorbellBasic").setLevel(LOG_TYPE::ERR) << "No pin set\n";
     return nullptr;
   }
 
@@ -34,8 +34,8 @@ static std::shared_ptr<SH_Doorbell_Basic> createSHDoorbellBasic(std::string name
     default_state = gadget_data["default_state"].as<bool>();
   }
 
-  logger.printfln("Pin: %d", pin);
-  logger.printfln("Default State: %d", default_state);
+  logger.setSender("DoorbellBasic") << "Pin: " << pin << "\n";
+  logger.setSender("DoorbellBasic") << "Default State: " << default_state << "\n";
 
   return std::make_shared<SH_Doorbell_Basic>(name, pin, default_state);
 }

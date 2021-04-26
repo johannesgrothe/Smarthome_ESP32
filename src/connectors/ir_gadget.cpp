@@ -6,18 +6,18 @@ IR_Gadget::IR_Gadget(int ir_recv_pin, int ir_send_pin) :
     if (ir_recv_pin != 0) {
       receiver_ = new IRrecv(ir_recv_pin);
       receiver_->enableIRIn();
-      logger.printfln(LOG_TYPE::DATA, "Receiver-Pin: %d", ir_recv_pin);
+      logger.setLevel(LOG_TYPE::DATA) << "Receiver-Pin: " << ir_recv_pin << "\n";
     } else {
       everything_ok = false;
-      logger.println(LOG_TYPE::ERR, "'recv_pin' nicht spezifiziert.");
+      logger.setLevel(LOG_TYPE::ERR) << "'recv_pin' not specified.\n";
     }
     if (ir_send_pin != 0) {
       blaster_ = new IRsend(ir_send_pin);
       blaster_->begin();
-      logger.printfln(LOG_TYPE::DATA, "Blaster-Pin: %d", ir_send_pin);
+      logger.setLevel(LOG_TYPE::DATA) <<  "Blaster-Pin: " << ir_send_pin << "\n";
     } else {
       everything_ok = false;
-      logger.println(LOG_TYPE::ERR, "'send_pin' nicht spezifiziert.");
+      logger.setLevel(LOG_TYPE::ERR) << "'send_pin' not specified.\n";
     }
     code_gadget_is_ready_ = everything_ok;
   };
@@ -93,8 +93,7 @@ IR_Gadget::IR_Gadget(int ir_recv_pin, int ir_send_pin) :
     if (!code_gadget_is_ready_) {
       return false;
     }
-    logger.print("System / IR", "Sending Raw Command, 38kHz, ");
-    logger.printfln("%d Blocks.", content_length);
+    logger.setSender("IR-Gadget") << "Sending Raw Command, 38kHz, " << content_length << " Blocks\n";
     blaster_->sendRaw(raw_data, content_length, 38);
     receiver_->resume();
     return true;
@@ -104,7 +103,7 @@ IR_Gadget::IR_Gadget(int ir_recv_pin, int ir_send_pin) :
     if (!code_gadget_is_ready_) {
       return false;
     }
-    logger.print("System / IR", "Sending: ");
+    logger.setSender("IR-Gadget") << "Sending: ";
     switch (com_type) {
       case NEC:
         blaster_->sendNEC(command);
@@ -122,10 +121,10 @@ IR_Gadget::IR_Gadget(int ir_recv_pin, int ir_send_pin) :
         blaster_->sendDenon(command);
         break;
       default:
-        logger.println("Unsupported Command.");
+        logger << "Unsupported Command.\n";
         return false;
     }
-    logger.println(command);
+    logger << command << "\n";
     receiver_->resume();
     return true;
   }

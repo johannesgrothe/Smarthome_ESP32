@@ -27,12 +27,12 @@ void SystemTimer::setTime(const unsigned long long new_time, const unsigned long
   logger.print(" (+");
   logger.print(time_offset);
   logger.println(")");
-  logger.incIndent();
+  ++ logger;
   logger.print(LOG_TYPE::DATA, "System Launch Time: ");
   logger.println(time_);
   logger.print(LOG_TYPE::DATA, "Momentary System Time: ");
   logger.println(getTime());
-  logger.decIndent();
+  -- logger;
 }
 
 SystemTimer system_timer;
