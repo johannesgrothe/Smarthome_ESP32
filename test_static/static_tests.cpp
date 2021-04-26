@@ -41,23 +41,28 @@ bool execute_test(std::string test_name, std::function<bool()> test_method) {
   } catch (...) {}
 
   if (test_result) {
-    logger.printfln(LOG_TYPE::INFO, "'%s' test passed", test_name.c_str());
+//    logger.printfln(LOG_TYPE::INFO, "'%s' test passed", test_name.c_str());
+//    logger << "'" << test_name << "' test passed" << std::endl;
   } else {
-    logger.printfln(LOG_TYPE::ERR, "'%s' test failed to pass", test_name.c_str());
+//    logger.printfln(LOG_TYPE::ERR, "'%s' test failed to pass", test_name.c_str());
+//    logger.setLevel(LOG_TYPE::ERR) << "'" << test_name << "' test passed" << std::endl;
   }
 
   return test_result;
 }
 
 int main() {
-  logger.println("Starting Tests");
+  logger << "Starting Tests" << "\n";
 
   bool all_passed = true;
 
   all_passed &= execute_test("RequestQueue", test_request_queue);
 
   if (all_passed) {
+//    logger << "All tests passed" << std::endl;
     return 0;
   }
+
+//  logger << "Finished with failed tests" << std::endl;
   return 1;
 }
