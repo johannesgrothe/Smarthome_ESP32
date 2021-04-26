@@ -85,9 +85,14 @@ jobs:
     - name: Install PlatformIO Libraries
       run: pio lib install
 
-    - name: Run Tests
+    - name: Set C Compiler
       run: export CMAKE_C_COMPILER=clang
+    
+    - name: Set C++ Compiler
       run: export CMAKE_CXX_COMPILER=clang
-      run: echo $CMAKE_C_COMPILER
-      run: echo $CMAKE_CXX_COMPILER
+      
+    - run: echo $CMAKE_C_COMPILER
+    - run: echo $CMAKE_CXX_COMPILER
+
+    - name: Run Tests
       run: cd test_static && python3 run_static_tests.py
