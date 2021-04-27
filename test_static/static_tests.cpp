@@ -39,16 +39,16 @@ bool execute_test(std::string test_name, std::function<bool()> test_method) {
   } catch (...) { }
 
   if (test_result) {
-    logger.setSender("Testsuite") << "Test '" << test_name << "' passed\n";
+    logger.log("Testsuite") << "Test '" << test_name << "' passed\n";
   } else {
-    logger.setSender("Testsuite").setLevel(LOG_TYPE::ERR) << "'" << test_name << "' test failed\n";
+    logger.log("Testsuite", LOG_TYPE::ERR) << "'" << test_name << "' test failed\n";
   }
 
   return test_result;
 }
 
 int main() {
-  logger.setSender("Testsuite") << "Starting Tests" << "\n";
+  logger.log("Testsuite") << "Starting Tests" << "\n";
 
   ++ logger;
 
@@ -59,10 +59,10 @@ int main() {
   -- logger;
 
   if (all_passed) {
-    logger.setSender("Testsuite") << "All tests passed" << "\n";
+    logger.log("Testsuite") << "All tests passed" << "\n";
     return 0;
   }
 
-  logger.setSender("Testsuite") << "Finished with failed tests" << "\n";
+  logger.log("Testsuite") << "Finished with failed tests" << "\n";
   return 1;
 }

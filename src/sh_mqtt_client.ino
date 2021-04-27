@@ -271,12 +271,12 @@ void addCodeToBuffer(const std::shared_ptr<CodeCommand> &code) {
 
 void forwardCodeToGadgets(const std::shared_ptr<CodeCommand> &code) {
   logger.log("System", LOG_TYPE::ERR) << "Forwarding code " << code->getCode()
-    << " to " << gadgets.getGadgetCount() << " gadgets\n";
-  ++ logger;
+                                      << " to " << gadgets.getGadgetCount() << " gadgets\n";
+  ++logger;
   for (int i = 0; i < gadgets.getGadgetCount(); i++) {
     gadgets[i]->handleCodeUpdate(code->getCode());
   }
-  -- logger;
+  --logger;
 }
 
 void forwardAllCodes() {
@@ -342,12 +342,12 @@ void handleGadgetCharacteristicUpdateRequest(std::shared_ptr<Request> req) {
   if (target_gadget != nullptr) {
     auto characteristic = getCharacteristicIdentifierFromInt(req_body["characteristic"].as<int>());
     if (characteristic != CharacteristicIdentifier::err_type) {
-      ++ logger;
+      ++logger;
       lockGadgetUpdates();
       int value = req_body["value"].as<int>();
       target_gadget->handleCharacteristicUpdate(characteristic, value);
       unlockGadgetUpdates();
-      -- logger;
+      --logger;
     } else {
       logger.log("System", LOG_TYPE::ERR) << "Illegal err_characteristic 0\n";
     }
@@ -370,13 +370,13 @@ void handleEventUpdateRequest(std::shared_ptr<Request> req) {
   auto req_body = req->getPayload();
 
   logger.log("System") << "Received event_type update\n";
-  ++ logger;
+  ++logger;
   auto sender = req_body["name"].as<string>();
   auto timestamp = req_body["timestamp"].as<unsigned long long>();
   auto type = EventType(req_body["event_type"].as<int>());
   auto event_buf = std::make_shared<Event>(sender, timestamp, type);
   forwardEvent(event_buf);
-  -- logger;
+  --logger;
 }
 
 /**
@@ -814,7 +814,7 @@ bool initGadgets() {
   auto eeprom_gadgets = system_config_->getGadgets();
 
   logger.log("System") << "Initializing Gadgets: \n" << eeprom_gadgets.size() << "\n";
-  ++ logger;
+  ++logger;
 
   for (auto gadget: eeprom_gadgets) {
     auto gadget_ident = (GadgetIdentifier) std::get<0>(gadget);
@@ -825,7 +825,7 @@ bool initGadgets() {
     auto code_config_str = std::get<5>(gadget);
 
     logger.log("System") << "Initializing " << name << "\n";
-    ++ logger;
+    ++logger;
 
     // Translate stored ports to actual pins
     pin_set pins;
@@ -861,15 +861,15 @@ bool initGadgets() {
 
     if (deserialization_ok) {
       logger.log("System", LOG_TYPE::DATA) << "Creating Gadget\n";
-      ++ logger;
+      ++logger;
       auto buf_gadget = createGadget(gadget_ident, pins, name, gadget_config.as<JsonObject>());
-      -- logger;
+      --logger;
 
       if (buf_gadget != nullptr) {
         // Gadget Remote
         if (remote_bf[0]) {
           logger.log("System", LOG_TYPE::DATA) << "Linking Gadget Remote\n";
-          ++ logger;
+          ++logger;
 
           using std::placeholders::_1;
           using std::placeholders::_2;
@@ -879,15 +879,15 @@ bool initGadgets() {
           buf_gadget->setEventRemoteCallback(std::bind(&updateEventOnBridge, _1, _2));
           buf_gadget->setMainController(main_controller);
 
-          -- logger;
+          --logger;
         }
 
         // Code Remote
         if (remote_bf[1]) {
           logger.log("System", LOG_TYPE::DATA) << "Linking Code Remote\n";
-          ++ logger;
+          ++logger;
 
-          -- logger;
+          --logger;
 
           for (int method_index = 0; method_index < GadgetMethodCount; method_index++) {
             std::stringstream ss;
@@ -908,11 +908,11 @@ bool initGadgets() {
         // Event Remote
         if (remote_bf[2]) {
           logger.log("System", LOG_TYPE::DATA) << "Linking Gadget Remote\n";
-          ++ logger;
+          ++logger;
           // TODO: init event remote on gadgets
           logger.log("System", LOG_TYPE::ERR) << "Not Implemented\n";
 
-          -- logger;
+          --logger;
         }
 
         // IR Gadget
@@ -956,9 +956,9 @@ bool initGadgets() {
     } else {
       logger.log("System", LOG_TYPE::ERR) << "Error in config deserialization process\n";
     }
-    -- logger;
+    --logger;
   }
-  -- logger;
+  --logger;
   return true;
 }
 
@@ -975,26 +975,26 @@ bool initConnectors() {
   uint8_t radio_send = system_config_->getRadioSendPin();
 
   logger.log("System", LOG_TYPE::DATA) << "Creating IR-Gadget:\n";
-  ++ logger;
+  ++logger;
   if (ir_recv || ir_send) {
     ir_gadget = std::make_shared<IR_Gadget>(ir_recv, ir_send);
   } else {
     logger.log("System") << "No IR Configured\n";
     ir_gadget = nullptr;
   }
-  -- logger;
+  --logger;
 
-  logger.println("Creating Radio-Gadget:");
-  ++ logger;
+  logger.log("System", LOG_TYPE::DATA) << "Creating Radio-Gadget:\n";
+  ++logger;
   if (radio_recv || radio_send) {
-    logger.println("Radio Configured bot not implemented");
+    logger.log("System", LOG_TYPE::DATA) << "Radio Configured bot not implemented\n";
   } else {
-    logger.println("No Radio Configured");
+    logger.log("System", LOG_TYPE::DATA) << "No Radio Configured\n";
     radio_gadget = nullptr;
   }
-  -- logger;
+  --logger;
 
-  -- logger;
+  --logger;
   return true;
 }
 
@@ -1005,7 +1005,7 @@ bool initConnectors() {
  */
 bool initNetwork(NetworkMode mode) {
   if (mode == NetworkMode::None) {
-    logger.println(LOG_TYPE::ERR, "No network configured.");
+    logger.log("System", LOG_TYPE::ERR) << "No network configured.\n";
     return false;
   }
 
@@ -1013,22 +1013,22 @@ bool initNetwork(NetworkMode mode) {
   if (mode == NetworkMode::MQTT) {
 
     if (system_config_->getWifiSSID() == nullptr) {
-      logger.println(LOG_TYPE::ERR, "Config has no valid wifi ssid");
+      logger.log("System", LOG_TYPE::ERR) << "Config has no valid wifi ssid\n";
       return false;
     }
 
     if (system_config_->getWifiPW() == nullptr) {
-      logger.println(LOG_TYPE::ERR, "Config has no valid wifi password");
+      logger.log("System", LOG_TYPE::ERR) << "Config has no valid wifi password\n";
       return false;
     }
 
     if (system_config_->getMqttIP() == nullptr) {
-      logger.println(LOG_TYPE::ERR, "Config has no valid mqtt ip");
+      logger.log("System", LOG_TYPE::ERR) << "Config has no valid mqtt ip\n";
       return false;
     }
 
     if (system_config_->getMqttPort() == nullptr) {
-      logger.println(LOG_TYPE::ERR, "Config has no valid mqtt port");
+      logger.log("System", LOG_TYPE::ERR) << "Config has no valid mqtt port\n";
       return false;
     }
 
@@ -1038,14 +1038,14 @@ bool initNetwork(NetworkMode mode) {
     IPAddress ip = *system_config_->getMqttIP();
 
     if (!system_config_->getMqttUsername() || system_config_->getMqttPassword()) {
-      logger.println("Establishing MQTT connection without credentials");
+      logger.log("System") << "Establishing MQTT connection without credentials\n";
       network_gadget = std::make_shared<MQTTGadget>(client_id_,
                                                     ssid,
                                                     wifi_pw,
                                                     ip,
                                                     port);
     } else {
-      logger.println("Establishing MQTT connection using credentials");
+      logger.log("System") << "Establishing MQTT connection using credentials\n";
       std::string user = *system_config_->getMqttUsername();
       std::string mqtt_pw = *system_config_->getMqttPassword();
 
@@ -1061,10 +1061,10 @@ bool initNetwork(NetworkMode mode) {
   } else if (mode == NetworkMode::Serial) {
     network_gadget = std::make_shared<SerialGadget>();
   } else {
-    logger.println(LOG_TYPE::ERR, "Unknown Network Settings");
+    logger.log("System", LOG_TYPE::ERR) << "Unknown Network Settings\n";
     return false;
   }
-  -- logger;
+  --logger;
   return true;
 }
 
@@ -1074,9 +1074,9 @@ bool initNetwork(NetworkMode mode) {
 void initModeSerial() {
   bool status = initNetwork(NetworkMode::Serial);
   if (status) {
-    logger.println("Serial network initialized");
+    logger.log("System") << "Serial network initialized\n";
   } else {
-    logger.println(LOG_TYPE::ERR, "serial network was not initialized");
+    logger.log("System", LOG_TYPE::ERR) << "serial network was not initialized\n";
   }
 }
 
@@ -1118,12 +1118,11 @@ void handleCodeConnector(const std::shared_ptr<Code_Gadget> &gadget) {
   }
   if (gadget->hasNewCommand()) {
     auto com = gadget->getCommand();
-    logger.print("Command: ");
-    logger.println(com->getCode());
+    logger.log("System") << "Command: " << com->getCode() << "\n";
 
-    ++ logger;
+    ++logger;
     handleNewCodeFromConnector(com);
-    -- logger;
+    --logger;
   }
 }
 
@@ -1149,7 +1148,7 @@ void handleNetwork() {
     if (r_body.length() > 400) {
       r_body = "[Body too long]";
     }
-    logger.printfln("[%s] '%s': %s", type.c_str(), req->getPath().c_str(), r_body.c_str());
+    logger.log("System", LOG_TYPE::DATA) << "[" << type << "] '" << req->getPath() << "': " << r_body << "\n";
     handleRequest(req);
   }
 }
@@ -1312,10 +1311,11 @@ static void createTasks() {
  * Test-Fuction for debugging
  */
 void testStuff() {
-  logger.println("Testing Stuff");
-  ++ logger;
 
-  -- logger;
+  logger.log("System") << "Testing Stuff";
+  ++logger;
+
+  --logger;
 }
 
 /**
@@ -1323,28 +1323,28 @@ void testStuff() {
  */
 void setup() {
   Serial.begin(SERIAL_SPEED);
-  logger.println("Launching...");
+  logger.log("System") <<  "Launching...\n";
 
   runtime_id_ = int(random(10000));
-  logger.printfln("Runtime ID: %d", runtime_id_);
+  logger.log("System") << "Runtime ID: " << runtime_id_ << "\n";
 
-  logger.println("Software Info:");
-  ++ logger;
-  logger.printfln("Flash Date: %s", getSoftwareFlashDate().c_str());
-  logger.printfln("Git Branch: %s", getSoftwareGitBranch().c_str());
-  logger.printfln("Git Commit: %s", getSoftwareGitCommit().c_str());
-  -- logger;
+  logger.log("System") << "Software Info:\n";
+  ++logger;
+  logger.log("System") << "Flash Date: " << getSoftwareFlashDate() << "\n";
+  logger.log("System") << "Git Branch: " << getSoftwareGitBranch() << "\n";
+  logger.log("System") << "Git Commit: " << getSoftwareGitCommit() << "\n";
+  --logger;
 
-  logger.println("Initializing Storage:");
-  ++ logger;
+  logger.log("System") << "Initializing Storage:\n";
+  ++logger;
 
   auto yolo = std::make_shared<StaticStorage>();
 
   if (StaticStorage::staticConfigStringAvailable()) {
-    logger.println("Using static, pre-compiled config");
+    logger.log("System") << "Using static, pre-compiled config\n";
     system_storage_ = std::make_shared<StaticStorage>();
   } else {
-    logger.println("Using dynamic, EEPROM config");
+    logger.log("System") << "Using dynamic, EEPROM config\n";
     system_storage_ = std::make_shared<EepromStorage>();
   }
 
@@ -1352,45 +1352,45 @@ void setup() {
     rebootChip("System storage initialization error", 15);
   }
 
-  logger.print("Loading config: ");
+  logger.log("System") << "Loading config: ";
   system_config_ = system_storage_->loadConfig();
   if (system_config_ == nullptr) {
-    logger.println("Failed");
+    logger << "Failed\n";
     rebootChip("Config loading error", 15);
   }
-  logger.println("OK");
+  logger << "OK\n";
 
-  -- logger;
+  --logger;
 
   main_controller = std::make_shared<MainSystemController>(network_task, heartbeat_task);
 
   client_id_ = system_config_->getID();
-  logger.printfln("Client ID: '%s'", client_id_.c_str());
+  logger.log("System") << "Client ID: '" << client_id_ << "'\n";
 
   testStuff();
 
-  logger.print(LOG_TYPE::INFO, "Boot Mode: ");
+  logger.log("System", LOG_TYPE::INFO) << "Boot Mode: ";
   system_mode_ = getBootMode();
 
   switch (system_mode_) {
     case BootMode::Serial_Ony:
-      logger.println("Serial Only");
+      logger << "Serial Only\n";
       initModeSerial();
       break;
     case BootMode::Network_Only_EEPROM:
-      logger.println("Network Only: EEPROM");
+      logger << "Network Only: EEPROM\n";
       initModeNetwork();
       break;
     case BootMode::Full_Operation:
-      logger.println("Full Operation");
+      logger << "Full Operation\n";
       initModeComplete();
       break;
     default:
-      logger.println("Unknown Boot Mode");
+      logger << "Unknown Boot Mode\n";
       break;
   }
 
-  logger.printfln("Free Heap: %d", ESP.getFreeHeap());
+  logger.log("System") << "Free Heap: " << ESP.getFreeHeap() << "\n";
 
   createTasks();
 }
