@@ -103,9 +103,15 @@ public:
   template<class T>
   Console_Logger& operator<<(T data) noexcept;
 
-  Console_Logger& setLevel(LOG_TYPE log_lvl);
+  Console_Logger& level(LOG_TYPE log_lvl);
 
-  Console_Logger& setSender(std::string name);
+  Console_Logger& sender(std::string name);
+
+  Console_Logger& log(std::string name, LOG_TYPE log_lvl);
+
+  Console_Logger& log(std::string name);
+
+  Console_Logger& log(LOG_TYPE log_lvl);
 
 };
 

@@ -63,16 +63,13 @@ static void waitFor(unsigned int delay) {
  */
 static void rebootChip(const std::string &reason, uint8_t delay = 5) {
   if (!reason.empty()) {
-    logger.print("Rebooting Chip because: '");
-    logger.print(reason);
-    logger.print("' in ");
+    logger.log("System") << "Rebooting Chip because: '" << reason << "' in ";
   } else {
-    logger.println("Rebooting Chip in ");
+    logger.log("System") << "Rebooting Chip in ";
   }
   for (byte k = delay; k > 0; k--) {
-    logger.println(k);
+    logger << k;
     waitFor(1000);
-//    delay(1000);
   }
   ESP.restart();
 }
@@ -88,7 +85,7 @@ static bool checkPayloadForKeys(std::shared_ptr<Request> req, const std::vector<
 
   for (const auto &key: key_list) {
     if (!json_body.containsKey(key)) {
-      logger.printfln(LOG_TYPE::ERR, "'%s' missing in request", key.c_str());
+      logger.log("System", LOG_TYPE::ERR) << "'" << key << "' missing in request\n";
       std::stringstream sstr;
       sstr << "Key missing in payload: '" << key << "'." << std::endl;
       req->respond(false, sstr.str());
@@ -168,7 +165,7 @@ static int gen_req_id() {
  * Prevents gadgets from getting updates
  */
 void lockGadgetUpdates() {
-  logger.println("Locking Updates");
+  logger.log("System") << "Locking Updates\n";
   lock_gadget_updates = true;
 }
 
@@ -176,7 +173,7 @@ void lockGadgetUpdates() {
  * Lets gadgets receive characteristic updates
  */
 void unlockGadgetUpdates() {
-  logger.println("Unlocking Updates");
+  logger.log("System") << "Unlocking Updates\n";
   lock_gadget_updates = false;
 }
 
@@ -233,7 +230,7 @@ void forwardEvent(const std::shared_ptr<Event> &event) {
 
 void updateEventOnBridge(const string &sender, EventType type) {
   if (sender.empty()) {
-    logger.println("no sender specified, no event send");
+    logger.log("System") << "no sender specified, no event send\n";
     return;
   }
 
@@ -266,14 +263,15 @@ void updateEventOnBridge(const string &sender, EventType type) {
 
 void addCodeToBuffer(const std::shared_ptr<CodeCommand> &code) {
   if (codes.addCode(code)) {
-    logger.println("Code added to buffer");
+    logger.log("System") << "Code added to buffer\n";
     return;
   }
-  logger.println(LOG_TYPE::ERR, "Ignoring: Double Code");
+  logger.log("System", LOG_TYPE::ERR) << "Ignoring: Double Code\n";
 }
 
 void forwardCodeToGadgets(const std::shared_ptr<CodeCommand> &code) {
-  logger.printfln("Forwarding code %d to %d gadgets", code->getCode(), gadgets.getGadgetCount());
+  logger.log("System", LOG_TYPE::ERR) << "Forwarding code " << code->getCode()
+    << " to " << gadgets.getGadgetCount() << " gadgets\n";
   ++ logger;
   for (int i = 0; i < gadgets.getGadgetCount(); i++) {
     gadgets[i]->handleCodeUpdate(code->getCode());
@@ -339,7 +337,7 @@ void handleGadgetCharacteristicUpdateRequest(std::shared_ptr<Request> req) {
 
   auto req_body = req->getPayload();
 
-  logger.print("System / Gadget-Remote", "Received characteristic update");
+  logger.log("System") << "Received characteristic update\n";
   auto target_gadget = gadgets.getGadget(req_body["name"]);
   if (target_gadget != nullptr) {
     auto characteristic = getCharacteristicIdentifierFromInt(req_body["characteristic"].as<int>());
@@ -351,10 +349,10 @@ void handleGadgetCharacteristicUpdateRequest(std::shared_ptr<Request> req) {
       unlockGadgetUpdates();
       -- logger;
     } else {
-      logger.print(LOG_TYPE::ERR, "Illegal err_characteristic 0");
+      logger.log("System", LOG_TYPE::ERR) << "Illegal err_characteristic 0\n";
     }
   } else {
-    logger.print("Unknown Gadget");
+    logger.log("System", LOG_TYPE::ERR) << "Unknown Gadget\n";
   }
 }
 
@@ -371,7 +369,7 @@ void handleEventUpdateRequest(std::shared_ptr<Request> req) {
 
   auto req_body = req->getPayload();
 
-  logger.print("System / Event-Remote", "Received event_type update");
+  logger.log("System") << "Received event_type update\n";
   ++ logger;
   auto sender = req_body["name"].as<string>();
   auto timestamp = req_body["timestamp"].as<unsigned long long>();
@@ -405,7 +403,6 @@ void handleCodeUpdateRequest(std::shared_ptr<Request> req) {
  * @param req Request that contains the broadcast request information
  */
 void handleBroadcastRequest(std::shared_ptr<Request> req) {
-  logger.println("Broadcast");
   DynamicJsonDocument doc(10);
   req->respond("smarthome/broadcast/res", doc);
 }
@@ -504,7 +501,7 @@ void handleConfigWriteRequest(std::shared_ptr<Request> req) {
 
     // Check payload for missing keys
     if (!checkPayloadForKeys(req, {"config", "reset_config", "reset_gadgets"})) {
-      logger.println(LOG_TYPE::ERR, "Keys missing in config write request");
+      logger.log("System", LOG_TYPE::ERR) << "Keys missing in config write request\n";
       req->respond(false);
       return;
     }
@@ -515,7 +512,7 @@ void handleConfigWriteRequest(std::shared_ptr<Request> req) {
     auto config = createConfigFromJson(json_body["config"].as<JsonObject>());
 
     if (config == nullptr) {
-      logger.println(LOG_TYPE::ERR, "Failed to create config object from json");
+      logger.log("System", LOG_TYPE::ERR) << "Failed to create config object from json\n";
       req->respond(false);
       return;
     }
@@ -555,7 +552,7 @@ void handleConfigReadRequest(std::shared_ptr<Request> req) {
   std::string read_val_str;
   uint8_t read_val_uint;
 
-  logger.printfln("Read param '%s'", param_name.c_str());
+  logger.log("System") << "Read param '" << param_name << "'\n";
 
   // read wifi ssid
   if (param_name == "wifi_ssid") {
@@ -656,7 +653,7 @@ void handleSyncRequest(std::shared_ptr<Request> req) {
     auto buf_time = req_payload["server_time"].as<unsigned long long int>();
     system_timer.setTime(buf_time, 0);
   } else {
-    logger.println(LOG_TYPE::ERR, "Have not received server sync time");
+    logger.log("System", LOG_TYPE::ERR) << "Have not received server sync time\n";
   }
 
   DynamicJsonDocument data_json(4500);
@@ -712,7 +709,7 @@ void handleSystemRequest(std::shared_ptr<Request> req) {
 
   DynamicJsonDocument json_body = req->getPayload();
 
-  logger.println("System command received");
+  logger.log("System") << "System command received\n";
 
   // React to broadcast
   if (req->getPath() == PATH_BROADCAST) {
@@ -721,7 +718,7 @@ void handleSystemRequest(std::shared_ptr<Request> req) {
   }
 
   // All directed Requests
-  logger.println("Directed Request");
+  logger.log("System") << "Directed Request\n";
 
   // system commands
   if (req->getPath() == PATH_SYSTEM_CONTROL) {
@@ -802,7 +799,7 @@ void handleRequest(std::shared_ptr<Request> req) {
     return;
   }
 
-  logger.printfln(LOG_TYPE::ERR, "Received request to unhandled path");
+  logger.log("System", LOG_TYPE::ERR) << "Received request to unhandled path\n";
 }
 
 //endregion
@@ -816,7 +813,7 @@ void handleRequest(std::shared_ptr<Request> req) {
 bool initGadgets() {
   auto eeprom_gadgets = system_config_->getGadgets();
 
-  logger.printfln("Initializing Gadgets: %d", eeprom_gadgets.size());
+  logger.log("System") << "Initializing Gadgets: \n" << eeprom_gadgets.size() << "\n";
   ++ logger;
 
   for (auto gadget: eeprom_gadgets) {
@@ -827,7 +824,7 @@ bool initGadgets() {
     auto gadget_config_str = std::get<4>(gadget);
     auto code_config_str = std::get<5>(gadget);
 
-    logger.printfln("Initializing %s", name.c_str());
+    logger.log("System") << "Initializing " << name << "\n";
     ++ logger;
 
     // Translate stored ports to actual pins
@@ -863,7 +860,7 @@ bool initGadgets() {
     }
 
     if (deserialization_ok) {
-      logger.println(LOG_TYPE::DATA, "Creating Gadget");
+      logger.log("System", LOG_TYPE::DATA) << "Creating Gadget\n";
       ++ logger;
       auto buf_gadget = createGadget(gadget_ident, pins, name, gadget_config.as<JsonObject>());
       -- logger;
@@ -871,7 +868,7 @@ bool initGadgets() {
       if (buf_gadget != nullptr) {
         // Gadget Remote
         if (remote_bf[0]) {
-          logger.println(LOG_TYPE::DATA, "Linking Gadget Remote");
+          logger.log("System", LOG_TYPE::DATA) << "Linking Gadget Remote\n";
           ++ logger;
 
           using std::placeholders::_1;
@@ -887,7 +884,7 @@ bool initGadgets() {
 
         // Code Remote
         if (remote_bf[1]) {
-          logger.println(LOG_TYPE::DATA, "Linking Code Remote");
+          logger.log("System", LOG_TYPE::DATA) << "Linking Code Remote\n";
           ++ logger;
 
           -- logger;
@@ -910,10 +907,10 @@ bool initGadgets() {
 
         // Event Remote
         if (remote_bf[2]) {
-          logger.println(LOG_TYPE::DATA, "Linking Gadget Remote");
+          logger.log("System", LOG_TYPE::DATA) << "Linking Gadget Remote\n";
           ++ logger;
           // TODO: init event remote on gadgets
-          logger.println(LOG_TYPE::ERR, "Not Implemented");
+          logger.log("System", LOG_TYPE::ERR) << "Not Implemented\n";
 
           -- logger;
         }
@@ -922,14 +919,14 @@ bool initGadgets() {
         bool ir_ok = true;
         if (gadgetRequiresIR(gadget_ident)) {
           if (ir_gadget != nullptr) {
-            logger.println(LOG_TYPE::DATA, "Linking IR gadget");
+            logger.log("System", LOG_TYPE::DATA) << "Linking IR gadget\n";
             buf_gadget->setIR(ir_gadget);
           } else {
-            logger.println(LOG_TYPE::ERR, "No IR gadget available");
+            logger.log("System", LOG_TYPE::ERR) << "No IR gadget available\n";
             ir_ok = false;
           }
         } else {
-          logger.println(LOG_TYPE::DATA, "No IR required");
+          logger.log("System", LOG_TYPE::DATA) << "No IR required\n";
         }
 
         // Radio
@@ -937,27 +934,27 @@ bool initGadgets() {
         bool radio_ok = true;
         if (gadgetRequiresRadio(gadget_ident)) {
           if (radio_gadget != nullptr) {
-            logger.println(LOG_TYPE::DATA, "Linking radio gadget");
+            logger.log("System", LOG_TYPE::DATA) << "Linking radio gadget\n";
             buf_gadget->setRadio(radio_gadget);
           } else {
-            logger.println(LOG_TYPE::DATA, "No radio gadget available");
+            logger.log("System", LOG_TYPE::DATA) << "No radio gadget available\n";
             radio_ok = false;
           }
         } else {
-          logger.println(LOG_TYPE::DATA, "No radio required");
+          logger.log("System", LOG_TYPE::DATA) << "No radio required\n";
         }
 
         // Add created gadget to the list
         if (ir_ok && radio_ok) {
           gadgets.addGadget(buf_gadget);
         } else {
-          logger.println(LOG_TYPE::DATA, "Gadget initialization failed due to ir/radio problems");
+          logger.log("System", LOG_TYPE::DATA) << "Gadget initialization failed due to ir/radio problems\n";
         }
       } else {
-        logger.println(LOG_TYPE::ERR, "Gadget could not be created");
+        logger.log("System", LOG_TYPE::ERR) << "Gadget could not be created\n";
       }
     } else {
-      logger.println(LOG_TYPE::ERR, "Error in config deserialization process");
+      logger.log("System", LOG_TYPE::ERR) << "Error in config deserialization process\n";
     }
     -- logger;
   }
@@ -970,19 +967,19 @@ bool initGadgets() {
  * @return Whether initializing connectors was successful or not
  */
 bool initConnectors() {
-  logger.println("Initializing Connectors: ");
+  logger.log("System") << "Initializing Connectors:\n";
 
   uint8_t ir_recv = system_config_->getIRRecvPin();
   uint8_t ir_send = system_config_->getIRSendPin();
   uint8_t radio_recv = system_config_->getRadioRecvPin();
   uint8_t radio_send = system_config_->getRadioSendPin();
 
-  logger.println("Creating IR-Gadget: ");
+  logger.log("System", LOG_TYPE::DATA) << "Creating IR-Gadget:\n";
   ++ logger;
   if (ir_recv || ir_send) {
     ir_gadget = std::make_shared<IR_Gadget>(ir_recv, ir_send);
   } else {
-    logger.println("No IR Configured");
+    logger.log("System") << "No IR Configured\n";
     ir_gadget = nullptr;
   }
   -- logger;

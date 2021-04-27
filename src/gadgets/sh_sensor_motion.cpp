@@ -13,11 +13,11 @@ void SH_Sensor_Motion::setStatus(bool status) {
   }
   if (status) {
     if (!sensor_status_){
-      logger.println("movement detected!");
+      logger.sender(getName()) << ("movement detected!\n");
     }
   } else {
     if (sensor_status_) {
-      logger.println("no further movement detected");
+      logger.sender(getName()) << ("no further movement detected!\n");
     }
   }
 }

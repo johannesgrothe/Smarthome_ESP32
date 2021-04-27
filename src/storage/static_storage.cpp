@@ -20,14 +20,14 @@ std::shared_ptr <Config> StaticStorage::loadConfig() {
 
   auto err = deserializeJson(static_json_config, ss.str());
   if (err != DeserializationError::Ok) {
-    logger.printfln(LOG_TYPE::ERR, "Could not load static config: Deserialization Error");
+    logger.log("StaticStorage", LOG_TYPE::ERR) << "Could not load static config: Deserialization Error\n";
     return nullptr;
   }
 
   auto config = createConfigFromJson(static_json_config);
 
   if (config == nullptr) {
-    logger.printfln(LOG_TYPE::ERR, "Could not load static config: Failed to create config from json");
+    logger.log("StaticStorage", LOG_TYPE::ERR) << "Could not load static config: Failed to create config from json\n";
   }
 
   return config;

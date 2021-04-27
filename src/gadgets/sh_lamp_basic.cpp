@@ -8,7 +8,7 @@ SH_Lamp_Basic::SH_Lamp_Basic(std::string name, uint8_t pin) :
 
 void SH_Lamp_Basic::refresh() {
   if (gadgetHasChanged()) {
-    logger.println(getName(), "has changed.");
+    logger.sender(getName()) << "Has changed.\n";
     digitalWrite(pin_, getStatus());
   }
 }

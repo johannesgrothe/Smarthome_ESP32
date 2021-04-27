@@ -25,11 +25,11 @@ static std::shared_ptr<SH_Sensor_Temperature_DHT> createSHSensorTemperatureDHT(s
   if (pins[0] != 0) {
     pin = pins[0];
   } else {
-    logger.println(LOG_TYPE::ERR, "No pin set");
+    logger.log("SensorTemperatureDHT", LOG_TYPE::ERR) << "No pin set\n";
     return nullptr;
   }
 
-  logger.printfln("Pin: %d", pin);
+  logger.sender("DoorbellBasic") << "Pin: " << pin << "\n";
 
   return std::make_shared<SH_Sensor_Temperature_DHT>(name, pin);
 }

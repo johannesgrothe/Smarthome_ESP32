@@ -30,7 +30,7 @@ bool SH_Gadget::setMethodForCode(GadgetMethod method, unsigned long code) {
 }
 
 void SH_Gadget::printMapping() {
-  logger.setSender(getName()) << "Accessible Methods: " << code_mapping.size() << "\n";
+  logger.sender(getName()) << "Accessible Methods: " << code_mapping.size() << "\n";
   ++ logger;
   for (auto buf_mapping_pair: code_mapping) {
     auto method = std::get<0>(buf_mapping_pair);
@@ -38,7 +38,7 @@ void SH_Gadget::printMapping() {
     logger << "'" << (uint8_t) method << "':\n";
     ++ logger;
     for (auto code: codes) {
-      logger.setLevel(LOG_TYPE::DATA) << code;
+      logger.level(LOG_TYPE::DATA) << code;
     }
     -- logger;
   }
@@ -60,13 +60,13 @@ SH_Gadget::SH_Gadget::SH_Gadget(std::string  name, const GadgetType type) :
 
 void SH_Gadget::setGadgetRemoteCallback(std::function<void(std::string, CharacteristicIdentifier, int)> update_method) {
   gadget_remote_callback = std::move(update_method);
-  logger.setSender(getName()) << "Initialized Gadget Remote Callback\n";
+  logger.sender(getName()) << "Initialized Gadget Remote Callback\n";
   gadget_remote_ready = true;
 }
 
 void SH_Gadget::setEventRemoteCallback(std::function<void(std::string, EventType)> send_event) {
   event_remote_callback = std::move(send_event);
-  logger.setSender(getName()) << "Initialized Event Remote Callback\n";
+  logger.sender(getName()) << "Initialized Event Remote Callback\n";
   event_remote_ready = true;
 }
 
@@ -85,7 +85,7 @@ std::string SH_Gadget::getName() const {
 void SH_Gadget::handleCodeUpdate(unsigned long code) {
   GadgetMethod method = getMethodForCode(code);
   if (method != GadgetMethod::err_type) {
-    logger.setSender(getName()) << "Applying Method: '" << (uint8_t) method << "'\n";
+    logger.sender(getName()) << "Applying Method: '" << (uint8_t) method << "'\n";
     ++ logger;
     handleMethodUpdate(method);
     -- logger;
@@ -115,14 +115,14 @@ void SH_Gadget::setGadgetHasChanged() {
 bool SH_Gadget::sendRawIR(const uint16_t raw_data[], const uint8_t content_length) {
   if (hasIR())
     return ir_gadget_->sendRawIR(raw_data, content_length);
-  logger.setSender(getName()).setLevel(LOG_TYPE::ERR) << "Cannot send IR: not initialized\n";
+  logger.sender(getName()).level(LOG_TYPE::ERR) << "Cannot send IR: not initialized\n";
   return false;
 }
 
 bool SH_Gadget::sendIR(const unsigned long command, const uint8_t com_type) {
   if (hasIR())
     return ir_gadget_->sendIR(command, com_type);
-  logger.setSender(getName()).setLevel(LOG_TYPE::ERR) << "Cannot send IR: not initialized\n";
+  logger.sender(getName()).level(LOG_TYPE::ERR) << "Cannot send IR: not initialized\n";
   return false;
 }
 
@@ -145,13 +145,13 @@ bool SH_Gadget::hasRadio() const {
 }
 
 void SH_Gadget::handleCharacteristicUpdate(CharacteristicIdentifier characteristic, int value) {
-  logger.setSender(getName()) << "Updating Characteristic: " << int(characteristic) << "\n";
+  logger.sender(getName()) << "Updating Characteristic: " << int(characteristic) << "\n";
   executeCharacteristicUpdate(characteristic, value);
 }
 
 void SH_Gadget::handleEvent(std::string sender, EventType event_type) {
   //TODO implement event handing
-  logger.setSender(getName()).setLevel(LOG_TYPE::ERR) << "handleEvent Not yet implemented\n";
+  logger.sender(getName()).level(LOG_TYPE::ERR) << "handleEvent Not yet implemented\n";
 }
 
 void SH_Gadget::pauseAllTasks() {

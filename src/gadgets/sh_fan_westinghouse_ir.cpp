@@ -8,7 +8,7 @@ SH_Fan_Westinghouse_IR::SH_Fan_Westinghouse_IR(std::string name) :
 void SH_Fan_Westinghouse_IR::refresh() {
   if (gadgetHasChanged()) {
     byte level = getLevel();
-    logger.setSender(getName()) << " has Changed: " << level << "\n";
+    logger.sender(getName()) << " has Changed: " << level << "\n";
     ++ logger;
     if (level == 0) {
       sendRawIR(level_0, 95);

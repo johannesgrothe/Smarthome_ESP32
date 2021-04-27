@@ -23,11 +23,11 @@ static std::shared_ptr<SH_Sensor_Motion_HR501> createSHSensorMotionHR501(std::st
   if (pins[0] != 0) {
     pin = pins[0];
   } else {
-    logger.setSender("MotionSensorHR501").setLevel(LOG_TYPE::ERR) << "No pin set";
+    logger.sender("MotionSensorHR501").level(LOG_TYPE::ERR) << "No pin set";
     return nullptr;
   }
 
-  logger.setSender("MotionSensorHR501") << "Pin: " << pin << "\n";
+  logger.sender("MotionSensorHR501") << "Pin: " << pin << "\n";
 
   return std::make_shared<SH_Sensor_Motion_HR501>(name, pin);
 }

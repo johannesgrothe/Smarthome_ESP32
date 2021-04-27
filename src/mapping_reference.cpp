@@ -1,5 +1,6 @@
 #include "mapping_reference.h"
 
+// TODO: Initialize all fields
 Mapping_Reference::Mapping_Reference() {};
 
 Mapping_Reference::Mapping_Reference(JsonArray data, const char *name) {
@@ -12,7 +13,7 @@ Mapping_Reference::Mapping_Reference(JsonArray data, const char *name) {
   printMapping();
 }
 
-byte Mapping_Reference::getCodeCount() {
+byte Mapping_Reference::getCodeCount() const {
   return code_count;
 }
 
@@ -30,13 +31,12 @@ bool Mapping_Reference::containsCode(unsigned long in_code) {
 }
 
 void Mapping_Reference::printMapping() {
-  logger.print(command_name);
-  logger.print(": [");
+  logger << command_name << ": [";
   for (byte k = 0; k < code_count; k++) {
-    logger.print(codes[k]);
+    logger << codes[k];
     if (k < code_count - 1) {
-      logger.print(", ");
+      logger << ", ";
     }
   }
-  logger.println("]");
+  logger << "]\n";
 }

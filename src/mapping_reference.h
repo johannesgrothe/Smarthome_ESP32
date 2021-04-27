@@ -15,7 +15,7 @@ public:
 
   explicit Mapping_Reference(JsonArray data, const char *name);
 
-  byte getCodeCount();
+  byte getCodeCount() const;
 
   const char *getName();
 

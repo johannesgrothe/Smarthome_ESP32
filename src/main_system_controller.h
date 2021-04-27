@@ -17,7 +17,7 @@ public:
    * Pauses all tasks except the main task. Only usw when necessary!
    */
   void pause_all_tasks_except_main() {
-    logger.setSender("MainSystemController") << "Pausing all tasks except main...\n";
+    logger.sender("MainSystemController") << "Pausing all tasks except main...\n";
 //    vTaskSuspend(network_task_);
 //    vTaskResume(heartbeat_task_);
   }
@@ -26,7 +26,7 @@ public:
    * Resumes all tasks on the system
    */
   void resume_all_tasks() {
-    logger.setSender("MainSystemController") << "Resuming all tasks...\n";
+    logger.sender("MainSystemController") << "Resuming all tasks...\n";
 //    vTaskResume(network_task_);
 //    vTaskResume(heartbeat_task_);
   }

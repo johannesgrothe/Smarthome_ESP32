@@ -101,18 +101,34 @@ void Console_Logger::flushData(std::shared_ptr<LoggerState> data, uint32_t task_
   printOut(out_stream.str());
 }
 
-Console_Logger &Console_Logger::setLevel(LOG_TYPE log_lvl) {
+Console_Logger &Console_Logger::level(LOG_TYPE log_lvl) {
   auto thread = getTaskID();
   auto state = logger_states_[thread];
   state->setLevel(log_lvl);
   return *this;
 }
 
-Console_Logger &Console_Logger::setSender(std::string name) {
+Console_Logger &Console_Logger::sender(std::string name) {
   auto thread = getTaskID();
   auto state = logger_states_[thread];
   state->setSender(name);
   return *this;
+}
+
+Console_Logger &Console_Logger::log(std::string name, LOG_TYPE log_lvl) {
+  auto thread = getTaskID();
+  auto state = logger_states_[thread];
+  state->setSender(name);
+  state->setLevel(log_lvl);
+  return *this;
+}
+
+Console_Logger &Console_Logger::log(std::string name) {
+  return sender(name);
+}
+
+Console_Logger &Console_Logger::log(LOG_TYPE log_lvl) {
+  return level(log_lvl);
 }
 
 LoggerState::LoggerState() :

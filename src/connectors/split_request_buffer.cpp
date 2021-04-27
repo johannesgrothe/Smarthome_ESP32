@@ -4,7 +4,7 @@
 
 std::string replaceParts(std::string in_str, const std::string &part_to_replace, const std::string &replacement) {
   if (part_to_replace.find(replacement) != std::string::npos) {
-    logger.setSender("SplitRequestBuffer").setLevel(LOG_TYPE::ERR) << "Illegal replacement string\n";
+    logger.sender("SplitRequestBuffer").level(LOG_TYPE::ERR) << "Illegal replacement string\n";
     return "";
   }
   while (true) {
@@ -33,7 +33,7 @@ void SplitRequestBuffer::addData(int index, std::string payload) {
     data_buffer_[index] = std::move(payload);
     added_packages_++;
   } else {
-    logger.setSender("SplitRequestBuffer").setLevel(LOG_TYPE::ERR) << "Data at index " << index
+    logger.sender("SplitRequestBuffer").level(LOG_TYPE::ERR) << "Data at index " << index
                                                                    << " is not empty: " << data_buffer_[index].c_str()
                                                                    << "\n";
   }
@@ -53,7 +53,7 @@ std::shared_ptr<Request> SplitRequestBuffer::getRequest() const {
 
     // Check if deserialization was successful
     if (serialization_ok != DeserializationError::Ok) {
-      logger.setSender("SplitRequestBuffer").setLevel(LOG_TYPE::ERR)
+      logger.sender("SplitRequestBuffer").level(LOG_TYPE::ERR)
           << "Error in split request deserialization process\n";
       return nullptr;
     }

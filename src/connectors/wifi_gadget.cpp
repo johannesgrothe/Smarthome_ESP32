@@ -7,18 +7,18 @@ WiFiGadget::WiFiGadget() = default;
 WiFiGadget::WiFiGadget(std::string ssid, std::string pw):
 wifi_ssid_(std::move(ssid)),
 wifi_password_(std::move(pw)) {
-  logger.setSender("WifiGadget") << "Connecting to WiFi:\n";
+  logger.sender("WifiGadget") << "Connecting to WiFi:\n";
   ++ logger;
   network_client_ = WiFiClient();
 
   if (wifi_ssid_ == "null" || wifi_password_ == "null") {
-    logger.setSender("WifiGadget").setLevel(LOG_TYPE::ERR) << "Missing Username or Password.\n";
+    logger.sender("WifiGadget").level(LOG_TYPE::ERR) << "Missing Username or Password.\n";
     -- logger;
     wifi_initialized_ = false;
     return;
   }
 
-  logger.setSender("WifiGadget") << "Connecting to" << wifi_ssid_;
+  logger.sender("WifiGadget") << "Connecting to" << wifi_ssid_;
 
   byte connection_tries = 0;
 
@@ -30,11 +30,11 @@ wifi_password_(std::move(pw)) {
   }
   logger << "\n";
   if (WiFiClass::status() != WL_CONNECTED) {
-    logger.setSender("WifiGadget").setLevel(LOG_TYPE::DATA) << "Could not establish WiFi Connection...\n";
+    logger.sender("WifiGadget").level(LOG_TYPE::DATA) << "Could not establish WiFi Connection...\n";
   } else {
     randomSeed(micros());
-    logger.setSender("WifiGadget").setLevel(LOG_TYPE::DATA) << "WiFi connected\n";
-    logger.setSender("WifiGadget").setLevel(LOG_TYPE::DATA) << "IP: " << WiFi.localIP().toString() << "\n";
+    logger.sender("WifiGadget").level(LOG_TYPE::DATA) << "WiFi connected\n";
+    logger.sender("WifiGadget").level(LOG_TYPE::DATA) << "IP: " << WiFi.localIP().toString() << "\n";
   }
   wifi_initialized_ = true;
   -- logger;

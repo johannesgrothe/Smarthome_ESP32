@@ -21,7 +21,7 @@ static std::shared_ptr<SH_Lamp_Basic> createSHLampBasic(std::string name, pin_se
   if (pins[0] != 0) {
     pin = pins[0];
   } else {
-    logger.println(LOG_TYPE::ERR, "No pin set");
+    logger.log("LampBasic", LOG_TYPE::ERR) << "No pin set.\n";
     return nullptr;
   }
 

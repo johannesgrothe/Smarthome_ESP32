@@ -7,9 +7,9 @@ void SerialGadget::executeRequestSending(std::shared_ptr<Request> req) {
 
 SerialGadget::SerialGadget() :
     RequestGadget(RequestGadgetType::SERIAL_G) {
-  logger.setSender("SerialGadget") << "Creating Serial Gadget\n";
+  logger.sender("SerialGadget") << "Creating Serial Gadget\n";
   ++ logger;
-  logger.setSender("SerialGadget").setLevel(LOG_TYPE::DATA) << "Using default Serial Connection\n";
+  logger.sender("SerialGadget").level(LOG_TYPE::DATA) << "Using default Serial Connection\n";
   -- logger;
 }
 
@@ -30,7 +30,7 @@ void SerialGadget::receiveSerialRequest() {
     delayMicroseconds(80);
   }
   if (new_msg) {
-    logger.setSender("SerialGadget") << "Received: " << sstr.str() << "\n";
+    logger.sender("SerialGadget") << "Received: " << sstr.str() << "\n";
 
     std::string req_str = sstr.str();
 
@@ -90,19 +90,19 @@ void SerialGadget::receiveSerialRequest() {
         DynamicJsonDocument doc(2056);
         deserializeJson(doc, req_body);
         if (!doc.containsKey("session_id")) {
-          logger.setSender("SerialGadget").setLevel(LOG_TYPE::WARN) << "Received request without session id\n";
+          logger.sender("SerialGadget").level(LOG_TYPE::WARN) << "Received request without session id\n";
           return;
         }
         if (!doc.containsKey("sender")) {
-          logger.setSender("SerialGadget").setLevel(LOG_TYPE::WARN) << "Received request without sender\n";
+          logger.sender("SerialGadget").level(LOG_TYPE::WARN) << "Received request without sender\n";
           return;
         }
         if (!doc.containsKey("receiver")) {
-          logger.setSender("SerialGadget").setLevel(LOG_TYPE::WARN) << "Received request without receiver\n";
+          logger.sender("SerialGadget").level(LOG_TYPE::WARN) << "Received request without receiver\n";
           return;
         }
         if (!doc.containsKey("payload")) {
-          logger.setSender("SerialGadget").setLevel(LOG_TYPE::WARN) << "Received request without payload\n";
+          logger.sender("SerialGadget").level(LOG_TYPE::WARN) << "Received request without payload\n";
           return;
         }
         using std::placeholders::_1;
@@ -114,7 +114,7 @@ void SerialGadget::receiveSerialRequest() {
                                              std::bind(&RequestGadget::sendRequest, this, _1));
         addIncomingRequest(req);
       } else {
-        logger.setSender("SerialGadget").setLevel(LOG_TYPE::WARN) << "Received faulty request\n";
+        logger.sender("SerialGadget").level(LOG_TYPE::WARN) << "Received faulty request\n";
       }
     }
   }
