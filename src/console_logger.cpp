@@ -86,7 +86,7 @@ std::string Console_Logger::getIndentationStr(uint8_t indentation) const {
   return out_str.str();
 }
 
-void Console_Logger::flushData(std::shared_ptr<LoggerState> data, uint32_t task_id) {
+std::string Console_Logger::generateMessage(std::shared_ptr<LoggerState> data, uint32_t task_id) {
   std::stringstream out_stream;
   out_stream << task_id
              << " | "
@@ -98,7 +98,7 @@ void Console_Logger::flushData(std::shared_ptr<LoggerState> data, uint32_t task_
     out_stream << " (" << data->getSender() << ")";
   }
   out_stream << ": " << data->getData();
-  printOut(out_stream.str());
+  return out_stream.str();
 }
 
 Console_Logger &Console_Logger::level(LOG_TYPE log_lvl) {

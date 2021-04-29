@@ -1390,6 +1390,8 @@ void setup() {
       break;
   }
 
+  c_log_w("yolokopter %s %d", "xD", 12);
+
   logger.log("System") << "Free Heap: " << ESP.getFreeHeap() << "\n";
 
   createTasks();

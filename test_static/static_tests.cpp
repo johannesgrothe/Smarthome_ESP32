@@ -36,7 +36,7 @@ bool execute_test(std::string test_name, std::function<bool()> test_method) {
   bool test_result = false;
   try {
     test_result = test_method();
-  } catch (...) { }
+  } catch (...) {}
 
   if (test_result) {
     logger.log("Testsuite") << "Test '" << test_name << "' passed\n";
@@ -50,13 +50,15 @@ bool execute_test(std::string test_name, std::function<bool()> test_method) {
 int main() {
   logger.log("Testsuite") << "Starting Tests" << "\n";
 
-  ++ logger;
+  c_log_w("Tester", "out_msg: %d", 12233);
+
+  ++logger;
 
   bool all_passed = true;
 
   all_passed &= execute_test("RequestQueue", test_request_queue);
 
-  -- logger;
+  --logger;
 
   if (all_passed) {
     logger.log("Testsuite") << "All tests passed" << "\n";
