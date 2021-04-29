@@ -9,5 +9,5 @@ add_compile_definitions(UNIT_TEST)
 
 include_directories(../.pio/libdeps/esp32cam/ArduinoJson/src)
 
-set(SOURCE_FILES static_tests.cpp ../src/console_logger.cpp ../src/connectors/request.cpp)
+set(SOURCE_FILES static_tests.cpp ../src/connectors/request.cpp)
 add_executable(static_tests ${SOURCE_FILES})

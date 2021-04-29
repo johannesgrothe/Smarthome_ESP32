@@ -39,32 +39,26 @@ bool execute_test(std::string test_name, std::function<bool()> test_method) {
   } catch (...) {}
 
   if (test_result) {
-    logger.log("Testsuite") << "Test '" << test_name << "' passed\n";
+    logger_i("Testsuite", "Test '%s' passed", test_name.c_str());
   } else {
-    logger.log("Testsuite", LOG_TYPE::ERR) << "'" << test_name << "' test failed\n";
+    logger_e("Testsuite", "Test '%s' failed", test_name.c_str());
   }
 
   return test_result;
 }
 
 int main() {
-  logger.log("Testsuite") << "Starting Tests" << "\n";
-
-  c_log_w("Tester", "out_msg: %d", 1234);
-
-  ++logger;
+  logger_i("Testsuite", "Starting Tests");
 
   bool all_passed = true;
 
   all_passed &= execute_test("RequestQueue", test_request_queue);
 
-  --logger;
-
   if (all_passed) {
-    logger.log("Testsuite") << "All tests passed" << "\n";
+    logger_i("Testsuite", "All Tests passed");
     return 0;
   }
 
-  logger.log("Testsuite") << "Finished with failed tests" << "\n";
+  logger_i("Testsuite", "Finished with failed tests");
   return 1;
 }
