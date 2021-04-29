@@ -1,24 +1,20 @@
 #include "wifi_gadget.h"
 
-#include <utility>
-
 WiFiGadget::WiFiGadget() = default;
 
 WiFiGadget::WiFiGadget(std::string ssid, std::string pw):
 wifi_ssid_(std::move(ssid)),
 wifi_password_(std::move(pw)) {
-  logger.sender("WifiGadget") << "Connecting to WiFi:\n";
-  ++ logger;
+  logger_i(TAG, "Connecting to WiFi:");
   network_client_ = WiFiClient();
 
   if (wifi_ssid_ == "null" || wifi_password_ == "null") {
-    logger.sender("WifiGadget").level(LOG_TYPE::ERR) << "Missing Username or Password.\n";
-    -- logger;
+    logger_e(TAG, "Missing Username or Password.");
     wifi_initialized_ = false;
     return;
   }
 
-  logger.sender("WifiGadget") << "Connecting to" << wifi_ssid_;
+  logger_i(TAG, "Connecting to %s", wifi_ssid_.c_str());
 
   byte connection_tries = 0;
 

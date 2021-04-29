@@ -1,10 +1,10 @@
 #include "split_request_buffer.h"
 
-#include <utility>
+static const char *TAG = "SplitRequestBuffer";
 
 std::string replaceParts(std::string in_str, const std::string &part_to_replace, const std::string &replacement) {
   if (part_to_replace.find(replacement) != std::string::npos) {
-    logger.sender("SplitRequestBuffer").level(LOG_TYPE::ERR) << "Illegal replacement string\n";
+    logger_e(TAG, "Illegal replacement string");
     return "";
   }
   while (true) {
@@ -33,9 +33,7 @@ void SplitRequestBuffer::addData(int index, std::string payload) {
     data_buffer_[index] = std::move(payload);
     added_packages_++;
   } else {
-    logger.sender("SplitRequestBuffer").level(LOG_TYPE::ERR) << "Data at index " << index
-                                                                   << " is not empty: " << data_buffer_[index].c_str()
-                                                                   << "\n";
+    logger_i(TAG, "Receiver-Pin: %d", "Data at index %d is not empty: %s", index, data_buffer_[index].c_str())
   }
 }
 
@@ -53,8 +51,7 @@ std::shared_ptr<Request> SplitRequestBuffer::getRequest() const {
 
     // Check if deserialization was successful
     if (serialization_ok != DeserializationError::Ok) {
-      logger.sender("SplitRequestBuffer").level(LOG_TYPE::ERR)
-          << "Error in split request deserialization process\n";
+      logger_i(TAG, "Receiver-Pin: %d", "Error in split request deserialization process");
       return nullptr;
     }
 

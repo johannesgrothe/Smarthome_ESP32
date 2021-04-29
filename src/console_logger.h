@@ -1,16 +1,6 @@
 #pragma once
 
-#include <string>
-#include <array>
 #include <iostream>
-#include <sstream>
-#include <functional>
-#include <memory>
-#include <utility>
-#include "user_settings.h"
-
-#include <iostream>
-#include <vector>
 #include <string>
 #include <cstdarg>
 #include <cstring>

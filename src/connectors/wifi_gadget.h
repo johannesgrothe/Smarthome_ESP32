@@ -1,10 +1,12 @@
 #pragma once
 
+#include <WiFi.h>
+#include <utility>
 #include <ArduinoJson.h>
 #include "console_logger.h"
 #include "Client.h"
 #include "WiFiClient.h"
-#include <WiFi.h>
+
 
 class WiFiGadget {
 private:
