@@ -50,7 +50,7 @@ bool execute_test(std::string test_name, std::function<bool()> test_method) {
 int main() {
   logger.log("Testsuite") << "Starting Tests" << "\n";
 
-  c_log_w("Tester", "out_msg: %d", 12233);
+  c_log_w("Tester", "out_msg: %d", 1234);
 
   ++logger;
 

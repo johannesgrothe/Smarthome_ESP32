@@ -19,20 +19,23 @@
 #include "Arduino.h"
 #endif
 
-template<typename... T>
-void cpp_log_w(std::string tag, std::string msg, ...) {
+static void cpp_log(std::string log_lvl, std::string tag, std::string format, ...) {
   va_list args;
-  uint8_t len = msg.length();
-  char vec[len + 1];// vec(len + 1);
-  std::vsnprintf(&vec[0], len + 1, msg.c_str(), args);
+  va_start (args, format);
+  size_t len = vsnprintf(NULL, 0, format.c_str(), args);
+  va_end (args);
+  char vec[len + 1];
+  va_start (args, format);
+  vsnprintf(&vec[0], len + 1, format.c_str(), args);
+  va_end (args);
 
-  std::cout << "[" << tag << "] " << vec << std::endl;
+  std::cout << "[" << log_lvl << "]" << "[" << tag << "] " << vec << std::endl;
 }
 
 #ifdef ARDUINO
 #define c_log_w(tag, ...) log_w(__VA_ARGS__)
 #else
-#define c_log_w(tag, ...) cpp_log_w(tag, __VA_ARGS__)
+#define c_log_w(tag, ...) cpp_log("!", tag, __VA_ARGS__)
 #endif
 
 
