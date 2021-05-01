@@ -2,9 +2,10 @@
 
 #include <cstring>
 #include <functional>
+#include <vector>
 #include <Arduino.h>
-#include "ArduinoJson.h"
 #include <memory>
+#include "ArduinoJson.h"
 #include "../mapping_reference.h"
 #include "../system_settings.h"
 #include "../datatypes.h"
@@ -161,7 +162,7 @@ public:
    * Sets the callback for the event remote
    * @param update_method Method used to update the remote
    */
-  void setEventRemoteCallback(function<void(string, EventType)> send_event);
+  void setEventRemoteCallback(std::function<void(std::string, EventType)> send_event);
 
   /**
    * Returns the type of the gadget
@@ -185,7 +186,7 @@ public:
    * @param characteristic_str [out] a string containing all characteristics
    * @return whether writing the characteristics to the string was successful
    */
-  virtual vector<GadgetCharacteristicSettings> getCharacteristics() = 0;
+  virtual std::vector<GadgetCharacteristicSettings> getCharacteristics() = 0;
 
   /**
    * Checks if the gadget was successfully initialized
@@ -256,5 +257,5 @@ public:
    * Sets the main controller for the created gadget.
    * @param controller The controller for the main system
    */
-  void setMainController(shared_ptr<MainSystemController> controller);
+  void setMainController(std::shared_ptr<MainSystemController> controller);
 };

@@ -7,7 +7,6 @@
 #include "Client.h"
 #include "WiFiClient.h"
 
-
 class WiFiGadget {
 private:
   bool wifi_initialized_{};

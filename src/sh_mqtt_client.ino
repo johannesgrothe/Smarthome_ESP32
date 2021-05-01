@@ -63,12 +63,12 @@ static void waitFor(unsigned int delay) {
  */
 static void rebootChip(const std::string &reason, uint8_t delay = 5) {
   if (!reason.empty()) {
-    logger.log("System") << "Rebooting Chip because: '" << reason << "' in ";
+    logger_i("System", "Rebooting Chip because of '%s' in:", reason);
   } else {
-    logger.log("System") << "Rebooting Chip in ";
+    logger_i("System", "Rebooting Chip in:");
   }
   for (byte k = delay; k > 0; k--) {
-    logger << k;
+    logger_i("System", k);
     waitFor(1000);
   }
   ESP.restart();
@@ -85,10 +85,10 @@ static bool checkPayloadForKeys(std::shared_ptr<Request> req, const std::vector<
 
   for (const auto &key: key_list) {
     if (!json_body.containsKey(key)) {
-      logger.log("System", LOG_TYPE::ERR) << "'" << key << "' missing in request\n";
-      std::stringstream sstr;
-      sstr << "Key missing in payload: '" << key << "'." << std::endl;
-      req->respond(false, sstr.str());
+      logger_e("System", "'%s' missing in request", key.c_str());
+      std::stringstream s_str;
+      s_str << "Key missing in payload: '" << key << "'." << std::endl;
+      req->respond(false, s_str.str());
       return false;
     }
   }
@@ -165,7 +165,7 @@ static int gen_req_id() {
  * Prevents gadgets from getting updates
  */
 void lockGadgetUpdates() {
-  logger.log("System") << "Locking Updates\n";
+  logger_i("System", "Locking Updates");
   lock_gadget_updates = true;
 }
 
@@ -173,7 +173,7 @@ void lockGadgetUpdates() {
  * Lets gadgets receive characteristic updates
  */
 void unlockGadgetUpdates() {
-  logger.log("System") << "Unlocking Updates\n";
+  logger_i("System", "Unlocking Updates");
   lock_gadget_updates = false;
 }
 
@@ -230,7 +230,7 @@ void forwardEvent(const std::shared_ptr<Event> &event) {
 
 void updateEventOnBridge(const string &sender, EventType type) {
   if (sender.empty()) {
-    logger.log("System") << "no sender specified, no event send\n";
+    logger_i("System", "No sender specified, no event send");
     return;
   }
 

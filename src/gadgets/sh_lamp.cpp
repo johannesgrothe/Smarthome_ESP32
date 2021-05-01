@@ -89,7 +89,7 @@ void SH_Lamp::executeCharacteristicUpdate(CharacteristicIdentifier characteristi
   }
 }
 
-vector<GadgetCharacteristicSettings> SH_Lamp::getCharacteristics() {
+std::vector<GadgetCharacteristicSettings> SH_Lamp::getCharacteristics() {
   lamp_color_ = Color(0xff, 0, 0xff);
   lamp_color_.setBrightness(77);
 

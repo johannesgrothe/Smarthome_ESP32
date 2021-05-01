@@ -19,7 +19,7 @@ public:
    */
   void doorbellTriggered();
 
-  vector<GadgetCharacteristicSettings> getCharacteristics() override;
+  std::vector<GadgetCharacteristicSettings> getCharacteristics() override;
 
   void handleMethodUpdate(GadgetMethod method) override;
 };

@@ -1,5 +1,7 @@
 #include "wifi_gadget.h"
 
+static const char *TAG = "WiFiGadget";
+
 WiFiGadget::WiFiGadget() = default;
 
 WiFiGadget::WiFiGadget(std::string ssid, std::string pw):
@@ -21,19 +23,17 @@ wifi_password_(std::move(pw)) {
   while (WiFiClass::status() != WL_CONNECTED && connection_tries < 6) {
     WiFi.begin(wifi_ssid_.c_str(), wifi_password_.c_str());
     delay(1000);
-    logger << ".";
+    logger_i(TAG, ".");
     connection_tries++;
   }
-  logger << "\n";
   if (WiFiClass::status() != WL_CONNECTED) {
-    logger.sender("WifiGadget").level(LOG_TYPE::DATA) << "Could not establish WiFi Connection...\n";
+    logger_e(TAG, "Could not establish WiFi Connection...");
   } else {
     randomSeed(micros());
-    logger.sender("WifiGadget").level(LOG_TYPE::DATA) << "WiFi connected\n";
-    logger.sender("WifiGadget").level(LOG_TYPE::DATA) << "IP: " << WiFi.localIP().toString() << "\n";
+    logger_i(TAG, "WiFi connected");
+    logger_i(TAG, "IP: %s", WiFi.localIP().toString().c_str());
   }
   wifi_initialized_ = true;
-  -- logger;
 }
 
 bool WiFiGadget::wifiIsInitialized() const {

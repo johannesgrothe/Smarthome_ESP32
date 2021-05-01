@@ -11,7 +11,7 @@ SH_Wallswitch::SH_Wallswitch(std::string name) :
 
 void SH_Wallswitch::executeCharacteristicUpdate(CharacteristicIdentifier, int) {}
 
-vector<GadgetCharacteristicSettings> SH_Wallswitch::getCharacteristics() {
+std::vector<GadgetCharacteristicSettings> SH_Wallswitch::getCharacteristics() {
   return {};
 }
 

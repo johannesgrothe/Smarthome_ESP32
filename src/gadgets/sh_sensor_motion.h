@@ -23,7 +23,7 @@ public:
    */
   explicit SH_Sensor_Motion(std::string name);
 
-  vector<GadgetCharacteristicSettings> getCharacteristics() override;
+  std::vector<GadgetCharacteristicSettings> getCharacteristics() override;
 
   void handleMethodUpdate(GadgetMethod) override;
 };

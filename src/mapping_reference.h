@@ -2,6 +2,7 @@
 
 #include <ArduinoJson.h>
 #include <cstring>
+#include <sstream>
 #include "system_settings.h"
 #include "console_logger.h"
 

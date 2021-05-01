@@ -20,16 +20,11 @@ public:
 };
 
 static std::shared_ptr<SH_Sensor_Temperature_DHT> createSHSensorTemperatureDHT(std::string name, pin_set pins, const JsonObject& gadget_data) {
-  uint8_t pin = 0;
-
   if (pins[0] != 0) {
-    pin = pins[0];
+    logger_i("SensorTemperatureDHT", "Pin: %d", pin);
+    return std::make_shared<SH_Sensor_Temperature_DHT>(name, pins[0]);
   } else {
-    logger.log("SensorTemperatureDHT", LOG_TYPE::ERR) << "No pin set\n";
+    logger_e("SensorTemperatureDHT", "No pin set");
     return nullptr;
   }
-
-  logger.sender("DoorbellBasic") << "Pin: " << pin << "\n";
-
-  return std::make_shared<SH_Sensor_Temperature_DHT>(name, pin);
 }

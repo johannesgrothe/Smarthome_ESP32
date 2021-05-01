@@ -232,7 +232,7 @@ private:
   static bool writeString(int start, int max_len, std::string content) {
     int id_length = content.size();
     if (id_length > max_len) {
-      logger.log("EepromStorage", LOG_TYPE::ERR) << "written content is too long\n";
+      logger_e("EepromStorage", "Written content is too long");
       return false;
     }
     for (int pos = 0; pos < id_length; pos++) {
@@ -340,7 +340,7 @@ private:
 
     // Check if maximum gadget count is reached
     if (gadget_index >= GADGET_MAX_COUNT) {
-      logger.log("EepromStorage", LOG_TYPE::ERR) << "Cannot save gadget: maximum count of gadgets reached\n";
+      logger_e("EepromStorage", "Cannot save gadget: maximum count of gadgets reached");
       return WriteGadgetStatus::MaxGadgetCountReached;
     }
 
@@ -348,7 +348,7 @@ private:
     auto existing_names = readAllGadgetNames();
     for (const auto& list_name: existing_names) {
       if (name == list_name) {
-        logger.log("EepromStorage", LOG_TYPE::ERR) << "Cannot save gadget: gadget name '" << name << "' is already in use\n";
+        logger_e("EepromStorage", "Cannot save gadget: gadget name '%s' is already in use", name);
         return WriteGadgetStatus::NameAlreadyInUse;
       }
     }
@@ -359,16 +359,14 @@ private:
       // Check if port is configured on the system
       auto buf_pin = getPinForPort(gadget_port);
       if (!buf_pin && gadget_port) {
-        logger.log("EepromStorage", LOG_TYPE::ERR)
-          << "Cannot save gadget: port '" << gadget_port << "' is not configured on this system\n";
+        logger_e("EepromStorage", "Cannot save gadget: port '%d' is not configured on this system", gadget_port);
         return WriteGadgetStatus::PortNotConfigured;
       }
 
       // Check if port is already in use on the system
       for (auto existing_port: existing_ports) {
         if (gadget_port == existing_port) {
-          logger.log("EepromStorage", LOG_TYPE::ERR)
-            << "Cannot save gadget: gadget tries to use port already occupied (" << gadget_port << ")\n";
+          logger_e("EepromStorage", "Cannot save gadget: gadget tries to use port already occupied (%d)", gadget_port);
           return WriteGadgetStatus::PortAlreadyInUse;
         }
       }
@@ -397,7 +395,7 @@ private:
     uint16_t end_index = g_start_addr + complete_len;
 
     if (end_index > EEPROM_SIZE) {
-      logger.log("EepromStorage", LOG_TYPE::ERR) << "Cannot save gadget: missing space in eeprom\n";
+      logger_e("EepromStorage", "Cannot save gadget: missing space in eeprom");
       return WriteGadgetStatus::MissingEEPROMSpace;
     }
 
@@ -430,13 +428,13 @@ private:
     success = success && writeString(code_start, g_code_len, code_json);
 
     if (!success) {
-      logger.log("EepromStorage", LOG_TYPE::ERR) << "Cannot save gadget: error writing content\n";
+      logger_e("EepromStorage", "Cannot save gadget: error writing content");
       return WriteGadgetStatus::ErrorWritingContent;
     }
 
     // set the starting point for the next gadget
     if (!setGadgetMemoryEnd(gadget_index, end_index)) {
-      logger.log("EepromStorage", LOG_TYPE::ERR) << "Cannot save gadget: error saving gadget memory end\n";
+      logger_e("EepromStorage", "Cannot save gadget: error saving gadget memory end");
       return WriteGadgetStatus::ErrorSavingMemoryEnd;
     }
 
@@ -565,17 +563,17 @@ private:
 
     if (gadget_type >= GadgetIdentifierCount) {
 
-      logger.log("EepromStorage", LOG_TYPE::ERR) << "Unknown gadget identifier '" << gadget_type << "'\n";
+      logger_e("EepromStorage", "Unknown gadget identifier '%d'", gadget_type);
       return WriteGadgetStatus::GadgetTypeError0;
     }
 
     auto type = (GadgetIdentifier) gadget_type;
 
     if (type == GadgetIdentifier::err_type) {
-      logger.log("EepromStorage", LOG_TYPE::ERR) << "Cannot save gadget: gadget has err-type 0\n";
+      logger_e("EepromStorage", "Cannot save gadget: gadget has err-type 0");
       return WriteGadgetStatus::GadgetTypeErrorUnknown;
     } else {
-      logger.log("EepromStorage") << "Saving gadget '" << name << "' with type '" << gadget_type << "'\n";
+      logger_i("EepromStorage", "Saving gadget '%s' with type '%d'", name.c_str(), gadget_type);
     }
 
     DynamicJsonDocument buf_doc(2000);
@@ -584,7 +582,7 @@ private:
     if (!gadget_json.empty()) {
       auto err = deserializeJson(buf_doc, gadget_json);
       if (err != DeserializationError::Ok) {
-        logger.log("EepromStorage", LOG_TYPE::ERR) << "Cannot save gadget: received faulty gadget config\n";
+        logger_e("EepromStorage", "Cannot save gadget: received faulty gadget config");
         return WriteGadgetStatus::FaultyConfigJSON;
       }
     }
@@ -593,7 +591,7 @@ private:
     if (!code_json.empty()) {
       auto err = deserializeJson(buf_doc, code_json);
       if (err != DeserializationError::Ok) {
-        logger.log("EepromStorage", LOG_TYPE::ERR) << "Cannot save gadget: received faulty code config\n";
+        logger_e("EepromStorage", "Cannot save gadget: received faulty code config");
         return WriteGadgetStatus::FaultyCodeConfig;
       }
     }
@@ -619,12 +617,12 @@ private:
     auto gadget_count = getGadgetCount();
 
     if (gadget_count == 0) {
-      logger.log("EepromStorage", LOG_TYPE::ERR) << "Cannot delete gadget: no gadget saved\n";
+      logger_e("EepromStorage", "Cannot delete gadget: no gadget saved");
       return false;
     }
 
     if (gadget_index > gadget_count -1) {
-      logger.log("EepromStorage", LOG_TYPE::ERR) << "Cannot delete gadget: index does not exist\n";
+      logger_e("EepromStorage", "Cannot delete gadget: index does not exist");
       return false;
     }
 
@@ -640,7 +638,7 @@ private:
     }
 
     if (!writeGadgetCount(gadget_index)) {
-      logger.log("EepromStorage", LOG_TYPE::ERR) << "Error in deleting process while updating gadget count\n";
+      logger_e("EepromStorage", "Error in deleting process while updating gadget count");
       return false;
     }
 
@@ -659,7 +657,7 @@ private:
       auto status = writeGadget(e1, e2, e3, e4, e5, e6);
 
       if (status != WriteGadgetStatus::WritingOK) {
-        logger.log("EepromStorage", LOG_TYPE::ERR) << "Error in in deletion process: moving gadgets failed\n";
+        logger_e("EepromStorage", "Error in in deletion process: moving gadgets failed");
         return false;
       }
     }
@@ -1066,7 +1064,7 @@ private:
  * @return whether writing was successful
  */
   bool writeConfigParam(const std::string &param_name, const std::string &param_val, uint8_t param_val_uint) {
-    logger.log("EepromStorage", LOG_TYPE::ERR) << "Write param '" << param_name << "'\n";
+    logger_e("EepromStorage", "Write param '%s'", param_name.c_str());
     bool write_successful = false;
 
     // write ID
@@ -1140,9 +1138,9 @@ private:
     }
 
     if (write_successful) {
-      logger.log("EepromStorage") << "OK\n";
+      logger_i("EepromStorage", "OK");
     } else {
-      logger.log("EepromStorage", LOG_TYPE::ERR) << "Failed\n";
+      logger_i("EepromStorage", "Failed");
     }
 
     return write_successful;
@@ -1153,10 +1151,10 @@ private:
    * @return whether the EEPROM was correctly initialized
    */
   static bool initEEPROM() {
-    logger.log("EepromStorage") << "Initializing EEPROM...\n";
+    logger_i("EepromStorage", "Initializing EEPROM...");
 
     if (!EEPROM.begin(EEPROM_SIZE)) {
-      logger.log("EepromStorage", LOG_TYPE::ERR) << "Initializing EEPROM...\n";
+      logger_e("EepromStorage", "Initializing EEPROM failed.");
       return false;
     }
     return true;
@@ -1168,7 +1166,7 @@ public:
     initialized_ = initEEPROM();
 
     if (initialized_) {
-      logger.log("EepromStorage") << "EEPROM usage: " << getEEPROMUsage() << " / " << EEPROM_SIZE << " bytes\n";
+      logger_i("EepromStorage", "EEPROM usage: %d / %d bytes", getEEPROMUsage(), EEPROM_SIZE);
     }
   }
 

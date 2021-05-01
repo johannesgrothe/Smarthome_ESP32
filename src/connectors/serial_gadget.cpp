@@ -1,16 +1,16 @@
 #include "serial_gadget.h"
 #include <sstream>
 
+static const char *TAG = "SerialGadget";
+
 void SerialGadget::executeRequestSending(std::shared_ptr<Request> req) {
   Serial.printf("!r_p[%s]_b[%s]_\n", req->getPath().c_str(), req->getBody().c_str());
 }
 
 SerialGadget::SerialGadget() :
     RequestGadget(RequestGadgetType::SERIAL_G) {
-  logger.sender("SerialGadget") << "Creating Serial Gadget\n";
-  ++ logger;
-  logger.sender("SerialGadget").level(LOG_TYPE::DATA) << "Using default Serial Connection\n";
-  -- logger;
+  logger_i(TAG, "Creating Serial Gadget");
+  logger_i(TAG, "Using default Serial Connection");
 }
 
 void SerialGadget::refresh_network() {
@@ -19,20 +19,20 @@ void SerialGadget::refresh_network() {
 }
 
 void SerialGadget::receiveSerialRequest() {
-  std::stringstream sstr;
+  std::stringstream s_str;
   bool new_msg = false;
   while (Serial.available()) {
     char buf = (char) Serial.read();
     if (buf != '\n') {
-      sstr << buf;
+      s_str << buf;
       new_msg = true;
     }
     delayMicroseconds(80);
   }
   if (new_msg) {
-    logger.sender("SerialGadget") << "Received: " << sstr.str() << "\n";
+    logger_i(TAG, "Received: %s", s_str.str().c_str());
 
-    std::string req_str = sstr.str();
+    std::string req_str = s_str.str();
 
     if (req_str[0] == '!' && req_str[1] == 'r') {
       char c1 = 0;
@@ -57,7 +57,7 @@ void SerialGadget::receiveSerialRequest() {
         if (in_part) {
           if (c2 == ']' && c3 == '_') {
             in_part = false;
-            switch(current_ident) {
+            switch (current_ident) {
               case 'p':
                 req_path = partstr.str();
                 gotpath = true;
@@ -69,7 +69,7 @@ void SerialGadget::receiveSerialRequest() {
               default:
                 break;
             }
-            partstr = stringstream();
+            partstr = std::stringstream();
           } else {
             if (c2 != 0) {
               partstr << c2;
@@ -90,19 +90,19 @@ void SerialGadget::receiveSerialRequest() {
         DynamicJsonDocument doc(2056);
         deserializeJson(doc, req_body);
         if (!doc.containsKey("session_id")) {
-          logger.sender("SerialGadget").level(LOG_TYPE::WARN) << "Received request without session id\n";
+          logger_w(TAG, "Received request without session id");
           return;
         }
         if (!doc.containsKey("sender")) {
-          logger.sender("SerialGadget").level(LOG_TYPE::WARN) << "Received request without sender\n";
+          logger_w(TAG, "Received request without sender");
           return;
         }
         if (!doc.containsKey("receiver")) {
-          logger.sender("SerialGadget").level(LOG_TYPE::WARN) << "Received request without receiver\n";
+          logger_w(TAG, "Received request without receiver");
           return;
         }
         if (!doc.containsKey("payload")) {
-          logger.sender("SerialGadget").level(LOG_TYPE::WARN) << "Received request without payload\n";
+          logger_w(TAG, "Received request without payload");
           return;
         }
         using std::placeholders::_1;
@@ -114,7 +114,7 @@ void SerialGadget::receiveSerialRequest() {
                                              std::bind(&RequestGadget::sendRequest, this, _1));
         addIncomingRequest(req);
       } else {
-        logger.sender("SerialGadget").level(LOG_TYPE::WARN) << "Received faulty request\n";
+        logger_w(TAG, "Received faulty request");
       }
     }
   }

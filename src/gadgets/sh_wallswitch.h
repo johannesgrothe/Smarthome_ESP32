@@ -12,7 +12,7 @@ protected:
 public:
   explicit SH_Wallswitch(std::string name);
 
-  vector<GadgetCharacteristicSettings> getCharacteristics() override;
+  std::vector<GadgetCharacteristicSettings> getCharacteristics() override;
 
   void handleMethodUpdate(GadgetMethod) override;
 };

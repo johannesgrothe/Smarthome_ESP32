@@ -42,7 +42,7 @@ void SH_Sensor_Temperature::executeCharacteristicUpdate(CharacteristicIdentifier
   }
 }
 
-vector<GadgetCharacteristicSettings> SH_Sensor_Temperature::getCharacteristics() {
+std::vector<GadgetCharacteristicSettings> SH_Sensor_Temperature::getCharacteristics() {
   return {GadgetCharacteristicSettings(CharacteristicIdentifier::humidity,
                                        0,
                                        100,

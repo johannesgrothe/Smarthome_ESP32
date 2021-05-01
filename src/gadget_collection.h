@@ -7,17 +7,17 @@
 class Gadget_Collection {
 private:
 
-  std::vector<shared_ptr<SH_Gadget>> gadgets;
+  std::vector<std::shared_ptr<SH_Gadget>> gadgets;
 
 public:
 
-  bool addGadget(const shared_ptr<SH_Gadget>& new_gadget);
+  bool addGadget(const std::shared_ptr<SH_Gadget>& new_gadget);
 
-  shared_ptr<SH_Gadget> getGadget(const std::string& gadget_name);
+  std::shared_ptr<SH_Gadget> getGadget(const std::string& gadget_name);
 
-  shared_ptr<SH_Gadget> getGadget(uint8_t index) const;
+  std::shared_ptr<SH_Gadget> getGadget(uint8_t index) const;
 
-  shared_ptr<SH_Gadget> operator[](int index) const;
+  std::shared_ptr<SH_Gadget> operator[](int index) const;
 
-  byte getGadgetCount() const;
+  uint8_t getGadgetCount() const;
 };

@@ -1,5 +1,7 @@
 #include "mapping_reference.h"
 
+static const char *TAG = "MappingReference";
+
 // TODO: Initialize all fields
 Mapping_Reference::Mapping_Reference() {};
 
@@ -31,12 +33,14 @@ bool Mapping_Reference::containsCode(unsigned long in_code) {
 }
 
 void Mapping_Reference::printMapping() {
-  logger << command_name << ": [";
+  std::stringstream s_str;
+  s_str << command_name << ": [";
   for (byte k = 0; k < code_count; k++) {
-    logger << codes[k];
+    s_str << codes[k];
     if (k < code_count - 1) {
-      logger << ", ";
+      s_str << ", ";
     }
   }
-  logger << "]\n";
+  s_str << "]";
+  logger_i(TAG, s_str.str().c_str());
 }
