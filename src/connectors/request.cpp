@@ -1,3 +1,4 @@
+#include <console_logger.h>
 #include "request.h"
 
 Request::Request(std::string req_path, int session_id, std::string sender, std::string receiver, DynamicJsonDocument payload, bool await_answer):
@@ -95,14 +96,25 @@ void Request::dontRespond() {
 }
 
 std::string Request::getBody() const {
-  std::stringstream out_str;
-  char bufchrarr[12000];
-  serializeJson(payload_, bufchrarr);
-  out_str << R"({"session_id": )" << session_id_
-          << R"(, "sender": ")" << sender_
-          << R"(", "receiver": ")" << receiver_
-          << R"(", "payload": )" << bufchrarr << "}";
-  return out_str.str();
+  DynamicJsonDocument body_doc(3000);
+  body_doc["session_id"] = session_id_;
+  body_doc["sender"] = sender_;
+  body_doc["receiver"] = receiver_;
+  body_doc["payload"] = payload_;
+
+  logger_i(TAG, "Body Size: %d", (uint8_t) body_doc.size());
+
+  char buf_arr[3200];
+  auto size = serializeJson(body_doc, buf_arr, 4200);
+  logger_i(TAG, "Size Serialization: %d", size);
+
+  std::stringstream str_buf;
+  str_buf << buf_arr;
+
+  std::string out_str = str_buf.str();
+  logger_i(TAG, "Size String,: %d", out_str.size());
+
+  return out_str;
 }
 
 bool Request::hasReceiver() const {

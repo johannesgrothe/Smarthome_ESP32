@@ -17,15 +17,10 @@ wifi_password_(std::move(pw)) {
   }
 
   logger_i(TAG, "Connecting to %s", wifi_ssid_.c_str());
+  
+  WiFi.begin(wifi_ssid_.c_str(), wifi_password_.c_str());
+  WiFi.waitForConnectResult();
 
-  byte connection_tries = 0;
-
-  while (WiFiClass::status() != WL_CONNECTED && connection_tries < 6) {
-    WiFi.begin(wifi_ssid_.c_str(), wifi_password_.c_str());
-    delay(1000);
-    logger_i(TAG, ".");
-    connection_tries++;
-  }
   if (WiFiClass::status() != WL_CONNECTED) {
     logger_e(TAG, "Could not establish WiFi Connection...");
   } else {

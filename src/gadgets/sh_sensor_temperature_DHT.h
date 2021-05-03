@@ -21,7 +21,7 @@ public:
 
 static std::shared_ptr<SH_Sensor_Temperature_DHT> createSHSensorTemperatureDHT(std::string name, pin_set pins, const JsonObject& gadget_data) {
   if (pins[0] != 0) {
-    logger_i("SensorTemperatureDHT", "Pin: %d", pin);
+    logger_i("SensorTemperatureDHT", "Pin: %d", pins[0]);
     return std::make_shared<SH_Sensor_Temperature_DHT>(name, pins[0]);
   } else {
     logger_e("SensorTemperatureDHT", "No pin set");

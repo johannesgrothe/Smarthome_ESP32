@@ -42,5 +42,6 @@ void Mapping_Reference::printMapping() {
     }
   }
   s_str << "]";
-  logger_i(TAG, s_str.str().c_str());
+  std::string mapping = s_str.str();
+//  logger_i(TAG, mapping.c_str());
 }

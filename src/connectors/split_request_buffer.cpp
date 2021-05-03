@@ -33,7 +33,7 @@ void SplitRequestBuffer::addData(int index, std::string payload) {
     data_buffer_[index] = std::move(payload);
     added_packages_++;
   } else {
-    logger_i(TAG, "Receiver-Pin: %d", "Data at index %d is not empty: %s", index, data_buffer_[index].c_str())
+    logger_i(TAG, "Receiver-Pin: %d", "Data at index %d is not empty: %s", index, data_buffer_[index].c_str());
   }
 }
 

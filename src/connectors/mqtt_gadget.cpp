@@ -94,9 +94,24 @@ void MQTTGadget::callback(char *topic, const byte *payload, const unsigned int l
 void MQTTGadget::executeRequestSending(std::shared_ptr<Request> req) {
   std::string topic = req->getPath();
   std::string body = req->getBody();
-  logger_i(TAG, "Publishing on %s: %s", topic.c_str(), body.c_str());
-  bool status = mqttClient_->publish(topic.c_str(), body.c_str());
-  mqttClient_->endPublish();
+
+  auto msg_len = body.size();
+
+  logger_i(TAG, "Publishing on %s: %d bytes", topic.c_str(), msg_len);
+
+//  bool status = mqttClient_->publish(topic.c_str(), body.c_str());
+//  mqttClient_->endPublish();
+
+  bool status = mqttClient_->beginPublish(topic.c_str(), msg_len, false);
+  uint16_t k;
+  for (
+      k = 0;
+      k < msg_len;
+      k++) {
+    status = status && mqttClient_->write(body[k]);
+  }
+  status = status && mqttClient_->endPublish();
+
   if (status)
       logger_i(TAG, "Success");
   else
@@ -166,7 +181,7 @@ MQTTGadget::initMqttClient(const IPAddress &mqtt_ip, uint16_t mqtt_port) {
     everything_ok = false;
     logger_e(TAG, "'ip' is null");
   } else {
-    logger_i(TAG, "IP: %s", mqtt_ip.toString());
+    logger_i(TAG, "IP: %s", mqtt_ip.toString().c_str());
   }
 
   // Check port

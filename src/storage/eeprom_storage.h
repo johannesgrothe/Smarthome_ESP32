@@ -348,7 +348,7 @@ private:
     auto existing_names = readAllGadgetNames();
     for (const auto& list_name: existing_names) {
       if (name == list_name) {
-        logger_e("EepromStorage", "Cannot save gadget: gadget name '%s' is already in use", name);
+        logger_e("EepromStorage", "Cannot save gadget: gadget name '%s' is already in use", name.c_str());
         return WriteGadgetStatus::NameAlreadyInUse;
       }
     }

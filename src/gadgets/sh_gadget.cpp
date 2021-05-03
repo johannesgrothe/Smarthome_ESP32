@@ -36,7 +36,7 @@ void SH_Gadget::printMapping() {
     auto codes = std::get<1>(buf_mapping_pair);
     logger_i(getName(), "'%d':", (uint8_t) method);
     for (auto code: codes) {
-      logger_i(getName(), code);
+      logger_i(getName(), "'%d'", code);
     }
   }
 }
