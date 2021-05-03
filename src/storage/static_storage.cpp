@@ -12,7 +12,7 @@ std::shared_ptr <Config> StaticStorage::loadConfig() {
   #ifdef STATIC_CONFIG_ACTIVE
   ss << STATIC_CONFIG_STR;
   #else
-  logger.log("StaticStorage", LOG_TYPE::ERR) << "Could not load static config: No static config found\n";
+  logger_e("StaticStorage", "Could not load static config: No static config found");
   return nullptr;
   #endif
 
