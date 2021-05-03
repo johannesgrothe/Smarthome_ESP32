@@ -1318,14 +1318,12 @@ void setup() {
     rebootChip("System storage initialization error", 15);
   }
 
-  logger_i("System", "Loading config:");
-
   system_config_ = system_storage_->loadConfig();
   if (system_config_ == nullptr) {
-    logger_e("System", "Failed");
+    logger_e("System", "Failed to load system configuration data");
     rebootChip("Config loading error", 15);
   }
-  logger_i("System", "OK");
+  logger_i("System", "Config loaded successfully");
 
   main_controller = std::make_shared<MainSystemController>(network_task, heartbeat_task);
 
@@ -1339,15 +1337,15 @@ void setup() {
 
   switch (system_mode_) {
     case BootMode::Serial_Ony:
-      logger_i("System", "Serial Only");
+      logger_i("System", "Boot Mode: Serial Only");
       initModeSerial();
       break;
     case BootMode::Network_Only_EEPROM:
-      logger_i("System", "Network Only: EEPROM");
+      logger_i("System", " Boot Mode: Network Only/EEPROM");
       initModeNetwork();
       break;
     case BootMode::Full_Operation:
-      logger_i("System", "Full Operation");
+      logger_i("System", "Boot Mode: Full Operation");
       initModeComplete();
       break;
     default:

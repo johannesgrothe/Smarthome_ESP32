@@ -23,7 +23,7 @@ bool MQTTGadget::connect_mqtt() {
     }
 
     if (connected) {
-      logger_i(TAG, "Connected");
+      logger_i(TAG, "Established connection to mqtt broker");
 
       logger_i(TAG, "Subscribing to topics:");
       for (const auto &list_path: broadcast_request_paths) {
@@ -42,10 +42,10 @@ bool MQTTGadget::connect_mqtt() {
       return true;
     } else {
       if (conn_count > 5) {
+        // TODO: Check code structure
         logger_e(TAG, "No Connection to Broker could be established.");
         break;
       }
-      logger_v(TAG, ".");
       delay(1000);
       conn_count++;
     }
@@ -112,10 +112,8 @@ void MQTTGadget::executeRequestSending(std::shared_ptr<Request> req) {
   }
   status = status && mqttClient_->endPublish();
 
-  if (status)
-      logger_i(TAG, "Success");
-  else
-    logger_e(TAG, "Failed");
+  if (!status)
+    logger_e(TAG, "Failed to publish Message to MQTT Broker");
 }
 
 MQTTGadget::MQTTGadget(const std::string &client_name,
