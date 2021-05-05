@@ -11,6 +11,7 @@ SerialGadget::SerialGadget() :
     RequestGadget(RequestGadgetType::SERIAL_G) {
   logger_i(TAG, "Creating Serial Gadget");
   logger_i(TAG, "Using default Serial Connection");
+  request_gadget_is_ready_ = true;
 }
 
 void SerialGadget::refresh_network() {

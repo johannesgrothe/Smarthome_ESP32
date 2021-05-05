@@ -1,6 +1,6 @@
 #include "request_gadget.h"
 
-#include <utility>
+static const char *TAG = "RequestGadget";
 
 // RequestGadget
 void RequestGadget::addIncomingRequest(std::shared_ptr<Request> request) {
