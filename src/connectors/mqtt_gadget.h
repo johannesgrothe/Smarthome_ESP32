@@ -3,7 +3,6 @@
 #include <PubSubClient.h>
 #include "request_gadget.h"
 #include <cstring>
-#include "smarthome_remote_helper.h"
 #include "wifi_gadget.h"
 #include "../protocol_paths.h"
 

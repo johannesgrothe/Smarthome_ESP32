@@ -31,4 +31,10 @@ public:
    * @return Whether saving was successful
    */
   virtual bool saveConfig(Config config) = 0;
+
+  /**
+   * Erases the Config and whatever data was stored from the storage permanently
+   * @return Whether erasing was successful
+   */
+  virtual bool eraseConfig() = 0;
 };

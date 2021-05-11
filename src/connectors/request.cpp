@@ -102,7 +102,7 @@ std::string Request::getBody() const {
   body_doc["payload"] = payload_;
 
   char buf_arr[3200];
-  auto size = serializeJson(body_doc, buf_arr, 4200);
+  serializeJson(body_doc, buf_arr, 3200);
 
   std::stringstream str_buf;
   str_buf << buf_arr;

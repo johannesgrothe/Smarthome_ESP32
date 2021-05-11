@@ -45,3 +45,7 @@ bool StaticStorage::staticConfigStringAvailable() {
   return false;
   #endif
 }
+
+bool StaticStorage::eraseConfig() {
+  return false;
+}

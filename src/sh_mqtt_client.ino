@@ -397,7 +397,8 @@ void handleCodeUpdateRequest(std::shared_ptr<Request> req) {
  * @param req Request that contains the broadcast request information
  */
 void handleBroadcastRequest(std::shared_ptr<Request> req) {
-  DynamicJsonDocument doc(10);
+  DynamicJsonDocument doc(100);
+  doc["runtime_id"] = runtime_id_;
   req->respond("smarthome/broadcast/res", doc);
 }
 
@@ -431,49 +432,7 @@ void handleSystemControlRequest(std::shared_ptr<Request> req) {
  * @param req Request that contains config reset command information
  */
 void handleConfigResetRequest(std::shared_ptr<Request> req) {
-
-  // Check payload for missing keys
-  if (!checkPayloadForKeys(req, {"reset_option"})) {
-    return;
-  }
-
-  DynamicJsonDocument json_body = req->getPayload();
-
-  // part of config to reset
-  auto reset_option = json_body["reset_option"].as<std::string>();
-
-  bool success = false;
-
-  // TODO: Remove if everything works again
-  req->respond(success);
-
-  // reset complete config
-  if (reset_option == "erase") {
-//    system_config->writeTestEEPROM();
-//    system_config->reset();
-//    system_config->resetGadgets();
-    success = true;
-  }
-
-    // reset the complete config
-  else if (reset_option == "complete") {
-//    system_config->reset();
-//    system_config->resetGadgets();
-    success = true;
-  }
-
-    // reset the system config only
-  else if (reset_option == "config") {
-//    system_config->reset();
-    success = true;
-  }
-
-    // reset the complete config
-  else if (reset_option == "gadgets") {
-//    system_config->resetGadgets();
-    success = true;
-  }
-
+  bool success = system_storage_->eraseConfig();
   req->respond(success);
 }
 
@@ -483,49 +442,26 @@ void handleConfigResetRequest(std::shared_ptr<Request> req) {
  */
 void handleConfigWriteRequest(std::shared_ptr<Request> req) {
 
-  // Check payload for missing keys
-  if (!checkPayloadForKeys(req, {"type"})) {
-    return;
-  }
-
   DynamicJsonDocument json_body = req->getPayload();
-  std::string cfg_write_mode = json_body["type"].as<std::string>();
 
-  if (cfg_write_mode == "complete") {
-
-    // Check payload for missing keys
-    if (!checkPayloadForKeys(req, {"config", "reset_config", "reset_gadgets"})) {
-      logger_e("System", "Keys missing in config write request");
-      req->respond(false);
-      return;
-    }
-
-    auto reset_config = json_body["reset_config"].as<bool>();
-    auto reset_gadgets = json_body["reset_gadgets"].as<bool>();
-
-    auto config = createConfigFromJson(json_body["config"].as<JsonObject>());
-
-    if (config == nullptr) {
-      logger_e("System", "Failed to create config object from json");
-      req->respond(false);
-      return;
-    }
-
-    if (reset_config) {
-//      system_config->reset();
-    }
-
-    if (reset_gadgets) {
-//      system_config->resetGadgets();
-    }
-
-    auto status = system_storage_->saveConfig(*config.get());
-
-    req->respond(status);
+  // Check payload for missing keys
+  if (!checkPayloadForKeys(req, {"config"})) {
+    logger_e("System", "Keys missing in config write request");
+    req->respond(false);
     return;
   }
 
-  req->respond(false);
+  auto config = createConfigFromJson(json_body["config"].as<JsonObject>());
+
+  if (config == nullptr) {
+    logger_e("System", "Failed to create config object from json");
+    req->respond(false);
+    return;
+  }
+
+  auto status = system_storage_->saveConfig(*config.get());
+
+  req->respond(status);
 }
 
 /**

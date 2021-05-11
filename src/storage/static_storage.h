@@ -32,4 +32,6 @@ public:
    * @return Always False.
    */
   bool saveConfig(Config config) override;
+
+  bool eraseConfig() override;
 };
