@@ -54,7 +54,7 @@ std::shared_ptr<Request> SplitRequestBuffer::getRequest() const {
       logger_i(TAG, "Receiver-Pin: %d", "Error in split request deserialization process");
       return nullptr;
     }
-
+    
     auto out_req = std::make_shared<Request>(path_,
                                              session_id_,
                                              sender_,

@@ -23,6 +23,8 @@ private:
   // Buffer to store split request info until all parts are received
   std::shared_ptr<SplitRequestBuffer> split_req_buffer_;
 
+  void addRequestToInQueue(std::shared_ptr<Request> req);
+
 protected:
   // Type of the Gadget
   RequestGadgetType type_;

@@ -11,18 +11,6 @@ Request::Request(std::string req_path, int session_id, std::string sender, std::
   await_response_(await_answer),
   response_(nullptr) {}
 
-Request::Request(std::string req_path, int session_id, std::string sender, std::string receiver, DynamicJsonDocument payload, std::function<void(std::shared_ptr<Request> request)> answer_method) :
-  path_(std::move(req_path)),
-  session_id_(session_id),
-  sender_(std::move(sender)),
-  receiver_(std::move(receiver)),
-  payload_(std::move(payload)),
-  needs_response_(true),
-  can_respond_(true),
-  send_answer_(std::move(answer_method)),
-  await_response_(false),
-  response_(nullptr) {}
-
 std::string Request::getPath() const {
   return path_;
 }
@@ -76,6 +64,7 @@ bool Request::respond(const DynamicJsonDocument &payload) {
 bool Request::respond(const std::string& res_path, const DynamicJsonDocument& payload) {
   needs_response_ = false;
   if (!can_respond_) {
+    logger_e("Request", "Failed to respond to request: No response callback set");
     return false;
   }
   auto new_sender = receiver_;
@@ -134,4 +123,10 @@ bool Request::operator==(const Request &rhs) const {
          getSender() == rhs.getSender() &&
          getReceiver() == rhs.getReceiver() &&
          getPayload() == rhs.getPayload();
+}
+
+void Request::setResponseCallback(std::function<void(std::shared_ptr<Request>)> answer_method) {
+  needs_response_ = true;
+  can_respond_ = true;
+  send_answer_ = std::move(answer_method);
 }

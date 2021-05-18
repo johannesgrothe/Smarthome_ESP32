@@ -86,8 +86,7 @@ void MQTTGadget::callback(char *topic, const byte *payload, const unsigned int l
                                        doc["session_id"].as<int>(),
                                        doc["sender"].as<std::string>(),
                                        doc["receiver"].as<std::string>(),
-                                       doc["payload"],
-                                       std::bind(&RequestGadget::sendRequest, this, _1));
+                                       doc["payload"]);
   addIncomingRequest(req);
 }
 

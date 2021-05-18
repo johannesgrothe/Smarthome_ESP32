@@ -120,14 +120,21 @@ void RequestGadget::refresh() {
         split_req_buffer_->addData(p_index, split_payload);
         auto out_req = split_req_buffer_->getRequest();
         if (out_req != nullptr) {
-          in_request_queue_.push(out_req);
+          addRequestToInQueue(out_req);
           split_req_buffer_ = nullptr;
         }
       }
     } else {
-
       // Request is a normal one, put it in queue to be accessible to the outside
-      in_request_queue_.push(buf_req);
+      addRequestToInQueue(buf_req);
     }
+  }
+}
+
+void RequestGadget::addRequestToInQueue(std::shared_ptr<Request> req) {
+  if (req != nullptr) {
+    using std::placeholders::_1;
+    req->setResponseCallback(std::bind(&RequestGadget::sendRequest, this, _1));
+    in_request_queue_.push(req);
   }
 }

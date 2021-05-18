@@ -1,5 +1,7 @@
 #include "eeprom_storage.h"
 
+#include "../string_methods.h"
+
 // --- PRIVATE ---
 
 uint8_t EepromStorage::calculateNewContentFlag(uint8_t index, bool new_value, uint8_t bitfield) {
@@ -439,11 +441,11 @@ uint8_t EepromStorage::readIRrecvPin() {
   return readUInt8(IR_RECV_PIN_POS);
 }
 
-bool EepromStorage::writeIRsendPin(uint8_t pin) {
+bool EepromStorage::writeIrSendPin(uint8_t pin) {
   return writeUInt8(IR_SEND_PIN_POS, pin);
 }
 
-uint8_t EepromStorage::readIRsendPin() {
+uint8_t EepromStorage::readIrSendPin() {
   return readUInt8(IR_SEND_PIN_POS);
 }
 
@@ -488,12 +490,14 @@ bool EepromStorage::writeID(const std::string &id) {
 }
 
 std::string EepromStorage::readID() {
-  if (!hasValidID()) {
-    std::stringstream sstr;
-    sstr << "esp_" << (micros() % 17731776);
-    writeID(sstr.str());
+  auto id_str = readString(ID_POS, ID_MAX_LEN);
+
+  if (!hasValidID() || !validate_utf8(id_str)) {
+    std::stringstream s_str;
+    s_str << "esp_" << (micros() & (0xFFFFFF - 1));
+    writeID(s_str.str());
   }
-  return readString(ID_POS, ID_MAX_LEN);
+  return id_str;
 }
 
 bool EepromStorage::hasValidID() {
@@ -629,11 +633,11 @@ bool EepromStorage::hasValidMQTTPassword() {
 std::string EepromStorage::readWholeEEPROM() {
   std::stringstream ss;
   for (int i = 0; i < 500; i++) {
-    char bufchar = EEPROM.readChar(i);
-    if (bufchar == 0) {
+    char buf_char = EEPROM.readChar(i);
+    if (buf_char == 0) {
       ss << "\\n";
     } else {
-      ss << bufchar;
+      ss << buf_char;
     }
   }
   return ss.str();
@@ -696,7 +700,7 @@ bool EepromStorage::saveConfig(Config config) {
 
   // Write Pins
   write_successful &= writeIRrecvPin(config.getIRRecvPin());
-  write_successful &= writeIRsendPin(config.getIRSendPin());
+  write_successful &= writeIrSendPin(config.getIRSendPin());
   write_successful &= writeRadioRecvPin(config.getRadioRecvPin());
   write_successful &= writeRadioSendPin(config.getRadioSendPin());
 
@@ -773,7 +777,7 @@ std::shared_ptr <Config> EepromStorage::loadConfig() {
   auto gadgets = readAllGadgets();
 
   uint8_t ir_recv = readIRrecvPin();
-  uint8_t ir_send = readIRsendPin();
+  uint8_t ir_send = readIrSendPin();
 
   uint8_t radio_recv = readRadioRecvPin();
   uint8_t radio_send = readRadioSendPin();
@@ -833,7 +837,7 @@ uint16_t EepromStorage::getEEPROMUsage() {
   return getGadgetMemoryEnd(getGadgetCount() - 1);
 }
 
-void EepromStorage::printEEPROMLayout() {
+std::string EepromStorage::getEepromLayout() {
   std::stringstream ss;
   ss << "EEPROM config:";
   ss << "\nvalid config bitfield: " << VALID_CONFIG_BITFIELD_BYTE;
@@ -854,5 +858,5 @@ void EepromStorage::printEEPROMLayout() {
   ss << "\nmqtt_port: " << MQTT_PORT_POS << " - " << MQTT_PORT_POS + MQTT_PORT_MAX_LEN;
   ss << "\nmqtt_user: " << MQTT_USER_POS << " - " << MQTT_USER_POS + MQTT_USER_MAX_LEN;
   ss << "\nmqtt_pw: " << MQTT_PW_POS << " - " << MQTT_PW_POS + MQTT_PW_MAX_LEN;
-  Serial.println(ss.str().c_str());
+  return ss.str();
 }

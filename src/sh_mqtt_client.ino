@@ -432,6 +432,7 @@ void handleSystemControlRequest(std::shared_ptr<Request> req) {
  * @param req Request that contains config reset command information
  */
 void handleConfigResetRequest(std::shared_ptr<Request> req) {
+  logger_i("System", "Resetting config");
   bool success = system_storage_->eraseConfig();
   req->respond(success);
 }
@@ -441,7 +442,7 @@ void handleConfigResetRequest(std::shared_ptr<Request> req) {
  * @param req Request that contains config write information
  */
 void handleConfigWriteRequest(std::shared_ptr<Request> req) {
-
+  logger_i("System", "Writing config...");
   DynamicJsonDocument json_body = req->getPayload();
 
   // Check payload for missing keys
@@ -461,6 +462,12 @@ void handleConfigWriteRequest(std::shared_ptr<Request> req) {
 
   auto status = system_storage_->saveConfig(*config.get());
 
+  if (status) {
+    logger_i("System", "Writing config was successful");
+  } else {
+    logger_e("System", "Failed to save config");
+  }
+
   req->respond(status);
 }
 
@@ -469,7 +476,7 @@ void handleConfigWriteRequest(std::shared_ptr<Request> req) {
  * @param req Request that contains config read information
  */
 void handleConfigReadRequest(std::shared_ptr<Request> req) {
-
+  logger_i("System", "Reading from config...");
   // Check payload for missing keys
   if (!checkPayloadForKeys(req, {"param"})) {
     return;

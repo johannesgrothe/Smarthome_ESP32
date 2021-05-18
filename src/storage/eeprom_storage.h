@@ -318,13 +318,13 @@ private:
    * @param pin the pin used for ir sender
    * @return whether writing was successful
    */
-  static bool writeIRsendPin(uint8_t pin);
+  static bool writeIrSendPin(uint8_t pin);
 
   /**
    * Reads the ir send pin from the eeprom
    * @return the ir send pin
    */
-  static uint8_t readIRsendPin();
+  static uint8_t readIrSendPin();
 
   // read + write radio pins
   /**
@@ -532,7 +532,7 @@ public:
   /**
    * Prints the whole eeprom layout to the console
    */
-  static void printEEPROMLayout();
+  static std::string getEepromLayout();
 
   /**
    * Returns the address of the last used byte in the eeprom.

@@ -6,6 +6,7 @@
 #include <sstream>
 #include <functional>
 #include <memory>
+#include "../console_logger.h"
 
 class Request {
 private:
@@ -109,6 +110,12 @@ public:
    * @return the body as a json string
    */
   std::string getBody() const;
+
+  /**
+   * Add a response callback to the Request
+   * @param answer_method
+   */
+  void setResponseCallback(std::function<void(std::shared_ptr<Request> request)> answer_method);
 
   /**
    * Responds to this request with the original path and a simple ack body

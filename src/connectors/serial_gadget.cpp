@@ -106,13 +106,12 @@ void SerialGadget::receiveSerialRequest() {
           logger_w(TAG, "Received request without payload");
           return;
         }
-        using std::placeholders::_1;
+
         auto req = std::make_shared<Request>(req_path,
                                              doc["session_id"].as<int>(),
                                              doc["sender"].as<std::string>(),
                                              doc["receiver"].as<std::string>(),
-                                             doc["payload"],
-                                             std::bind(&RequestGadget::sendRequest, this, _1));
+                                             doc["payload"]);
         addIncomingRequest(req);
       } else {
         logger_w(TAG, "Received faulty request");
