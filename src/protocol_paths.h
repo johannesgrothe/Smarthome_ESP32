@@ -3,6 +3,9 @@
 // Names and other constants
 #define PROTOCOL_BRIDGE_NAME "<bridge>"
 
+// Testing
+#define PATH_ECHO_TEST "smarthome/test"
+
 // Sending
 #define PATH_CODE_UPDATE_TO_BRIDGE "smarthome/to/code"
 #define PATH_CHARACTERISTIC_UPDATE_TO_BRIDGE "smarthome/remotes/gadget/update"

@@ -714,6 +714,13 @@ void handleRequest(std::shared_ptr<Request> req) {
     }
   }
 
+  // For testing purposes
+  if (req->getPath() == PATH_ECHO_TEST) {
+    DynamicJsonDocument request = req->getPayload();
+    req->respond(req->getPath(), request);
+    return;
+  }
+
   // Checks for characteristic update request
   if (req->getPath() == PATH_CHARACTERISTIC_UPDATE_FROM_BRIDGE) {
     handleGadgetCharacteristicUpdateRequest(req);
