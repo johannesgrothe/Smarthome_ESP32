@@ -2,7 +2,6 @@
 
 #include <mutex>
 #include <limits>
-
 #include "console_logger.h"
 
 class SystemTimer {

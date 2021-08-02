@@ -8,9 +8,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fpermissive")
 
 add_compile_definitions(UNIT_TEST)
 
-include_directories(../.pio/libdeps/esp32cam/ArduinoJson/src)
+#include_directories(../.pio/libdeps/esp32cam/ArduinoJson/src)
+add_subdirectory(libs/ArduinoJson/src)
 
-set(ADDITIONAL_SOURCES ../src/connectors/request.cpp ../src/gadgets/sh_gadget.cpp ../src/connectors/ir_gadget.cpp)
+target_link_libraries(ArduinoJson)
+
+set(ADDITIONAL_SOURCES ../src/connectors/request.cpp ../src/gadgets/sh_gadget.cpp ../src/connectors/ir_gadget.cpp ../src/connectors/code_gadget.cpp ../src/connectors/code_command.cpp ../src/system_timer.cpp)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 include (gcovr)

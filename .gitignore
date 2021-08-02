@@ -14,3 +14,4 @@ doc
 static_config.h
 /test_desktop/build/
 /test_reports/
+/test_desktop/libs/
