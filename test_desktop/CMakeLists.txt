@@ -5,13 +5,13 @@ enable_testing()
 
 set(CMAKE_CXX_STANDARD "11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fpermissive")
+set(PROJECT_VERSION "1.0.0")
 
 add_compile_definitions(UNIT_TEST)
 
-#include_directories(../.pio/libdeps/esp32cam/ArduinoJson/src)
-add_subdirectory(libs/ArduinoJson/src)
+add_library(ArduinoJson SHARED IMPORTED GLOBAL)
 
-target_link_libraries(ArduinoJson)
+set_target_properties(ArduinoJson PROPERTIES IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/libs/ArduinoJson/src)
 
 set(ADDITIONAL_SOURCES ../src/connectors/request.cpp ../src/gadgets/sh_gadget.cpp ../src/connectors/ir_gadget.cpp ../src/connectors/code_gadget.cpp ../src/connectors/code_command.cpp ../src/system_timer.cpp)
 
@@ -28,6 +28,10 @@ foreach(filename ${files})
         string(REPLACE ".cpp" "" f_name ${f_test})
         add_executable(${f_name} ${SOURCE_FILES})
         add_test(NAME ${f_name} COMMAND ${f_name})
+        target_link_libraries(${f_name} ArduinoJson)
+        find_path(ARDUINO_JSON_HEADER_PATH ArduinoJson.h PATH libs/ArduinoJson/src)
+        message("Header path: ${ARDUINO_JSON_HEADER_PATH}")
+        target_include_directories(${f_name} PUBLIC ${ARDUINO_JSON_HEADER_PATH})
         message("Added test '${f_name}' with executable '${f_name}' from '${filename}'")
     endif()
 endforeach()
