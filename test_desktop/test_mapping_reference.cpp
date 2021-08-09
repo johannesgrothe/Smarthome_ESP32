@@ -1,6 +1,5 @@
 #include <stdexcept>
 #include <cassert>
-#include <ArduinoJson>
 
 #include "../src/console_logger.h"
 

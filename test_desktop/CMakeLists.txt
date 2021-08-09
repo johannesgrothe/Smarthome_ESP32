@@ -9,9 +9,12 @@ set(PROJECT_VERSION "1.0.0")
 
 add_compile_definitions(UNIT_TEST)
 
-add_library(ArduinoJson SHARED IMPORTED GLOBAL)
-
-set_target_properties(ArduinoJson PROPERTIES IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/libs/ArduinoJson/src)
+include(FetchContent)
+FetchContent_Declare(ArduinoJson
+        GIT_REPOSITORY https://github.com/bblanchon/ArduinoJson.git
+        GIT_TAG        v6.18.3
+        )
+FetchContent_MakeAvailable(ArduinoJson)
 
 set(ADDITIONAL_SOURCES ../src/connectors/request.cpp ../src/gadgets/sh_gadget.cpp ../src/connectors/ir_gadget.cpp ../src/connectors/code_gadget.cpp ../src/connectors/code_command.cpp ../src/system_timer.cpp)
 
@@ -28,10 +31,9 @@ foreach(filename ${files})
         string(REPLACE ".cpp" "" f_name ${f_test})
         add_executable(${f_name} ${SOURCE_FILES})
         add_test(NAME ${f_name} COMMAND ${f_name})
+        
         target_link_libraries(${f_name} ArduinoJson)
-        find_path(ARDUINO_JSON_HEADER_PATH ArduinoJson.h PATH libs/ArduinoJson/src)
-        message("Header path: ${ARDUINO_JSON_HEADER_PATH}")
-        target_include_directories(${f_name} PUBLIC ${ARDUINO_JSON_HEADER_PATH})
+
         message("Added test '${f_name}' with executable '${f_name}' from '${filename}'")
     endif()
 endforeach()

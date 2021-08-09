@@ -1,10 +1,6 @@
 #pragma once
 
-#ifdef UNIT_TEST
-#include "test_dummys/arduinojson_dummy.h"
-#else
 #include <ArduinoJson.h>
-#endif //UNIT_TEST
 
 #include <cstring>
 #include <sstream>
