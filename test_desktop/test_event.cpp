@@ -2,13 +2,17 @@
 #include <cassert>
 
 #include "../src/console_logger.h"
+#include "../src/connectors/event.h"
 
-void test_blub() {
-  assert(false);
+void test_event() {
+  Event event("spongo", 7948573847, EventType::StatusOn);
+  assert(event.getSender() == "spongo");
+  assert(event.getType() == EventType::StatusOn);
+  assert(event.getTimestamp() == 7948573847 );
 }
 
 int main () {
-  logger_i("UnitBlub", "starting uniting all the blubs" );
-  test_blub();
-  logger_i("UnitBlub2", "done uniting");
+  logger_i("UnitEvent", "started uniting all the events" );
+  test_event();
+  logger_i("UnitEvent", "done eventing");
 }
