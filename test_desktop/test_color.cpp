@@ -78,5 +78,5 @@ void test_color() {
 int main () {
   logger_i("UnitColor", "started testing the color class..." );
   test_color();
-  logger_i("UnitColor", "done testing color");
+  logger_i("UnitColor", "test successful");
 }

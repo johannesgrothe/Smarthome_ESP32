@@ -28,5 +28,5 @@ void test_request_queue() {
 int main () {
   logger_i("RequestQueue", "starting test of request queue...");
   test_request_queue();
-  logger_i("RequestQueue", "test ended.");
+  logger_i("RequestQueue", "test successful");
 }

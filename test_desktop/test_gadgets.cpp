@@ -7,6 +7,16 @@
 void test_gadgets(){
   DummyGadget gadget("homer", GadgetType::Lightbulb);
   assert(!gadget.hasInitError());
+  assert(gadget.getName() == "homer");
+  assert(gadget.getType() == GadgetType::Lightbulb);
+  gadget.handleCodeUpdate(3234234552);
+//  if (gadget.hasIR()){
+//    logger_i("Gadget", "already has radio");
+//  } else {
+//    gadget.setIR();
+//  }
+//  assert(gadget.hasIR());
+
 }
 
 int main () {

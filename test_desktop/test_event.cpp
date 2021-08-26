@@ -12,7 +12,7 @@ void test_event() {
 }
 
 int main () {
-  logger_i("UnitEvent", "started uniting all the events" );
+  logger_i("UnitEvent", "started testing the Event class..." );
   test_event();
-  logger_i("UnitEvent", "done eventing");
+  logger_i("UnitEvent", "test successful");
 }

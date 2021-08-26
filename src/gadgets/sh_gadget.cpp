@@ -42,7 +42,9 @@ void SH_Gadget::printMapping() {
 }
 
 void SH_Gadget::updateCharacteristic(CharacteristicIdentifier characteristic, int value) {
-  gadget_remote_callback(getName(), characteristic, value);
+  if (gadget_remote_ready){
+    gadget_remote_callback(getName(), characteristic, value);
+  }
 }
 
 

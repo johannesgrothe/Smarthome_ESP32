@@ -2,13 +2,14 @@
 #include <cassert>
 
 #include "../src/console_logger.h"
+#include "../src/string_methods.h"
 
-void test_blub() {
-  assert(false);
+void test_validate_ut8() {
+  assert(validate_utf8("spongo"));
 }
 
 int main () {
-  logger_i("UnitBlub", "starting uniting all the blubs" );
-  test_blub();
-  logger_i("UnitBlub2", "done uniting");
+  logger_i("test_validate_ut8", "started testing of validate_ut8()..." );
+  test_validate_ut8();
+  logger_i("test_validate_ut8", "test successful");
 }
