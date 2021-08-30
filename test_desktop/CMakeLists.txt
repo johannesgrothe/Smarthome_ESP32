@@ -16,7 +16,7 @@ FetchContent_Declare(ArduinoJson
         )
 FetchContent_MakeAvailable(ArduinoJson)
 
-set(ADDITIONAL_SOURCES ../src/connectors/request.cpp ../src/gadgets/sh_gadget.cpp ../src/connectors/ir_gadget.cpp ../src/connectors/code_gadget.cpp ../src/connectors/code_command.cpp ../src/system_timer.cpp ../src/connectors/event.cpp ../src/color.cpp ../src/mapping_reference.cpp ../src/gadgets/sh_lamp.cpp)
+set(ADDITIONAL_SOURCES ../src/connectors/request.cpp ../src/gadgets/sh_gadget.cpp ../src/connectors/ir_gadget.cpp ../src/connectors/code_gadget.cpp ../src/connectors/code_command.cpp ../src/system_timer.cpp ../src/connectors/event.cpp ../src/color.cpp ../src/mapping_reference.cpp ../src/gadgets/sh_lamp.cpp ../src/gadgets/sh_fan.cpp)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 include (gcovr)

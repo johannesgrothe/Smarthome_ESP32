@@ -6,6 +6,7 @@
 void test_mapping_reference() {
   // TODO: switch mapping_reference() to std::string from const char*
   char json[100];
+  char name;
   const size_t CAPACITY = JSON_ARRAY_SIZE(4);
   StaticJsonDocument<CAPACITY> doc;
   JsonArray arr = doc.to<JsonArray>();
@@ -14,11 +15,8 @@ void test_mapping_reference() {
   arr.add(3);
   arr.add(4);
   serializeJson(doc, json);
-  logger_i("JsonArray", json);
   Mapping_Reference ref(arr, "default");
-  logger_i("Ref_name", "name: %s", ref.getName());
-  logger_i("Ref_count", "count: %d", ref.getCodeCount());
-  assert(ref.getName() == "default");
+  assert(strcmp("default", ref.getName()) == 0);
   assert(ref.getCodeCount() == 4);
   assert(ref.containsCode(3));
 }

@@ -5,7 +5,7 @@
 SH_Fan::SH_Fan(std::string name, uint8_t levels_count) :
   SH_Gadget(std::move(name), GadgetType::Fan),
   rotation_speed_(0),
-  last_rotation_speed_(0),
+  last_rotation_speed_(1),
   levels_(levels_count) {}
 
 void SH_Fan::toggleStatus() {
@@ -16,7 +16,7 @@ bool SH_Fan::getStatus() const {
   return rotation_speed_ > 0;
 }
 
-byte SH_Fan::getLevel() const {
+uint8_t SH_Fan::getLevel() const {
   return (rotation_speed_ / (FAN_ROTATION_SPEED_MAX / levels_));
 }
 
@@ -34,7 +34,7 @@ void SH_Fan::setStatus(bool status) {
   setGadgetHasChanged();
 }
 
-byte SH_Fan::getRotationSpeed() const {
+uint8_t SH_Fan::getRotationSpeed() const {
   return rotation_speed_;
 }
 
@@ -46,7 +46,7 @@ void SH_Fan::rotationSpeedDown() {
   setRotationSpeed(getRotationSpeed() - (FAN_ROTATION_SPEED_MAX / levels_));
 }
 
-void SH_Fan::setRotationSpeed(byte new_speed) {
+void SH_Fan::setRotationSpeed(uint8_t new_speed) {
   if (new_speed > FAN_ROTATION_SPEED_MAX) new_speed = FAN_ROTATION_SPEED_MAX;
   if (new_speed == 0) {
     last_rotation_speed_ = rotation_speed_;
@@ -73,7 +73,7 @@ void SH_Fan::executeCharacteristicUpdate(CharacteristicIdentifier characteristic
 }
 
 std::vector<GadgetCharacteristicSettings> SH_Fan::getCharacteristics() {
-  byte steps = (FAN_ROTATION_SPEED_MAX / levels_);
+  uint8_t steps = (FAN_ROTATION_SPEED_MAX / levels_);
   return {GadgetCharacteristicSettings(CharacteristicIdentifier::status,
                                        0,
                                        1,

@@ -126,7 +126,6 @@ bool IR_Gadget::sendIR(unsigned long command, const uint8_t com_type) {
       logger_i(TAG, "Unsupported Command.");
       return false;
   }
-//  logger_i(TAG, "Receiver-Pin: %d", command);
   receiver_->resume();
   return true;
 }
