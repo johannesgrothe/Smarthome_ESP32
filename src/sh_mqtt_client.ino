@@ -815,7 +815,6 @@ bool initGadgets() {
 
           buf_gadget->setGadgetRemoteCallback(std::bind(&updateCharacteristicOnBridge, _1, _2, _3));
           buf_gadget->setEventRemoteCallback(std::bind(&updateEventOnBridge, _1, _2));
-          buf_gadget->setMainController(main_controller);
         }
 
         // Code Remote
