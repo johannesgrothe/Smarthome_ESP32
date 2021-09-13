@@ -6,10 +6,12 @@
 class ApiManager {
 private:
 
-  std::shared_pointer <ApiManagerDelegate> delegate_;
+  ApiManagerDelegate *delegate_;
+
+  static bool pathIsLegal(std::string path);
 
 public:
-  explicit ApiManager(std::shared_pointer<ApiManagerDelegate> delegate);
+  explicit ApiManager(ApiManagerDelegate *delegate);
 
-  void receive(std::shared_pointer<Request> req);
+  void handleRequest(std::shared_ptr<Request> req);
 };

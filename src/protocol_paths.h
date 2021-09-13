@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 // Names and other constants
 #define PROTOCOL_BRIDGE_NAME "<bridge>"
 
@@ -40,3 +42,7 @@ static const std::vector<std::string> system_request_paths = {PATH_CONFIG_READ,
 // Paths that are used by any other component but the core system
 static const std::vector<std::string> additional_request_paths = {PATH_SYNC,
                                                                   PATH_ECHO_TEST};
+
+
+static const std::vector<std::string> api_paths = {PATH_SYNC,
+                                                   PATH_ECHO_TEST};

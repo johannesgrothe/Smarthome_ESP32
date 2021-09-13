@@ -3,7 +3,7 @@
 #include "api_manager_delegate.h"
 #include "api_manager.h"
 
-class ClientMain(private ApiManagerDelegate) {
+class ClientMain : public ApiManagerDelegate {
 private:
   ApiManager api_manager_;
 
