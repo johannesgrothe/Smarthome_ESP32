@@ -1,10 +1,10 @@
 #include "split_request_buffer.h"
 
-#include <utility>
+static const char *TAG = "SplitRequestBuffer";
 
 std::string replaceParts(std::string in_str, const std::string &part_to_replace, const std::string &replacement) {
   if (part_to_replace.find(replacement) != std::string::npos) {
-    logger.println(LOG_TYPE::FATAL, "Illegal replacement string");
+    logger_e(TAG, "Illegal replacement string");
     return "";
   }
   while (true) {
@@ -33,11 +33,11 @@ void SplitRequestBuffer::addData(int index, std::string payload) {
     data_buffer_[index] = std::move(payload);
     added_packages_++;
   } else {
-    logger.printfln("Data at index %d is not empty: '%s'", index, data_buffer_[index].c_str());
+    logger_i(TAG, "Receiver-Pin: %d", "Data at index %d is not empty: %s", index, data_buffer_[index].c_str());
   }
 }
 
-std::shared_ptr<Request>SplitRequestBuffer::getRequest() const {
+std::shared_ptr<Request> SplitRequestBuffer::getRequest() const {
   if (added_packages_ == length_) {
     std::string buf_str;
     for (int i = 0; i < length_; i++) {
@@ -46,21 +46,20 @@ std::shared_ptr<Request>SplitRequestBuffer::getRequest() const {
     }
     // Replace coded data from string to decodable json data
     auto payload_str = replaceParts(buf_str, "$*$", "\"");
-//    logger.printfln("Received payload: '%s'", payload_str.c_str());
     DynamicJsonDocument doc(5000);
     auto serialization_ok = ArduinoJson::deserializeJson(doc, payload_str);
 
     // Check if deserialization was successful
     if (serialization_ok != DeserializationError::Ok) {
-      logger.println("Error in split request deserialization process");
+      logger_i(TAG, "Receiver-Pin: %d", "Error in split request deserialization process");
       return nullptr;
     }
-
+    
     auto out_req = std::make_shared<Request>(path_,
-                               session_id_,
-                               sender_,
-                               receiver_,
-                               doc);
+                                             session_id_,
+                                             sender_,
+                                             receiver_,
+                                             doc);
 
     return out_req;
 

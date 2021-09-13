@@ -1,5 +1,6 @@
 #include "system_timer.h"
-#include <limits>
+
+static const char *TAG = "SystemTimer";
 
 SystemTimer::SystemTimer() = default;
 
@@ -22,17 +23,9 @@ void SystemTimer::setTime(const unsigned long long new_time, const unsigned long
   mtx.lock();
   time_ = new_time - millis() + time_offset;
   mtx.unlock();
-  logger.print("Setting System Time: ");
-  logger.print(new_time);
-  logger.print(" (+");
-  logger.print(time_offset);
-  logger.println(")");
-  logger.incIndent();
-  logger.print(LOG_TYPE::DATA, "System Launch Time: ");
-  logger.println(time_);
-  logger.print(LOG_TYPE::DATA, "Momentary System Time: ");
-  logger.println(getTime());
-  logger.decIndent();
+  logger_i(TAG, "Setting System Time: %d (+%d)", new_time, time_offset);
+  logger_i(TAG, "System Launch Time: %d", time_);
+  logger_i(TAG, "Momentary System Time: %d", getTime());
 }
 
 SystemTimer system_timer;

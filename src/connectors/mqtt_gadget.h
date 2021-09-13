@@ -3,7 +3,6 @@
 #include <PubSubClient.h>
 #include "request_gadget.h"
 #include <cstring>
-#include "smarthome_remote_helper.h"
 #include "wifi_gadget.h"
 #include "../protocol_paths.h"
 
@@ -33,10 +32,13 @@ protected:
 
   bool subscribe_to_topic(const std::string& topic);
 
+  bool initMqttClient(const IPAddress& mqtt_ip,
+                  uint16_t mqtt_port);
+
 public:
 
   /**
-   * Contrutctor for the mqtt gadget
+   * Constructor for the mqtt gadget
    * @param client_name
    * @param wifi_ssid
    * @param wifi_pw
@@ -52,6 +54,20 @@ public:
              uint16_t mqtt_port,
              const std::string& mqtt_username,
              const std::string& mqtt_pw);
+
+  /**
+   * Constructor for the mqtt gadget
+   * @param client_name
+   * @param wifi_ssid
+   * @param wifi_pw
+   * @param mqtt_ip
+   * @param mqtt_port
+   */
+  MQTTGadget(const std::string& client_name,
+             std::string wifi_ssid,
+             std::string wifi_pw,
+             const IPAddress& mqtt_ip,
+             uint16_t mqtt_port);
 
   void refresh_network() override;
 };

@@ -1,11 +1,13 @@
 #pragma once
 
-#include "code_command.h"
-#include "console_logger.h"
-#include "system_settings.h"
 #include <utility>
 #include <Wire.h>
 #include <memory>
+#include <sstream>
+#include <vector>
+#include "code_command.h"
+#include "console_logger.h"
+#include "system_settings.h"
 
 static std::string codeTypeToString(CodeType code) {
   switch (code) {

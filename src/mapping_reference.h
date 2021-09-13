@@ -2,6 +2,7 @@
 
 #include <ArduinoJson.h>
 #include <cstring>
+#include <sstream>
 #include "system_settings.h"
 #include "console_logger.h"
 
@@ -15,7 +16,7 @@ public:
 
   explicit Mapping_Reference(JsonArray data, const char *name);
 
-  byte getCodeCount();
+  byte getCodeCount() const;
 
   const char *getName();
 

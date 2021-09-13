@@ -1,12 +1,12 @@
 #include "code_command_buffer.h"
 
-#include <utility>
+static const char *TAG = "CodeCommandBuffer";
 
 CodeCommandBuffer::CodeCommandBuffer() :
     new_codes_(),
     code_db_() {}
 
-bool CodeCommandBuffer::addCode(const std::shared_ptr<CodeCommand>& com) {
+bool CodeCommandBuffer::addCode(const std::shared_ptr<CodeCommand> &com) {
   if (addCodeToDb(com)) {
     new_codes_.push_back(com);
     return true;
@@ -19,6 +19,7 @@ bool CodeCommandBuffer::hasNewCode() const {
 }
 
 std::shared_ptr<CodeCommand> CodeCommandBuffer::getCode() {
+  //TODO: Threw exception, check
   if (!hasNewCode())
     return nullptr;
   auto buf_code = new_codes_[new_codes_.size()];
@@ -29,12 +30,12 @@ std::shared_ptr<CodeCommand> CodeCommandBuffer::getCode() {
 std::string CodeCommandBuffer::toString() const {
   std::stringstream sstr;
   int i = 0;
-  for (const auto& code: code_db_) {
+  for (const auto &code: code_db_) {
     sstr << "[" << i << "] " << code->getTimestamp()
          << " -> " << codeTypeToString(code->getType())
          << "-" << code->getCode() << std::endl;
 
-    i ++;
+    i++;
   }
   return sstr.str();
 }

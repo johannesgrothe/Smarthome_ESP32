@@ -24,7 +24,7 @@ createSHWallswitchBasic(std::string name, pin_set pins, const JsonObject &gadget
   if (pins[0] != 0) {
     pin = pins[0];
   } else {
-    logger.println(LOG_TYPE::ERR, "No pin set");
+    logger_e("WallswitchBasic", "No pin set");
     return nullptr;
   }
 
@@ -32,8 +32,8 @@ createSHWallswitchBasic(std::string name, pin_set pins, const JsonObject &gadget
     default_state = gadget_data["default_state"].as<bool>();
   }
 
-  logger.printfln("Pin: %d", pin);
-  logger.printfln("Default State: %d", default_state);
+  logger_i("WallswitchBasic", "Pin: %d", pin);
+  logger_i("WallswitchBasic", "Default State: %d", default_state);
 
   return std::make_shared<SH_Wallswitch_Basic>(name, pin, default_state);
 }

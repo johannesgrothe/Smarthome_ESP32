@@ -1,8 +1,10 @@
 #pragma once
 
+#include <mutex>
+#include <limits>
+
 #include "Arduino.h"
 #include "console_logger.h"
-#include <mutex>
 
 class SystemTimer {
 private:

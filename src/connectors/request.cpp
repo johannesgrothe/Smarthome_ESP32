@@ -1,7 +1,5 @@
 #include "request.h"
 
-#include <utility>
-
 Request::Request(std::string req_path, int session_id, std::string sender, std::string receiver, DynamicJsonDocument payload, bool await_answer):
   path_(std::move(req_path)),
   session_id_(session_id),
@@ -12,20 +10,6 @@ Request::Request(std::string req_path, int session_id, std::string sender, std::
   can_respond_(false),
   await_response_(await_answer),
   response_(nullptr) {}
-
-Request::Request(std::string req_path, int session_id, std::string sender, std::string receiver, DynamicJsonDocument payload, std::function<void(std::shared_ptr<Request> request)> answer_method) :
-  path_(std::move(req_path)),
-  session_id_(session_id),
-  sender_(std::move(sender)),
-  receiver_(std::move(receiver)),
-  payload_(std::move(payload)),
-  needs_response_(true),
-  can_respond_(true),
-  send_answer_(std::move(answer_method)),
-  await_response_(false),
-  response_(nullptr) {}
-
-Request::~Request() {}
 
 std::string Request::getPath() const {
   return path_;
@@ -80,6 +64,7 @@ bool Request::respond(const DynamicJsonDocument &payload) {
 bool Request::respond(const std::string& res_path, const DynamicJsonDocument& payload) {
   needs_response_ = false;
   if (!can_respond_) {
+    logger_e("Request", "Failed to respond to request: No response callback set");
     return false;
   }
   auto new_sender = receiver_;
@@ -99,14 +84,21 @@ void Request::dontRespond() {
 }
 
 std::string Request::getBody() const {
-  std::stringstream out_str;
-  char bufchrarr[6000];
-  serializeJson(payload_, bufchrarr);
-  out_str << R"({"session_id": )" << session_id_
-          << R"(, "sender": ")" << sender_
-          << R"(", "receiver": ")" << receiver_
-          << R"(", "payload": )" << bufchrarr << "}";
-  return out_str.str();
+  DynamicJsonDocument body_doc(3000);
+  body_doc["session_id"] = session_id_;
+  body_doc["sender"] = sender_;
+  body_doc["receiver"] = receiver_;
+  body_doc["payload"] = payload_;
+
+  char buf_arr[3200];
+  serializeJson(body_doc, buf_arr, 3200);
+
+  std::stringstream str_buf;
+  str_buf << buf_arr;
+
+  std::string out_str = str_buf.str();
+
+  return out_str;
 }
 
 bool Request::hasReceiver() const {
@@ -123,4 +115,18 @@ std::tuple<bool, std::string> Request::getAck() {
     }
   }
   return std::tuple<bool, std::string>(ack, status_msg);
+}
+
+bool Request::operator==(const Request &rhs) const {
+  return getPath() == rhs.getPath() &&
+         getID() == rhs.getID() &&
+         getSender() == rhs.getSender() &&
+         getReceiver() == rhs.getReceiver() &&
+         getPayload() == rhs.getPayload();
+}
+
+void Request::setResponseCallback(std::function<void(std::shared_ptr<Request>)> answer_method) {
+  needs_response_ = true;
+  can_respond_ = true;
+  send_answer_ = std::move(answer_method);
 }

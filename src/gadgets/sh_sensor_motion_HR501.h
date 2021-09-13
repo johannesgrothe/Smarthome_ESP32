@@ -18,16 +18,10 @@ public:
 };
 
 static std::shared_ptr<SH_Sensor_Motion_HR501> createSHSensorMotionHR501(std::string name, pin_set pins, const JsonObject& gadget_data) {
-  uint8_t pin = 0;
-
-  if (pins[0] != 0) {
-    pin = pins[0];
+if (pins[0] != 0) {
+    return std::make_shared<SH_Sensor_Motion_HR501>(name, pins[0]);
   } else {
-    logger.println(LOG_TYPE::ERR, "No pin set");
+    logger_e("MotionSensorHR501", "No pin set");
     return nullptr;
   }
-
-  logger.printfln("Pin: %d", pin);
-
-  return std::make_shared<SH_Sensor_Motion_HR501>(name, pin);
 }

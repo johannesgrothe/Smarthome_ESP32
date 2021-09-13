@@ -1,6 +1,7 @@
 #pragma once
 
 #include "system_settings.h"
+#include <array>
 
 using bitfield_set = std::array<bool, 8>;
 using pin_set = std::array<uint8_t, GADGET_PIN_BLOCK_LEN>;

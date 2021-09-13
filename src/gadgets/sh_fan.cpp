@@ -72,7 +72,7 @@ void SH_Fan::executeCharacteristicUpdate(CharacteristicIdentifier characteristic
   }
 }
 
-vector<GadgetCharacteristicSettings> SH_Fan::getCharacteristics() {
+std::vector<GadgetCharacteristicSettings> SH_Fan::getCharacteristics() {
   byte steps = (FAN_ROTATION_SPEED_MAX / levels_);
   return {GadgetCharacteristicSettings(CharacteristicIdentifier::status,
                                        0,

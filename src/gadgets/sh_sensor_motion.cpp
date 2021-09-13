@@ -12,12 +12,12 @@ void SH_Sensor_Motion::setStatus(bool status) {
     sensor_status_ = status;
   }
   if (status) {
-    if (!sensor_status_){
-      logger.println("movement detected!");
+    if (!sensor_status_) {
+      logger_i(getName(), "Movement detected");
     }
   } else {
     if (sensor_status_) {
-      logger.println("no further movement detected");
+      logger_i(getName(), "No further movement detected");
     }
   }
 }
@@ -28,7 +28,7 @@ void SH_Sensor_Motion::executeCharacteristicUpdate(CharacteristicIdentifier char
   }
 }
 
-vector<GadgetCharacteristicSettings> SH_Sensor_Motion::getCharacteristics() {
+std::vector<GadgetCharacteristicSettings> SH_Sensor_Motion::getCharacteristics() {
   return {GadgetCharacteristicSettings(CharacteristicIdentifier::status,
                                        0,
                                        1,

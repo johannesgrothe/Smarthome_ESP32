@@ -12,6 +12,6 @@ void SH_Doorbell::doorbellTriggered() {
 
 void SH_Doorbell::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, int value) {}
 
-vector<GadgetCharacteristicSettings> SH_Doorbell::getCharacteristics() { return {}; };
+std::vector<GadgetCharacteristicSettings> SH_Doorbell::getCharacteristics() { return {}; };
 
 void SH_Doorbell::handleMethodUpdate(GadgetMethod method) {}

@@ -23,19 +23,19 @@ static std::shared_ptr<SH_Lamp_NeoPixel_Basic> createSHLampNeoPixelBasic(std::st
   if (pins[0] != 0) {
     pin = pins[0];
   } else {
-    logger.println(LOG_TYPE::ERR, "No pin set");
+    logger_e("LampNeopixelBasic", "No pin set");
     return nullptr;
   }
 
   if (gadget_data.containsKey("length")) {
     len = gadget_data["length"].as<uint16_t>();
   } else {
-    logger.println(LOG_TYPE::ERR, "No length specified");
+    logger_e("LampNeopixelBasic", "No length specified");
     return nullptr;
   }
 
-  logger.printfln("Pin: %d", pin);
-  logger.printfln("Length: %d", len);
+  logger_i("LampNeopixelBasic", "Pin: %d", pin);
+  logger_i("LampNeopixelBasic", "Length: %d", len);
 
   return std::make_shared<SH_Lamp_NeoPixel_Basic>(name, pin, len);
 }
