@@ -42,8 +42,6 @@
 #include "connectors/mqtt_gadget.h"
 #include "connectors/serial_gadget.h"
 
-#include "main_system_controller.h"
-
 // External imports
 #include <string>
 #include <cstdlib>
@@ -123,9 +121,6 @@ std::shared_ptr<Radio_Gadget> radio_gadget;
 
 // Network-gadget sending and receiving requests via mqtt
 std::shared_ptr<RequestGadget> network_gadget;
-
-// Controller for the main system. Given to the gadgets tio access the main system
-std::shared_ptr<MainSystemController> main_controller;
 
 // Container to contain all of the gadgets
 Gadget_Collection gadgets;
@@ -1272,8 +1267,6 @@ void setup() {
     rebootChip("Config loading error", 15);
   }
   logger_i("System", "Config loaded successfully");
-
-  main_controller = std::make_shared<MainSystemController>(network_task, heartbeat_task);
 
   client_id_ = system_config_->getID();
   logger_i("System", "Client ID: '%s'", client_id_.c_str());
