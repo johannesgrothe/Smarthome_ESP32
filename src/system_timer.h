@@ -2,8 +2,6 @@
 
 #include <mutex>
 #include <limits>
-
-#include "Arduino.h"
 #include "console_logger.h"
 
 class SystemTimer {

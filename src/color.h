@@ -1,6 +1,9 @@
 #pragma once
 
 #include <algorithm>
+#include <cstdlib>
+#include <cmath>
+#include "console_logger.h"
 
 using byte = unsigned char;
 
@@ -72,64 +75,69 @@ private:
     double r = 0, g = 0, b = 0;
     double sat = s / 100.0;
     double val = v / 100.0;
-
-    int i = int(h / 60.0);
-    double f = (h / 60.0) - i;
-    double p = val * (1 - sat);
-    double q = val * (1 - f * sat);
-    double t = val * (1 - (1 - f) * sat);
+    double i = h / 60.0;
+    double c = val * sat;
+    double res = std::fmod(i,2) - 1;
+    double x = c * (1 - abs(res));
+    double m = val - c;
 
     if (sat == 0.0){
       r=g=b=v;
     }
-    if (h <= 60 && h >= 0) {
-      r = val, g = t, b = p;
-    } else if (h > 60 && h <= 120 ) {
-      r = q, g = val, b = p;
-    } else if (h > 120 && h <= 180) {
-      r = p, g = val, b = t;
-    } else if (h > 180 && h <= 240) {
-      r = p, g = q, b = val;
-    } else if (h > 240 && h <= 300) {
-      r = t, g = p, b = val;
-    } else if (h > 300 && h <= 360) {
-      r = val, g = p, b = q;
+    if (h >= 0 && h < 60) {
+      r = c, g = x, b = 0;
+    } else if (h >= 60 && h < 120 ) {
+      r = x, g = c, b = 0;
+    } else if (h >= 120 && h < 180) {
+      r = 0, g = c, b = x;
+    } else if (h >= 180 && h < 240) {
+      r = 0, g = x, b = c;
+    } else if (h >= 240 && h < 300) {
+      r = x, g = 0, b = c;
+    } else if (h >= 300 && h < 360) {
+      r = c, g = 0, b = x;
     }
 
-    rgb[0] = r * 255;
-    rgb[1] = g * 255;
-    rgb[2] = b * 255;
-  }
-
-  static double hue2rgb(double p, double q, double t) {
-    if (t < 0) t += 1;
-    if (t > 1) t -= 1;
-    if (t < 1 / 6.0) return p + (q - p) * 6 * t;
-    if (t < 1 / 2.0) return q;
-    if (t < 2 / 3.0) return p + (q - p) * (2 / 3.0 - t) * 6;
-    return p;
+    rgb[0] = (r + m) * 255;
+    rgb[1] = (g + m) * 255;
+    rgb[2] = (b + m) * 255;
   }
 
   static void hslToRgb(unsigned int hue, byte saturation, byte lightness, byte rgb[]) {
-    double h = hue / 360.0;
+    double r = 0, g = 0, b = 0;
     double s = saturation / 100.0;
     double l = lightness / 100.0;
 
-    double r, g, b;
-
-    if (s == 0) {
-      r = g = b = l; // achromatic
-    } else {
-      double q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-      double p = 2 * l - q;
-      r = hue2rgb(p, q, h + 1 / 3.0);
-      g = hue2rgb(p, q, h);
-      b = hue2rgb(p, q, h - 1 / 3.0);
+    if (s < 0 || s > 1 || l < 0 || l > 1) {
+      logger_e("HSL Color", "saturation or lightness were either set below 0% or above 100%, which is not whithin the color scheme");
+      return;
     }
 
-    rgb[0] = r * 255;
-    rgb[1] = g * 255;
-    rgb[2] = b * 255;
+    double i = hue / 60.0;
+    double c = (1 - abs(2*l - 1)) * s;
+    double res = std::fmod(i,2) - 1;
+    double x = c * (1 - abs(res));
+    double m = l - (c/2);
+
+    if (s == 0.0){
+      r=g=b=l;
+    }
+    if (hue >= 0 && hue < 60) {
+      r = c, g = x, b = 0;
+    } else if (hue >= 60 && hue < 120 ) {
+      r = x, g = c, b = 0;
+    } else if (hue >= 120 && hue < 180) {
+      r = 0, g = c, b = x;
+    } else if (hue >= 180 && hue < 240) {
+      r = 0, g = x, b = c;
+    } else if (hue >= 240 && hue < 300) {
+      r = x, g = 0, b = c;
+    } else if (hue >= 300 && hue < 360) {
+      r = c, g = 0, b = x;
+    }
+    rgb[0] = (r + m) * 255;
+    rgb[1] = (g + m) * 255;
+    rgb[2] = (b + m) * 255;
   }
 
   static double threeway_max(double a, double b, double c) {
@@ -152,13 +160,13 @@ private:
       h = s = 0; // achromatic
     } else {
       double d = max - min;
-      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      s = d == 0 ? 0 : d / (1 -abs(2*l - 1));
       if (max == rd) {
         h = (gd - bd) / d + (gd < bd ? 6 : 0);
       } else if (max == gd) {
-        h = ((bd - rd) + 2) / d;
+        h = (bd - rd) / d + 2;
       } else if (max == bd) {
-        h = ((rd - gd) + 4) / d;
+        h = (rd - gd) / d + 4;
       }
       h /= 6;
     }

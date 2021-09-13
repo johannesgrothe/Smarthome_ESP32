@@ -2,7 +2,6 @@
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
-#include "code_gadget.h"
 #include "request_gadget.h"
 
 class SerialGadget : public RequestGadget {

@@ -58,7 +58,6 @@ void HSVColor::setColor(unsigned int new_hue, byte new_saturation, byte new_valu
   value = new_value;
 }
 
-
 // Color
 Color::Color() :
   rgb_color(),

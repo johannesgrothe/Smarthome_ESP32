@@ -42,7 +42,9 @@ void SH_Gadget::printMapping() {
 }
 
 void SH_Gadget::updateCharacteristic(CharacteristicIdentifier characteristic, int value) {
-  gadget_remote_callback(getName(), characteristic, value);
+  if (gadget_remote_ready){
+    gadget_remote_callback(getName(), characteristic, value);
+  }
 }
 
 
@@ -52,7 +54,7 @@ SH_Gadget::SH_Gadget::SH_Gadget(std::string name, const GadgetType type) :
     event_remote_ready(false),
     name(std::move(name)),
     has_changed(true),
-    main_controller_(nullptr),
+//    main_controller_(nullptr),
     type(type) {}
 
 void SH_Gadget::setGadgetRemoteCallback(std::function<void(std::string, CharacteristicIdentifier, int)> update_method) {
@@ -66,10 +68,10 @@ void SH_Gadget::setEventRemoteCallback(std::function<void(std::string, EventType
   logger_i(getName(), "Initialized Event Remote Callback");
   event_remote_ready = true;
 }
-
-void SH_Gadget::setMainController(std::shared_ptr<MainSystemController> controller) {
-  main_controller_ = controller;
-}
+//
+//void SH_Gadget::setMainController(std::shared_ptr<MainSystemController> controller) {
+//  main_controller_ = controller;
+//}
 
 GadgetType SH_Gadget::getType() {
   return type;
@@ -150,15 +152,15 @@ void SH_Gadget::handleEvent(std::string sender, EventType event_type) {
 }
 
 void SH_Gadget::pauseAllTasks() {
-  if (main_controller_ != nullptr) {
-    main_controller_->pause_all_tasks_except_main();
-  }
+//  if (main_controller_ != nullptr) {
+//    main_controller_->pause_all_tasks_except_main();
+//  }
 }
 
 void SH_Gadget::resumeTasks() {
-  if (main_controller_ != nullptr) {
-    main_controller_->resume_all_tasks();
-  }
+//  if (main_controller_ != nullptr) {
+//    main_controller_->resume_all_tasks();
+//  }
 }
 
 DynamicJsonDocument SH_Gadget::serialized() {
