@@ -10,8 +10,14 @@ private:
 
   static bool pathIsLegal(std::string path);
 
+  static void handleEcho(std::shared_ptr<Request> req);
+
+  void handleClientSync(std::shared_ptr<Request> req);
+
 public:
   explicit ApiManager(ApiManagerDelegate *delegate);
 
   void handleRequest(std::shared_ptr<Request> req);
+
+  void publishSync();
 };

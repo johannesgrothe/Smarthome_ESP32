@@ -732,7 +732,7 @@ void handleRequest(std::shared_ptr<Request> req) {
     return;
   }
 
-  if (req->getPath() == PATH_SYNC) {
+  if (req->getPath() == PATH_SYNC_REQ) {
     handleSyncRequest(req);
     return;
   }

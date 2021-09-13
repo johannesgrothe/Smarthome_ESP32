@@ -25,8 +25,19 @@ void ApiManager::handleRequest(std::shared_ptr<Request> req) {
 
   // For testing purposes
   if (req->getPath() == PATH_ECHO_TEST) {
-    DynamicJsonDocument request = req->getPayload();
-    req->respond(req->getPath(), request);
+    handleEcho(req);
+    return;
+  }
+
+  // Sync request from bridge
+  if (req->getPath() == PATH_SYNC_REQ) {
+    publishSync();
+    return;
+  }
+
+  // Sync request from bridge
+  if (req->getPath() == PATH_SYNC_GADGET) {
+    handleClientSync();
     return;
   }
 
@@ -34,10 +45,31 @@ void ApiManager::handleRequest(std::shared_ptr<Request> req) {
 }
 
 bool ApiManager::pathIsLegal(std::string path) {
-  for (const auto &list_path: api_paths) {
+  for (const auto &list_path: api_paths_incoming) {
     if (list_path == path) {
       return true;
     }
   }
   return false;
+}
+
+// region HANDLE INCOMING REQUESTS
+
+void ApiManager::handleEcho(std::shared_ptr<Request> req) {
+  DynamicJsonDocument request = req->getPayload();
+  req->respond(req->getPath(), request);
 };
+
+void ApiManager::handleClientSync(std::shared_ptr<Request> req) {
+  // TODO: implement forwarding client sync info
+}
+
+// endregion HANDLE INCOMING REQUESTS
+
+// region PUBLISH CHANGES
+
+void ApiManager::publishSync() {
+  // TODO: implement sync sending
+}
+
+// endregion PUBLISH CHANGES

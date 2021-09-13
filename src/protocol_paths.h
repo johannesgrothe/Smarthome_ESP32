@@ -26,7 +26,9 @@
 #define PATH_GADGET_WRITE "smarthome/gadget/add"
 
 #define PATH_HEARTBEAT "smarthome/heartbeat"
-#define PATH_SYNC "smarthome/sync"
+#define PATH_SYNC_REQ "smarthome/sync"
+#define PATH_SYNC_CLIENT "smarthome/sync/client"
+#define PATH_SYNC_GADGET "smarthome/sync/gadget"
 
 // Paths that are used by broadcast requests
 static const std::vector<std::string> broadcast_request_paths = {PATH_BROADCAST};
@@ -40,9 +42,10 @@ static const std::vector<std::string> system_request_paths = {PATH_CONFIG_READ,
                                                               PATH_CONFIG_READ};
 
 // Paths that are used by any other component but the core system
-static const std::vector<std::string> additional_request_paths = {PATH_SYNC,
+static const std::vector<std::string> additional_request_paths = {PATH_SYNC_REQ,
                                                                   PATH_ECHO_TEST};
 
 
-static const std::vector<std::string> api_paths = {PATH_SYNC,
-                                                   PATH_ECHO_TEST};
+static const std::vector<std::string> api_paths_incoming = {PATH_SYNC_REQ,
+                                                            PATH_ECHO_TEST,
+                                                            PATH_SYNC_GADGET};
