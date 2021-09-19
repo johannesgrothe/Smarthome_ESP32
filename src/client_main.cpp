@@ -2,6 +2,6 @@
 
 ClientMain::ClientMain() :
     ApiManagerDelegate(),
-    api_manager_(this) {
+    api_manager_(this, nullptr) {
 
 }

@@ -1,5 +1,6 @@
-// Stolen from https://stackoverflow.com/questions/15278343/c11-thread-safe-queue#16075550
 #pragma once
+
+// Stolen from https://stackoverflow.com/questions/15278343/c11-thread-safe-queue#16075550
 
 #include <queue>
 #include <mutex>

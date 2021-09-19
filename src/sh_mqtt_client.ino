@@ -13,7 +13,7 @@
 
 // Network Gadgets
 #include "network_library.h"
-#include "protocol_paths.h"
+#include "api/protocol_paths.h"
 
 // Gadget-Lib
 #include "gadgets/gadget_library.h"

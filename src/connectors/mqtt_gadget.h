@@ -4,7 +4,9 @@
 #include "request_gadget.h"
 #include <cstring>
 #include "wifi_gadget.h"
-#include "../protocol_paths.h"
+#include "api/protocol_paths.h"
+#include <IPAddress.h>
+#include <WiFi.h>
 
 // Gadget to communicate with MQTT Endpoint
 class MQTTGadget : public WiFiGadget, public RequestGadget {

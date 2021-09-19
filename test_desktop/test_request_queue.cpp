@@ -1,8 +1,10 @@
 #include <stdexcept>
 #include <cassert>
+#include <ArduinoJson.h>
 
 #include "../src/console_logger.h"
-#include "../src/connectors/request_queue.cpp"
+#include "../src/connectors/request_queue.h"
+#include "../src/connectors/request.h"
 
 void test_request_queue() {
   RequestQueue queue;

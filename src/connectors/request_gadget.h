@@ -1,11 +1,14 @@
 #pragma once
 
+#ifdef UNIT_TEST
+#include "../test_dummys/millis_dummy.h"
+#endif //UNIT_TEST
+
+
 // External Imports
 #include <ArduinoJson.h>
 #include <cstring>
 #include <utility>
-#include <IPAddress.h>
-#include <WiFi.h>
 
 // Other Imports
 #include "../system_settings.h"

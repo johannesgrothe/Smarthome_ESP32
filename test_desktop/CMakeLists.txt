@@ -32,10 +32,15 @@ set(ADDITIONAL_SOURCES
         ../src/gadgets/sh_sensor_motion.cpp
         ../src/gadgets/sh_sensor_temperature.cpp
         ../src/gadgets/sh_wallswitch.cpp
-        ../src/api_manager.cpp
-        ../src/api_manager_delegate.cpp
-        ../src/connectors/gadget_meta.cpp
-        ../src/client_main.cpp)
+        ../src/api/api_manager.cpp
+        ../src/api/api_manager_delegate.cpp
+        ../src/api/gadget_meta.cpp
+        ../src/api/client_meta.cpp
+        ../src/client_main.cpp
+        ../src/connectors/request_gadget.cpp
+        ../src/connectors/request_queue.cpp
+        ../src/connectors/split_request_buffer.cpp
+        )
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 include (gcovr)

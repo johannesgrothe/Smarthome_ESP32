@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../api_manager_delegate.h"
+#include "../api/api_manager_delegate.h"
 
 class ApiManagerDelegateDummy : public ApiManagerDelegate {
 private:
@@ -27,6 +27,15 @@ public:
 
   std::string getClientId() override {
     return id_;
+  }
+
+  ClientMeta getClientData() override {
+    return ClientMeta();
+  }
+
+  std::vector<GadgetMeta> getGadgetData() override {
+    std::vector<GadgetMeta> out_vector = {};
+    return out_vector;
   }
 
 };

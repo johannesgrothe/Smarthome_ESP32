@@ -23,7 +23,7 @@ def run_tests(force_compiler: Optional[str] = None, clean: bool = False) -> bool
         # success = os.system("make all && make tests && make coverage")
         xml_option = "--output-junit ../test_reports/desktop_tests.xml"  # TODO: not happenin
         log_option = "--output-log ../test_reports/desktop_tests.log"
-        success = os.system(f"ctest --test-dir build {xml_option} {log_option}")
+        success = os.system(f"ctest --test-dir build {xml_option} {log_option} --no-compress-output")
     return success
 
 

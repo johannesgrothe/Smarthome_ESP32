@@ -1,7 +1,7 @@
 #pragma once
 
-#include "api_manager_delegate.h"
-#include "api_manager.h"
+#include "api/api_manager_delegate.h"
+#include "api/api_manager.h"
 
 class ClientMain : public ApiManagerDelegate {
 private:

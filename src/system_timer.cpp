@@ -1,9 +1,5 @@
 #include "system_timer.h"
 
-#ifdef UNIT_TEST
-#include "test_dummys/millis_dummy.h"
-#endif //UNIT_TEST
-
 static const char *TAG = "SystemTimer";
 
 SystemTimer::SystemTimer() = default;

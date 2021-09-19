@@ -5,8 +5,6 @@
 // Names and other constants
 #define PROTOCOL_BRIDGE_NAME "<bridge>"
 
-// Testing
-#define PATH_ECHO_TEST "test"
 
 // Sending
 #define PATH_CODE_UPDATE_TO_BRIDGE "smarthome/to/code"
@@ -20,15 +18,27 @@
 
 #define PATH_BROADCAST "smarthome/broadcast/req"
 #define PATH_SYSTEM_CONTROL "smarthome/sys"
-#define PATH_CONFIG_RESET "smarthome/config/reset"
-#define PATH_CONFIG_WRITE "smarthome/config/write"
 #define PATH_CONFIG_READ "smarthome/config/read"
 #define PATH_GADGET_WRITE "smarthome/gadget/add"
 
 #define PATH_HEARTBEAT "smarthome/heartbeat"
 #define PATH_SYNC_REQ "smarthome/sync"
-#define PATH_SYNC_CLIENT "smarthome/sync/client"
-#define PATH_SYNC_GADGET "smarthome/sync/gadget"
+
+// Testing
+#define PATH_ECHO_TEST "test"
+
+// Inbound
+#define PATH_CONFIG_RESET "config/reset"
+#define PATH_CONFIG_WRITE "config/write"
+
+#define PATH_SYNC_GADGET "sync/gadget"
+#define PATH_SYNC_CODE "sync/code"
+#define PATH_SYNC_EVENT "sync/event"
+
+// Outbound
+#define PATH_PUBLISH_CLIENT "sync/client"
+#define PATH_PUBLISH_CODE "publish/code"
+#define PATH_PUBLISH_EVENT "publish/event"
 
 // Paths that are used by broadcast requests
 static const std::vector<std::string> broadcast_request_paths = {PATH_BROADCAST};
@@ -45,7 +55,16 @@ static const std::vector<std::string> system_request_paths = {PATH_CONFIG_READ,
 static const std::vector<std::string> additional_request_paths = {PATH_SYNC_REQ,
                                                                   PATH_ECHO_TEST};
 
+static const std::vector<std::string> api_paths_broadcast_enabled = {PATH_SYNC_REQ,
+                                                                     PATH_ECHO_TEST,
+                                                                     PATH_SYNC_GADGET,
+                                                                     PATH_SYNC_CODE,
+                                                                     PATH_SYNC_EVENT};
 
 static const std::vector<std::string> api_paths_incoming = {PATH_SYNC_REQ,
                                                             PATH_ECHO_TEST,
-                                                            PATH_SYNC_GADGET};
+                                                            PATH_SYNC_GADGET,
+                                                            PATH_SYNC_CODE,
+                                                            PATH_SYNC_EVENT,
+                                                            PATH_CONFIG_RESET,
+                                                            PATH_CONFIG_WRITE};
