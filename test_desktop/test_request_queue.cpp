@@ -18,13 +18,14 @@ void test_request_queue() {
                                             DynamicJsonDocument(15));
 
   queue.push(test_req);
+
   assert(!queue.isEmpty());
 
   auto out_req = queue.pop();
 
   assert(out_req != nullptr);
-
   assert(*test_req == *out_req);
+  assert(queue.isEmpty());
 }
 
 int main () {

@@ -40,6 +40,8 @@ set(ADDITIONAL_SOURCES
         ../src/connectors/request_gadget.cpp
         ../src/connectors/request_queue.cpp
         ../src/connectors/split_request_buffer.cpp
+        ../src/api/api_encoder.cpp
+        ../src/api/api_decoder.cpp
         )
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
