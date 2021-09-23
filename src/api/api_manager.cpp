@@ -26,6 +26,7 @@ void ApiManager::handleRequest(std::shared_ptr<Request> req) {
     return;
   }
 
+  // TODO: Use switch statement
   // For testing purposes
   if (req->getPath() == PATH_ECHO_TEST) {
     handleEcho(req);

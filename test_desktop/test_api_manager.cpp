@@ -18,7 +18,6 @@ void test_api_manager() {
 void test_api_manager_echo() {
   ApiManagerDelegateDummy delegate(TEST_CLIENT_ID);
   auto network = std::make_shared<RequestGadgetDummy>();
-//  RequestGadgetDummy network;
   ApiManager manager(&delegate, network);
 
   DynamicJsonDocument payload(400);

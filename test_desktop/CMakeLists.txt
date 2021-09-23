@@ -45,7 +45,7 @@ set(ADDITIONAL_SOURCES
         )
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
-include (gcovr)
+#include (gcovr)
 
 message("Scanning for test files...")
 file(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
