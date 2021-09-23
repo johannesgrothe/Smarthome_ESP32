@@ -2,8 +2,7 @@
 .vscode
 .idea
 .pio
-cmake-build-esp32cam
-cmake-build-debug
+
 CMakeListsPrivate.txt
 /CMakeLists.txt
 *.elf
@@ -16,3 +15,4 @@ static_config.h
 /test_reports/
 /test_desktop/libs/
 test_desktop/Testing/Temporary
+cmake-build-*

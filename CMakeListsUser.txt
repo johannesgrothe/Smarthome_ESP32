@@ -1,6 +1,7 @@
 
-add_custom_target(
-    DesktopTests ALL
-    COMMAND cd build && cmake && make && cd .. && ctest --test-dir build
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test_desktop
-)
+unset(CMAKE_C_COMPILER)
+unset(CMAKE_CXX_COMPILER)
+unset(CMAKE_CXX_FLAGS)
+unset(CMAKE_C_FLAGS)
+
+add_subdirectory(test_desktop)
