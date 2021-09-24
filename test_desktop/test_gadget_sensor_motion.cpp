@@ -4,9 +4,15 @@
 
 TEST_CASE("Test Motion Sensor", "[Gadget]") {
   GadgetSensorMotionDummy dummy("move");
-  CHECK(dummy.getName() == "move");
-  CHECK(dummy.getType() == GadgetType::Motion_Sensor);
-  auto result = dummy.getCharacteristics();
-  CHECK(result[0].characteristic == CharacteristicIdentifier::status);
-  CHECK(result[1].characteristic == CharacteristicIdentifier::err_type);
+  auto characteristics = dummy.getCharacteristics();
+
+  SECTION("Test Constructor") {
+    CHECK(dummy.getName() == "move");
+    CHECK(dummy.getType() == GadgetType::Motion_Sensor);
+  }
+
+  SECTION("Test Status") {
+    auto status = characteristics[0];
+    CHECK(status.characteristic == CharacteristicIdentifier::status);
+  }
 }

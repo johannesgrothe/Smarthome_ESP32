@@ -1,10 +1,12 @@
 #include "api_manager.h"
 
+#include <utility>
+
 #include "protocol_paths.h"
 
 ApiManager::ApiManager(ApiManagerDelegate *delegate, std::shared_ptr<RequestGadget> network) :
     delegate_(delegate),
-    network_(network) {};
+    network_(std::move(network)) {};
 
 void ApiManager::handleRequest(std::shared_ptr<Request> req) {
   std::string req_path = req->getPath();
