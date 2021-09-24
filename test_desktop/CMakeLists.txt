@@ -45,6 +45,7 @@ set(TEST_SOURCES)
 
 message("Scanning for test files...")
 file(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+
 foreach(filename ${files})
     set(f_test "")
     cmake_path(GET filename FILENAME f_test)
@@ -53,8 +54,11 @@ foreach(filename ${files})
         message("Detected test-file '${filename}'")
     endif()
 endforeach()
+
+set(TEST_COUNT)
+list(LENGTH TEST_SOURCES TEST_COUNT)
+message("Detected " ${TEST_COUNT} " test files")
 message("")
 
 add_executable(CatchTests ${TEST_SOURCES} ${ADDITIONAL_SOURCES})
-#add_executable(CatchTests ${TEST_SOURCES})
 target_link_libraries(CatchTests ArduinoJson)
