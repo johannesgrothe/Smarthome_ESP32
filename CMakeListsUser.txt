@@ -1,7 +1,2 @@
 
-unset(CMAKE_C_COMPILER)
-unset(CMAKE_CXX_COMPILER)
-unset(CMAKE_CXX_FLAGS)
-unset(CMAKE_C_FLAGS)
-
 add_subdirectory(test_desktop)
