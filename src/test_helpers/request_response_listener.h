@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <utility>
 
 #include "../connectors/request.h"
 
@@ -11,13 +12,23 @@ private:
   std::shared_ptr <Request> in_req_;
 
 public:
-  RequestResponseListener(std::string path,
-                          std::string sender,
-                          std::string receiver,
-                          DynamicJsonDocument payload) :
+  RequestResponseListener(const std::string& path,
+                          const std::string& sender,
+                          const std::string& receiver,
+                          const DynamicJsonDocument& payload) :
       out_req_(nullptr),
       in_req_(nullptr) {
     out_req_ = std::make_shared<Request>(path, 177787, sender, receiver, payload);
+    using std::placeholders::_1;
+    out_req_->setResponseCallback(std::bind(&RequestResponseListener::callback, this, _1));
+  }
+
+  RequestResponseListener(const std::string& path,
+                          const std::string& sender,
+                          const DynamicJsonDocument& payload) :
+      out_req_(nullptr),
+      in_req_(nullptr) {
+    out_req_ = std::make_shared<Request>(path, 177787, sender, payload);
     using std::placeholders::_1;
     out_req_->setResponseCallback(std::bind(&RequestResponseListener::callback, this, _1));
   }
@@ -35,7 +46,7 @@ public:
   }
 
   void callback(std::shared_ptr <Request> request) {
-    in_req_ = request;
+    in_req_ = std::move(request);
   }
 
 };

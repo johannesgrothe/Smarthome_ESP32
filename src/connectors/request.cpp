@@ -1,15 +1,23 @@
 #include "request.h"
 
-Request::Request(std::string req_path, int session_id, std::string sender, std::string receiver, DynamicJsonDocument payload, bool await_answer):
-  path_(std::move(req_path)),
-  session_id_(session_id),
-  sender_(std::move(sender)),
-  receiver_(std::move(receiver)),
-  payload_(std::move(payload)),
-  needs_response_(false),
-  can_respond_(false),
-  await_response_(await_answer),
-  response_(nullptr) {}
+#include <utility>
+
+Request::Request(std::string req_path, int session_id, std::string sender, std::string receiver,
+                 DynamicJsonDocument payload) :
+    path_(std::move(req_path)),
+    session_id_(session_id),
+    sender_(std::move(sender)),
+    receiver_(std::move(receiver)),
+    payload_(std::move(payload)),
+    can_respond_(false) {}
+
+Request::Request(std::string req_path, int session_id, std::string sender, DynamicJsonDocument payload) :
+    path_(std::move(req_path)),
+    session_id_(session_id),
+    sender_(std::move(sender)),
+    receiver_("null"),
+    payload_(std::move(payload)),
+    can_respond_(false) {}
 
 std::string Request::getPath() const {
   return path_;
@@ -39,7 +47,7 @@ bool Request::respond(bool ack) {
   return respond(ack, path_);
 }
 
-bool Request::respond(bool ack, const std::string& status_msg) {
+bool Request::respond(bool ack, const std::string &status_msg) {
   DynamicJsonDocument doc(1000);
   doc["ack"] = ack;
   if (!status_msg.empty()) {
@@ -48,7 +56,7 @@ bool Request::respond(bool ack, const std::string& status_msg) {
   return respond(path_, doc);
 }
 
-bool Request::respond(bool ack, const std::string& status_msg, const std::string& path) {
+bool Request::respond(bool ack, const std::string &status_msg, const std::string &path) {
   DynamicJsonDocument doc(1000);
   doc["ack"] = ack;
   if (!status_msg.empty()) {
@@ -61,8 +69,7 @@ bool Request::respond(const DynamicJsonDocument &payload) {
   return respond(path_, payload);
 }
 
-bool Request::respond(const std::string& res_path, const DynamicJsonDocument& payload) {
-  needs_response_ = false;
+bool Request::respond(const std::string &res_path, const DynamicJsonDocument &payload) {
   if (!can_respond_) {
     logger_e("Request", "Failed to respond to request: No response callback set");
     return false;
@@ -77,10 +84,6 @@ bool Request::respond(const std::string& res_path, const DynamicJsonDocument& pa
   // TODO: change how responses are handled by returning the response request and not using a callback
   send_answer_(req);
   return true;
-}
-
-void Request::dontRespond() {
-  needs_response_ = false;
 }
 
 std::string Request::getBody() const {
@@ -102,6 +105,7 @@ std::string Request::getBody() const {
 }
 
 bool Request::hasReceiver() const {
+  // TODO: Kinda bullshit
   return receiver_ != "null";
 }
 
@@ -126,7 +130,6 @@ bool Request::operator==(const Request &rhs) const {
 }
 
 void Request::setResponseCallback(std::function<void(std::shared_ptr<Request>)> answer_method) {
-  needs_response_ = true;
   can_respond_ = true;
   send_answer_ = std::move(answer_method);
 }

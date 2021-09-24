@@ -18,13 +18,8 @@ private:
   DynamicJsonDocument payload_;
 
   // respond to (incoming) request
-  bool needs_response_;
   bool can_respond_;
   std::function<void(std::shared_ptr<Request>)> send_answer_;
-
-  // wait for answer to request
-  bool await_response_;
-  std::shared_ptr<Request> response_;
 
 public:
   /**
@@ -40,25 +35,20 @@ public:
           int session_id,
           std::string sender,
           std::string receiver,
-          DynamicJsonDocument payload,
-          bool await_answer = false);
+          DynamicJsonDocument payload);
 
   /**
    * Constructor for the Request if there should ba an option to send an answer.
-   * This constructor should only be used by the receiving gadgets to attach their response-methods
    * @param req_path The path the request should be send to
    * @param session_id The session id the request should use to identify itself
    * @param sender The sender of the request
-   * @param receiver The receiver of the request
    * @param payload The payload that should be send within the request
-   * @param answer_method the method that the internal answer()-methods use to respond to an incoming request
+   * @param await_answer Whether the sender awaits an answer or not. Defaults to false.
    */
   Request(std::string req_path,
           int session_id,
           std::string sender,
-          std::string receiver,
-          DynamicJsonDocument payload,
-          std::function<void(std::shared_ptr<Request> request)> answer_method);
+          DynamicJsonDocument payload);
 
   /**
    * Method to access the path of the request
@@ -155,11 +145,6 @@ public:
    * @return whether responding was successful
    */
   bool respond(const std::string &path, const DynamicJsonDocument &payload);
-
-  /**
-   * Discards the 'needs response'-flag without actually sending one
-   */
-  void dontRespond();
 
   /**
    * Checks if the request has a ack-status and an status message.

@@ -28,7 +28,7 @@ void ApiManager::handleRequest(std::shared_ptr<Request> req) {
     return;
   }
 
-  // TODO: Use switch statement
+  // Switch only works for integer types, therefore all the IFs
   // For testing purposes
   if (req->getPath() == PATH_ECHO_TEST) {
     handleEcho(req);
@@ -64,29 +64,23 @@ void ApiManager::handleRequest(std::shared_ptr<Request> req) {
 
 // region PATH CHECKERS
 
-bool ApiManager::pathIsLegal(std::string path) {
-  for (const auto &list_path: api_paths_incoming) {
-    if (list_path == path) {
-      return true;
-    }
-  }
-  return false;
+bool ApiManager::pathIsLegal(const std::string &path) {
+  return (std::any_of(api_paths_incoming.begin(),
+                      api_paths_incoming.end(),
+                      [&path](const std::string& list_path) { return list_path == path; }));
 }
 
-bool ApiManager::pathIsBroadcast(std::string path) {
-  for (const auto &list_path: api_paths_broadcast_enabled) {
-    if (list_path == path) {
-      return true;
-    }
-  }
-  return false;
+bool ApiManager::pathIsBroadcast(const std::string &path) {
+  return (std::any_of(api_paths_broadcast_enabled.begin(),
+                      api_paths_broadcast_enabled.end(),
+                      [&path](const std::string& list_path) { return list_path == path; }));
 }
 
 // endregion PATH CHECKERS
 
 // region HANDLE INCOMING REQUESTS
 
-void ApiManager::handleEcho(std::shared_ptr<Request> req) {
+void ApiManager::handleEcho(const std::shared_ptr<Request>& req) {
   DynamicJsonDocument request = req->getPayload();
   req->respond(req->getPath(), request);
 };

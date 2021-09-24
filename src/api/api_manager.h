@@ -15,11 +15,11 @@ private:
 
   std::shared_ptr<RequestGadget> network_;
 
-  static bool pathIsLegal(std::string path);
+  static bool pathIsLegal(const std::string& path);
 
-  static bool pathIsBroadcast(std::string path);
+  static bool pathIsBroadcast(const std::string& path);
 
-  static void handleEcho(std::shared_ptr<Request> req);
+  static void handleEcho(const std::shared_ptr<Request>& req);
 
   void handleGadgetUpdate(std::shared_ptr<Request> req);
 
