@@ -20,7 +20,11 @@ def run_tests(force_compiler: Optional[str] = None, clean: bool = False) -> bool
     # success = os.system(f"cd build && cmake .. -DUSE_GCOV=yes {compiler_select}&& make") == 0
     success = os.system(f"cd build && cmake ..{compiler_select}&& make") == 0
     if success:
-        success = os.system(f"cd build && ./CatchTests")
+        success = os.system(f"cd build && ./CatchTests") == 0
+    if success:
+        print("All tests were successful")
+    else:
+        print("Some tests failed")
     return success
 
 

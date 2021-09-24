@@ -14,6 +14,6 @@ enum class NetworkMode {
 };
 
 /**
- * Count of possibities in NetworkMode
+ * Count of possibilities in NetworkMode
  */
 #define NetworkModeCount 3
