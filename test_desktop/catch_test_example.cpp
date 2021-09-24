@@ -4,17 +4,17 @@
 
 TEST_CASE( "Dummy test", "[Dummy]" ) {
 
-  int yolo_number = 1;
+  int test_number = 1;
 
-  SECTION( "test if yolo number is 2" ) {
-    CHECK(yolo_number == 2);
+  SECTION( "test if number is 2" ) {
+    CHECK(test_number == 2);
   }
 
-  SECTION( "test if yolo number is 1" ) {
-    CHECK(yolo_number == 1);
+  SECTION( "test if number is 1" ) {
+    CHECK(test_number == 1);
   }
 
-  SECTION( "test if yolo number is 4" ) {
-    CHECK(yolo_number == 4);
+  SECTION( "test if number is 4" ) {
+    CHECK(test_number == 4);
   }
 }
