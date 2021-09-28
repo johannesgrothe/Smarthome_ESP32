@@ -75,4 +75,18 @@ TEST_CASE("Test API Manager", "[API]") {
     CHECK(listener.getResponse()->getPayload() == payload);
   }
 
+  SECTION("Test Sync Request") {
+    CHECK(network->getLastSentRequest() == nullptr);
+
+    DynamicJsonDocument payload(400);
+    auto sync_request = std::make_shared<Request>(PATH_SYNC_REQ,
+                                                  177787,
+                                                  TEST_BRIDGE_ID,
+                                                  TEST_CLIENT_ID,
+                                                  payload);
+    manager.handleRequest(sync_request);
+
+//    CHECK(network->getLastSentRequest() != nullptr);
+  }
+
 }

@@ -15,7 +15,7 @@
 static uint8_t getPinForPort(uint8_t port) {
   switch (port) {
     case 0:
-      return 0; // 0 means unconfigured
+      return 0; // 0 means not configured
     case 1:
 #ifdef PORT1
       return PORT1;

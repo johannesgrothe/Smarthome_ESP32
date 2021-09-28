@@ -33,6 +33,7 @@ set(ADDITIONAL_SOURCES
         ../src/api/api_manager_delegate.cpp
         ../src/api/gadget_meta.cpp
         ../src/api/client_meta.cpp
+        ../src/api/characteristic_meta.cpp
         ../src/client_main.cpp
         ../src/connectors/request_gadget.cpp
         ../src/connectors/request_queue.cpp

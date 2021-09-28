@@ -13,15 +13,15 @@ public:
       ApiManagerDelegate(),
       id_(id) {}
 
-  void handleGadgetUpdate(std::shared_ptr <GadgetMeta> gadget) override {
+  void handleGadgetUpdate(std::shared_ptr<GadgetMeta> gadget) override {
 
   }
 
-  void handleCode(std::shared_ptr <CodeCommand> code) override {
+  void handleCode(std::shared_ptr<CodeCommand> code) override {
 
   }
 
-  void handleEvent(std::shared_ptr <Event> event) override {
+  void handleEvent(std::shared_ptr<Event> event) override {
 
   }
 
@@ -30,7 +30,12 @@ public:
   }
 
   ClientMeta getClientData() override {
-    return ClientMeta();
+    return {1776,
+            {},
+            BootMode::Full_Operation,
+            "",
+            "",
+            ""};
   }
 
   std::vector<GadgetMeta> getGadgetData() override {

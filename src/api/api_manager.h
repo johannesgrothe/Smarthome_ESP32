@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include "api_manager_delegate.h"
 #include "gadget_meta.h"
 #include "client_meta.h"
@@ -21,23 +22,23 @@ private:
 
   static void handleEcho(const std::shared_ptr<Request>& req);
 
-  void handleGadgetUpdate(std::shared_ptr<Request> req);
+  void handleGadgetUpdate(const std::shared_ptr<Request>& req);
 
-  void handleCodeUpdate(std::shared_ptr<Request> req);
+  void handleCodeUpdate(const std::shared_ptr<Request>& req);
 
-  void handleEventUpdate(std::shared_ptr<Request> req);
+  void handleEventUpdate(const std::shared_ptr<Request>& req);
 
 public:
 
   ApiManager(ApiManagerDelegate *delegate, std::shared_ptr<RequestGadget> network);
 
-  void handleRequest(std::shared_ptr<Request> req);
+  void handleRequest(const std::shared_ptr<Request>& req);
 
-  void publishSync();
+  void publishSync(std::string *receiver);
 
-  void publishGadgetUpdate(GadgetMeta gadget_data);
+  void publishGadgetUpdate(const GadgetMeta& gadget_data);
 
-  void publishCode(std::shared_ptr<CodeCommand> code);
+  void publishCode(const std::shared_ptr<CodeCommand>& code);
 
-  void publishEvent(std::shared_ptr<Event> event);
+  void publishEvent(const std::shared_ptr<Event>& event);
 };

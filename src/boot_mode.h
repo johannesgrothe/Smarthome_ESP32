@@ -2,6 +2,10 @@
 
 #include "pin_profile.h"
 
+#ifndef UNIT_TEST
+#include <Arduino.h>
+#endif
+
 //#define STATIC_BOOTMODE 2
 
 enum class BootMode {
@@ -13,6 +17,7 @@ enum class BootMode {
 };
 
 static BootMode getBootMode() {
+  #ifndef UNIT_TEST
 #ifdef STATIC_BOOTMODE
   return BootMode(STATIC_BOOTMODE);
 #else
@@ -35,4 +40,7 @@ static BootMode getBootMode() {
   }
   return mode;
 #endif
+  #else
+  return BootMode::Unknown_Mode;
+  #endif
 }
