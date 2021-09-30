@@ -1,6 +1,7 @@
 #include "api_manager.h"
 
 #include <utility>
+#include <memory>
 
 #include "protocol_paths.h"
 #include "api_encoder.h"
@@ -108,20 +109,20 @@ void ApiManager::publishSync(std::string *receiver = nullptr) {
   auto client_data = delegate_->getClientData();
   auto gadget_data = delegate_->getGadgetData();
   auto payload = ApiEncoder::encodeSync(client_data, gadget_data);
-//  if (receiver == nullptr) {
-//    auto out_req = std::shared_ptr<Request>(PATH_PUBLISH_CLIENT,
-//                                            123,
-//                                            delegate_->getClientId(),
-//                                            payload);
-//    network_->sendRequest(out_req);
-//  } else {
-//    auto out_req = std::shared_ptr<Request>(PATH_PUBLISH_CLIENT,
-//                                            123,
-//                                            delegate_->getClientId(),
-//                                            *receiver,
-//                                            payload);
-//    network_->sendRequest(out_req);
-//  }
+  if (receiver == nullptr) {
+    auto out_req = std::make_shared<Request>(PATH_PUBLISH_CLIENT,
+                                             123,
+                                             delegate_->getClientId(),
+                                             payload);
+    network_->sendRequest(out_req);
+  } else {
+    auto out_req = std::make_shared<Request>(PATH_PUBLISH_CLIENT,
+                                             123,
+                                             delegate_->getClientId(),
+                                             *receiver,
+                                             payload);
+    network_->sendRequest(out_req);
+  }
 }
 
 void ApiManager::publishGadgetUpdate(const GadgetMeta& gadget_data) {

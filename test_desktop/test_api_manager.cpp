@@ -75,7 +75,7 @@ TEST_CASE("Test API Manager", "[API]") {
     CHECK(listener.getResponse()->getPayload() == payload);
   }
 
-  SECTION("Test Sync Request") {
+  SECTION("Test Sync") {
     CHECK(network->getLastSentRequest() == nullptr);
 
     DynamicJsonDocument payload(400);
@@ -85,8 +85,7 @@ TEST_CASE("Test API Manager", "[API]") {
                                                   TEST_CLIENT_ID,
                                                   payload);
     manager.handleRequest(sync_request);
-
-//    CHECK(network->getLastSentRequest() != nullptr);
+    CHECK(network->getLastSentRequest() != nullptr);
   }
 
 }

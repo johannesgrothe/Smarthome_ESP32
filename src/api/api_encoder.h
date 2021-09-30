@@ -39,4 +39,12 @@ public:
    * @return A json document containing all the information
    */
   static DynamicJsonDocument encodeSync(const ClientMeta& client_data, const std::vector<GadgetMeta> &gadgets);
+
+  /**
+   * Encodes the data needed to update information for a specific gadget on the bridge
+   *
+   * @param gadget_data Data of the gadget
+   * @return A json document containing all the information
+   */
+  static DynamicJsonDocument encodeGadgetUpdate(const GadgetMeta& gadget_data);
 };

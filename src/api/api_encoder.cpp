@@ -36,9 +36,9 @@ DynamicJsonDocument ApiEncoder::encodeCharacteristic(CharacteristicMeta characte
   DynamicJsonDocument doc(1000);
   doc["type"] = int(characteristic_data.type);
   doc["min"] = characteristic_data.min_val;
-  doc["max"] = characteristic_data.min_val;
-  doc["step_val"] = characteristic_data.min_val;
-  doc["steps"] = characteristic_data.min_val;
+  doc["max"] = characteristic_data.max_val;
+  doc["step_val"] = characteristic_data.step_val;
+  doc["steps"] = characteristic_data.steps;
   return doc;
 }
 
@@ -47,8 +47,14 @@ DynamicJsonDocument ApiEncoder::encodeSync(const ClientMeta &client_data, const 
   doc["client"] = encodeClient(client_data);
   doc.createNestedArray("gadgets");
   JsonArray gadgets = doc["gadgets"];
-  for (auto gadget: gadget_data) {
+  for (const auto& gadget: gadget_data) {
     gadgets.add(encodeGadget(gadget));
   }
+  return doc;
+}
+
+DynamicJsonDocument ApiEncoder::encodeGadgetUpdate(const GadgetMeta &gadget_data) {
+  DynamicJsonDocument doc(1500);
+  doc["gadget"] = encodeGadget(gadget_data);
   return doc;
 }
