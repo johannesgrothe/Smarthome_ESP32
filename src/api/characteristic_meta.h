@@ -5,11 +5,11 @@
 
 class CharacteristicMeta {
 public:
-  CharacteristicMeta(CharacteristicIdentifier type, uint16_t min_val, uint16_t max_val, uint16_t step_val, uint16_t steps);
+  CharacteristicMeta(CharacteristicIdentifier type, int min_val, int max_val, int step_val, uint16_t steps);
 
   const CharacteristicIdentifier type;
-  const uint16_t min_val;
-  const uint16_t max_val;
-  const uint16_t step_val;
+  const int min_val;
+  const int max_val;
+  const int step_val;
   const uint16_t steps;
 };

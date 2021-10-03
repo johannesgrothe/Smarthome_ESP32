@@ -90,7 +90,10 @@ void ApiManager::handleEcho(const std::shared_ptr<Request> &req) {
 };
 
 void ApiManager::handleGadgetUpdate(const std::shared_ptr<Request> &req) {
-  // TODO: implement forwarding client sync info
+  if (req->getPayload()["gadget"].is<JsonObject>()) {
+    auto gadget_meta = ApiDecoder::decodeGadget(req->getPayload()["gadget"]);
+    delegate_->handleGadgetUpdate(gadget_meta);
+  }
 }
 
 void ApiManager::handleCodeUpdate(const std::shared_ptr<Request> &req) {
@@ -126,7 +129,12 @@ void ApiManager::publishSync(std::string *receiver = nullptr) {
 }
 
 void ApiManager::publishGadgetUpdate(const GadgetMeta& gadget_data) {
-  // TODO: implement code publishing
+  auto payload = ApiEncoder::encodeGadgetUpdate(gadget_data);
+  auto out_req = std::make_shared<Request>(PATH_SYNC_GADGET,
+                                           123,
+                                           delegate_->getClientId(),
+                                           payload);
+  network_->sendRequest(out_req);
 }
 
 void ApiManager::publishCode(const std::shared_ptr<CodeCommand> &code) {

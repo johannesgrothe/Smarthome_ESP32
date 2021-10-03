@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 #include "../api/api_manager_delegate.h"
 
 class ApiManagerDelegateDummy : public ApiManagerDelegate {
@@ -9,19 +11,22 @@ private:
 
 public:
 
-  ApiManagerDelegateDummy(std::string id) :
+  bool had_gadget_meta;
+
+  explicit ApiManagerDelegateDummy(std::string id) :
       ApiManagerDelegate(),
-      id_(id) {}
+      id_(std::move(id)),
+      had_gadget_meta(false) {}
 
-  void handleGadgetUpdate(std::shared_ptr<GadgetMeta> gadget) override {
+  void handleGadgetUpdate(GadgetMeta gadget) override {
+    had_gadget_meta = true;
+  }
+
+  void handleCode(CodeCommand code) override {
 
   }
 
-  void handleCode(std::shared_ptr<CodeCommand> code) override {
-
-  }
-
-  void handleEvent(std::shared_ptr<Event> event) override {
+  void handleEvent(Event event) override {
 
   }
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ArduinoJson.h"
-#include "datatypes.h"
+#include <ArduinoJson.h>
+#include "../datatypes.h"
 #include "config.h"
 #include "../json_check.h"
 

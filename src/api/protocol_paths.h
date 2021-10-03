@@ -30,7 +30,6 @@
 // Inbound
 #define PATH_CONFIG_RESET "config/reset"
 #define PATH_CONFIG_WRITE "config/write"
-
 #define PATH_SYNC_GADGET "sync/gadget"
 #define PATH_SYNC_CODE "sync/code"
 #define PATH_SYNC_EVENT "sync/event"

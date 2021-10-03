@@ -9,7 +9,7 @@
 #include "Arduino.h"
 #endif
 
-static void cpp_log(std::string log_lvl, std::string tag, std::string format, ...) {
+static void cpp_log(const std::string& log_lvl, const std::string& tag, const std::string& format, ...) {
   va_list args;
   va_start (args, format);
   size_t len = vsnprintf(NULL, 0, format.c_str(), args);

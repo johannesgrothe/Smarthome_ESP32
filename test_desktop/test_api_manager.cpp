@@ -5,6 +5,7 @@
 #include "../src/test_helpers/request_response_listener.h"
 #include "../src/api/protocol_paths.h"
 #include "../src/test_dummys/request_gadget_dummy.h"
+#include "../test_fixtures/gadget_jsons.h"
 
 #define TEST_CLIENT_ID "test_client"
 #define TEST_BRIDGE_ID "test_bridge"
@@ -86,6 +87,33 @@ TEST_CASE("Test API Manager", "[API]") {
                                                   payload);
     manager.handleRequest(sync_request);
     CHECK(network->getLastSentRequest() != nullptr);
+  }
+
+  SECTION("Test Gadget Update") {
+    CHECK(delegate.had_gadget_meta == false);
+
+    DynamicJsonDocument payload(400);
+    payload["gadget"] = generateGadgetFan();
+
+    auto sync_request = std::make_shared<Request>(PATH_SYNC_GADGET,
+                                                  177787,
+                                                  TEST_BRIDGE_ID,
+                                                  TEST_CLIENT_ID,
+                                                  payload);
+    manager.handleRequest(sync_request);
+    CHECK(delegate.had_gadget_meta == true);
+  }
+
+  SECTION("Test Gadget Update Broken") {
+    DynamicJsonDocument payload(400);
+
+    auto sync_request = std::make_shared<Request>(PATH_SYNC_GADGET,
+                                                  177787,
+                                                  TEST_BRIDGE_ID,
+                                                  TEST_CLIENT_ID,
+                                                  payload);
+    manager.handleRequest(sync_request);
+    CHECK(delegate.had_gadget_meta == false);
   }
 
 }

@@ -14,11 +14,11 @@ private:
 public:
 //  ApiManagerDelegate();
 
-  virtual void handleGadgetUpdate(std::shared_ptr<GadgetMeta> gadget) = 0;
+  virtual void handleGadgetUpdate(GadgetMeta gadget) = 0;
 
-  virtual void handleCode(std::shared_ptr<CodeCommand> code) = 0;
+  virtual void handleCode(CodeCommand code) = 0;
 
-  virtual void handleEvent(std::shared_ptr<Event> event) = 0;
+  virtual void handleEvent(Event event) = 0;
 
   virtual std::string getClientId() = 0;
 
