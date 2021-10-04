@@ -13,7 +13,7 @@
 #include "../connectors/radio_gadget.h"
 #include "gadget_characteristic_settings.h"
 #include "../connectors/event.h"
-//#include "../main_system_controller.h"
+#include "../hardware_controller.h"
 
 // Pair for mapping
 using mapping_pair = std::tuple<GadgetMethod, std::vector<unsigned long>>;

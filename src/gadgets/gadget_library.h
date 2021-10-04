@@ -82,7 +82,7 @@ static std::shared_ptr<SH_Gadget> createGadget(GadgetIdentifier gadget_type, pin
   if (buf_gadget != nullptr && !buf_gadget->hasInitError()) {
     return buf_gadget;
   }
-  logger_e("StaticStorage", "Gadget could not be successfully initialized and was discarded");
+  logger_e("GadgetFactory", "Gadget could not be successfully initialized and was discarded");
   return nullptr;
 }
 

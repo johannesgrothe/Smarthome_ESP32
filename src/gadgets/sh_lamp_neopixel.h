@@ -11,7 +11,6 @@ private:
   Adafruit_NeoPixel led_stripe_;
 
 protected:
-
   bool setLEDColor(uint8_t, uint8_t, uint8_t);
 
 public:

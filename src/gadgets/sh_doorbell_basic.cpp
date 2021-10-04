@@ -13,12 +13,12 @@ SH_Doorbell_Basic::SH_Doorbell_Basic(std::string name, uint8_t pin, bool default
   switch_pin_(pin),
   default_state_(default_state),
   last_event_(0) {
-  pinMode(switch_pin_, INPUT);
+  HardwareController::setPinMode(switch_pin_, INPUT);
 };
 
 void SH_Doorbell_Basic::refresh() {
   if (digitalRead(switch_pin_) != default_state_) {
-    unsigned long now = millis();
+    unsigned long now = HardwareController::getMillis();
     if (now > last_event_ + HW_BOUNCE_DELAY) {
       doorbellTriggered();
     }

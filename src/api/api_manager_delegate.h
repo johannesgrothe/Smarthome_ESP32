@@ -9,10 +9,7 @@
 #include "../connectors/event.h"
 
 class ApiManagerDelegate {
-private:
-
 public:
-//  ApiManagerDelegate();
 
   virtual void handleGadgetUpdate(GadgetMeta gadget) = 0;
 

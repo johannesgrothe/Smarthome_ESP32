@@ -41,6 +41,6 @@ static BootMode getBootMode() {
   return mode;
 #endif
   #else
-  return BootMode::Unknown_Mode;
+  return BootMode::Full_Operation;
   #endif
 }

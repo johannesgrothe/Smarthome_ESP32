@@ -1,9 +1,5 @@
 #pragma once
 
-#ifdef UNIT_TEST
-#include "../test_dummys/millis_dummy.h"
-#endif //UNIT_TEST
-
 
 // External Imports
 #include <ArduinoJson.h>
@@ -13,6 +9,7 @@
 // Other Imports
 #include "../system_settings.h"
 #include "../console_logger.h"
+#include "../hardware_controller.h"
 #include "request.h"
 #include "split_request_buffer.h"
 #include "request_queue.h"

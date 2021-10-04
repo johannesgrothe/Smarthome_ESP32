@@ -6,9 +6,7 @@
 
 #include "connectors/serial_gadget.h"
 
-std::shared_ptr<RequestGadget> NetworkLoader::loadNetwork(const Config& config) {
-  auto mode = config.getNetworkMode();
-
+std::shared_ptr<RequestGadget> NetworkLoader::loadNetwork(const Config& config, NetworkMode mode) {
   if (mode == NetworkMode::None) {
     logger_e("System", "No network configured.");
     return nullptr;

@@ -55,13 +55,13 @@ void RequestGadget::sendRequest(std::shared_ptr<Request> request) {
 
 std::shared_ptr<Request> RequestGadget::waitForResponse(int id, unsigned long wait_time) {
   {
-    unsigned long end_time = millis() + wait_time;
+    unsigned long end_time = HardwareController::getMillis() + wait_time;
 
     std::vector<std::shared_ptr<Request>> buffered_requests;
 
     std::shared_ptr<Request> out_req = nullptr;
 
-    while (millis() < end_time) {
+    while (HardwareController::getMillis() < end_time) {
 
       auto buf_req = in_request_queue_.pop();
 
@@ -72,7 +72,7 @@ std::shared_ptr<Request> RequestGadget::waitForResponse(int id, unsigned long wa
         buffered_requests.push_back(buf_req);
       }
     }
-    for (auto buf_req: buffered_requests) {
+    for (const auto& buf_req: buffered_requests) {
       in_request_queue_.push(buf_req);
     }
     return out_req;

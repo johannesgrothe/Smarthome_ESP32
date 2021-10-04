@@ -1,7 +1,6 @@
 #pragma once
 
 #include "sh_lamp.h"
-#include <Arduino.h>
 
 class SH_Lamp_Basic : public SH_Lamp {
 private:

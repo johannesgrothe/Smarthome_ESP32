@@ -10,5 +10,5 @@ private:
   static std::shared_ptr<RequestGadget> loadSerial();
 
 public:
-  static std::shared_ptr<RequestGadget> loadNetwork(const Config& config);
+  static std::shared_ptr<RequestGadget> loadNetwork(const Config& config, NetworkMode mode);
 };

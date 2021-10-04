@@ -4,9 +4,7 @@
 #include <limits>
 #include "console_logger.h"
 
-#ifdef UNIT_TEST
-#include "test_dummys/millis_dummy.h"
-#endif //UNIT_TEST
+#include "hardware_controller.h"
 
 
 class SystemTimer {
