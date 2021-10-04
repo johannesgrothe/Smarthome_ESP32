@@ -5,7 +5,7 @@
 static const char *TAG = "MQTTGadget";
 
 bool MQTTGadget::connect_mqtt() {
-  mqttClient_->setServer(mqttServer_, mqtt_port_);
+  mqttClient_->setServer(mqttServer_.getData(), mqtt_port_);
 
   using std::placeholders::_1;
   using std::placeholders::_2;
@@ -118,7 +118,7 @@ void MQTTGadget::executeRequestSending(std::shared_ptr<Request> req) {
 MQTTGadget::MQTTGadget(const std::string &client_name,
                        std::string wifi_ssid,
                        std::string wifi_pw,
-                       const IPAddress &mqtt_ip,
+                       const IPContainer &mqtt_ip,
                        uint16_t mqtt_port,
                        const std::string &mqtt_username,
                        const std::string &mqtt_pw) :
@@ -145,7 +145,7 @@ MQTTGadget::MQTTGadget(const std::string &client_name,
 }
 
 MQTTGadget::MQTTGadget(const std::string &client_name, std::string wifi_ssid, std::string wifi_pw,
-                       const IPAddress &mqtt_ip,
+                       const IPContainer &mqtt_ip,
                        uint16_t mqtt_port) :
     WiFiGadget(std::move(wifi_ssid), std::move(wifi_pw)),
     RequestGadget(RequestGadgetType::MQTT_G),
@@ -167,14 +167,14 @@ MQTTGadget::MQTTGadget(const std::string &client_name, std::string wifi_ssid, st
 }
 
 bool
-MQTTGadget::initMqttClient(const IPAddress &mqtt_ip, uint16_t mqtt_port) {
+MQTTGadget::initMqttClient(const IPContainer &mqtt_ip, uint16_t mqtt_port) {
 
   logger_i(TAG, "Creating MQTT Gadget.");
   mqttClient_ = new PubSubClient(network_client_);
   bool everything_ok = true;
 
   // Check IP
-  if (mqtt_ip == IPAddress(0, 0, 0, 0)) {
+  if (mqtt_ip == IPContainer(0, 0, 0, 0)) {
     everything_ok = false;
     logger_e(TAG, "'ip' is null");
   } else {

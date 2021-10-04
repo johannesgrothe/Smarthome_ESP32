@@ -1,7 +1,6 @@
 #pragma once
 
 #include <ArduinoJson.h>
-#include <EEPROM.h>
 #include <sstream>
 #include <utility>
 #include <cmath>
@@ -10,7 +9,13 @@
 #include "../console_logger.h"
 #include "../datatypes.h"
 
-#include "../network_library.h"
+#ifndef UNIT_TEST
+#include <EEPROM.h>
+#else
+#include "../test_dummys/dummy_eeprom.h"
+#endif
+
+#include "../network_mode.h"
 #include "../pin_profile.h"
 #include "../gadgets/gadget_characteristic_settings.h"
 #include "../status_codes.h"
@@ -431,13 +436,13 @@ private:
    * @param ip the ip to be written
    * @return whether writing was successful
    */
-  static bool writeMQTTIP(const IPAddress& ip);
+  static bool writeMQTTIP(const IPContainer &ip);
 
   /**
    * Reads the MQTT IP-Address from the eeprom
    * @return the ip
    */
-  static IPAddress readMQTTIP();
+  static IPContainer readMQTTIP();
 
   /**
    * Checks if the there is a valid MQTT IP-Address stored in the EEPROM

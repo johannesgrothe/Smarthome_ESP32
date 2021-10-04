@@ -6,13 +6,13 @@
 #include "wifi_gadget.h"
 #include "api/protocol_paths.h"
 #include <IPAddress.h>
-#include <WiFi.h>
+#include <ip_container.h>
 
 // Gadget to communicate with MQTT Endpoint
 class MQTTGadget : public WiFiGadget, public RequestGadget {
 protected:
 
-  IPAddress mqttServer_{};
+  IPContainer mqttServer_;
 
   PubSubClient *mqttClient_{};
 
@@ -34,8 +34,7 @@ protected:
 
   bool subscribe_to_topic(const std::string& topic);
 
-  bool initMqttClient(const IPAddress& mqtt_ip,
-                  uint16_t mqtt_port);
+  bool initMqttClient(const IPContainer& mqtt_ip, uint16_t mqtt_port);
 
 public:
 
@@ -52,7 +51,7 @@ public:
   MQTTGadget(const std::string& client_name,
              std::string wifi_ssid,
              std::string wifi_pw,
-             const IPAddress& mqtt_ip,
+             const IPContainer& mqtt_ip,
              uint16_t mqtt_port,
              const std::string& mqtt_username,
              const std::string& mqtt_pw);
@@ -68,7 +67,7 @@ public:
   MQTTGadget(const std::string& client_name,
              std::string wifi_ssid,
              std::string wifi_pw,
-             const IPAddress& mqtt_ip,
+             const IPContainer& mqtt_ip,
              uint16_t mqtt_port);
 
   void refresh_network() override;

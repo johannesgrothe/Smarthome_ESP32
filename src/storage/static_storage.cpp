@@ -1,5 +1,6 @@
 #include "static_storage.h"
-#include <strstream>
+#include <sstream>
+#include "../console_logger.h"
 
 StaticStorage::StaticStorage() {
   initialized_ = staticConfigStringAvailable();

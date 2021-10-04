@@ -1,6 +1,7 @@
 #include "eeprom_storage.h"
 
 #include "../string_methods.h"
+#include "../random.h"
 
 // --- PRIVATE ---
 
@@ -494,7 +495,7 @@ std::string EepromStorage::readID() {
 
   if (!hasValidID() || !validate_utf8(id_str)) {
     std::stringstream s_str;
-    s_str << "esp_" << (micros() & (0xFFFFFF - 1));
+    s_str << "esp_" << random_int(10000);
     writeID(s_str.str());
   }
   return id_str;
@@ -544,12 +545,13 @@ bool EepromStorage::hasValidWifiPW() {
   return getContentFlag(CONFIG_CHECK_INDEX_WIFI_PW);
 }
 
-bool EepromStorage::writeMQTTIP(const IPAddress &ip) {
+bool EepromStorage::writeMQTTIP(const IPContainer &ip) {
   bool success = true;
+  auto data = ip.getData();
   for (int i = 0; i < 4; i++) {
-    success = success && writeUInt8(MQTT_IP_POS + i, ip[i]);
+    success = success && writeUInt8(MQTT_IP_POS + i, data[i]);
   }
-  if (ip == IPAddress(0, 0, 0, 0)) {
+  if (ip == IPContainer(0, 0, 0, 0)) {
     setContentFlag(CONFIG_CHECK_INDEX_MQTT_IP, false);
     success = true;
   } else {
@@ -558,12 +560,12 @@ bool EepromStorage::writeMQTTIP(const IPAddress &ip) {
   return success;
 }
 
-IPAddress EepromStorage::readMQTTIP() {
-  IPAddress ip;
+IPContainer EepromStorage::readMQTTIP() {
+  uint8_t data[4];
   for (int i = 0; i < 4; i++) {
-    ip[i] = readUInt8(MQTT_IP_POS + i);
+    data[i] = readUInt8(MQTT_IP_POS + i);
   }
-  return ip;
+  return {data[0], data[1], data[2], data[3]};
 }
 
 bool EepromStorage::hasValidMQTTIP() {
@@ -725,7 +727,7 @@ bool EepromStorage::saveConfig(Config config) {
       ((hasValidMQTTIP() && *config.getMqttIP() != readMQTTIP()) || !hasValidMQTTIP())) {
     write_successful &= writeMQTTIP(*config.getMqttIP());
   } else if (config.getMqttIP() == nullptr && hasValidMQTTIP()) {
-    write_successful &= writeMQTTIP(IPAddress(0, 0, 0, 0));
+    write_successful &= writeMQTTIP(IPContainer(0, 0, 0, 0));
   }
 
   // Write MQTT Port
@@ -785,7 +787,7 @@ std::shared_ptr <Config> EepromStorage::loadConfig() {
   std::shared_ptr <std::string> wifi_ssid = nullptr;
   std::shared_ptr <std::string> wifi_pw = nullptr;
 
-  std::shared_ptr <IPAddress> mqtt_ip = nullptr;
+  std::shared_ptr <IPContainer> mqtt_ip = nullptr;
   std::shared_ptr <uint16_t> mqtt_port = nullptr;
 
   std::shared_ptr <std::string> mqtt_username = nullptr;
@@ -800,7 +802,7 @@ std::shared_ptr <Config> EepromStorage::loadConfig() {
   }
 
   if (hasValidMQTTIP()) {
-    mqtt_ip = std::make_shared<IPAddress>(readMQTTIP());
+    mqtt_ip = std::make_shared<IPContainer>(readMQTTIP());
   }
 
   if (hasValidMQTTPort()) {

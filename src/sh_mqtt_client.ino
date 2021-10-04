@@ -500,7 +500,7 @@ void handleConfigReadRequest(std::shared_ptr<Request> req) {
     auto read_val = system_config_->getMqttIP();
     if (read_val != nullptr) {
       read_successful = true;
-      read_val_str = *read_val;
+      read_val_str = read_val->toString();
     }
   }
 
@@ -954,7 +954,7 @@ bool initNetwork(NetworkMode mode) {
     std::string ssid = *system_config_->getWifiSSID();
     std::string wifi_pw = *system_config_->getWifiPW();
     uint16_t port = *system_config_->getMqttPort();
-    IPAddress ip = *system_config_->getMqttIP();
+    IPContainer ip = *system_config_->getMqttIP();
 
     if (!system_config_->getMqttUsername() || system_config_->getMqttPassword()) {
       logger_i("System", "Establishing MQTT connection without credentials");
@@ -1246,8 +1246,6 @@ void setup() {
   logger_i("System", "Git Commit: %s", getSoftwareGitCommit().c_str());
 
   logger_i("System", "Initializing Storage:");
-
-  auto yolo = std::make_shared<StaticStorage>();
 
   if (StaticStorage::staticConfigStringAvailable()) {
     logger_i("System", "Using static, pre-compiled config");

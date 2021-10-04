@@ -40,6 +40,14 @@ set(ADDITIONAL_SOURCES
         ../src/connectors/split_request_buffer.cpp
         ../src/api/api_encoder.cpp
         ../src/api/api_decoder.cpp
+        ../src/storage/system_storage.cpp
+        ../src/storage/eeprom_storage.cpp
+        ../src/storage/static_storage.cpp
+        ../src/ip_container.cpp
+        ../src/network_loader.cpp
+        ../src/hardware_controller.cpp
+        ../src/storage/config.cpp
+        ../src/connectors/serial_gadget.cpp
         )
 
 set(TEST_SOURCES)

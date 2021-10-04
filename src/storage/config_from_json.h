@@ -1,9 +1,12 @@
 #pragma once
 
 #include <ArduinoJson.h>
+#include <sstream>
+
 #include "../datatypes.h"
 #include "config.h"
 #include "../json_check.h"
+#include "../ip_container.h"
 
 /**
  * Writes a gadget from the config json body
@@ -76,7 +79,7 @@ static gadget_tuple getGadgetDataFromJson(DynamicJsonDocument json_body) {
  * @param config Config json to get data from
  * @return The config if creating was successful, nullptr otherwise
  */
-static std::shared_ptr <Config> createConfigFromJson(DynamicJsonDocument config) {
+static std::shared_ptr<Config> createConfigFromJson(DynamicJsonDocument config) {
 
   if (!checkJsonForKeys(config, {"data", "gadgets"})) {
     return nullptr;
@@ -100,7 +103,7 @@ static std::shared_ptr <Config> createConfigFromJson(DynamicJsonDocument config)
     return nullptr;
   }
 
-  std::vector <gadget_tuple> gadgets;
+  std::vector<gadget_tuple> gadgets;
   for (const auto gadget_data: json_gadget_data) {
     if (checkJsonForKeys(gadget_data, {"name", "type"})) {
       gadget_tuple out_data = getGadgetDataFromJson(gadget_data);
@@ -118,14 +121,14 @@ static std::shared_ptr <Config> createConfigFromJson(DynamicJsonDocument config)
   uint8_t radio_recv = json_config_data["radio_recv_pin"];
   uint8_t radio_send = json_config_data["radio_send_pin"];
 
-  std::shared_ptr <std::string> wifi_ssid = nullptr;
-  std::shared_ptr <std::string> wifi_pw = nullptr;
+  std::shared_ptr<std::string> wifi_ssid = nullptr;
+  std::shared_ptr<std::string> wifi_pw = nullptr;
 
-  std::shared_ptr <IPAddress> mqtt_ip = nullptr;
-  std::shared_ptr <uint16_t> mqtt_port = nullptr;
+  std::shared_ptr<IPContainer> mqtt_ip = nullptr;
+  std::shared_ptr<uint16_t> mqtt_port = nullptr;
 
-  std::shared_ptr <std::string> mqtt_username = nullptr;
-  std::shared_ptr <std::string> mqtt_pw = nullptr;
+  std::shared_ptr<std::string> mqtt_username = nullptr;
+  std::shared_ptr<std::string> mqtt_pw = nullptr;
 
   if (json_config_data["wifi_ssid"]) {
     wifi_ssid = std::make_shared<std::string>(json_config_data["wifi_ssid"].as<std::string>());
@@ -136,9 +139,21 @@ static std::shared_ptr <Config> createConfigFromJson(DynamicJsonDocument config)
   }
 
   if (json_config_data["mqtt_ip"]) {
-    IPAddress buf_ip;
-    buf_ip.fromString(json_config_data["mqtt_ip"].as<std::string>().c_str());
-    mqtt_ip = std::make_shared<IPAddress>(buf_ip);
+    uint8_t buf_ip[4];
+    uint8_t counter = 0;
+    std::stringstream sstr;
+    for (char c: json_config_data["mqtt_ip"].as<std::string>()) {
+      if (c == '.') {
+        uint8_t buf_val = 0;
+        sstr >> buf_val;
+        buf_ip[counter] = buf_val;
+        counter ++;
+        sstr.clear();
+      } else {
+        sstr << c;
+      }
+    }
+    mqtt_ip = std::make_shared<IPContainer>(buf_ip[0], buf_ip[1], buf_ip[2], buf_ip[3]);
   }
 
   if (json_config_data["mqtt_port"]) {

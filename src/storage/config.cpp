@@ -1,5 +1,7 @@
 #include "config.h"
 
+#include <utility>
+
 Config::Config(std::string id,
                NetworkMode network_mode,
                std::vector<gadget_tuple> gadgets,
@@ -9,23 +11,23 @@ Config::Config(std::string id,
                uint8_t radio_send_pin,
                std::shared_ptr<std::string> wifi_ssid,
                std::shared_ptr<std::string> wifi_pw,
-               std::shared_ptr<IPAddress> mqtt_ip,
+               std::shared_ptr<IPContainer> mqtt_ip,
                std::shared_ptr<uint16_t> mqtt_port,
                std::shared_ptr<std::string> mqtt_username,
                std::shared_ptr<std::string> mqtt_password):
-               id_(id),
+               id_(std::move(id)),
                network_mode_(network_mode),
-               gadgets_(gadgets),
+               gadgets_(std::move(gadgets)),
                ir_recv_pin_(ir_recv_pin),
                ir_send_pin_(ir_send_pin),
                radio_recv_pin_(radio_recv_pin),
                radio_send_pin_(radio_recv_pin),
-               wifi_ssid_(wifi_ssid),
-               wifi_pw_(wifi_pw),
-               mqtt_ip_(mqtt_ip),
-               mqtt_port_(mqtt_port),
-               mqtt_username_(mqtt_username),
-               mqtt_password_(mqtt_password) {}
+               wifi_ssid_(std::move(wifi_ssid)),
+               wifi_pw_(std::move(wifi_pw)),
+               mqtt_ip_(std::move(mqtt_ip)),
+               mqtt_port_(std::move(mqtt_port)),
+               mqtt_username_(std::move(mqtt_username)),
+               mqtt_password_(std::move(mqtt_password)) {}
 
 std::vector <uint8_t> Config::getGadgetPorts() const {
   std::vector<uint8_t> ports;
@@ -85,7 +87,7 @@ std::shared_ptr<std::string> Config::getWifiPW() const {
   return wifi_pw_;
 }
 
-std::shared_ptr<IPAddress> Config::getMqttIP() const {
+std::shared_ptr<IPContainer> Config::getMqttIP() const {
   return mqtt_ip_;
 }
 
