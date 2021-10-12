@@ -52,7 +52,7 @@ set(ADDITIONAL_SOURCES
         ../src/storage/system_config.cpp
         ../src/storage/gadget_config.cpp
         ../src/storage/event_config.cpp
-        ../src/storage/eeprom_writer.cpp
+        storage/eeprom_manager.cpp
         )
 
 set(TEST_SOURCES)

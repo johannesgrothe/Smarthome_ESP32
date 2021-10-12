@@ -100,7 +100,7 @@
 
 // endregion
 
-class EepromWriter {
+class EepromManager {
 public:
   /**
  * Method takes a bitfield, changes the selected bit to the passed value and returns the new bitfield

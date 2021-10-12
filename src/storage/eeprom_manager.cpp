@@ -1,6 +1,6 @@
-#include "eeprom_writer.h"
+#include "eeprom_manager.h"
 
-uint8_t EepromWriter::calculateNewContentFlag(uint8_t index, bool new_value, uint8_t bitfield) {
+uint8_t EepromManager::calculateNewContentFlag(uint8_t index, bool new_value, uint8_t bitfield) {
   auto content_flag = bitfield;
   auto mask = (unsigned int) pow(2, index);
   if (new_value) {
@@ -12,43 +12,43 @@ uint8_t EepromWriter::calculateNewContentFlag(uint8_t index, bool new_value, uin
   return content_flag;
 }
 
-bool EepromWriter::getValueFromContentFlag(uint8_t index, uint8_t bitfield) {
+bool EepromManager::getValueFromContentFlag(uint8_t index, uint8_t bitfield) {
   auto mask = (unsigned int) pow(2, index);
   uint8_t content_info = bitfield & mask;
   return content_info != 0;
 }
 
-void EepromWriter::setFlag(int bitfield_address, uint8_t index, bool value) {
+void EepromManager::setFlag(int bitfield_address, uint8_t index, bool value) {
   uint8_t content_flag = EEPROM.readByte(bitfield_address);
   content_flag = calculateNewContentFlag(index, value, content_flag);
   EEPROM.writeByte(bitfield_address, content_flag);
   EEPROM.commit();
 }
 
-bool EepromWriter::getFlag(int bitfield_address, uint8_t index) {
+bool EepromManager::getFlag(int bitfield_address, uint8_t index) {
   uint8_t content_flag = EEPROM.readByte(bitfield_address);
   return getValueFromContentFlag(index, content_flag);
 }
 
-void EepromWriter::setContentFlag(uint8_t index, bool value) {
+void EepromManager::setContentFlag(uint8_t index, bool value) {
   setFlag(VALID_CONFIG_BITFIELD_BYTE, index, value);
 }
 
-bool EepromWriter::getContentFlag(uint8_t index) {
+bool EepromManager::getContentFlag(uint8_t index) {
   return getFlag(VALID_CONFIG_BITFIELD_BYTE, index);
 }
 
-bool EepromWriter::writeUInt8(int pos, uint8_t value) {
+bool EepromManager::writeUInt8(int pos, uint8_t value) {
   EEPROM.writeByte(pos, value);
   EEPROM.commit();
   return true;
 }
 
-uint8_t EepromWriter::readUInt8(int pos) {
+uint8_t EepromManager::readUInt8(int pos) {
   return EEPROM.readByte(pos);
 }
 
-bool EepromWriter::writeUInt16(int pos, uint16_t value) {
+bool EepromManager::writeUInt16(int pos, uint16_t value) {
 
   uint8_t first = value >> (uint8_t) 8;
   uint8_t second = value & (uint16_t) 0x00ff;
@@ -59,16 +59,16 @@ bool EepromWriter::writeUInt16(int pos, uint16_t value) {
   return success;
 }
 
-uint16_t EepromWriter::readUInt16(int pos) {
+uint16_t EepromManager::readUInt16(int pos) {
   auto first = readUInt8(pos);
   auto second = readUInt8(pos + 1);
   return (uint16_t) ((first * (0xFF + 1)) + second);
 }
 
-bool EepromWriter::writeString(int start, int max_len, std::string content) {
+bool EepromManager::writeString(int start, int max_len, std::string content) {
   int id_length = content.size();
   if (id_length > max_len) {
-    logger_e("EepromWriter", "Written content is too long");
+    logger_e("EepromManager", "Written content is too long");
     return false;
   }
   for (int pos = 0; pos < id_length; pos++) {
@@ -79,7 +79,7 @@ bool EepromWriter::writeString(int start, int max_len, std::string content) {
   return true;
 }
 
-std::string EepromWriter::readString(int start, int max_len) {
+std::string EepromManager::readString(int start, int max_len) {
   std::stringstream ss;
   for (int pos = 0; pos < max_len; pos++) {
     char c = EEPROM.readChar(pos + start);
@@ -91,15 +91,15 @@ std::string EepromWriter::readString(int start, int max_len) {
   return ss.str();
 }
 
-uint8_t EepromWriter::getGadgetCount() {
+uint8_t EepromManager::getGadgetCount() {
   return readUInt8(GADGET_COUNT_POS);
 }
 
-bool EepromWriter::writeGadgetCount(uint8_t count) {
+bool EepromManager::writeGadgetCount(uint8_t count) {
   return writeUInt8(GADGET_COUNT_POS, count);
 }
 
-uint16_t EepromWriter::getGadgetMemoryStart(uint8_t gadget_nr) {
+uint16_t EepromManager::getGadgetMemoryStart(uint8_t gadget_nr) {
   if (gadget_nr >= GADGET_MAX_COUNT) {
     return 0;
   }
@@ -109,14 +109,14 @@ uint16_t EepromWriter::getGadgetMemoryStart(uint8_t gadget_nr) {
   return readUInt16(GADGET_POS_START + (gadget_nr * 2));
 }
 
-uint16_t EepromWriter::getGadgetMemoryEnd(uint8_t gadget_nr) {
+uint16_t EepromManager::getGadgetMemoryEnd(uint8_t gadget_nr) {
   if (gadget_nr >= GADGET_MAX_COUNT) {
     return 0;
   }
   return readUInt16(GADGET_POS_START + ((gadget_nr + 1) * 2));
 }
 
-bool EepromWriter::setGadgetMemoryEnd(uint8_t gadget_nr, uint16_t mem_end) {
+bool EepromManager::setGadgetMemoryEnd(uint8_t gadget_nr, uint16_t mem_end) {
   if (gadget_nr >= GADGET_MAX_COUNT) {
     return false;
   }
@@ -130,7 +130,7 @@ bool EepromWriter::setGadgetMemoryEnd(uint8_t gadget_nr, uint16_t mem_end) {
 }
 
 WriteGadgetStatus
-EepromWriter::writeNewGadget(uint8_t gadget_type, bitfield_set config_bf, pin_set ports, const std::string &name,
+EepromManager::writeNewGadget(uint8_t gadget_type, bitfield_set config_bf, pin_set ports, const std::string &name,
                               const std::string &gadget_json, const std::string &code_json) {
 
   // Check if updating gadget is possible
@@ -138,7 +138,7 @@ EepromWriter::writeNewGadget(uint8_t gadget_type, bitfield_set config_bf, pin_se
 
   // Check if maximum gadget count is reached
   if (gadget_index >= GADGET_MAX_COUNT) {
-    logger_e("EepromWriter", "Cannot save gadget: maximum count of gadgets reached");
+    logger_e("EepromManager", "Cannot save gadget: maximum count of gadgets reached");
     return WriteGadgetStatus::MaxGadgetCountReached;
   }
 
@@ -146,7 +146,7 @@ EepromWriter::writeNewGadget(uint8_t gadget_type, bitfield_set config_bf, pin_se
   auto existing_names = readAllGadgetNames();
   for (const auto &list_name: existing_names) {
     if (name == list_name) {
-      logger_e("EepromWriter", "Cannot save gadget: gadget name '%s' is already in use", name.c_str());
+      logger_e("EepromManager", "Cannot save gadget: gadget name '%s' is already in use", name.c_str());
       return WriteGadgetStatus::NameAlreadyInUse;
     }
   }
@@ -157,14 +157,14 @@ EepromWriter::writeNewGadget(uint8_t gadget_type, bitfield_set config_bf, pin_se
     // Check if port is configured on the system
     auto buf_pin = getPinForPort(gadget_port);
     if (!buf_pin && gadget_port) {
-      logger_e("EepromWriter", "Cannot save gadget: port '%d' is not configured on this system", gadget_port);
+      logger_e("EepromManager", "Cannot save gadget: port '%d' is not configured on this system", gadget_port);
       return WriteGadgetStatus::PortNotConfigured;
     }
 
     // Check if port is already in use on the system
     for (auto existing_port: existing_ports) {
       if (gadget_port == existing_port) {
-        logger_e("EepromWriter", "Cannot save gadget: gadget tries to use port already occupied (%d)", gadget_port);
+        logger_e("EepromManager", "Cannot save gadget: gadget tries to use port already occupied (%d)", gadget_port);
         return WriteGadgetStatus::PortAlreadyInUse;
       }
     }
@@ -193,7 +193,7 @@ EepromWriter::writeNewGadget(uint8_t gadget_type, bitfield_set config_bf, pin_se
   uint16_t end_index = g_start_addr + complete_len;
 
   if (end_index > EEPROM_SIZE) {
-    logger_e("EepromWriter", "Cannot save gadget: missing space in eeprom");
+    logger_e("EepromManager", "Cannot save gadget: missing space in eeprom");
     return WriteGadgetStatus::MissingEEPROMSpace;
   }
 
@@ -226,13 +226,13 @@ EepromWriter::writeNewGadget(uint8_t gadget_type, bitfield_set config_bf, pin_se
   success = success && writeString(code_start, g_code_len, code_json);
 
   if (!success) {
-    logger_e("EepromWriter", "Cannot save gadget: error writing content");
+    logger_e("EepromManager", "Cannot save gadget: error writing content");
     return WriteGadgetStatus::ErrorWritingContent;
   }
 
   // set the starting point for the next gadget
   if (!setGadgetMemoryEnd(gadget_index, end_index)) {
-    logger_e("EepromWriter", "Cannot save gadget: error saving gadget memory end");
+    logger_e("EepromManager", "Cannot save gadget: error saving gadget memory end");
     return WriteGadgetStatus::ErrorSavingMemoryEnd;
   }
 
@@ -241,7 +241,7 @@ EepromWriter::writeNewGadget(uint8_t gadget_type, bitfield_set config_bf, pin_se
   return WriteGadgetStatus::WritingOK;
 }
 
-int EepromWriter::getGadgetIndexForName(const std::string &name) {
+int EepromManager::getGadgetIndexForName(const std::string &name) {
   auto gadget_count = getGadgetCount();
   for (uint8_t i = 0; i < gadget_count; i++) {
     gadget_tuple buf_g = readGadget(i);
@@ -253,7 +253,7 @@ int EepromWriter::getGadgetIndexForName(const std::string &name) {
   return -1;
 }
 
-gadget_tuple EepromWriter::readGadget(uint8_t gadget_index) {
+gadget_tuple EepromManager::readGadget(uint8_t gadget_index) {
   auto addr = getGadgetMemoryStart(gadget_index);
   auto addr_end = getGadgetMemoryEnd(gadget_index);
   auto stored_gadgets = readUInt8(GADGET_COUNT_POS);
@@ -289,7 +289,7 @@ gadget_tuple EepromWriter::readGadget(uint8_t gadget_index) {
   return gadget_tuple(gadget_type, remote_bf, pins, gadget_name, gadget_json, code_json);
 }
 
-std::vector<uint8_t> EepromWriter::readAllGadgetPorts() {
+std::vector<uint8_t> EepromManager::readAllGadgetPorts() {
   auto gadgets = readAllGadgets();
   std::vector<uint8_t> ports;
   for (auto gadget: gadgets) {
@@ -303,7 +303,7 @@ std::vector<uint8_t> EepromWriter::readAllGadgetPorts() {
   return ports;
 }
 
-std::vector<std::string> EepromWriter::readAllGadgetNames() {
+std::vector<std::string> EepromManager::readAllGadgetNames() {
   auto gadgets = readAllGadgets();
   std::vector<std::string> names;
   for (auto gadget: gadgets) {
@@ -313,7 +313,7 @@ std::vector<std::string> EepromWriter::readAllGadgetNames() {
   return names;
 }
 
-std::vector<gadget_tuple> EepromWriter::readAllGadgets() {
+std::vector<gadget_tuple> EepromManager::readAllGadgets() {
   auto gadget_count = getGadgetCount();
   std::vector<gadget_tuple> gadgets;
   for (uint8_t i = 0; i < gadget_count; i++) {
@@ -324,21 +324,21 @@ std::vector<gadget_tuple> EepromWriter::readAllGadgets() {
 }
 
 WriteGadgetStatus
-EepromWriter::writeGadget(uint8_t gadget_type, bitfield_set config_bf, pin_set ports, const std::string &name,
+EepromManager::writeGadget(uint8_t gadget_type, bitfield_set config_bf, pin_set ports, const std::string &name,
                            const std::string &gadget_json, const std::string &code_json) {
 
   if (gadget_type >= GadgetIdentifierCount) {
-    logger_e("EepromWriter", "Unknown gadget identifier '%d'", gadget_type);
+    logger_e("EepromManager", "Unknown gadget identifier '%d'", gadget_type);
     return WriteGadgetStatus::GadgetTypeError0;
   }
 
   auto type = (GadgetIdentifier) gadget_type;
 
   if (type == GadgetIdentifier::err_type) {
-    logger_e("EepromWriter", "Cannot save gadget: gadget has err-type 0");
+    logger_e("EepromManager", "Cannot save gadget: gadget has err-type 0");
     return WriteGadgetStatus::GadgetTypeErrorUnknown;
   } else {
-    logger_i("EepromWriter", "Saving gadget '%s' with type '%d'", name.c_str(), gadget_type);
+    logger_i("EepromManager", "Saving gadget '%s' with type '%d'", name.c_str(), gadget_type);
   }
 
   DynamicJsonDocument buf_doc(2000);
@@ -347,7 +347,7 @@ EepromWriter::writeGadget(uint8_t gadget_type, bitfield_set config_bf, pin_set p
   if (!gadget_json.empty()) {
     auto err = deserializeJson(buf_doc, gadget_json);
     if (err != DeserializationError::Ok) {
-      logger_e("EepromWriter", "Cannot save gadget: received faulty gadget config");
+      logger_e("EepromManager", "Cannot save gadget: received faulty gadget config");
       return WriteGadgetStatus::FaultyConfigJSON;
     }
   }
@@ -356,7 +356,7 @@ EepromWriter::writeGadget(uint8_t gadget_type, bitfield_set config_bf, pin_set p
   if (!code_json.empty()) {
     auto err = deserializeJson(buf_doc, code_json);
     if (err != DeserializationError::Ok) {
-      logger_e("EepromWriter", "Cannot save gadget: received faulty code config");
+      logger_e("EepromManager", "Cannot save gadget: received faulty code config");
       return WriteGadgetStatus::FaultyCodeConfig;
     }
   }
@@ -373,16 +373,16 @@ EepromWriter::writeGadget(uint8_t gadget_type, bitfield_set config_bf, pin_set p
   return writeNewGadget(gadget_type, config_bf, ports, name, gadget_json, code_json);
 }
 
-bool EepromWriter::deleteGadget(uint8_t gadget_index) {
+bool EepromManager::deleteGadget(uint8_t gadget_index) {
   auto gadget_count = getGadgetCount();
 
   if (gadget_count == 0) {
-    logger_e("EepromWriter", "Cannot delete gadget: no gadget saved");
+    logger_e("EepromManager", "Cannot delete gadget: no gadget saved");
     return false;
   }
 
   if (gadget_index > gadget_count - 1) {
-    logger_e("EepromWriter", "Cannot delete gadget: index does not exist");
+    logger_e("EepromManager", "Cannot delete gadget: index does not exist");
     return false;
   }
 
@@ -398,7 +398,7 @@ bool EepromWriter::deleteGadget(uint8_t gadget_index) {
   }
 
   if (!writeGadgetCount(gadget_index)) {
-    logger_e("EepromWriter", "Error in deleting process while updating gadget count");
+    logger_e("EepromManager", "Error in deleting process while updating gadget count");
     return false;
   }
 
@@ -417,54 +417,54 @@ bool EepromWriter::deleteGadget(uint8_t gadget_index) {
     auto status = writeGadget(e1, e2, e3, e4, e5, e6);
 
     if (status != WriteGadgetStatus::WritingOK) {
-      logger_e("EepromWriter", "Error in in deletion process: moving gadgets failed");
+      logger_e("EepromManager", "Error in in deletion process: moving gadgets failed");
       return false;
     }
   }
   return true;
 }
 
-bool EepromWriter::resetGadgets() {
+bool EepromManager::resetGadgets() {
   return writeGadgetCount(0);
 }
 
-bool EepromWriter::writeIRrecvPin(uint8_t pin) {
+bool EepromManager::writeIRrecvPin(uint8_t pin) {
   return writeUInt8(IR_RECV_PIN_POS, pin);
 }
 
-uint8_t EepromWriter::readIRrecvPin() {
+uint8_t EepromManager::readIRrecvPin() {
   return readUInt8(IR_RECV_PIN_POS);
 }
 
-bool EepromWriter::writeIrSendPin(uint8_t pin) {
+bool EepromManager::writeIrSendPin(uint8_t pin) {
   return writeUInt8(IR_SEND_PIN_POS, pin);
 }
 
-uint8_t EepromWriter::readIrSendPin() {
+uint8_t EepromManager::readIrSendPin() {
   return readUInt8(IR_SEND_PIN_POS);
 }
 
-bool EepromWriter::writeRadioRecvPin(uint8_t pin) {
+bool EepromManager::writeRadioRecvPin(uint8_t pin) {
   return writeUInt8(RADIO_RECV_POS, pin);
 }
 
-uint8_t EepromWriter::readRadioRecvPin() {
+uint8_t EepromManager::readRadioRecvPin() {
   return readUInt8(RADIO_RECV_POS);
 }
 
-bool EepromWriter::writeRadioSendPin(uint8_t pin) {
+bool EepromManager::writeRadioSendPin(uint8_t pin) {
   return writeUInt8(RADIO_SEND_POS, pin);
 }
 
-uint8_t EepromWriter::readRadioSendPin() {
+uint8_t EepromManager::readRadioSendPin() {
   return readUInt8(RADIO_SEND_POS);
 }
 
-bool EepromWriter::writeNetworkMode(NetworkMode mode) {
+bool EepromManager::writeNetworkMode(NetworkMode mode) {
   return writeUInt8(NETWORK_MODE_POS, (uint8_t) mode);
 }
 
-NetworkMode EepromWriter::readNetworkMode() {
+NetworkMode EepromManager::readNetworkMode() {
   uint8_t mode = readUInt8(NETWORK_MODE_POS);
   if (mode < NetworkModeCount) {
     return (NetworkMode) mode;
@@ -472,7 +472,7 @@ NetworkMode EepromWriter::readNetworkMode() {
   return NetworkMode::None;
 }
 
-bool EepromWriter::writeID(const std::string &id) {
+bool EepromManager::writeID(const std::string &id) {
   bool success;
   if (id == "") {
     setContentFlag(CONFIG_CHECK_INDEX_ID, false);
@@ -484,7 +484,7 @@ bool EepromWriter::writeID(const std::string &id) {
   return success;
 }
 
-std::string EepromWriter::readID() {
+std::string EepromManager::readID() {
   auto id_str = readString(ID_POS, ID_MAX_LEN);
 
   if (!hasValidID() || !validate_utf8(id_str)) {
@@ -495,11 +495,11 @@ std::string EepromWriter::readID() {
   return id_str;
 }
 
-bool EepromWriter::hasValidID() {
+bool EepromManager::hasValidID() {
   return getContentFlag(CONFIG_CHECK_INDEX_ID);
 }
 
-bool EepromWriter::writeWifiSSID(const std::string &ssid) {
+bool EepromManager::writeWifiSSID(const std::string &ssid) {
   bool success;
   if (ssid == "") {
     setContentFlag(CONFIG_CHECK_INDEX_WIFI_SSID, false);
@@ -511,15 +511,15 @@ bool EepromWriter::writeWifiSSID(const std::string &ssid) {
   return success;
 }
 
-std::string EepromWriter::readWifiSSID() {
+std::string EepromManager::readWifiSSID() {
   return readString(WIFI_SSID_POS, WIFI_SSID_MAX_LEN);
 }
 
-bool EepromWriter::hasValidWifiSSID() {
+bool EepromManager::hasValidWifiSSID() {
   return getContentFlag(CONFIG_CHECK_INDEX_WIFI_SSID);
 }
 
-bool EepromWriter::writeWifiPW(const std::string &pw) {
+bool EepromManager::writeWifiPW(const std::string &pw) {
   bool success;
   if (pw == "") {
     setContentFlag(CONFIG_CHECK_INDEX_WIFI_PW, false);
@@ -531,15 +531,15 @@ bool EepromWriter::writeWifiPW(const std::string &pw) {
   return success;
 }
 
-std::string EepromWriter::readWifiPW() {
+std::string EepromManager::readWifiPW() {
   return readString(WIFI_PW_POS, WIFI_PW_MAX_LEN);
 }
 
-bool EepromWriter::hasValidWifiPW() {
+bool EepromManager::hasValidWifiPW() {
   return getContentFlag(CONFIG_CHECK_INDEX_WIFI_PW);
 }
 
-bool EepromWriter::writeMQTTIP(const IPContainer &ip) {
+bool EepromManager::writeMQTTIP(const IPContainer &ip) {
   bool success = true;
   auto data = ip.getData();
   for (int i = 0; i < 4; i++) {
@@ -554,7 +554,7 @@ bool EepromWriter::writeMQTTIP(const IPContainer &ip) {
   return success;
 }
 
-IPContainer EepromWriter::readMQTTIP() {
+IPContainer EepromManager::readMQTTIP() {
   uint8_t data[4];
   for (int i = 0; i < 4; i++) {
     data[i] = readUInt8(MQTT_IP_POS + i);
@@ -562,11 +562,11 @@ IPContainer EepromWriter::readMQTTIP() {
   return {data[0], data[1], data[2], data[3]};
 }
 
-bool EepromWriter::hasValidMQTTIP() {
+bool EepromManager::hasValidMQTTIP() {
   return getContentFlag(CONFIG_CHECK_INDEX_MQTT_IP);
 }
 
-bool EepromWriter::writeMQTTPort(uint16_t port) {
+bool EepromManager::writeMQTTPort(uint16_t port) {
   bool success = writeUInt16(MQTT_PORT_POS, port);
 
   if (port == 0) {
@@ -578,15 +578,15 @@ bool EepromWriter::writeMQTTPort(uint16_t port) {
   return success;
 }
 
-uint16_t EepromWriter::readMQTTPort() {
+uint16_t EepromManager::readMQTTPort() {
   return readUInt16(MQTT_PORT_POS);
 }
 
-bool EepromWriter::hasValidMQTTPort() {
+bool EepromManager::hasValidMQTTPort() {
   return getContentFlag(CONFIG_CHECK_INDEX_MQTT_PORT);
 }
 
-bool EepromWriter::writeMQTTUsername(const std::string &username) {
+bool EepromManager::writeMQTTUsername(const std::string &username) {
   bool success;
   success = writeString(MQTT_USER_POS, MQTT_USER_MAX_LEN, username);
   if (username == "") {
@@ -598,15 +598,15 @@ bool EepromWriter::writeMQTTUsername(const std::string &username) {
   return success;
 }
 
-std::string EepromWriter::readMQTTUsername() {
+std::string EepromManager::readMQTTUsername() {
   return readString(MQTT_USER_POS, MQTT_USER_MAX_LEN);
 }
 
-bool EepromWriter::hasValidMQTTUsername() {
+bool EepromManager::hasValidMQTTUsername() {
   return getContentFlag(CONFIG_CHECK_INDEX_MQTT_USER);
 }
 
-bool EepromWriter::writeMQTTPassword(const std::string &pw) {
+bool EepromManager::writeMQTTPassword(const std::string &pw) {
   bool success;
   success = writeString(MQTT_PW_POS, MQTT_PW_MAX_LEN, pw);
   if (pw == "") {
@@ -618,15 +618,15 @@ bool EepromWriter::writeMQTTPassword(const std::string &pw) {
   return success;
 }
 
-std::string EepromWriter::readMQTTPassword() {
+std::string EepromManager::readMQTTPassword() {
   return readString(MQTT_PW_POS, MQTT_PW_MAX_LEN);
 }
 
-bool EepromWriter::hasValidMQTTPassword() {
+bool EepromManager::hasValidMQTTPassword() {
   return getContentFlag(CONFIG_CHECK_INDEX_MQTT_PW);
 }
 
-std::string EepromWriter::readWholeEEPROM() {
+std::string EepromManager::readWholeEEPROM() {
   std::stringstream ss;
   for (int i = 0; i < 500; i++) {
     char buf_char = EEPROM.readChar(i);
@@ -639,7 +639,7 @@ std::string EepromWriter::readWholeEEPROM() {
   return ss.str();
 }
 
-void EepromWriter::eraseEeprom() {
+void EepromManager::eraseEeprom() {
   for (int i = 0; i < EEPROM_SIZE; i++) {
     if (i % 2) {
       EEPROM.writeChar(i, '-');
@@ -655,13 +655,13 @@ void EepromWriter::eraseEeprom() {
   EEPROM.commit();
 }
 
-void EepromWriter::resetContentFlag() {
+void EepromManager::resetContentFlag() {
   uint8_t content_flag = 0;
   EEPROM.writeByte(VALID_CONFIG_BITFIELD_BYTE, content_flag);
   EEPROM.commit();
 }
 
-bool EepromWriter::initEEPROM() {
+bool EepromManager::initEEPROM() {
   logger_i("EepromStorage", "Initializing EEPROM...");
 
   if (!EEPROM.begin(EEPROM_SIZE)) {
