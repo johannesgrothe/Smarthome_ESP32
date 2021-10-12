@@ -6,7 +6,7 @@ StaticStorage::StaticStorage() {
   initialized_ = staticConfigStringAvailable();
 }
 
-std::shared_ptr <Config> StaticStorage::loadConfig() {
+std::shared_ptr<SystemConfig> StaticStorage::loadSystemConfig() {
 
   std::stringstream ss;
 
@@ -35,7 +35,7 @@ std::shared_ptr <Config> StaticStorage::loadConfig() {
   return config;
 }
 
-bool StaticStorage::saveConfig(Config config) {
+bool StaticStorage::saveSystemConfig(SystemConfig config) {
   return false;
 }
 
@@ -47,6 +47,22 @@ bool StaticStorage::staticConfigStringAvailable() {
   #endif
 }
 
-bool StaticStorage::eraseConfig() {
+bool StaticStorage::eraseAllConfigs() {
+  return false;
+}
+
+std::shared_ptr<GadgetConfig> StaticStorage::loadGadgetConfig() {
+  return nullptr;
+}
+
+bool StaticStorage::saveGadgetConfig(GadgetConfig config) {
+  return false;
+}
+
+std::shared_ptr<EventConfig> StaticStorage::loadEventConfig() {
+  return nullptr;
+}
+
+bool StaticStorage::saveEventConfig(EventConfig config) {
   return false;
 }

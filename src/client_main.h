@@ -62,26 +62,26 @@ private:
    * Loads and returns the config for initialization
    * @return The loaded config object
    */
-  Config loadConfig();
+  SystemConfig loadSystemConfig();
 
   /**
    * Initializes the network gadget
    * @param mode The mode the chip should start at
    * @return Whether initializing network was successful or not
    */
-  bool initNetwork(const Config &config, NetworkMode mode);
+  bool initNetwork(const SystemConfig &config, NetworkMode mode);
 
   /**
    * Initializes all Connectors (IR/Radio)
    * @return Whether initializing connectors was successful or not
    */
-  bool initConnectors(const Config &config);
+  bool initConnectors(const SystemConfig &config);
 
   /**
    * Initialized all of the gadgets stored in the EEPROM
    * @return Whether initializing all gadgets was successful or not
    */
-  bool initGadgets(const Config &config);
+  bool initGadgets(const GadgetConfig &config);
 
   /**
    * Initializes the api manager

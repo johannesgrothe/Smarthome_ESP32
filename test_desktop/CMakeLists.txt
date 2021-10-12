@@ -48,6 +48,11 @@ set(ADDITIONAL_SOURCES
         ../src/hardware_controller.cpp
         ../src/storage/config.cpp
         ../src/connectors/serial_gadget.cpp
+        ../src/crc_calculator.cpp
+        ../src/storage/system_config.cpp
+        ../src/storage/gadget_config.cpp
+        ../src/storage/event_config.cpp
+        ../src/storage/eeprom_writer.cpp
         )
 
 set(TEST_SOURCES)

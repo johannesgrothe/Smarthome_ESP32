@@ -10,7 +10,7 @@ void HardwareController::rebootChip(const std::string &reason, uint8_t delay) {
   for (byte k = delay; k > 0; k--) {
     logger_i("System", "%d", k);
     unsigned long end_timestamp = millis() + delay;
-    while (millis() < end_timestamp) {}
+    while (millis() < end_timestamp) {} // TODO: update
   }
   ESP.restart();
   #else

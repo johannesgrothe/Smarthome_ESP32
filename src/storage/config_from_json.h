@@ -4,7 +4,7 @@
 #include <sstream>
 
 #include "../datatypes.h"
-#include "config.h"
+#include "system_config.h"
 #include "../json_check.h"
 #include "../ip_container.h"
 
@@ -71,7 +71,7 @@ static gadget_tuple getGadgetDataFromJson(DynamicJsonDocument json_body) {
     }
   }
 
-  return gadget_tuple(type, remote_bf, pins, name, gadget_config, code_config);
+  return {type, remote_bf, pins, name, gadget_config, code_config};
 }
 
 /**
@@ -79,7 +79,7 @@ static gadget_tuple getGadgetDataFromJson(DynamicJsonDocument json_body) {
  * @param config Config json to get data from
  * @return The config if creating was successful, nullptr otherwise
  */
-static std::shared_ptr<Config> createConfigFromJson(DynamicJsonDocument config) {
+static std::shared_ptr<SystemConfig> createConfigFromJson(DynamicJsonDocument config) {
 
   if (!checkJsonForKeys(config, {"data", "gadgets"})) {
     return nullptr;
@@ -147,7 +147,7 @@ static std::shared_ptr<Config> createConfigFromJson(DynamicJsonDocument config) 
         uint8_t buf_val = 0;
         sstr >> buf_val;
         buf_ip[counter] = buf_val;
-        counter ++;
+        counter++;
         sstr.clear();
       } else {
         sstr << c;
@@ -168,19 +168,17 @@ static std::shared_ptr<Config> createConfigFromJson(DynamicJsonDocument config) 
     mqtt_pw = std::make_shared<std::string>(json_config_data["mqtt_pw"].as<std::string>());
   }
 
-  auto buf_config = Config(id,
-                           network_mode,
-                           gadgets,
-                           ir_recv,
-                           ir_send,
-                           radio_recv,
-                           radio_send,
-                           wifi_ssid,
-                           wifi_pw,
-                           mqtt_ip,
-                           mqtt_port,
-                           mqtt_username,
-                           mqtt_pw);
+  return std::make_shared<SystemConfig>(id,
+                                        network_mode,
+                                        ir_recv,
+                                        ir_send,
+                                        radio_recv,
+                                        radio_send,
+                                        wifi_ssid,
+                                        wifi_pw,
+                                        mqtt_ip,
+                                        mqtt_port,
+                                        mqtt_username,
+                                        mqtt_pw);
 
-  return std::make_shared<Config>(buf_config);
 }

@@ -40,9 +40,9 @@ ClientMain::ClientMain() :
     HardwareController::rebootChip("System storage initialization error", 15);
   }
 
-  auto system_config = loadConfig();
+  auto system_config = loadSystemConfig();
 
-  client_id_ = system_config.getID();
+  client_id_ = system_config.id;
   logger_i("System", "Client ID: '%s'", client_id_.c_str());
 
   system_mode_ = getBootMode();
@@ -58,20 +58,20 @@ ClientMain::ClientMain() :
       break;
     case BootMode::Network_Only_EEPROM:
       logger_i("System", " Boot Mode: Network Only/EEPROM");
-      status = initNetwork(system_config, system_config.getNetworkMode());
+      status = initNetwork(system_config, system_config.network_mode);
       if (!status) {
         HardwareController::rebootChip("Network initialization failed.", 15);
       }
       break;
     case BootMode::Full_Operation:
       logger_i("System", "Boot Mode: Full Operation");
-      status = initNetwork(system_config, system_config.getNetworkMode());
+      status = initNetwork(system_config, system_config.network_mode);
       if (!status) {
         HardwareController::rebootChip("Network initialization failed.", 15);
       }
 
       initConnectors(system_config);
-      initGadgets(system_config);
+//      initGadgets(system_config);
 
       break;
     default:
@@ -86,8 +86,8 @@ ClientMain::ClientMain() :
   initApi();
 }
 
-Config ClientMain::loadConfig() {
-  auto config = system_storage_->loadConfig();
+SystemConfig ClientMain::loadSystemConfig() {
+  auto config = system_storage_->loadSystemConfig();
   if (config == nullptr) {
     logger_e("System", "Failed to load system configuration data");
     HardwareController::rebootChip("Config loading error", 15);
@@ -96,7 +96,7 @@ Config ClientMain::loadConfig() {
   return *config;
 }
 
-bool ClientMain::initNetwork(const Config &config, NetworkMode mode) {
+bool ClientMain::initNetwork(const SystemConfig &config, NetworkMode mode) {
   auto network = NetworkLoader::loadNetwork(config, mode);
   if (network == nullptr) {
     return false;
@@ -105,13 +105,13 @@ bool ClientMain::initNetwork(const Config &config, NetworkMode mode) {
   return true;
 }
 
-bool ClientMain::initConnectors(const Config &config) {
+bool ClientMain::initConnectors(const SystemConfig &config) {
   logger_i("System", "Initializing Connectors:");
 
-  uint8_t ir_recv = config.getIRRecvPin();
-  uint8_t ir_send = config.getIRSendPin();
-  uint8_t radio_recv = config.getRadioRecvPin();
-  uint8_t radio_send = config.getRadioSendPin();
+  uint8_t ir_recv = config.ir_recv_pin;
+  uint8_t ir_send = config.ir_send_pin;
+  uint8_t radio_recv = config.radio_recv_pin;
+  uint8_t radio_send = config.radio_send_pin;
 
   logger_i("System", "Creating IR-Gadget:");
 
@@ -134,8 +134,8 @@ bool ClientMain::initConnectors(const Config &config) {
   return true;
 }
 
-bool ClientMain::initGadgets(const Config &config) {
-  auto eeprom_gadgets = config.getGadgets();
+bool ClientMain::initGadgets(const GadgetConfig &config) {
+  auto eeprom_gadgets = config.gadgets;
 
   logger_i("System", "Initializing Gadgets: %d", eeprom_gadgets.size());
 

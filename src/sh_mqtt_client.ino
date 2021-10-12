@@ -428,7 +428,7 @@ void handleSystemControlRequest(std::shared_ptr<Request> req) {
  */
 void handleConfigResetRequest(std::shared_ptr<Request> req) {
   logger_i("System", "Resetting config");
-  bool success = system_storage_->eraseConfig();
+  bool success = system_storage_->eraseAllConfigs();
   req->respond(success);
 }
 
@@ -455,7 +455,7 @@ void handleConfigWriteRequest(std::shared_ptr<Request> req) {
     return;
   }
 
-  auto status = system_storage_->saveConfig(*config.get());
+  auto status = system_storage_->saveSystemConfig(*config.get());
 
   if (status) {
     logger_i("System", "Writing config was successful");
@@ -1259,7 +1259,7 @@ void setup() {
     rebootChip("System storage initialization error", 15);
   }
 
-  system_config_ = system_storage_->loadConfig();
+  system_config_ = system_storage_->loadSystemConfig();
   if (system_config_ == nullptr) {
     logger_e("System", "Failed to load system configuration data");
     rebootChip("Config loading error", 15);
