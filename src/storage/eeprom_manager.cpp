@@ -670,3 +670,67 @@ bool EepromManager::initEEPROM() {
   }
   return true;
 }
+
+std::vector<event_map> EepromManager::readEventMapping() {
+  std::vector<event_map> event_vector;
+  auto event_map_str = readString(EVENT_MAPPING_START, EVENT_MAPPING_MAX_LEN);
+  std::stringstream map_stream;
+  bool in_str = false;
+  for (char c: event_map_str) {
+    if (c == '<') {
+      in_str = true;
+    } else if (c == '>') {
+      if (in_str) {
+        map_stream << ';';
+        std::string name;
+        bool detected_name = false;
+        std::vector<unsigned long> code_vector;
+        std::stringstream event_stream;
+        for (char chr: map_stream.str()) {
+          if (chr == ';') {
+            if (!detected_name) {
+              // Decode event name
+              detected_name = true;
+              name = event_stream.str();
+            } else {
+              // Decode code
+              unsigned long code;
+              event_stream >> code;
+              code_vector.push_back(code);
+            }
+            event_stream = std::stringstream();
+          } else {
+            event_stream << chr;
+          }
+        }
+        if (detected_name && !code_vector.empty()) {
+          auto out_map = event_map(name, code_vector);
+          event_vector.push_back(out_map);
+        }
+      }
+      in_str = false;
+      map_stream = std::stringstream();
+    } else {
+      map_stream << c;
+    }
+  }
+  return event_vector;
+}
+
+bool EepromManager::writeEventMapping(const std::vector<event_map>& events) {
+  std::stringstream sstr;
+  for (auto event: events) {
+    auto name = std::get<0>(event);
+    auto codes = std::get<1>(event);
+    sstr << '<' << name << ';';
+    for (int i = 0; i < codes.size(); i++) {
+      sstr << codes[i];
+      if (i < codes.size() - 1) {
+        sstr << ';';
+      }
+    }
+    sstr << '>';
+  }
+  bool status = writeString(EVENT_MAPPING_START, EVENT_MAPPING_MAX_LEN, sstr.str());
+  return status;
+}

@@ -7,12 +7,12 @@ SystemConfig::SystemConfig(std::string id,
                            uint8_t ir_send_pin,
                            uint8_t radio_recv_pin,
                            uint8_t radio_send_pin,
-                           std::shared_ptr <std::string> wifi_ssid,
-                           std::shared_ptr <std::string> wifi_pw,
-                           std::shared_ptr <IPContainer> mqtt_ip,
-                           std::shared_ptr <uint16_t> mqtt_port,
-                           std::shared_ptr <std::string> mqtt_username,
-                           std::shared_ptr <std::string> mqtt_password) :
+                           std::shared_ptr<std::string> wifi_ssid,
+                           std::shared_ptr<std::string> wifi_pw,
+                           std::shared_ptr<IPContainer> mqtt_ip,
+                           std::shared_ptr<uint16_t> mqtt_port,
+                           std::shared_ptr<std::string> mqtt_username,
+                           std::shared_ptr<std::string> mqtt_password) :
     id(std::move(id)),
     network_mode(network_mode),
     ir_recv_pin(ir_recv_pin),
@@ -98,12 +98,4 @@ unsigned short SystemConfig::crc16() const {
   }
 
   return crc.value();
-}
-
-bool SystemConfig::operator==(const SystemConfig &rhs) const {
-  return crc16() == rhs.crc16();
-}
-
-bool SystemConfig::operator!=(const SystemConfig &rhs) const {
-  return !(operator==(rhs));
 }

@@ -5,18 +5,29 @@
 TEST_CASE("Test EEPROM Storage", "[Storage]") {
   EepromStorage storage;
   EEPROM.clear();
-  logger_i("EEPROM_Test", EEPROM.getContent());
 
-  SECTION("Print Layout") {
+  SECTION("Print Layout/Contend") {
     logger_i("EEPROM Test", EepromStorage::getEepromLayout());
+    logger_i("EEPROM_Test", EEPROM.getContent());
   }
 
-  SECTION("Test empty eeprom") {
+  SECTION("Test empty eeprom: System Config") {
     auto cfg = storage.loadSystemConfig();
     CHECK(cfg == nullptr);
   }
 
-  SECTION("Test writing and loading config") {
+  SECTION("Test empty eeprom: Gadget Config") {
+    auto cfg = storage.loadGadgetConfig();
+    CHECK(cfg == nullptr);
+  }
+
+  SECTION("Test empty eeprom: Event Config") {
+    auto cfg = storage.loadEventConfig();
+    CHECK(cfg != nullptr);
+    CHECK(cfg->event_mapping.empty());
+  }
+
+  SECTION("Test writing and loading system config") {
     SystemConfig cfg("test_client",
                      NetworkMode::MQTT,
                      0,
@@ -31,11 +42,27 @@ TEST_CASE("Test EEPROM Storage", "[Storage]") {
                      std::make_shared<std::string>("password"));
 
     auto c = cfg.crc16();
-    logger_i("EEPROM_Test", "Checksum: %d", c);
+    logger_i("EEPROM_Test", "New config checksum: %d", c);
 
     auto res = storage.saveSystemConfig(cfg);
     CHECK(res == true);
-    logger_i("EEPROM_Test", EEPROM.getContent());
-    CHECK(storage.loadSystemConfig() != nullptr);
+    auto loaded_config = storage.loadSystemConfig();
+    CHECK(loaded_config != nullptr);
+    CHECK(cfg == *loaded_config);
+  }
+
+  SECTION("Test writing and loading event config") {
+    event_map map1("fb_1_off", {1223232, 123121234, 546456456});
+    event_map map2("fb_1_on", {9789789, 797797897, 7897978789});
+    EventConfig cfg({map1, map2});
+
+    auto c = cfg.crc16();
+    logger_i("EEPROM_Test", "New config checksum: %d", c);
+
+    auto res = storage.saveEventConfig(cfg);
+    CHECK(res == true);
+    auto loaded_config = storage.loadEventConfig();
+    CHECK(loaded_config != nullptr);
+    CHECK(cfg == *loaded_config);
   }
 }

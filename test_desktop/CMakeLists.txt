@@ -52,7 +52,8 @@ set(ADDITIONAL_SOURCES
         ../src/storage/system_config.cpp
         ../src/storage/gadget_config.cpp
         ../src/storage/event_config.cpp
-        storage/eeprom_manager.cpp
+        ../src/storage/eeprom_manager.cpp
+        ../src/storage/base_config.cpp
         )
 
 set(TEST_SOURCES)

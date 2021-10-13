@@ -86,9 +86,13 @@
 #define MQTT_PW_POS (MQTT_USER_POS + MQTT_USER_MAX_LEN + 1)
 #define MQTT_PW_MAX_LEN 50
 
+//event mapping
+#define EVENT_MAPPING_START (MQTT_PW_POS + MQTT_PW_MAX_LEN + 1)
+#define EVENT_MAPPING_MAX_LEN 300
+
 //gadgets
-#define GADGET_POS_START (MQTT_PW_POS + MQTT_PW_MAX_LEN + 1)
-#define GADGET_MAX_COUNT 8
+#define GADGET_POS_START (EVENT_MAPPING_START + EVENT_MAPPING_MAX_LEN + 1)
+#define GADGET_MAX_COUNT 5
 #define GADGET_BLOCK_START (GADGET_POS_START + ((GADGET_MAX_COUNT + 1) * 2))
 
 #define GADGET_BF_POS 0
@@ -256,7 +260,6 @@ public:
    */
   static gadget_tuple readGadget(uint8_t gadget_index);
 
-
   /**
    * Collects all used ports from all gadgets
    * @return the used ports
@@ -300,6 +303,21 @@ public:
    * @return whether invalidating the gadgets was successful
    */
   static bool resetGadgets();
+
+  // read and write event config
+
+  /**
+   * Reads the event mapping from the eeprom
+   * @return The event mapping
+   */
+  static std::vector<event_map> readEventMapping();
+
+  /**
+   * Writes the event mapping to the eeprom
+   * @param events Event map to write
+   * @return Whether writing was successful or not
+   */
+  static bool writeEventMapping(const std::vector<event_map>& events);
 
   // read + write IR pins
   /**

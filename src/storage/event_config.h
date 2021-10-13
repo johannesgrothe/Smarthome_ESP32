@@ -6,15 +6,14 @@
 #include <utility>
 #include <string>
 #include "../datatypes.h"
+#include "base_config.h"
 
-class EventConfig {
-private:
+class EventConfig: public BaseConfig {
+public:
 
   const std::vector<event_map> event_mapping;
 
-public:
-
   explicit EventConfig(std::vector<event_map> event_data);
 
-  unsigned short crc16() const;
+  unsigned short crc16() const override;
 };

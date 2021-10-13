@@ -1,10 +1,10 @@
 #include "eeprom_storage.h"
 
 #include "../string_methods.h"
-#include "../random.h"
+#include "eeprom_manager.h"
 
 EepromStorage::EepromStorage() {
-  initialized_ = initEEPROM();
+  initialized_ = EepromManager::initEEPROM();
 
   if (initialized_) {
     logger_i("EepromStorage", "EEPROM usage: %d / %d bytes", getEEPROMUsage(), EEPROM_SIZE);
@@ -12,74 +12,74 @@ EepromStorage::EepromStorage() {
 }
 
 bool EepromStorage::eraseAllConfigs() {
-  eraseEeprom();
+  EepromManager::eraseEeprom();
   return true;
 }
 
 bool EepromStorage::saveSystemConfig(SystemConfig config) {
 
   // Write ID
-  bool write_successful = writeID(config.id);
+  bool write_successful = EepromManager::writeID(config.id);
 
   // Write Network Mode
-  write_successful &= writeNetworkMode(config.network_mode);
+  write_successful &= EepromManager::writeNetworkMode(config.network_mode);
 
   // Write Pins
-  write_successful &= writeIRrecvPin(config.ir_recv_pin);
-  write_successful &= writeIrSendPin(config.ir_send_pin);
-  write_successful &= writeRadioRecvPin(config.radio_recv_pin);
-  write_successful &= writeRadioSendPin(config.radio_send_pin);
+  write_successful &= EepromManager::writeIRrecvPin(config.ir_recv_pin);
+  write_successful &= EepromManager::writeIrSendPin(config.ir_send_pin);
+  write_successful &= EepromManager::writeRadioRecvPin(config.radio_recv_pin);
+  write_successful &= EepromManager::writeRadioSendPin(config.radio_send_pin);
 
   // Write Wifi SSID
   if (config.wifi_ssid != nullptr &&
-      ((hasValidWifiSSID() && *config.wifi_ssid != readWifiSSID()) || !hasValidWifiSSID())) {
-    write_successful &= writeWifiSSID(*config.wifi_ssid);
-  } else if (config.wifi_ssid == nullptr && hasValidWifiSSID()) {
-    write_successful &= writeWifiSSID("");
+      ((EepromManager::hasValidWifiSSID() && *config.wifi_ssid != EepromManager::readWifiSSID()) || !EepromManager::hasValidWifiSSID())) {
+    write_successful &= EepromManager::writeWifiSSID(*config.wifi_ssid);
+  } else if (config.wifi_ssid == nullptr && EepromManager::hasValidWifiSSID()) {
+    write_successful &= EepromManager::writeWifiSSID("");
   }
 
   // Write Wifi PW
   if (config.wifi_pw != nullptr &&
-      ((hasValidWifiPW() && *config.wifi_pw != readWifiPW()) || !hasValidWifiPW())) {
-    write_successful &= writeWifiPW(*config.wifi_pw);
-  } else if (config.wifi_pw == nullptr && hasValidWifiPW()) {
-    write_successful &= writeWifiPW("");
+      ((EepromManager::hasValidWifiPW() && *config.wifi_pw != EepromManager::readWifiPW()) || !EepromManager::hasValidWifiPW())) {
+    write_successful &= EepromManager::writeWifiPW(*config.wifi_pw);
+  } else if (config.wifi_pw == nullptr && EepromManager::hasValidWifiPW()) {
+    write_successful &= EepromManager::writeWifiPW("");
   }
 
   // Write MQTT IP
   if (config.mqtt_ip != nullptr &&
-      ((hasValidMQTTIP() && *config.mqtt_ip != readMQTTIP()) || !hasValidMQTTIP())) {
-    write_successful &= writeMQTTIP(*config.mqtt_ip);
-  } else if (config.mqtt_ip == nullptr && hasValidMQTTIP()) {
-    write_successful &= writeMQTTIP(IPContainer(0, 0, 0, 0));
+      ((EepromManager::hasValidMQTTIP() && *config.mqtt_ip != EepromManager::readMQTTIP()) || !EepromManager::hasValidMQTTIP())) {
+    write_successful &= EepromManager::writeMQTTIP(*config.mqtt_ip);
+  } else if (config.mqtt_ip == nullptr && EepromManager::hasValidMQTTIP()) {
+    write_successful &= EepromManager::writeMQTTIP(IPContainer(0, 0, 0, 0));
   }
 
   // Write MQTT Port
   if (config.mqtt_port != nullptr &&
-      ((hasValidMQTTPort() && *config.mqtt_port != readMQTTPort()) || !hasValidMQTTPort())) {
-    write_successful &= writeMQTTPort(*config.mqtt_port);
-  } else if (config.mqtt_port == nullptr && hasValidMQTTPort()) {
-    write_successful &= writeMQTTPort(0);
+      ((EepromManager::hasValidMQTTPort() && *config.mqtt_port != EepromManager::readMQTTPort()) || !EepromManager::hasValidMQTTPort())) {
+    write_successful &= EepromManager::writeMQTTPort(*config.mqtt_port);
+  } else if (config.mqtt_port == nullptr && EepromManager::hasValidMQTTPort()) {
+    write_successful &= EepromManager::writeMQTTPort(0);
   }
 
   // Write MQTT Username
   if (config.mqtt_username != nullptr &&
-      ((hasValidMQTTUsername() && *config.mqtt_username != readMQTTUsername()) || !hasValidMQTTUsername())) {
-    write_successful &= writeMQTTUsername(*config.mqtt_username);
-  } else if (config.mqtt_username == nullptr && hasValidMQTTUsername()) {
-    write_successful &= writeMQTTUsername("");
+      ((EepromManager::hasValidMQTTUsername() && *config.mqtt_username != EepromManager::readMQTTUsername()) || !EepromManager::hasValidMQTTUsername())) {
+    write_successful &= EepromManager::writeMQTTUsername(*config.mqtt_username);
+  } else if (config.mqtt_username == nullptr && EepromManager::hasValidMQTTUsername()) {
+    write_successful &= EepromManager::writeMQTTUsername("");
   }
 
   // Write MQTT PW
   if (config.mqtt_password != nullptr &&
-      ((hasValidMQTTPassword() && *config.mqtt_password != readMQTTPassword()) || !hasValidMQTTPassword())) {
-    write_successful &= writeMQTTPassword(*config.mqtt_password);
-  } else if (config.mqtt_password == nullptr && hasValidMQTTPassword()) {
-    write_successful &= writeMQTTPassword("");
+      ((EepromManager::hasValidMQTTPassword() && *config.mqtt_password != EepromManager::readMQTTPassword()) || !EepromManager::hasValidMQTTPassword())) {
+    write_successful &= EepromManager::writeMQTTPassword(*config.mqtt_password);
+  } else if (config.mqtt_password == nullptr && EepromManager::hasValidMQTTPassword()) {
+    write_successful &= EepromManager::writeMQTTPassword("");
   }
 
   if (write_successful) {
-    write_successful &= writeUInt16(CLIENT_CFG_CRC, config.crc16());
+    write_successful &= EepromManager::writeUInt16(CLIENT_CFG_CRC, config.crc16());
   }
 
   auto loaded_config = loadSystemConfig();
@@ -94,15 +94,15 @@ bool EepromStorage::saveSystemConfig(SystemConfig config) {
 }
 
 std::shared_ptr<SystemConfig> EepromStorage::loadSystemConfig() {
-  std::string id = readID();
-  NetworkMode network_mode = readNetworkMode();
-  auto gadgets = readAllGadgets();
+  std::string id = EepromManager::readID();
+  NetworkMode network_mode = EepromManager::readNetworkMode();
+  auto gadgets = EepromManager::readAllGadgets();
 
-  uint8_t ir_recv = readIRrecvPin();
-  uint8_t ir_send = readIrSendPin();
+  uint8_t ir_recv = EepromManager::readIRrecvPin();
+  uint8_t ir_send = EepromManager::readIrSendPin();
 
-  uint8_t radio_recv = readRadioRecvPin();
-  uint8_t radio_send = readRadioSendPin();
+  uint8_t radio_recv = EepromManager::readRadioRecvPin();
+  uint8_t radio_send = EepromManager::readRadioSendPin();
 
   std::shared_ptr<std::string> wifi_ssid = nullptr;
   std::shared_ptr<std::string> wifi_pw = nullptr;
@@ -113,28 +113,28 @@ std::shared_ptr<SystemConfig> EepromStorage::loadSystemConfig() {
   std::shared_ptr<std::string> mqtt_username = nullptr;
   std::shared_ptr<std::string> mqtt_pw = nullptr;
 
-  if (hasValidWifiSSID()) {
-    wifi_ssid = std::make_shared<std::string>(readWifiSSID());
+  if (EepromManager::hasValidWifiSSID()) {
+    wifi_ssid = std::make_shared<std::string>(EepromManager::readWifiSSID());
   }
 
-  if (hasValidWifiPW()) {
-    wifi_pw = std::make_shared<std::string>(readWifiPW());
+  if (EepromManager::hasValidWifiPW()) {
+    wifi_pw = std::make_shared<std::string>(EepromManager::readWifiPW());
   }
 
-  if (hasValidMQTTIP()) {
-    mqtt_ip = std::make_shared<IPContainer>(readMQTTIP());
+  if (EepromManager::hasValidMQTTIP()) {
+    mqtt_ip = std::make_shared<IPContainer>(EepromManager::readMQTTIP());
   }
 
-  if (hasValidMQTTPort()) {
-    mqtt_port = std::make_shared<uint16_t>(readMQTTPort());
+  if (EepromManager::hasValidMQTTPort()) {
+    mqtt_port = std::make_shared<uint16_t>(EepromManager::readMQTTPort());
   }
 
-  if (hasValidMQTTUsername()) {
-    mqtt_username = std::make_shared<std::string>(readMQTTUsername());
+  if (EepromManager::hasValidMQTTUsername()) {
+    mqtt_username = std::make_shared<std::string>(EepromManager::readMQTTUsername());
   }
 
-  if (hasValidMQTTPassword()) {
-    mqtt_pw = std::make_shared<std::string>(readMQTTPassword());
+  if (EepromManager::hasValidMQTTPassword()) {
+    mqtt_pw = std::make_shared<std::string>(EepromManager::readMQTTPassword());
   }
 
   auto config = std::make_shared<SystemConfig>(id,
@@ -150,7 +150,7 @@ std::shared_ptr<SystemConfig> EepromStorage::loadSystemConfig() {
                                                mqtt_username,
                                                mqtt_pw);
 
-  auto stored_crc16 = readUInt16(CLIENT_CFG_CRC);
+  auto stored_crc16 = EepromManager::readUInt16(CLIENT_CFG_CRC);
 
   if (config->crc16() != stored_crc16) {
     logger_e("EEPROMStorage", "Config checksums do not match (%d / %d)", stored_crc16, config->crc16());
@@ -166,7 +166,7 @@ std::shared_ptr<GadgetConfig> EepromStorage::loadGadgetConfig() {
 
 bool EepromStorage::saveGadgetConfig(GadgetConfig config) {
 
-  resetGadgets();
+  EepromManager::resetGadgets();
 
   bool write_successful = true;
 
@@ -178,7 +178,7 @@ bool EepromStorage::saveGadgetConfig(GadgetConfig config) {
     std::string gadget_config = std::get<4>(gadget_data);
     std::string code_config = std::get<5>(gadget_data);
 
-    auto status = writeGadget(type, bitfield, ports, name, gadget_config, code_config);
+    auto status = EepromManager::writeGadget(type, bitfield, ports, name, gadget_config, code_config);
     if (status != WriteGadgetStatus::WritingOK) {
       write_successful = false;
     }
@@ -188,16 +188,32 @@ bool EepromStorage::saveGadgetConfig(GadgetConfig config) {
 }
 
 std::shared_ptr<EventConfig> EepromStorage::loadEventConfig() {
-  return nullptr;
+  auto event_data = EepromManager::readEventMapping();
+  auto out_cfg = std::make_shared<EventConfig>(event_data);
+  return out_cfg;
 }
 
 bool EepromStorage::saveEventConfig(EventConfig config) {
-  return false;
+  auto status = EepromManager::writeEventMapping(config.event_mapping);
+
+  if (!status) {
+    return false;
+  }
+
+  auto test_cfg = loadEventConfig();
+  if (test_cfg == nullptr) {
+    return false;
+  }
+
+  if (config != *test_cfg) {
+    return false;
+  }
+  return true;
 }
 
 
 uint16_t EepromStorage::getEEPROMUsage() {
-  return getGadgetMemoryEnd(getGadgetCount() - 1);
+  return EepromManager::getGadgetMemoryEnd(EepromManager::getGadgetCount() - 1);
 }
 
 std::string EepromStorage::getEepromLayout() {

@@ -4,8 +4,9 @@
 #include "../datatypes.h"
 #include "../network_mode.h"
 #include "../ip_container.h"
+#include "base_config.h"
 
-class SystemConfig {
+class SystemConfig: public BaseConfig {
 private:
 
 public:
@@ -57,9 +58,5 @@ public:
                std::shared_ptr <std::string> mqtt_username,
                std::shared_ptr <std::string> mqtt_password);
 
-  unsigned short crc16() const;
-
-  bool operator==(const SystemConfig& rhs) const;
-
-  bool operator!=(const SystemConfig& rhs) const;
+  unsigned short crc16() const override;
 };
