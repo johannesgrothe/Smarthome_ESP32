@@ -111,7 +111,7 @@ std::shared_ptr<SystemStorage> system_storage_ = nullptr;
 std::shared_ptr<Config> system_config_ = nullptr;
 
 // Mode how the system should operate
-BootMode system_mode_ = BootMode::Unknown_Mode;
+BootMode system_mode_ = BootMode::Serial_Ony;
 
 // Infrared-gadget receiving and/or sending infrared codes
 std::shared_ptr<IR_Gadget> ir_gadget;
@@ -1107,7 +1107,7 @@ void refresh() {
     case BootMode::Serial_Ony:
       refreshModeSerial();
       break;
-    case BootMode::Network_Only_EEPROM:
+    case BootMode::Network_Only:
       refreshModeNetwork();
       break;
     case BootMode::Full_Operation:
@@ -1279,7 +1279,7 @@ void setup() {
       logger_i("System", "Boot Mode: Serial Only");
       initModeSerial();
       break;
-    case BootMode::Network_Only_EEPROM:
+    case BootMode::Network_Only:
       logger_i("System", " Boot Mode: Network Only/EEPROM");
       initModeNetwork();
       break;

@@ -10,10 +10,8 @@
 
 enum class BootMode {
   Serial_Ony = 0,
-  Network_Only_EEPROM = 1,
-  Full_Operation = 2,
-  Unknown_Mode = 3,
-  Unbooted = 4
+  Network_Only = 1,
+  Full_Operation = 2
 };
 
 static BootMode getBootMode() {
@@ -25,7 +23,7 @@ static BootMode getBootMode() {
   pinMode(REG1, INPUT);
   pinMode(REG2, INPUT);
 
-  BootMode mode = BootMode::Unknown_Mode;
+  BootMode mode = BootMode::Serial_Only;
 
   bool reg0 = digitalRead(REG0);
   bool reg1 = digitalRead(REG1);
@@ -34,7 +32,7 @@ static BootMode getBootMode() {
   if (!reg0 && !reg1 && !reg2) {
     mode = BootMode::Serial_Ony;
   } else if (!reg0 && reg1 && !reg2) {
-    mode = BootMode::Network_Only_EEPROM;
+    mode = BootMode::Network_Only;
   } else if (reg0 && reg1 && reg2) {
     mode = BootMode::Full_Operation;
   }

@@ -59,12 +59,6 @@ private:
   //endregion API_MANAGER_DELEGATE
 
   /**
-   * Loads and returns the config for initialization
-   * @return The loaded config object
-   */
-  SystemConfig loadSystemConfig();
-
-  /**
    * Initializes the network gadget
    * @param mode The mode the chip should start at
    * @return Whether initializing network was successful or not
@@ -78,7 +72,7 @@ private:
   bool initConnectors(const SystemConfig &config);
 
   /**
-   * Initialized all of the gadgets stored in the EEPROM
+   * Initialized all of the gadgets stored in the config
    * @return Whether initializing all gadgets was successful or not
    */
   bool initGadgets(const GadgetConfig &config);
@@ -89,6 +83,15 @@ private:
    */
   bool initApi();
 
+  /**
+   * Initialized the Event Manager with the event mapping from the config
+   * @param config The config to get mapping data from
+   * @return Whether initializing the Event Manager was successful or not
+   */
+  bool initEventMapping(const EventConfig &config);
+
 public:
-  ClientMain();
+  ClientMain(BootMode boot_mode, const SystemConfig& system_config, const GadgetConfig& gadget_config, const EventConfig& event_config);
+
+  void setStorageManager(const std::shared_ptr<SystemStorage> storage);
 };

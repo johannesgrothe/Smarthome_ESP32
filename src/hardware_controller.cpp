@@ -14,7 +14,7 @@ void HardwareController::rebootChip(const std::string &reason, uint8_t delay) {
   }
   ESP.restart();
   #else
-  throw std::exception();
+  throw reason;
   #endif
 }
 

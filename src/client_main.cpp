@@ -8,9 +8,10 @@
 #include "network_loader.h"
 #include "random.h"
 
-ClientMain::ClientMain() :
+ClientMain::ClientMain(BootMode boot_mode, const SystemConfig& system_config, const GadgetConfig& gadget_config, const EventConfig& event_config) :
     ApiManagerDelegate(),
     runtime_id_(),
+    system_mode_(boot_mode),
     system_storage_(nullptr),
     api_manager_(nullptr),
     network_(nullptr),
@@ -26,26 +27,9 @@ ClientMain::ClientMain() :
   logger_i("System", "Git Branch: %s", getSoftwareGitBranch().c_str());
   logger_i("System", "Git Commit: %s", getSoftwareGitCommit().c_str());
 
-  logger_i("System", "Initializing Storage:");
-
-  if (StaticStorage::staticConfigStringAvailable()) {
-    logger_i("System", "Using static, pre-compiled config");
-    system_storage_ = std::make_shared<StaticStorage>();
-  } else {
-    logger_i("System", "Using dynamic, EEPROM config");
-    system_storage_ = std::make_shared<EepromStorage>();
-  }
-
-  if (!system_storage_->isInitialized()) {
-    HardwareController::rebootChip("System storage initialization error", 15);
-  }
-
-  auto system_config = loadSystemConfig();
-
   client_id_ = system_config.id;
   logger_i("System", "Client ID: '%s'", client_id_.c_str());
 
-  system_mode_ = getBootMode();
   bool status;
 
   switch (system_mode_) {
@@ -56,8 +40,8 @@ ClientMain::ClientMain() :
         HardwareController::rebootChip("Network initialization failed.", 15);
       }
       break;
-    case BootMode::Network_Only_EEPROM:
-      logger_i("System", " Boot Mode: Network Only/EEPROM");
+    case BootMode::Network_Only:
+      logger_i("System", "Boot Mode: Network Only");
       status = initNetwork(system_config, system_config.network_mode);
       if (!status) {
         HardwareController::rebootChip("Network initialization failed.", 15);
@@ -71,7 +55,7 @@ ClientMain::ClientMain() :
       }
 
       initConnectors(system_config);
-//      initGadgets(system_config);
+      initGadgets(gadget_config);
 
       break;
     default:
@@ -84,16 +68,6 @@ ClientMain::ClientMain() :
   #endif
 
   initApi();
-}
-
-SystemConfig ClientMain::loadSystemConfig() {
-  auto config = system_storage_->loadSystemConfig();
-  if (config == nullptr) {
-    logger_e("System", "Failed to load system configuration data");
-    HardwareController::rebootChip("Config loading error", 15);
-  }
-  logger_i("System", "Config loaded successfully");
-  return *config;
 }
 
 bool ClientMain::initNetwork(const SystemConfig &config, NetworkMode mode) {
@@ -270,6 +244,10 @@ bool ClientMain::initGadgets(const GadgetConfig &config) {
     }
   }
 
+  return true;
+}
+
+bool ClientMain::initEventMapping(const EventConfig &config) {
   return true;
 }
 
