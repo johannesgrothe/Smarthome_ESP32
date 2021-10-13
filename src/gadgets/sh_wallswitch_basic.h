@@ -17,7 +17,7 @@ public:
 };
 
 static std::shared_ptr<SH_Wallswitch_Basic>
-createSHWallswitchBasic(std::string name, pin_set pins, const JsonObject &gadget_data) {
+createSHWallswitchBasic(std::string name, port_set pins, const JsonObject &gadget_data) {
   uint8_t pin = 0;
   bool default_state = false;
 

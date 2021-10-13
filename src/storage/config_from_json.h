@@ -43,7 +43,7 @@ static gadget_tuple getGadgetDataFromJson(DynamicJsonDocument json_body) {
     }
   }
 
-  pin_set pins = {port0, port1, port2, port3, port4};
+  port_set pins = {port0, port1, port2, port3, port4};
 
   std::string gadget_config;
   std::string code_config;
@@ -71,7 +71,7 @@ static gadget_tuple getGadgetDataFromJson(DynamicJsonDocument json_body) {
     }
   }
 
-  return {type, remote_bf, pins, name, gadget_config, code_config};
+  return gadget_tuple(type, remote_bf, pins, name, gadget_config, code_config);
 }
 
 /**

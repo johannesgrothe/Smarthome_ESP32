@@ -45,7 +45,7 @@ private:
  * @return A shared pointer to the gadget
  */
   static std::shared_ptr <SH_Gadget>
-  createGadgetHelper(GadgetIdentifier gadget_type, pin_set pins, const std::string &name, JsonObject gadget_config);
+  createGadgetHelper(GadgetIdentifier gadget_type, port_set pins, const std::string &name, JsonObject gadget_config);
 
 public:
 
@@ -60,7 +60,7 @@ public:
    * @return A shared pointer to the gadget
    */
   static std::shared_ptr <SH_Gadget>
-  createGadget(GadgetIdentifier gadget_type, pin_set pins, const std::string &name, JsonObject gadget_config);
+  createGadget(GadgetIdentifier gadget_type, port_set pins, const std::string &name, JsonObject gadget_config);
 
   /**
    * Function that returns whether the gadget requires IR access

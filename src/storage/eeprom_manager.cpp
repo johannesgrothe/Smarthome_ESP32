@@ -130,7 +130,7 @@ bool EepromManager::setGadgetMemoryEnd(uint8_t gadget_nr, uint16_t mem_end) {
 }
 
 WriteGadgetStatus
-EepromManager::writeNewGadget(uint8_t gadget_type, bitfield_set config_bf, pin_set ports, const std::string &name,
+EepromManager::writeNewGadget(uint8_t gadget_type, bitfield_set config_bf, port_set ports, const std::string &name,
                               const std::string &gadget_json, const std::string &code_json) {
 
   // Check if updating gadget is possible
@@ -258,7 +258,7 @@ gadget_tuple EepromManager::readGadget(uint8_t gadget_index) {
   auto addr_end = getGadgetMemoryEnd(gadget_index);
   auto stored_gadgets = readUInt8(GADGET_COUNT_POS);
 
-  pin_set pins = {0, 0, 0, 0, 0};
+  port_set pins = {0, 0, 0, 0, 0};
   bitfield_set remote_bf = {false, false, false, false, false, false, false, false};
 
   if (!addr || !addr_end || gadget_index >= stored_gadgets) {
@@ -324,7 +324,7 @@ std::vector<gadget_tuple> EepromManager::readAllGadgets() {
 }
 
 WriteGadgetStatus
-EepromManager::writeGadget(uint8_t gadget_type, bitfield_set config_bf, pin_set ports, const std::string &name,
+EepromManager::writeGadget(uint8_t gadget_type, bitfield_set config_bf, port_set ports, const std::string &name,
                            const std::string &gadget_json, const std::string &code_json) {
 
   if (gadget_type >= GadgetIdentifierCount) {

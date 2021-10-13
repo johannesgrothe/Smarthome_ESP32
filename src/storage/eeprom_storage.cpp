@@ -173,7 +173,7 @@ bool EepromStorage::saveGadgetConfig(GadgetConfig config) {
   for (auto gadget_data: config.gadgets) {
     uint8_t type = std::get<0>(gadget_data);
     bitfield_set bitfield = std::get<1>(gadget_data);
-    pin_set ports = std::get<2>(gadget_data);
+    port_set ports = std::get<2>(gadget_data);
     std::string name = std::get<3>(gadget_data);
     std::string gadget_config = std::get<4>(gadget_data);
     std::string code_config = std::get<5>(gadget_data);

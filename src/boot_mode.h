@@ -9,7 +9,7 @@
 //#define STATIC_BOOTMODE 2
 
 enum class BootMode {
-  Serial_Ony = 0,
+  Serial_Only = 0,
   Network_Only = 1,
   Full_Operation = 2
 };
@@ -30,7 +30,7 @@ static BootMode getBootMode() {
   bool reg2 = digitalRead(REG2);
 
   if (!reg0 && !reg1 && !reg2) {
-    mode = BootMode::Serial_Ony;
+    mode = BootMode::Serial_Only;
   } else if (!reg0 && reg1 && !reg2) {
     mode = BootMode::Network_Only;
   } else if (reg0 && reg1 && reg2) {

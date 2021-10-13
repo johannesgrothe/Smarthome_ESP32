@@ -33,7 +33,7 @@ ClientMain::ClientMain(BootMode boot_mode, const SystemConfig& system_config, co
   bool status;
 
   switch (system_mode_) {
-    case BootMode::Serial_Ony:
+    case BootMode::Serial_Only:
       logger_i("System", "Boot Mode: Serial Only");
       status = initNetwork(system_config, NetworkMode::Serial);
       if (!status) {
@@ -124,7 +124,7 @@ bool ClientMain::initGadgets(const GadgetConfig &config) {
     logger_i("System", "Initializing %s", name.c_str());
 
     // Translate stored ports to actual pins
-    pin_set pins;
+    port_set pins;
     for (int i = 0; i < pins.size(); i++) {
       uint8_t buf_port = ports[i];
       uint8_t pin = 0;

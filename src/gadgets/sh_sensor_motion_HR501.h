@@ -17,7 +17,7 @@ public:
 
 };
 
-static std::shared_ptr<SH_Sensor_Motion_HR501> createSHSensorMotionHR501(std::string name, pin_set pins, const JsonObject& gadget_data) {
+static std::shared_ptr<SH_Sensor_Motion_HR501> createSHSensorMotionHR501(std::string name, port_set pins, const JsonObject& gadget_data) {
 if (pins[0] != 0) {
     return std::make_shared<SH_Sensor_Motion_HR501>(name, pins[0]);
   } else {

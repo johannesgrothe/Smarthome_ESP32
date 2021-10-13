@@ -47,7 +47,7 @@ void HardwareController::setPinMode(uint8_t pin, uint8_t mode) {
   #endif
 }
 
-bool HardwareController::digitalRead(uint8_t pin) {
+bool HardwareController::digitalReadPin(uint8_t pin) {
   #ifndef UNIT_TEST
   bool val = digitalRead(pin);
   logger_d("HardwareController", "Reading from pin %d: %d", pin, val);
@@ -57,11 +57,10 @@ bool HardwareController::digitalRead(uint8_t pin) {
   #endif
 }
 
-void HardwareController::digitalWrite(uint8_t pin, bool value) {
+void HardwareController::digitalWritePin(uint8_t pin, bool value) {
   #ifndef UNIT_TEST
-  bool val = digitalWrite(pin, value);
+  digitalWrite(pin, value);
   logger_d("HardwareController", "Writing value to pin %d: %d", pin, value);
-  return val;
   #else
   logger_i("HardwareController", "Writing value to pin %d: %d", pin, value);
   #endif

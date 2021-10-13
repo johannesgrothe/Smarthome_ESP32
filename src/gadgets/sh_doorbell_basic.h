@@ -19,7 +19,7 @@ public:
   void refresh() override;
 };
 
-static std::shared_ptr<SH_Doorbell_Basic> createSHDoorbellBasic(std::string name, pin_set pins, const JsonObject& gadget_data) {
+static std::shared_ptr<SH_Doorbell_Basic> createSHDoorbellBasic(std::string name, port_set pins, const JsonObject& gadget_data) {
   uint8_t pin = 0;
   bool default_state = false;
 

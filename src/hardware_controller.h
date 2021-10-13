@@ -40,12 +40,12 @@ public:
    * Reads digital value from a hardware pin (HIGH or LOW)
    * @param pin Pin to read from
    */
-  static bool digitalRead(uint8_t pin);
+  static bool digitalReadPin(uint8_t pin);
 
   /**
    * Writes a digital value to a hardware pin (HIGH/LOW)
    * @param pin Pin to write value to
    * @param value Value to write
    */
-  static void digitalWrite(uint8_t pin, bool value);
+  static void digitalWritePin(uint8_t pin, bool value);
 };

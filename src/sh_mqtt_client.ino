@@ -111,7 +111,7 @@ std::shared_ptr<SystemStorage> system_storage_ = nullptr;
 std::shared_ptr<Config> system_config_ = nullptr;
 
 // Mode how the system should operate
-BootMode system_mode_ = BootMode::Serial_Ony;
+BootMode system_mode_ = BootMode::Serial_Only;
 
 // Infrared-gadget receiving and/or sending infrared codes
 std::shared_ptr<IR_Gadget> ir_gadget;
@@ -764,7 +764,7 @@ bool initGadgets() {
     logger_i("System", "Initializing %s", name.c_str());
 
     // Translate stored ports to actual pins
-    pin_set pins;
+    port_set pins;
     for (int i = 0; i < pins.size(); i++) {
       uint8_t buf_port = ports[i];
       uint8_t pin = 0;
@@ -1104,7 +1104,7 @@ void refreshModeComplete() {
  */
 void refresh() {
   switch (system_mode_) {
-    case BootMode::Serial_Ony:
+    case BootMode::Serial_Only:
       refreshModeSerial();
       break;
     case BootMode::Network_Only:
@@ -1275,7 +1275,7 @@ void setup() {
   system_mode_ = getBootMode();
 
   switch (system_mode_) {
-    case BootMode::Serial_Ony:
+    case BootMode::Serial_Only:
       logger_i("System", "Boot Mode: Serial Only");
       initModeSerial();
       break;

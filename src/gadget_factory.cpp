@@ -1,7 +1,7 @@
 #include "gadget_factory.h"
 
 std::shared_ptr<SH_Gadget>
-GadgetFactory::createGadgetHelper(GadgetIdentifier gadget_type, pin_set pins, const std::string &name,
+GadgetFactory::createGadgetHelper(GadgetIdentifier gadget_type, port_set pins, const std::string &name,
                                   JsonObject gadget_config) {
   switch (gadget_type) {
     case GadgetIdentifier::doorbell_basic:
@@ -38,7 +38,7 @@ GadgetFactory::createGadgetHelper(GadgetIdentifier gadget_type, pin_set pins, co
 }
 
 std::shared_ptr<SH_Gadget>
-GadgetFactory::createGadget(GadgetIdentifier gadget_type, pin_set pins, const std::string &name,
+GadgetFactory::createGadget(GadgetIdentifier gadget_type, port_set pins, const std::string &name,
                             JsonObject gadget_config) {
   auto buf_gadget = createGadgetHelper(gadget_type, pins, name, gadget_config);
   if (buf_gadget != nullptr && !buf_gadget->hasInitError()) {

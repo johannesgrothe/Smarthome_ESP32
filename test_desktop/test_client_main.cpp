@@ -18,7 +18,7 @@ TEST_CASE("Test Client Main", "[Main]") {
                           std::make_shared<std::string>("password"));
   GadgetConfig gadget_cfg({});
   EventConfig event_cfg({});
-  auto main = ClientMain(BootMode::Serial_Ony, system_cfg, gadget_cfg, event_cfg);
+  auto main = ClientMain(BootMode::Serial_Only, system_cfg, gadget_cfg, event_cfg);
 
   SECTION("Test") {
   }
