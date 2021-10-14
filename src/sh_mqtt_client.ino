@@ -1259,12 +1259,12 @@ void setup() {
     rebootChip("System storage initialization error", 15);
   }
 
-  system_config_ = system_storage_->loadSystemConfig();
-  if (system_config_ == nullptr) {
-    logger_e("System", "Failed to load system configuration data");
-    rebootChip("Config loading error", 15);
-  }
-  logger_i("System", "Config loaded successfully");
+//  system_config_ = system_storage_->loadSystemConfig();
+//  if (system_config_ == nullptr) {
+//    logger_e("System", "Failed to load system configuration data");
+//    rebootChip("Config loading error", 15);
+//  }
+//  logger_i("System", "Config loaded successfully");
 
   client_id_ = system_config_->getID();
   logger_i("System", "Client ID: '%s'", client_id_.c_str());

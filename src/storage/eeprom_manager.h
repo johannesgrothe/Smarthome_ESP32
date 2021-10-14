@@ -22,6 +22,7 @@
 #include "../ip_container.h"
 #include "../string_methods.h"
 #include "../random.h"
+#include "../datatypes.h"
 
 // region CONSTANTS
 

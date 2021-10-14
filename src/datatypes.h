@@ -3,6 +3,7 @@
 #include "system_settings.h"
 #include <array>
 #include <string>
+#include <tuple>
 
 // Bool array of lenght 8 to represent 8 bits in a byte
 using bitfield_set = std::array<bool, 8>;
