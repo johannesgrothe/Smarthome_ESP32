@@ -5,7 +5,7 @@ SH_Fan_Westinghouse_IR::SH_Fan_Westinghouse_IR(std::string name) :
 
 void SH_Fan_Westinghouse_IR::refresh() {
   if (gadgetHasChanged()) {
-    byte level = getLevel();
+    uint8_t level = getLevel();
 
     logger_i(getName(), "Has changed: %d", level);
     if (level == 0) {

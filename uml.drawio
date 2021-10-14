@@ -99,7 +99,7 @@
             <mxRectangle x="560" y="-990" width="80" height="26" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="vfNDVRDWI49IqqNghzil-59" value="- gadgets: Gadget_Collection" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-55" vertex="1">
+        <mxCell id="vfNDVRDWI49IqqNghzil-59" value="- gadgets: GadgetManager" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-55" vertex="1">
           <mxGeometry y="26" width="680" height="26" as="geometry" />
         </mxCell>
         <mxCell id="FZHaBAz50RAus1CbGzk9-7" value="- storage: System_Storage" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-55" vertex="1">
@@ -237,7 +237,7 @@
         <mxCell id="kVHrbFkbPjneuLtn_41Z-17" value="Remote Implementations" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;shadow=0;glass=0;dashed=1;dashPattern=1 1;comic=0;opacity=60;fontSize=31;fontColor=#FF8000;" parent="1" vertex="1">
           <mxGeometry x="-200" y="564" width="492.5" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="JlUxxyfcepWND3y7CYic-1" value="Gadget_Collection" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;rounded=0;shadow=0;glass=0;comic=0;strokeColor=#000000;strokeWidth=1;fillColor=none;fontSize=12;fontColor=#000000;opacity=60;" parent="1" vertex="1">
+        <mxCell id="JlUxxyfcepWND3y7CYic-1" value="GadgetManager" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;rounded=0;shadow=0;glass=0;comic=0;strokeColor=#000000;strokeWidth=1;fillColor=none;fontSize=12;fontColor=#000000;opacity=60;" parent="1" vertex="1">
           <mxGeometry x="910" y="230" width="320" height="190" as="geometry" />
         </mxCell>
         <mxCell id="JlUxxyfcepWND3y7CYic-10" value="- gadgets: SH_Gadget * []" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="JlUxxyfcepWND3y7CYic-1" vertex="1">
@@ -534,7 +534,7 @@
         <mxCell id="tup9LoGHmV5f9MwEpz5L-17" value="# req_gadget: RequestGadget" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-1" vertex="1">
           <mxGeometry y="78" width="705" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="vfNDVRDWI49IqqNghzil-69" value="# gadgets: Gadget_Collection" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-1" vertex="1">
+        <mxCell id="vfNDVRDWI49IqqNghzil-69" value="# gadgets: GadgetManager" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-1" vertex="1">
           <mxGeometry y="104" width="705" height="26" as="geometry" />
         </mxCell>
         <mxCell id="tup9LoGHmV5f9MwEpz5L-16" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="vfNDVRDWI49IqqNghzil-1" vertex="1">

@@ -1,4 +1,3 @@
-
 #include "catch.hpp"
 
 #include "../src/api/gadget_meta.h"

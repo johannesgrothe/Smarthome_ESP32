@@ -3,6 +3,7 @@
 //Normal Imports
 #include <ArduinoJson.h>
 #include <memory>
+#include <string>
 #include "console_logger.h"
 #include "storage/system_storage.h"
 
@@ -30,20 +31,24 @@
 #include "gadgets/sh_sensor_temperature_DHT.h"
 #endif
 
+static const std::vector<GadgetIdentifier> IR_GADGETS = {GadgetIdentifier::fan_westinghouse_ir,
+                                                         GadgetIdentifier::lamp_westinghouse_ir};
+
+static const std::vector<GadgetIdentifier> RADIO_GADGETS = {};
 
 class GadgetFactory {
 private:
 
   /**
- * Creates a new gadget out of the given information.
- * The returned gadget may not be successfully initialized.
- * Returns nullptr if no initialization is possible
- * @param gadget_type Which type of gadget to create
- * @param pins Pins ready to use for the gadget
- * @param name Name of the gadget
- * @param gadget_config Config information for the gadget
- * @return A shared pointer to the gadget
- */
+   * Creates a new gadget out of the given information.
+   * The returned gadget may not be successfully initialized.
+   * Returns nullptr if no initialization is possible
+   * @param gadget_type Which type of gadget to create
+   * @param pins Pins ready to use for the gadget
+   * @param name Name of the gadget
+   * @param gadget_config Config information for the gadget
+   * @return A shared pointer to the gadget
+   */
   static std::shared_ptr <SH_Gadget>
   createGadgetHelper(GadgetIdentifier gadget_type, port_set pins, const std::string &name, JsonObject gadget_config);
 

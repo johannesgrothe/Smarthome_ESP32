@@ -54,6 +54,14 @@ set(ADDITIONAL_SOURCES
         ../src/storage/event_config.cpp
         ../src/storage/eeprom_manager.cpp
         ../src/storage/base_config.cpp
+        ../src/gadget_manager.cpp
+        ../src/event_manager.cpp
+        ../src/gadget_factory.cpp
+        ../src/gadgets/sh_lamp_basic.cpp
+        ../src/gadgets/sh_doorbell_basic.cpp
+        ../src/gadgets/sh_wallswitch_basic.cpp
+        ../src/gadgets/sh_fan_westinghouse_ir.cpp
+        ../src/gadgets/sh_lamp_westinghouse_ir.cpp
         )
 
 set(TEST_SOURCES)

@@ -14,6 +14,8 @@ ClientMain::ClientMain(BootMode boot_mode, const SystemConfig& system_config, co
     system_mode_(boot_mode),
     system_storage_(nullptr),
     api_manager_(nullptr),
+    gadget_manager_(nullptr),
+    event_manager_(nullptr),
     network_(nullptr),
     ir_gadget(nullptr),
     radio_gadget(nullptr) {
@@ -109,6 +111,9 @@ bool ClientMain::initConnectors(const SystemConfig &config) {
 }
 
 bool ClientMain::initGadgets(const GadgetConfig &config) {
+  logger_i("System", "Initializing gadget manager");
+  gadget_manager_ = std::make_shared<GadgetManager>();
+
   auto eeprom_gadgets = config.gadgets;
 
   logger_i("System", "Initializing Gadgets: %d", eeprom_gadgets.size());
@@ -248,6 +253,8 @@ bool ClientMain::initGadgets(const GadgetConfig &config) {
 }
 
 bool ClientMain::initEventMapping(const EventConfig &config) {
+  logger_i("System", "Initializing event manager");
+  event_manager_ = std::make_shared<EventManager>(config.event_mapping);
   return true;
 }
 
@@ -260,12 +267,8 @@ void ClientMain::handleGadgetUpdate(GadgetMeta gadget) {
 
 }
 
-void ClientMain::handleCode(CodeCommand code) {
-
-}
-
 void ClientMain::handleEvent(Event event) {
-
+  event_manager_->handleEvent(std::make_shared<Event>(event));
 }
 
 std::string ClientMain::getClientId() {
@@ -283,4 +286,23 @@ ClientMeta ClientMain::getClientData() {
 
 std::vector<GadgetMeta> ClientMain::getGadgetData() {
   return {};
+}
+
+void ClientMain::setStorageManager(const std::shared_ptr<SystemStorage>& storage) {
+  system_storage_ = storage;
+}
+
+void ClientMain::loopSystem() {
+  if (network_->hasRequest()) {
+    auto req = network_->getRequest();
+    api_manager_->handleRequest(req);
+  }
+}
+
+void ClientMain::loopGadgets() {
+  gadget_manager_->refresh();
+}
+
+void ClientMain::loopNetwork() {
+  network_->refresh();
 }

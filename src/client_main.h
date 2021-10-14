@@ -15,6 +15,9 @@
 #include "connectors/ir_gadget.h"
 #include "connectors/radio_gadget.h"
 
+#include "gadget_manager.h"
+#include "event_manager.h"
+
 class ClientMain : public ApiManagerDelegate {
 private:
 
@@ -33,6 +36,12 @@ private:
   // Helper to handle all incoming and outgoing network traffic
   std::shared_ptr<ApiManager> api_manager_;
 
+  // Stores and manages all gadgets
+  std::shared_ptr<GadgetManager> gadget_manager_;
+
+  // Stores and handles all events
+  std::shared_ptr<EventManager> event_manager_;
+
   // Network-connector to send and receive requests
   std::shared_ptr<RequestGadget> network_;
 
@@ -45,8 +54,6 @@ private:
   //region API_MANAGER_DELEGATE
 
   void handleGadgetUpdate(GadgetMeta gadget) override;
-
-  void handleCode(CodeCommand code) override;
 
   void handleEvent(Event event) override;
 
@@ -93,5 +100,11 @@ private:
 public:
   ClientMain(BootMode boot_mode, const SystemConfig& system_config, const GadgetConfig& gadget_config, const EventConfig& event_config);
 
-  void setStorageManager(const std::shared_ptr<SystemStorage> storage);
+  void setStorageManager(const std::shared_ptr<SystemStorage>& storage);
+
+  void loopSystem();
+
+  void loopGadgets();
+
+  void loopNetwork();
 };

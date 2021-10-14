@@ -4,8 +4,9 @@
 #include <array>
 #include <string>
 #include <tuple>
+#include <vector>
 
-// Bool array of lenght 8 to represent 8 bits in a byte
+// Bool array of length 8 to represent 8 bits in a byte
 using bitfield_set = std::array<bool, 8>;
 
 // Ports needed by the gadget

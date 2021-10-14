@@ -4,12 +4,13 @@
 #include "gadgets/sh_gadget.h"
 #include "system_settings.h"
 
-class Gadget_Collection {
+class GadgetManager {
 private:
 
-  std::vector<std::shared_ptr<SH_Gadget>> gadgets;
+  std::vector<std::shared_ptr<SH_Gadget>> gadgets_{};
 
 public:
+  GadgetManager();
 
   bool addGadget(const std::shared_ptr<SH_Gadget>& new_gadget);
 
@@ -20,4 +21,6 @@ public:
   std::shared_ptr<SH_Gadget> operator[](int index) const;
 
   uint8_t getGadgetCount() const;
+
+  void refresh();
 };

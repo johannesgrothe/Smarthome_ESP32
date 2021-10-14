@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "../gadgets/gadget_enums.h"
 #include "../datatypes.h"

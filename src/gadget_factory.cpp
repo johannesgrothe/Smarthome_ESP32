@@ -8,8 +8,8 @@ GadgetFactory::createGadgetHelper(GadgetIdentifier gadget_type, port_set pins, c
       return createSHDoorbellBasic(name, pins, gadget_config);
 
       #ifndef UNIT_TEST
-    case GadgetIdentifier::lamp_neopixel_basic:
-      return createSHLampNeoPixelBasic(name, pins, gadget_config);
+      case GadgetIdentifier::lamp_neopixel_basic:
+        return createSHLampNeoPixelBasic(name, pins, gadget_config);
       #endif
 
     case GadgetIdentifier::lamp_basic:
@@ -25,11 +25,11 @@ GadgetFactory::createGadgetHelper(GadgetIdentifier gadget_type, port_set pins, c
       return createSHWallswitchBasic(name, pins, gadget_config);
 
       #ifndef UNIT_TEST
-    case GadgetIdentifier::sensor_motion_hr501:
-      return createSHSensorMotionHR501(name, pins, gadget_config);
+      case GadgetIdentifier::sensor_motion_hr501:
+        return createSHSensorMotionHR501(name, pins, gadget_config);
 
-    case GadgetIdentifier::sensor_temperature_dht:
-      return createSHSensorTemperatureDHT(name, pins, gadget_config);
+      case GadgetIdentifier::sensor_temperature_dht:
+        return createSHSensorTemperatureDHT(name, pins, gadget_config);
       #endif
 
     default:
@@ -49,20 +49,17 @@ GadgetFactory::createGadget(GadgetIdentifier gadget_type, port_set pins, const s
 }
 
 bool GadgetFactory::gadgetRequiresIR(GadgetIdentifier gadget) {
-  switch (gadget) {
-    case GadgetIdentifier::fan_westinghouse_ir:
-    case GadgetIdentifier::lamp_westinghouse_ir:
-      return true;
-    default:
-      return false;
-  }
+  if (std::any_of(IR_GADGETS.begin(),
+                  IR_GADGETS.end(),
+                  [gadget](GadgetIdentifier ident) { return ident == gadget; }))
+    return true;
+  return false;
 }
 
 bool GadgetFactory::gadgetRequiresRadio(GadgetIdentifier gadget) {
-  switch (gadget) {
-//    case GadgetIdentifier::lamp_westinghouse_ir:
-//      return true;
-    default:
-      return false;
-  }
+  if (std::any_of(RADIO_GADGETS.begin(),
+                  RADIO_GADGETS.end(),
+                  [gadget](GadgetIdentifier ident) { return ident == gadget; }))
+    return true;
+  return false;
 }

@@ -6,7 +6,7 @@
 class SH_Doorbell_Basic : public SH_Doorbell {
 protected:
 
-  byte switch_pin_;
+  uint8_t switch_pin_;
 
   bool default_state_;
 

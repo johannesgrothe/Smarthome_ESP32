@@ -31,7 +31,7 @@
 // External Dependencies
 #include "Client.h"
 
-#include "gadget_collection.h"
+#include "gadget_manager.h"
 #include "storage/static_storage.h"
 #include "storage/eeprom_storage.h"
 #include "storage/system_storage.h"
@@ -123,7 +123,7 @@ std::shared_ptr<Radio_Gadget> radio_gadget;
 std::shared_ptr<RequestGadget> network_gadget;
 
 // Container to contain all of the gadgets
-Gadget_Collection gadgets;
+GadgetManager gadgets;
 
 // Container to handle all of the incoming ir/radio codes
 CodeCommandBuffer codes;

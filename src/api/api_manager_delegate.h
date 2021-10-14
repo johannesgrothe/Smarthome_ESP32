@@ -13,8 +13,6 @@ public:
 
   virtual void handleGadgetUpdate(GadgetMeta gadget) = 0;
 
-  virtual void handleCode(CodeCommand code) = 0;
-
   virtual void handleEvent(Event event) = 0;
 
   virtual std::string getClientId() = 0;

@@ -22,10 +22,6 @@ public:
     had_gadget_meta = true;
   }
 
-  void handleCode(CodeCommand code) override {
-
-  }
-
   void handleEvent(Event event) override {
 
   }

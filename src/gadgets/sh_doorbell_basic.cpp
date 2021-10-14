@@ -1,6 +1,7 @@
 #include "sh_doorbell_basic.h"
 
 #include <utility>
+#include "../hardware_controller.h"
 
 /**
  * Constructor for the SH_Doorbell_Basic
@@ -17,7 +18,7 @@ SH_Doorbell_Basic::SH_Doorbell_Basic(std::string name, uint8_t pin, bool default
 };
 
 void SH_Doorbell_Basic::refresh() {
-  if (digitalRead(switch_pin_) != default_state_) {
+  if (HardwareController::digitalReadPin(switch_pin_) != default_state_) {
     unsigned long now = HardwareController::getMillis();
     if (now > last_event_ + HW_BOUNCE_DELAY) {
       doorbellTriggered();
