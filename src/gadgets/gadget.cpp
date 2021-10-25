@@ -78,7 +78,7 @@ bool Gadget::handleCharacteristicUpdate(CharacteristicIdentifier characteristic,
 
 bool Gadget::handleEvent(const std::string &event_id) {
   logger_e(getName(), "Handling event '%s'", event_id.c_str());
-  for (mapping_pair event_data: event_mapping_) {
+  for (gadget_event_map event_data: event_mapping_) {
     auto i_event_id = std::get<0>(event_data);
     if (i_event_id == event_id) {
       for (auto characteristic_tuple: std::get<1>(event_data)) {
@@ -92,8 +92,12 @@ bool Gadget::handleEvent(const std::string &event_id) {
   return false;
 }
 
-std::vector<mapping_pair> Gadget::getMapping() const {
+std::vector<gadget_event_map> Gadget::getMapping() const {
   return event_mapping_;
+}
+
+void Gadget::setMapping(std::vector<gadget_event_map> event_mapping) {
+  event_mapping_ = std::move(event_mapping);
 }
 
 std::vector<GadgetCharacteristicSettings> Gadget::getCharacteristics() {

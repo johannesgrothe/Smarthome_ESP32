@@ -17,9 +17,6 @@
 #include "characteristic.h"
 
 
-// Pair for mapping: Maps (Event_ID: [(Characteristic, Step_Value)])
-using mapping_pair = std::tuple<std::string, std::vector<std::tuple<CharacteristicIdentifier, uint16_t>>>;
-
 // List of all Gadget Types
 enum class GadgetType {
   None, Lightbulb, Fan, Doorbell, Wallswitch, Motion_Sensor, Temp_Humm_Sensor
@@ -51,7 +48,7 @@ private:
   std::shared_ptr<Radio_Gadget> radio_gadget_;
 
   // Maps event to characteristic changes that should be performed in response
-  std::vector<mapping_pair> event_mapping_;
+  std::vector<gadget_event_map> event_mapping_;
 
   // All characteristics of the gadget
   std::vector<Characteristic> characteristics_;
@@ -130,7 +127,13 @@ public:
    * Returns the event mapping configuration for the gadget
    * @return The event mapping configuration for the gadget
    */
-  std::vector<mapping_pair> getMapping() const;
+  std::vector<gadget_event_map> getMapping() const;
+
+  /**
+   * Sets the gadget event mapping
+   * @param event_mapping Event mapping data
+   */
+  void setMapping(std::vector<gadget_event_map> event_mapping);
 
   /**
    * Returns all of the characteristics the gadget makes use of

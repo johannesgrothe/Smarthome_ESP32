@@ -2,7 +2,7 @@
 
 #include <utility>
 
-SH_Sensor_Temperature::SH_Sensor_Temperature(std::string name) :
+Sensor_Temperature::Sensor_Temperature(std::string name) :
     Gadget(std::move(name),
            GadgetType::Temp_Humm_Sensor,
            {
@@ -17,14 +17,14 @@ SH_Sensor_Temperature::SH_Sensor_Temperature(std::string name) :
               }
               ) {}
 
-void SH_Sensor_Temperature::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) {
+void Sensor_Temperature::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) {
 
 }
 
-void SH_Sensor_Temperature::setTemperature(int temp) {
+void Sensor_Temperature::setTemperature(int temp) {
   // TODO: set
 }
 
-void SH_Sensor_Temperature::setHumidity(int hum) {
+void Sensor_Temperature::setHumidity(int hum) {
   // TODO: set
 }

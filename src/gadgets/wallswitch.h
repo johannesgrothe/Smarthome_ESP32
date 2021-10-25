@@ -2,7 +2,7 @@
 
 #include "gadget.h"
 
-class SH_Wallswitch: public Gadget {
+class Switch: public Gadget {
 protected:
 
   void switchTriggered();
@@ -10,6 +10,6 @@ protected:
   void executeCharacteristicUpdate(CharacteristicIdentifier, uint16_t) override;
 
 public:
-  explicit SH_Wallswitch(std::string name);
+  explicit Switch(std::string name);
 
 };

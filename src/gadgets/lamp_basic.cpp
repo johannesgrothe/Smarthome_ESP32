@@ -3,7 +3,7 @@
 #include <utility>
 
 Lamp_Basic::Lamp_Basic(std::string name, uint8_t pin) :
-    LampOnOff(std::move(name)),
+    Lamp_OnOff(std::move(name)),
     SimpleHardwareGadget(true),
     pin_(pin) {}
 

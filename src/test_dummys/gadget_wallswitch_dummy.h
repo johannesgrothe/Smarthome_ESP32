@@ -2,7 +2,7 @@
 
 #include "../gadgets/wallswitch.h"
 
-class GadgetWallswitchDummy : public SH_Wallswitch {
+class GadgetWallswitchDummy : public Switch {
 public:
   GadgetWallswitchDummy(std::string name);
 
@@ -10,6 +10,6 @@ public:
 };
 
 GadgetWallswitchDummy::GadgetWallswitchDummy(std::string name):
-  SH_Wallswitch(name) {}
+    Switch(name) {}
 
 void GadgetWallswitchDummy::refresh() {}

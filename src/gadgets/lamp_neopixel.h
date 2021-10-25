@@ -4,7 +4,7 @@
 #include "simple_hardware_gadget.h"
 #include <Adafruit_NeoPixel.h>
 
-class SH_Lamp_NeoPixel : public Lamp_RGB, public SimpleHardwareGadget {
+class Lamp_NeoPixel_RGB : public Lamp_RGB, public SimpleHardwareGadget {
 private:
   uint8_t pin_;
   uint16_t len_;
@@ -16,6 +16,6 @@ protected:
   void executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) override;
 
 public:
-  SH_Lamp_NeoPixel(std::string name, uint8_t pin, uint16_t len);
+  Lamp_NeoPixel_RGB(std::string name, uint8_t pin, uint16_t len);
 
 };

@@ -2,8 +2,8 @@
 
 #include <utility>
 
-SH_Lamp_NeoPixel_Basic::SH_Lamp_NeoPixel_Basic(std::string name, uint8_t pin, uint16_t len) :
-    SH_Lamp_NeoPixel(std::move(name), pin, len) {
+Lamp_NeoPixel_RGB_Basic::Lamp_NeoPixel_RGB_Basic(std::string name, uint8_t pin, uint16_t len) :
+    Lamp_NeoPixel_RGB(std::move(name), pin, len) {
 //    setColor(0, 0, 0xFF);
 //    delay(500);
 //    setColor(0, 0xFF, 0);
@@ -13,7 +13,7 @@ SH_Lamp_NeoPixel_Basic::SH_Lamp_NeoPixel_Basic(std::string name, uint8_t pin, ui
 //    setLEDColor(0, 0, 0);
 }
 
-void SH_Lamp_NeoPixel_Basic::refresh() {
+void Lamp_NeoPixel_RGB_Basic::refresh() {
   if (hasChanged()) {
     logger_i(getName(), "Has changed.");
     uint8_t rgb[3];

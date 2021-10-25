@@ -161,7 +161,7 @@ std::shared_ptr<SystemConfig> EepromStorage::loadSystemConfig() {
 }
 
 std::shared_ptr<GadgetConfig> EepromStorage::loadGadgetConfig() {
-  return nullptr;
+  return nullptr; //TODO: implement
 }
 
 bool EepromStorage::saveGadgetConfig(GadgetConfig config) {

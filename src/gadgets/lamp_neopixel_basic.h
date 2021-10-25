@@ -8,15 +8,15 @@
 #include <avr/power.h>
 #endif
 
-class SH_Lamp_NeoPixel_Basic : public SH_Lamp_NeoPixel {
+class Lamp_NeoPixel_RGB_Basic : public Lamp_NeoPixel_RGB {
 public:
 
-  explicit SH_Lamp_NeoPixel_Basic(std::string name, uint8_t pin, uint16_t len);
+  explicit Lamp_NeoPixel_RGB_Basic(std::string name, uint8_t pin, uint16_t len);
 
   void refresh() override;
 };
 
-static std::shared_ptr<SH_Lamp_NeoPixel_Basic> createSHLampNeoPixelBasic(std::string name, port_set pins, const JsonObject& gadget_data) {
+static std::shared_ptr<Lamp_NeoPixel_RGB_Basic> createSHLampNeoPixelBasic(std::string name, port_set pins, const JsonObject& gadget_data) {
   uint8_t pin = 0;
   uint16_t len = 0;
 
@@ -37,5 +37,5 @@ static std::shared_ptr<SH_Lamp_NeoPixel_Basic> createSHLampNeoPixelBasic(std::st
   logger_i("LampNeopixelBasic", "Pin: %d", pin);
   logger_i("LampNeopixelBasic", "Length: %d", len);
 
-  return std::make_shared<SH_Lamp_NeoPixel_Basic>(name, pin, len);
+  return std::make_shared<Lamp_NeoPixel_RGB_Basic>(name, pin, len);
 }

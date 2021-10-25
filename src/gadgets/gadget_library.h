@@ -51,16 +51,16 @@ static std::shared_ptr<Gadget> createGadgetHelper(GadgetIdentifier gadget_type, 
       return createSHFanWestinghouseIR(name, pins, gadget_config);
 
     case GadgetIdentifier::lamp_westinghouse_ir:
-      return createSHLampWestinghouseIR(name, pins, gadget_config);
+      return create_LampWestinghouseIR(name, pins, gadget_config);
 
     case GadgetIdentifier::wallswitch_basic:
-      return createSHWallswitchBasic(name, pins, gadget_config);
+      return create_SwitchBasic(name, pins, gadget_config);
 
     case GadgetIdentifier::sensor_motion_hr501:
-      return createSHSensorMotionHR501(name, pins, gadget_config);
+      return create_SensorMotionHR501(name, pins, gadget_config);
 
     case GadgetIdentifier::sensor_temperature_dht:
-      return createSHSensorTemperatureDHT(name, pins, gadget_config);
+      return create_SensorTemperatureDHT(name, pins, gadget_config);
 
     default:
       return nullptr;

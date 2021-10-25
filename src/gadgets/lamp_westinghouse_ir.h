@@ -40,18 +40,18 @@ static const uint16_t lamp_off[119] = {1248, 432, 1250, 434, 408, 1298, 382, 130
                                        1298, 382, 1298, 380, 1298,
                                        382, 1298, 382};  // UNKNOWN 94024B86
 
-class SH_Lamp_Westinghouse_IR : public LampOnOff, public SimpleHardwareGadget {
+class Lamp_WestinghouseIR : public Lamp_OnOff, public SimpleHardwareGadget {
 protected:
 
   void executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) override;
 
 public:
 
-  explicit SH_Lamp_Westinghouse_IR(std::string name);
+  explicit Lamp_WestinghouseIR(std::string name);
 
   void refresh() override;
 };
 
-static std::shared_ptr<SH_Lamp_Westinghouse_IR> createSHLampWestinghouseIR(std::string name, port_set pins, const JsonObject& gadget_data) {
-  return std::make_shared<SH_Lamp_Westinghouse_IR>(name);
+static std::shared_ptr<Lamp_WestinghouseIR> create_LampWestinghouseIR(std::string name, port_set pins, const JsonObject& gadget_data) {
+  return std::make_shared<Lamp_WestinghouseIR>(name);
 }

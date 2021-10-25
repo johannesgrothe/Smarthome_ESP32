@@ -33,7 +33,7 @@ uint8_t GadgetManager::getGadgetCount() const {
 }
 
 void GadgetManager::refresh() {
-  for (auto gadget: gadgets_) {
+  for (const auto& gadget: gadgets_) {
     gadget->refresh();
   }
 }

@@ -2,7 +2,7 @@
 
 #include <utility>
 
-bool SH_Lamp_NeoPixel::setLEDColor(uint8_t r, uint8_t g, uint8_t b) {
+bool Lamp_NeoPixel_RGB::setLEDColor(uint8_t r, uint8_t g, uint8_t b) {
   logger_i(getName(), "Setting Color: (%d, %d, %d)", r, g, b);
   for (uint16_t k = 0; k < len_; k++) {
     led_stripe_.setPixelColor(k, Adafruit_NeoPixel::Color(r, g, b));
@@ -11,7 +11,7 @@ bool SH_Lamp_NeoPixel::setLEDColor(uint8_t r, uint8_t g, uint8_t b) {
   return true;
 }
 
-SH_Lamp_NeoPixel::SH_Lamp_NeoPixel(std::string name, uint8_t pin, uint16_t len) :
+Lamp_NeoPixel_RGB::Lamp_NeoPixel_RGB(std::string name, uint8_t pin, uint16_t len) :
     Lamp_RGB(std::move(name)),
     SimpleHardwareGadget(true),
     pin_(pin),
@@ -21,6 +21,6 @@ SH_Lamp_NeoPixel::SH_Lamp_NeoPixel(std::string name, uint8_t pin, uint16_t len) 
   led_stripe_.clear();
 }
 
-void SH_Lamp_NeoPixel::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) {
+void Lamp_NeoPixel_RGB::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) {
   setHWChangeStatus(true);
 }

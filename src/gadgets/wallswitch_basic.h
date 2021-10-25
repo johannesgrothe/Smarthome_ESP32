@@ -2,7 +2,7 @@
 
 #include "wallswitch.h"
 
-class SH_Wallswitch_Basic : public SH_Wallswitch {
+class Switch_Basic : public Switch {
 private:
 
   uint8_t pin_;
@@ -11,13 +11,13 @@ private:
 
 public:
 
-  SH_Wallswitch_Basic(std::string name, uint8_t pin, bool default_state);
+  Switch_Basic(std::string name, uint8_t pin, bool default_state);
 
   void refresh() override;
 };
 
-static std::shared_ptr<SH_Wallswitch_Basic>
-createSHWallswitchBasic(std::string name, port_set pins, const JsonObject &gadget_data) {
+static std::shared_ptr<Switch_Basic>
+create_SwitchBasic(std::string name, port_set pins, const JsonObject &gadget_data) {
   uint8_t pin = 0;
   bool default_state = false;
 
@@ -35,5 +35,5 @@ createSHWallswitchBasic(std::string name, port_set pins, const JsonObject &gadge
   logger_i("WallswitchBasic", "Pin: %d", pin);
   logger_i("WallswitchBasic", "Default State: %d", default_state);
 
-  return std::make_shared<SH_Wallswitch_Basic>(name, pin, default_state);
+  return std::make_shared<Switch_Basic>(name, pin, default_state);
 }

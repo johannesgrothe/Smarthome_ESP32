@@ -2,9 +2,9 @@
 
 #include "gadget.h"
 
-class LampOnOff: public Gadget {
+class Lamp_OnOff: public Gadget {
 public:
-  explicit LampOnOff(std::string name);
+  explicit Lamp_OnOff(std::string name);
 
   /**
    * Checks if the lamp is on or off

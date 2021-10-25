@@ -2,7 +2,7 @@
 
 #include "gadget.h"
 
-class SH_Sensor_Motion : public Gadget {
+class Sensor_Motion : public Gadget {
 private:
   bool sensor_status_;
 
@@ -17,5 +17,5 @@ protected:
   void executeCharacteristicUpdate(CharacteristicIdentifier, uint16_t) override;
 
 public:
-  explicit SH_Sensor_Motion(std::string name);
+  explicit Sensor_Motion(std::string name);
 };

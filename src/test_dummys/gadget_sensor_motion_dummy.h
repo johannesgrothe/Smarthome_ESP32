@@ -4,7 +4,7 @@
 
 #include "../gadgets/sensor_motion.h"
 
-class GadgetSensorMotionDummy : public SH_Sensor_Motion {
+class GadgetSensorMotionDummy : public Sensor_Motion {
 public:
   explicit GadgetSensorMotionDummy(std::string name);
 
@@ -12,6 +12,6 @@ public:
 };
 
 GadgetSensorMotionDummy::GadgetSensorMotionDummy(std::string name):
-  SH_Sensor_Motion(std::move(name)) {}
+    Sensor_Motion(std::move(name)) {}
 
 void GadgetSensorMotionDummy::refresh() {}

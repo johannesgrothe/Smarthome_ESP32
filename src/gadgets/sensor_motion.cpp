@@ -2,11 +2,11 @@
 
 #include <utility>
 
-SH_Sensor_Motion::SH_Sensor_Motion(std::string name) :
+Sensor_Motion::Sensor_Motion(std::string name) :
     Gadget(std::move(name), GadgetType::Motion_Sensor, std::vector<Characteristic>()),
     sensor_status_(false) {}
 
-void SH_Sensor_Motion::setStatus(bool status) {
+void Sensor_Motion::setStatus(bool status) {
   auto sensor_status = getCharacteristicValue(CharacteristicIdentifier::status);
   if (status != sensor_status) {
     setCharacteristicValue(CharacteristicIdentifier::status, (uint16_t) status);
@@ -18,5 +18,5 @@ void SH_Sensor_Motion::setStatus(bool status) {
   }
 }
 
-void SH_Sensor_Motion::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) {
+void Sensor_Motion::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) {
 }

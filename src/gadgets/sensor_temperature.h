@@ -2,7 +2,7 @@
 
 #include "gadget.h"
 
-class SH_Sensor_Temperature : public Gadget {
+class Sensor_Temperature : public Gadget {
 protected:
 
   void executeCharacteristicUpdate(CharacteristicIdentifier, uint16_t) override;
@@ -13,8 +13,8 @@ protected:
 
 public:
   /**
-   * constructor for class SH_Sensor_Temperature
-   * @param gadget
+   * constructor for class Sensor_Temperature
+   * @param name Name for the gadget
    */
-  explicit SH_Sensor_Temperature(std::string name);
+  explicit Sensor_Temperature(std::string name);
 };

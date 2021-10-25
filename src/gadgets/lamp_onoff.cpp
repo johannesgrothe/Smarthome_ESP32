@@ -2,7 +2,7 @@
 
 #include <utility>
 
-LampOnOff::LampOnOff(std::string name) :
+Lamp_OnOff::Lamp_OnOff(std::string name) :
     Gadget(std::move(name),
            GadgetType::Lightbulb,
            {
@@ -12,10 +12,10 @@ LampOnOff::LampOnOff(std::string name) :
                               1,
                               0)}) {}
 
-bool LampOnOff::getStatus() {
+bool Lamp_OnOff::getStatus() {
   return getCharacteristicValue(CharacteristicIdentifier::status) != 0;
 }
 
-void LampOnOff::setStatus(bool status) {
+void Lamp_OnOff::setStatus(bool status) {
   setCharacteristicValue(CharacteristicIdentifier::status, status);
 }

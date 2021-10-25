@@ -8,7 +8,8 @@
 #include "network_loader.h"
 #include "random.h"
 
-ClientMain::ClientMain(BootMode boot_mode, const SystemConfig& system_config, const GadgetConfig& gadget_config, const EventConfig& event_config) :
+ClientMain::ClientMain(BootMode boot_mode, const SystemConfig &system_config, const GadgetConfig &gadget_config,
+                       const EventConfig &event_config) :
     ApiManagerDelegate(),
     runtime_id_(),
     system_mode_(boot_mode),
@@ -116,15 +117,18 @@ bool ClientMain::initGadgets(const GadgetConfig &config) {
 
   auto eeprom_gadgets = config.gadgets;
 
+  auto factory = GadgetFactory(ir_gadget, radio_gadget);
+
   logger_i("System", "Initializing Gadgets: %d", eeprom_gadgets.size());
 
   for (auto gadget: eeprom_gadgets) {
     auto gadget_ident = (GadgetIdentifier) std::get<0>(gadget);
-    auto remote_bf = std::get<1>(gadget);
+//    auto remote_bf = std::get<1>(gadget);
     auto ports = std::get<2>(gadget);
     auto name = std::get<3>(gadget);
     auto gadget_config_str = std::get<4>(gadget);
     auto code_config_str = std::get<5>(gadget);
+    auto event_map = std::get<6>(gadget);
 
     logger_i("System", "Initializing %s", name.c_str());
 
@@ -161,89 +165,19 @@ bool ClientMain::initGadgets(const GadgetConfig &config) {
     }
 
     if (deserialization_ok) {
-      #ifndef UNIT_TEST
       logger_i("System", "Creating Gadget");
-      auto buf_gadget = GadgetFactory::createGadget(gadget_ident, pins, name, gadget_config.as<JsonObject>());
+      auto buf_gadget = factory.createGadget(gadget_ident,
+                                             pins,
+                                             name,
+                                             gadget_config.as<JsonObject>(),
+                                             event_map);
 
       if (buf_gadget != nullptr) {
-        // Gadget Remote
-        if (remote_bf[0]) {
-          logger_i("System", "Linking Gadget Remote");
-
-//          using std::placeholders::_1;
-//          using std::placeholders::_2;
-//          using std::placeholders::_3;
-//
-//          buf_gadget->setGadgetRemoteCallback(std::bind(&updateCharacteristicOnBridge, _1, _2, _3));
-//          buf_gadget->setEventRemoteCallback(std::bind(&updateEventOnBridge, _1, _2));
-        }
-
-        // Code Remote
-        if (remote_bf[1]) {
-          logger_i("System", "Linking Code Remote");
-
-          for (int method_index = 0; method_index < GadgetMethodCount; method_index++) {
-            std::stringstream ss;
-            ss << method_index;
-            std::string method_str = ss.str();
-            if (code_config.containsKey(method_str)) {
-              JsonArray code_arr = code_config[method_str].as<JsonArray>();
-              for (int i = 0; i < code_arr.size(); i++) {
-                unsigned long code = code_arr[i].as<unsigned long>();
-//                buf_gadget->setMethodForCode((GadgetMethod) method_index, code);
-              }
-            }
-          }
-
-//          buf_gadget->printMapping();
-        }
-
-        // Event Remote
-        if (remote_bf[2]) {
-          logger_i("System", "Linking Gadget Remote");
-          // TODO: init event remote on gadgets
-          logger_e("System", "Not Implemented");
-        }
-
-        // IR Gadget
-        bool ir_ok = true;
-        if (GadgetFactory::gadgetRequiresIR(gadget_ident)) {
-          if (ir_gadget != nullptr) {
-            logger_i("System", "Linking IR gadget");
-            buf_gadget->setIR(ir_gadget);
-          } else {
-            logger_e("System", "No IR gadget available");
-            ir_ok = false;
-          }
-        } else {
-          logger_i("System", "No IR required");
-        }
-
-        // Radio
-        // TODO: check when radio is implemented
-        bool radio_ok = true;
-        if (GadgetFactory::gadgetRequiresRadio(gadget_ident)) {
-          if (radio_gadget != nullptr) {
-            logger_i("System", "Linking radio gadget");
-            buf_gadget->setRadio(radio_gadget);
-          } else {
-            logger_i("System", "No radio gadget available");
-            radio_ok = false;
-          }
-        } else {
-          logger_i("System", "No radio required");
-        }
-
-        // Add created gadget to the list
-        if (ir_ok && radio_ok) {
-//          gadgets.addGadget(buf_gadget);
-        } else {
-          logger_i("System", "Gadget initialization failed due to ir/radio problems");
-        }
+        gadget_manager_->addGadget(buf_gadget);
       } else {
         logger_e("System", "Gadget could not be created");
       }
-      #endif
+
     } else {
       logger_e("System", "Error in config deserialization process");
     }
@@ -288,7 +222,7 @@ std::vector<GadgetMeta> ClientMain::getGadgetData() {
   return {};
 }
 
-void ClientMain::setStorageManager(const std::shared_ptr<SystemStorage>& storage) {
+void ClientMain::setStorageManager(const std::shared_ptr<SystemStorage> &storage) {
   system_storage_ = storage;
 }
 

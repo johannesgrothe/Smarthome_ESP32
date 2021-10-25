@@ -2,12 +2,12 @@
 
 #include <utility>
 
-SH_Lamp_Westinghouse_IR::SH_Lamp_Westinghouse_IR(std::string name) :
-    LampOnOff(std::move(name)),
+Lamp_WestinghouseIR::Lamp_WestinghouseIR(std::string name) :
+    Lamp_OnOff(std::move(name)),
     SimpleHardwareGadget(true) {
 }
 
-void SH_Lamp_Westinghouse_IR::refresh() {
+void Lamp_WestinghouseIR::refresh() {
   if (executeHWChange()) {
     if (getCharacteristicValue(CharacteristicIdentifier::status))
       sendRawIR(lamp_on, 143);
@@ -17,6 +17,6 @@ void SH_Lamp_Westinghouse_IR::refresh() {
 }
 
 void
-SH_Lamp_Westinghouse_IR::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) {
+Lamp_WestinghouseIR::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) {
   setHWChangeStatus(true);
 }

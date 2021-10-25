@@ -225,7 +225,7 @@
         <mxCell id="hCL2_98IulEtvZC8iI1a-39" value="SH_Lamp_Basic" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;" parent="1" vertex="1">
           <mxGeometry x="1330" y="1110" width="160" height="34" as="geometry" />
         </mxCell>
-        <mxCell id="hCL2_98IulEtvZC8iI1a-40" value="SH_Lamp_Westinghouse_IR" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;" parent="1" vertex="1">
+        <mxCell id="hCL2_98IulEtvZC8iI1a-40" value="Lamp_WestinghouseIR" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;" parent="1" vertex="1">
           <mxGeometry x="1425" y="1170" width="200" height="34" as="geometry" />
         </mxCell>
         <mxCell id="kVHrbFkbPjneuLtn_41Z-3" value="Connectors" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;shadow=0;glass=0;dashed=1;dashPattern=1 1;comic=0;opacity=60;fontSize=31;fontColor=#FF8000;" parent="1" vertex="1">

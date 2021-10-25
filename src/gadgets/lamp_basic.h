@@ -3,7 +3,7 @@
 #include "lamp_onoff.h"
 #include "simple_hardware_gadget.h"
 
-class Lamp_Basic : public LampOnOff, public SimpleHardwareGadget {
+class Lamp_Basic : public Lamp_OnOff, public SimpleHardwareGadget {
 private:
 
   uint8_t pin_;

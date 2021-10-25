@@ -6,6 +6,7 @@
 #include <string>
 #include "console_logger.h"
 #include "storage/system_storage.h"
+#include "datatypes.h"
 
 // Gadget
 #include "gadgets/gadget.h"
@@ -15,6 +16,7 @@
 #include "gadgets/lamp_neopixel.h"
 #include "gadgets/lamp_neopixel_basic.h"
 #endif
+
 #include "gadgets/lamp_basic.h"
 #include "gadgets/doorbell_basic.h"
 
@@ -39,6 +41,12 @@ static const std::vector<GadgetIdentifier> RADIO_GADGETS = {};
 class GadgetFactory {
 private:
 
+  // IR-Gadget to add to created gadgets if necessary
+  std::shared_ptr<IR_Gadget> ir_;
+
+  // Radio-Gadget to add to created gadgets if necessary
+  std::shared_ptr<Radio_Gadget> radio_;
+
   /**
    * Creates a new gadget out of the given information.
    * The returned gadget may not be successfully initialized.
@@ -49,10 +57,15 @@ private:
    * @param gadget_config Config information for the gadget
    * @return A shared pointer to the gadget
    */
-  static std::shared_ptr <Gadget>
-  createGadgetHelper(GadgetIdentifier gadget_type, port_set pins, const std::string &name, JsonObject gadget_config);
+  static std::shared_ptr<Gadget> createGadgetHelper(GadgetIdentifier gadget_type,
+                                                    port_set pins,
+                                                    const std::string &name,
+                                                    JsonObject gadget_config);
 
 public:
+
+  GadgetFactory(std::shared_ptr<IR_Gadget> ir,
+                std::shared_ptr<Radio_Gadget> radio);
 
   /**
    * Creates a new gadget out of the given information.
@@ -64,8 +77,11 @@ public:
    * @param gadget_config Config information for the gadget
    * @return A shared pointer to the gadget
    */
-  static std::shared_ptr <Gadget>
-  createGadget(GadgetIdentifier gadget_type, port_set pins, const std::string &name, JsonObject gadget_config);
+  std::shared_ptr<Gadget> createGadget(GadgetIdentifier gadget_type,
+                                       port_set pins,
+                                       const std::string &name,
+                                       JsonObject gadget_config,
+                                       std::vector<gadget_event_map> event_mapping);
 
   /**
    * Function that returns whether the gadget requires IR access
