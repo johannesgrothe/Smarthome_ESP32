@@ -1,8 +1,8 @@
 #pragma once
 
-#include "sh_gadget.h"
+#include "gadget.h"
 
-class SH_Sensor_Motion : public SH_Gadget {
+class SH_Sensor_Motion : public Gadget {
 private:
   bool sensor_status_;
 
@@ -14,16 +14,8 @@ protected:
    */
   void setStatus(bool);
 
-  void executeCharacteristicUpdate(CharacteristicIdentifier, int) override;
+  void executeCharacteristicUpdate(CharacteristicIdentifier, uint16_t) override;
 
 public:
-  /**
-   * Constructor for class SH_Sensor_Motion
-   * @param gadget
-   */
   explicit SH_Sensor_Motion(std::string name);
-
-  std::vector<GadgetCharacteristicSettings> getCharacteristics() override;
-
-  void handleMethodUpdate(GadgetMethod) override;
 };

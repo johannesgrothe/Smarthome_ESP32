@@ -219,7 +219,7 @@ void updateCharacteristicOnBridge(const std::string &gadget_name, Characteristic
  */
 void forwardEvent(const std::shared_ptr<Event> &event) {
   for (int i = 0; i < gadgets.getGadgetCount(); i++) {
-    gadgets[i]->handleEvent(event->getSender(), event->getType());
+    gadgets[i]->handleEvent(event->getType());
   }
 }
 

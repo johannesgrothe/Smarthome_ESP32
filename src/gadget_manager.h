@@ -1,24 +1,24 @@
 #pragma once
 
 #include <memory>
-#include "gadgets/sh_gadget.h"
+#include "gadgets/gadget.h"
 #include "system_settings.h"
 
 class GadgetManager {
 private:
 
-  std::vector<std::shared_ptr<SH_Gadget>> gadgets_{};
+  std::vector<std::shared_ptr<Gadget>> gadgets_{};
 
 public:
   GadgetManager();
 
-  bool addGadget(const std::shared_ptr<SH_Gadget>& new_gadget);
+  bool addGadget(const std::shared_ptr<Gadget>& new_gadget);
 
-  std::shared_ptr<SH_Gadget> getGadget(const std::string& gadget_name);
+  std::shared_ptr<Gadget> getGadget(const std::string& gadget_name);
 
-  std::shared_ptr<SH_Gadget> getGadget(uint8_t index) const;
+  std::shared_ptr<Gadget> getGadget(uint8_t index) const;
 
-  std::shared_ptr<SH_Gadget> operator[](int index) const;
+  std::shared_ptr<Gadget> operator[](int index) const;
 
   uint8_t getGadgetCount() const;
 

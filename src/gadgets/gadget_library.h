@@ -7,12 +7,12 @@
 #include "storage/system_storage.h"
 
 // Gadget
-#include "sh_gadget.h"
+#include "gadget.h"
 
 //Lamps
 #include "sh_lamp_neopixel.h"
 #include "sh_lamp_neopixel_basic.h"
-#include "sh_lamp_basic.h"
+#include "lamp_basic.h"
 #include "sh_doorbell_basic.h"
 
 //Fan
@@ -36,7 +36,7 @@
  * @param gadget_config Config information for the gadget
  * @return A shared pointer to the gadget
  */
-static std::shared_ptr<SH_Gadget> createGadgetHelper(GadgetIdentifier gadget_type, port_set pins, const std::string& name, JsonObject gadget_config) {
+static std::shared_ptr<Gadget> createGadgetHelper(GadgetIdentifier gadget_type, port_set pins, const std::string& name, JsonObject gadget_config) {
   switch (gadget_type) {
     case GadgetIdentifier::doorbell_basic:
       return createSHDoorbellBasic(name, pins, gadget_config);
@@ -77,7 +77,7 @@ static std::shared_ptr<SH_Gadget> createGadgetHelper(GadgetIdentifier gadget_typ
  * @param gadget_config Config information for the gadget
  * @return A shared pointer to the gadget
  */
-static std::shared_ptr<SH_Gadget> createGadget(GadgetIdentifier gadget_type, port_set pins, const std::string& name, JsonObject gadget_config) {
+static std::shared_ptr<Gadget> createGadget(GadgetIdentifier gadget_type, port_set pins, const std::string& name, JsonObject gadget_config) {
   auto buf_gadget = createGadgetHelper(gadget_type, pins, name, gadget_config);
   if (buf_gadget != nullptr && !buf_gadget->hasInitError()) {
     return buf_gadget;

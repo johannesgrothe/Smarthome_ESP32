@@ -1,14 +1,14 @@
 #pragma once
 
-#include "sh_gadget.h"
+#include "gadget.h"
 
 /**
  * Class that implements a simple doorbell
  */
-class SH_Doorbell : public SH_Gadget {
+class SH_Doorbell : public Gadget {
 protected:
 
-  void executeCharacteristicUpdate(CharacteristicIdentifier characteristic, int value) override;
+  void executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) override;
 
 public:
 
@@ -18,8 +18,4 @@ public:
    * Registeres a triggered doorbell and updates remote
    */
   void doorbellTriggered();
-
-  std::vector<GadgetCharacteristicSettings> getCharacteristics() override;
-
-  void handleMethodUpdate(GadgetMethod method) override;
 };

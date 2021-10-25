@@ -1,10 +1,10 @@
 #pragma once
 
-#include "sh_lamp.h"
+#include "lamp_rgb.h"
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 
-class SH_Lamp_NeoPixel : public SH_Lamp {
+class SH_Lamp_NeoPixel : public Lamp_RGB {
 private:
   uint8_t pin_;
   uint16_t len_;

@@ -1,6 +1,6 @@
 #include "gadget_factory.h"
 
-std::shared_ptr<SH_Gadget>
+std::shared_ptr<Gadget>
 GadgetFactory::createGadgetHelper(GadgetIdentifier gadget_type, port_set pins, const std::string &name,
                                   JsonObject gadget_config) {
   switch (gadget_type) {
@@ -37,7 +37,7 @@ GadgetFactory::createGadgetHelper(GadgetIdentifier gadget_type, port_set pins, c
   }
 }
 
-std::shared_ptr<SH_Gadget>
+std::shared_ptr<Gadget>
 GadgetFactory::createGadget(GadgetIdentifier gadget_type, port_set pins, const std::string &name,
                             JsonObject gadget_config) {
   auto buf_gadget = createGadgetHelper(gadget_type, pins, name, gadget_config);

@@ -8,5 +8,5 @@ TEST_CASE("Test Gadget", "[Gadget]") {
   CHECK(!gadget.hasInitError());
   CHECK(gadget.getName() == "homer");
   CHECK(gadget.getType() == GadgetType::Lightbulb);
-  gadget.handleCodeUpdate(3234234552);
+//  gadget.handleCodeUpdate(3234234552);
 }

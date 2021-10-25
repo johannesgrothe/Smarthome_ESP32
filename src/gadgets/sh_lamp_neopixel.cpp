@@ -14,9 +14,9 @@ bool SH_Lamp_NeoPixel::setLEDColor(uint8_t r, uint8_t g, uint8_t b) {
 }
 
 SH_Lamp_NeoPixel::SH_Lamp_NeoPixel(std::string name, SHLampType type, uint8_t pin, uint16_t len) :
-  SH_Lamp(std::move(name), type),
-  pin_(pin),
-  len_(len) {
+    Lamp_RGB(std::move(name)),
+    pin_(pin),
+    len_(len) {
   led_stripe_ = Adafruit_NeoPixel(len_, pin_, NEO_GRB + NEO_KHZ800);
   led_stripe_.begin();
   led_stripe_.clear();

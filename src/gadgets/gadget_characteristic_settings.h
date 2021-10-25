@@ -4,16 +4,16 @@
 
 class GadgetCharacteristicSettings {
 public:
-  const CharacteristicIdentifier characteristic;
+  const CharacteristicIdentifier type;
   const int min;
   const int max;
-  const int step;
-  const long value;
+  const int steps;
+  const long step_value;
 
   GadgetCharacteristicSettings(CharacteristicIdentifier characteristic, int min, int max, int step, long value):
-  characteristic(characteristic),
-  min(min),
-  max(max),
-  step(step),
-  value(value) {}
+      type(characteristic),
+      min(min),
+      max(max),
+      steps(step),
+      step_value(value) {}
 };

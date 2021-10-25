@@ -13,6 +13,6 @@ TEST_CASE("Test Motion Sensor", "[Gadget]") {
 
   SECTION("Test Status") {
     auto status = characteristics[0];
-    CHECK(status.characteristic == CharacteristicIdentifier::status);
+    CHECK(status.type == CharacteristicIdentifier::status);
   }
 }

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "sh_lamp.h"
+#include "lamp_onoff.h"
+#include "simple_hardware_gadget.h"
 
 // UNKNOWN 19496A87
 static const uint16_t lamp_on[143] = {1246, 434, 1248, 432, 408, 1300, 382, 1300, 380, 1298, 384, 1296, 382,
@@ -39,8 +40,10 @@ static const uint16_t lamp_off[119] = {1248, 432, 1250, 434, 408, 1298, 382, 130
                                        1298, 382, 1298, 380, 1298,
                                        382, 1298, 382};  // UNKNOWN 94024B86
 
-class SH_Lamp_Westinghouse_IR : public SH_Lamp {
+class SH_Lamp_Westinghouse_IR : public LampOnOff, public SimpleHardwareGadget {
 protected:
+
+  void executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) override;
 
 public:
 

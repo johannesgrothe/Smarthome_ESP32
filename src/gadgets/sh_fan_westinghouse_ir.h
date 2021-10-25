@@ -36,7 +36,7 @@ protected:
 
 public:
 
-  explicit SH_Fan_Westinghouse_IR(std::string name);
+  explicit SH_Fan_Westinghouse_IR(const std::string& name);
 
   void refresh() override;
 };

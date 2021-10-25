@@ -1,11 +1,11 @@
 #include "sh_fan_westinghouse_ir.h"
 
-SH_Fan_Westinghouse_IR::SH_Fan_Westinghouse_IR(std::string name) :
-  SH_Fan(std::move(name), 3) {};
+SH_Fan_Westinghouse_IR::SH_Fan_Westinghouse_IR(const std::string& name) :
+  SH_Fan(name, 3) {};
 
 void SH_Fan_Westinghouse_IR::refresh() {
-  if (gadgetHasChanged()) {
-    uint8_t level = getLevel();
+  if (executeHWChange()) {
+    auto level = getCharacteristicValue(CharacteristicIdentifier::fanSpeed);
 
     logger_i(getName(), "Has changed: %d", level);
     if (level == 0) {

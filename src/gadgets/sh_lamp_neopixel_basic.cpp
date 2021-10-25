@@ -14,7 +14,7 @@ SH_Lamp_NeoPixel_Basic::SH_Lamp_NeoPixel_Basic(std::string name, uint8_t pin, ui
 }
 
 void SH_Lamp_NeoPixel_Basic::refresh() {
-  if (gadgetHasChanged()) {
+  if (hasChanged()) {
     logger_i(getName(), "Has changed.");
     uint8_t rgb[3];
     getColor(&rgb[0]);

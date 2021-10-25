@@ -1,15 +1,21 @@
 #pragma once
 
-#include "../gadgets/sh_lamp.h"
+#include <utility>
 
-class DummyLamp : public SH_Lamp {
+#include "../gadgets/lamp_rgb.h"
+
+class DummyLamp : public Lamp_RGB {
 public:
-  DummyLamp(std::string name, SHLampType lamp_type);
+  explicit DummyLamp(std::string name);
 
-  void refresh();
+  void refresh() final;
+
+  void executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) final;
 };
 
-DummyLamp::DummyLamp(std::string name, SHLampType lamp_type):
-  SH_Lamp(name, lamp_type) {}
+DummyLamp::DummyLamp(std::string name) :
+    Lamp_RGB(std::move(name)) {}
 
 void DummyLamp::refresh(){}
+
+void DummyLamp::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) {}

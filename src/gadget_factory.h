@@ -8,14 +8,14 @@
 #include "storage/system_storage.h"
 
 // Gadget
-#include "gadgets/sh_gadget.h"
+#include "gadgets/gadget.h"
 
 //Lamps
 #ifndef UNIT_TEST
 #include "gadgets/sh_lamp_neopixel.h"
 #include "gadgets/sh_lamp_neopixel_basic.h"
 #endif
-#include "gadgets/sh_lamp_basic.h"
+#include "gadgets/lamp_basic.h"
 #include "gadgets/sh_doorbell_basic.h"
 
 //Fan
@@ -49,7 +49,7 @@ private:
    * @param gadget_config Config information for the gadget
    * @return A shared pointer to the gadget
    */
-  static std::shared_ptr <SH_Gadget>
+  static std::shared_ptr <Gadget>
   createGadgetHelper(GadgetIdentifier gadget_type, port_set pins, const std::string &name, JsonObject gadget_config);
 
 public:
@@ -64,7 +64,7 @@ public:
    * @param gadget_config Config information for the gadget
    * @return A shared pointer to the gadget
    */
-  static std::shared_ptr <SH_Gadget>
+  static std::shared_ptr <Gadget>
   createGadget(GadgetIdentifier gadget_type, port_set pins, const std::string &name, JsonObject gadget_config);
 
   /**

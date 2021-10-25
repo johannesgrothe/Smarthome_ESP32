@@ -1,18 +1,15 @@
 #pragma once
 
-#include "sh_gadget.h"
+#include "gadget.h"
 
-class SH_Wallswitch: public SH_Gadget {
+class SH_Wallswitch: public Gadget {
 protected:
 
   void switchTriggered();
 
-  void executeCharacteristicUpdate(CharacteristicIdentifier, int) override;
+  void executeCharacteristicUpdate(CharacteristicIdentifier, uint16_t) override;
 
 public:
   explicit SH_Wallswitch(std::string name);
 
-  std::vector<GadgetCharacteristicSettings> getCharacteristics() override;
-
-  void handleMethodUpdate(GadgetMethod) override;
 };

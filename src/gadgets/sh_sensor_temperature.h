@@ -1,26 +1,11 @@
 #pragma once
 
-#include "sh_gadget.h"
+#include "gadget.h"
 
-class SH_Sensor_Temperature : public SH_Gadget {
-private:
-  int humidity_;
-  int temperature_;
-
+class SH_Sensor_Temperature : public Gadget {
 protected:
-  /**
-   * method sets the Humidity and updates Remote
-   * @param hummiditiy
-   */
-  void setHumidity(int new_humiditiy);
 
-  /**
-   * method sets the Temperature and updates Remote
-   * @param temperature
-   */
-  void setTemperature(int new_temperature);
-
-  void executeCharacteristicUpdate(CharacteristicIdentifier, int) override;
+  void executeCharacteristicUpdate(CharacteristicIdentifier, uint16_t) override;
 
 public:
   /**
@@ -29,19 +14,4 @@ public:
    */
   explicit SH_Sensor_Temperature(std::string name);
 
-  /**
-   * method to return humidity
-   * @return hummidity
-   */
-  int getHumidity() const;
-
-  /**
-   * method returns temperature
-   * @return temperature
-   */
-  int getTemperature() const;
-
-  std::vector<GadgetCharacteristicSettings> getCharacteristics() override;
-
-  void handleMethodUpdate(GadgetMethod) override;
 };

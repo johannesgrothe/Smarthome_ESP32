@@ -3,11 +3,11 @@
 #include "../src/connectors/event.h"
 
 TEST_CASE("Test Event", "[Event]") {
-  Event event("spongo", 7948573847, EventType::StatusOn);
+  Event event("rem_1_off", "spongo", 79485737);
 
   SECTION("Test Constructor") {
-    CHECK(event.getSender() == "spongo");
-    CHECK(event.getType() == EventType::StatusOn);
-    CHECK(event.getTimestamp() == 7948573847);
+    CHECK(event.name == "rem_1_off");
+    CHECK(event.sender == "spongo");
+    CHECK(event.timestamp == 79485737);
   }
 }

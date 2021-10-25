@@ -15,7 +15,7 @@ FetchContent_MakeAvailable(ArduinoJson)
 
 set(ADDITIONAL_SOURCES
         ../src/connectors/request.cpp
-        ../src/gadgets/sh_gadget.cpp
+        ../src/gadgets/gadget.cpp
         ../src/connectors/ir_gadget.cpp
         ../src/connectors/code_gadget.cpp
         ../src/connectors/code_command.cpp
@@ -23,7 +23,7 @@ set(ADDITIONAL_SOURCES
         ../src/connectors/event.cpp
         ../src/color.cpp
         ../src/mapping_reference.cpp
-        ../src/gadgets/sh_lamp.cpp
+        ../src/gadgets/lamp_rgb.cpp
         ../src/gadgets/sh_fan.cpp
         ../src/gadgets/sh_doorbell.cpp
         ../src/gadgets/sh_sensor_motion.cpp
@@ -57,11 +57,14 @@ set(ADDITIONAL_SOURCES
         ../src/gadget_manager.cpp
         ../src/event_manager.cpp
         ../src/gadget_factory.cpp
-        ../src/gadgets/sh_lamp_basic.cpp
+        ../src/gadgets/lamp_basic.cpp
         ../src/gadgets/sh_doorbell_basic.cpp
         ../src/gadgets/sh_wallswitch_basic.cpp
         ../src/gadgets/sh_fan_westinghouse_ir.cpp
         ../src/gadgets/sh_lamp_westinghouse_ir.cpp
+        ../src/gadgets/characteristic.cpp
+        ../src/gadgets/simple_hardware_gadget.cpp
+        ../src/gadgets/lamp_onoff.cpp
         )
 
 set(TEST_SOURCES)
