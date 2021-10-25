@@ -242,10 +242,10 @@ public:
    * @param gadget_type The type of the gadget
    * @param name The name of the gadget
    * @param gadget_json The general gadget config
-   * @param code_json The code-mapping config
+   * @param mapping_data The code-mapping config
    * @return whether writing was successful
    */
-  static WriteGadgetStatus writeNewGadget(uint8_t gadget_type, bitfield_set config_bf, port_set ports, const std::string& name, const std::string& gadget_json, const std::string& code_json);
+  static WriteGadgetStatus writeNewGadget(uint8_t gadget_type, bitfield_set config_bf, port_set ports, const std::string& name, const std::string& gadget_json, const std::string& mapping_data);
 
   /**
    * Returns the index for an specific gadget name or -1 it name was not found.
@@ -287,10 +287,10 @@ public:
    * @param gadget_type the gadget-type
    * @param name the name of the gadget
    * @param gadget_json the general gadget config
-   * @param code_json the code-mapping config
+   * @param mapping_data the code-mapping config
    * @return whether writing was successful
    */
-  static WriteGadgetStatus writeGadget(uint8_t gadget_type, bitfield_set config_bf, port_set ports, const std::string& name, const std::string& gadget_json, const std::string& code_json);
+  static WriteGadgetStatus writeGadget(uint8_t gadget_type, bitfield_set config_bf, port_set ports, const std::string& name, const std::string& gadget_json, const std::vector<gadget_event_map>& mapping_data);
 
   /**
    * Deletes the gadget with the selected index and moves all other gadgets up

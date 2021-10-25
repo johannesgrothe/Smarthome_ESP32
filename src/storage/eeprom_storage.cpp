@@ -161,7 +161,8 @@ std::shared_ptr<SystemConfig> EepromStorage::loadSystemConfig() {
 }
 
 std::shared_ptr<GadgetConfig> EepromStorage::loadGadgetConfig() {
-  return nullptr; //TODO: implement
+  auto gadget_data = EepromManager::readAllGadgets();
+  return std::make_shared<GadgetConfig>(gadget_data);
 }
 
 bool EepromStorage::saveGadgetConfig(GadgetConfig config) {
@@ -176,9 +177,9 @@ bool EepromStorage::saveGadgetConfig(GadgetConfig config) {
     port_set ports = std::get<2>(gadget_data);
     std::string name = std::get<3>(gadget_data);
     std::string gadget_config = std::get<4>(gadget_data);
-    std::string code_config = std::get<5>(gadget_data);
+    std::vector<gadget_event_map> event_map = std::get<5>(gadget_data);
 
-    auto status = EepromManager::writeGadget(type, bitfield, ports, name, gadget_config, code_config);
+    auto status = EepromManager::writeGadget(type, bitfield, ports, name, gadget_config, event_map);
     if (status != WriteGadgetStatus::WritingOK) {
       write_successful = false;
     }

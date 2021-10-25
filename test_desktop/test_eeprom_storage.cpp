@@ -18,7 +18,8 @@ TEST_CASE("Test EEPROM Storage", "[Storage]") {
 
   SECTION("Test empty eeprom: Gadget Config") {
     auto cfg = storage.loadGadgetConfig();
-    CHECK(cfg == nullptr);
+    CHECK(cfg != nullptr);
+    CHECK(cfg->gadgets.empty());
   }
 
   SECTION("Test empty eeprom: Event Config") {
@@ -47,6 +48,26 @@ TEST_CASE("Test EEPROM Storage", "[Storage]") {
     auto res = storage.saveSystemConfig(cfg);
     CHECK(res == true);
     auto loaded_config = storage.loadSystemConfig();
+    CHECK(loaded_config != nullptr);
+    CHECK(cfg == *loaded_config);
+  }
+
+  SECTION("Test writing and loading gadget config") {
+    std::vector<gadget_event_map> mapping = {{"yolo", {{2, 44}, {6, 77}}}, {"yolo2", {{3, 77}, {7, 44}}}};
+    gadget_tuple gadget1(2,
+                         {false, false, false, false, false, false, false, false},
+                         {2, 4, 0, 0, 0},
+                         "gadget1",
+                         "",
+                         mapping);
+    GadgetConfig cfg({gadget1});
+
+    auto c = cfg.crc16();
+    logger_i("EEPROM_Test", "New config checksum: %d", c);
+
+    auto res = storage.saveGadgetConfig(cfg);
+    CHECK(res == true);
+    auto loaded_config = storage.loadGadgetConfig();
     CHECK(loaded_config != nullptr);
     CHECK(cfg == *loaded_config);
   }

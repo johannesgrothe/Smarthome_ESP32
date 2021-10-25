@@ -66,6 +66,7 @@ set(ADDITIONAL_SOURCES
         ../src/gadgets/simple_hardware_gadget.cpp
         ../src/gadgets/lamp_onoff.cpp
         ../src/connectors/radio_gadget.cpp
+        ../src/storage/eeprom_gadget_mapping_coder.cpp
         )
 
 set(TEST_SOURCES)

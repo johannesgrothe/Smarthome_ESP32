@@ -127,8 +127,7 @@ bool ClientMain::initGadgets(const GadgetConfig &config) {
     auto ports = std::get<2>(gadget);
     auto name = std::get<3>(gadget);
     auto gadget_config_str = std::get<4>(gadget);
-    auto code_config_str = std::get<5>(gadget);
-    auto event_map = std::get<6>(gadget);
+    auto event_map = std::get<5>(gadget);
 
     logger_i("System", "Initializing %s", name.c_str());
 
@@ -152,13 +151,6 @@ bool ClientMain::initGadgets(const GadgetConfig &config) {
 
     if (!gadget_config_str.empty()) {
       err = deserializeJson(gadget_config, gadget_config_str);
-      if (err != DeserializationError::Ok) {
-        deserialization_ok = false;
-      }
-    }
-
-    if (!gadget_config_str.empty()) {
-      err = deserializeJson(code_config, code_config_str);
       if (err != DeserializationError::Ok) {
         deserialization_ok = false;
       }

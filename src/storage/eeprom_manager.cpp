@@ -1,5 +1,7 @@
 #include "eeprom_manager.h"
 
+#include "eeprom_gadget_mapping_coder.h"
+
 uint8_t EepromManager::calculateNewContentFlag(uint8_t index, bool new_value, uint8_t bitfield) {
   auto content_flag = bitfield;
   auto mask = (unsigned int) pow(2, index);
@@ -131,7 +133,7 @@ bool EepromManager::setGadgetMemoryEnd(uint8_t gadget_nr, uint16_t mem_end) {
 
 WriteGadgetStatus
 EepromManager::writeNewGadget(uint8_t gadget_type, bitfield_set config_bf, port_set ports, const std::string &name,
-                              const std::string &gadget_json, const std::string &code_json) {
+                              const std::string &gadget_json, const std::string &mapping_data) {
 
   // Check if updating gadget is possible
   uint8_t gadget_index = getGadgetCount();
@@ -178,17 +180,17 @@ EepromManager::writeNewGadget(uint8_t gadget_type, bitfield_set config_bf, port_
   // Length of the gadget config json
   uint16_t g_config_len = gadget_json.length();
   // Length of the gadget code json
-  uint16_t g_code_len = code_json.length();
+  uint16_t g_mapping_len = mapping_data.length();
 
   // Position the gadget name starts at
   uint16_t name_start = g_start_addr + GADGET_NAME_POS;
   // Position the gadget config json starts at
   uint16_t config_start = name_start + g_name_len + 1;
   // Position the gadget code json starts at
-  uint16_t code_start = config_start + g_config_len + 1;
+  uint16_t mapping_start = config_start + g_config_len + 1;
 
   // Complete length of the gadget config
-  uint16_t complete_len = (code_start + g_code_len + 1) - g_start_addr;
+  uint16_t complete_len = (mapping_start + g_mapping_len + 1) - g_start_addr;
   // Last storage index of the gadget
   uint16_t end_index = g_start_addr + complete_len;
 
@@ -223,7 +225,7 @@ EepromManager::writeNewGadget(uint8_t gadget_type, bitfield_set config_bf, port_
   // Write the config json
   success = success && writeString(config_start, g_config_len, gadget_json);
   // Write the code json
-  success = success && writeString(code_start, g_code_len, code_json);
+  success = success && writeString(mapping_start, g_mapping_len, mapping_data);
 
   if (!success) {
     logger_e("EepromManager", "Cannot save gadget: error writing content");
@@ -258,11 +260,22 @@ gadget_tuple EepromManager::readGadget(uint8_t gadget_index) {
   auto addr_end = getGadgetMemoryEnd(gadget_index);
   auto stored_gadgets = readUInt8(GADGET_COUNT_POS);
 
-  port_set pins = {0, 0, 0, 0, 0};
-  bitfield_set remote_bf = {false, false, false, false, false, false, false, false};
+  port_set pins = {0,
+                   0,
+                   0,
+                   0,
+                   0};
+  bitfield_set remote_bf = {false,
+                            false,
+                            false,
+                            false,
+                            false,
+                            false,
+                            false,
+                            false};
 
   if (!addr || !addr_end || gadget_index >= stored_gadgets) {
-    return gadget_tuple(0, remote_bf, pins, "", "", "");
+    return {0, remote_bf, pins, "", "", {}};
   }
 
   auto config_bf = readUInt8(addr + GADGET_BF_POS);
@@ -276,7 +289,9 @@ gadget_tuple EepromManager::readGadget(uint8_t gadget_index) {
 
   auto gadget_name = readString(name_start, gadget_name_len);
   auto gadget_json = readString(config_start, gadget_json_len);
-  auto code_json = readString(code_start, addr_end);
+  auto mapping_string = readString(code_start, addr_end);
+
+  std::vector<gadget_event_map> mapping_data = EepromGadgetMappingCoder::decodeMapping(mapping_string);
 
   for (uint8_t i = 0; i < GADGET_PIN_BLOCK_LEN; i++) {
     pins[i] = readUInt8(addr + GADGET_PIN_BLOCK_POS + i);
@@ -286,7 +301,7 @@ gadget_tuple EepromManager::readGadget(uint8_t gadget_index) {
     remote_bf[i] = getValueFromContentFlag(i, config_bf);
   }
 
-  return gadget_tuple(gadget_type, remote_bf, pins, gadget_name, gadget_json, code_json);
+  return {gadget_type, remote_bf, pins, gadget_name, gadget_json, mapping_data};
 }
 
 std::vector<uint8_t> EepromManager::readAllGadgetPorts() {
@@ -323,9 +338,12 @@ std::vector<gadget_tuple> EepromManager::readAllGadgets() {
   return gadgets;
 }
 
-WriteGadgetStatus
-EepromManager::writeGadget(uint8_t gadget_type, bitfield_set config_bf, port_set ports, const std::string &name,
-                           const std::string &gadget_json, const std::string &code_json) {
+WriteGadgetStatus EepromManager::writeGadget(uint8_t gadget_type,
+                                             bitfield_set config_bf,
+                                             port_set ports,
+                                             const std::string &name,
+                                             const std::string &gadget_json,
+                                             const std::vector<gadget_event_map> &mapping_data) {
 
   if (gadget_type >= GadgetIdentifierCount) {
     logger_e("EepromManager", "Unknown gadget identifier '%d'", gadget_type);
@@ -352,15 +370,6 @@ EepromManager::writeGadget(uint8_t gadget_type, bitfield_set config_bf, port_set
     }
   }
 
-  // Check code config
-  if (!code_json.empty()) {
-    auto err = deserializeJson(buf_doc, code_json);
-    if (err != DeserializationError::Ok) {
-      logger_e("EepromManager", "Cannot save gadget: received faulty code config");
-      return WriteGadgetStatus::FaultyCodeConfig;
-    }
-  }
-
   // Check if updating gadget is possible
   int index = getGadgetIndexForName(name);
 
@@ -370,7 +379,9 @@ EepromManager::writeGadget(uint8_t gadget_type, bitfield_set config_bf, port_set
     }
   }
 
-  return writeNewGadget(gadget_type, config_bf, ports, name, gadget_json, code_json);
+  std::string string_mapping_data = EepromGadgetMappingCoder::encodeMapping(mapping_data);
+
+  return writeNewGadget(gadget_type, config_bf, ports, name, gadget_json, string_mapping_data);
 }
 
 bool EepromManager::deleteGadget(uint8_t gadget_index) {
@@ -672,6 +683,7 @@ bool EepromManager::initEEPROM() {
 }
 
 std::vector<event_map> EepromManager::readEventMapping() {
+  // TODO: use encoder
   std::vector<event_map> event_vector;
   auto event_map_str = readString(EVENT_MAPPING_START, EVENT_MAPPING_MAX_LEN);
   std::stringstream map_stream;
@@ -717,7 +729,8 @@ std::vector<event_map> EepromManager::readEventMapping() {
   return event_vector;
 }
 
-bool EepromManager::writeEventMapping(const std::vector<event_map>& events) {
+bool EepromManager::writeEventMapping(const std::vector<event_map> &events) {
+  // TODO: Use encoder
   std::stringstream sstr;
   for (auto event: events) {
     auto name = std::get<0>(event);

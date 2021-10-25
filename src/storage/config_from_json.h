@@ -46,14 +46,14 @@ static gadget_tuple getGadgetDataFromJson(DynamicJsonDocument json_body) {
   port_set pins = {port0, port1, port2, port3, port4};
 
   std::string gadget_config;
-  std::string code_config;
+//  std::string code_config;
 
   if (json_body.containsKey("config")) {
     gadget_config = json_body["config"].as<std::string>();
   }
-  if (json_body.containsKey("codes")) {
-    code_config = json_body["codes"].as<std::string>();
-  }
+//  if (json_body.containsKey("codes")) {
+//    code_config = json_body["codes"].as<std::string>();
+//  }
 
   // Create bitfield
   bitfield_set remote_bf = {false, false, false, false, false, false, false, false};
@@ -71,7 +71,7 @@ static gadget_tuple getGadgetDataFromJson(DynamicJsonDocument json_body) {
     }
   }
 
-  return gadget_tuple(type, remote_bf, pins, name, gadget_config, code_config);
+  return gadget_tuple(type, remote_bf, pins, name, gadget_config, {});
 }
 
 /**
