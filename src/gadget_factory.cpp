@@ -33,10 +33,10 @@ std::shared_ptr<Gadget> GadgetFactory::createGadgetHelper(GadgetIdentifier gadge
 
       #ifndef UNIT_TEST
       case GadgetIdentifier::sensor_motion_hr501:
-        return createSHSensorMotionHR501(name, pins, gadget_config);
+        return create_SensorMotionHR501(name, pins, gadget_config);
 
       case GadgetIdentifier::sensor_temperature_dht:
-        return createSHSensorTemperatureDHT(name, pins, gadget_config);
+        return create_SensorTemperatureDHT(name, pins, gadget_config);
       #endif
 
     default:

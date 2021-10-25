@@ -275,7 +275,7 @@ gadget_tuple EepromManager::readGadget(uint8_t gadget_index) {
                             false};
 
   if (!addr || !addr_end || gadget_index >= stored_gadgets) {
-    return {0, remote_bf, pins, "", "", {}};
+    return gadget_tuple(0, remote_bf, pins, "", "", {});
   }
 
   auto config_bf = readUInt8(addr + GADGET_BF_POS);
@@ -301,7 +301,7 @@ gadget_tuple EepromManager::readGadget(uint8_t gadget_index) {
     remote_bf[i] = getValueFromContentFlag(i, config_bf);
   }
 
-  return {gadget_type, remote_bf, pins, gadget_name, gadget_json, mapping_data};
+  return gadget_tuple(gadget_type, remote_bf, pins, gadget_name, gadget_json, mapping_data);
 }
 
 std::vector<uint8_t> EepromManager::readAllGadgetPorts() {

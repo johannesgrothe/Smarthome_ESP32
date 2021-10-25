@@ -81,5 +81,5 @@ gadget_event_map EepromGadgetMappingCoder::decodeMappingPart(const std::string &
       buf_strm << c;
     }
   }
-  return {name, out_data};
+  return gadget_event_map(name, out_data);
 }

@@ -788,12 +788,12 @@ bool initGadgets() {
       }
     }
 
-    if (!gadget_config_str.empty()) {
-      err = deserializeJson(code_config, code_config_str);
-      if (err != DeserializationError::Ok) {
-        deserialization_ok = false;
-      }
-    }
+//    if (!gadget_config_str.empty()) {
+//      err = deserializeJson(code_config, code_config_str);
+//      if (err != DeserializationError::Ok) {
+//        deserialization_ok = false;
+//      }
+//    }
 
     if (deserialization_ok) {
       logger_i("System", "Creating Gadget");
