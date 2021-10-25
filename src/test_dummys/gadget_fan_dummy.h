@@ -1,15 +1,19 @@
 #pragma once
 
-#include "../gadgets/sh_fan.h"
+#include "../gadgets/fan.h"
 
-class GadgetFanDummy : public SH_Fan {
+class GadgetFanDummy : public Fan {
 public:
-  GadgetFanDummy(std::string name, uint8_t levels_count);
+  GadgetFanDummy(const std::string& name, uint8_t levels_count);
 
-  void refresh();
+  void refresh() final;
+
+  void executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) final;
 };
 
-GadgetFanDummy::GadgetFanDummy(std::string name, uint8_t levels_count):
-  SH_Fan(name, levels_count) {}
+GadgetFanDummy::GadgetFanDummy(const std::string& name, uint8_t levels_count):
+    Fan(name, levels_count) {}
 
 void GadgetFanDummy::refresh() {}
+
+void GadgetFanDummy::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) {}

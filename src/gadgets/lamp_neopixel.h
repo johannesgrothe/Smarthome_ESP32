@@ -1,0 +1,21 @@
+#pragma once
+
+#include "lamp_rgb.h"
+#include "simple_hardware_gadget.h"
+#include <Adafruit_NeoPixel.h>
+
+class SH_Lamp_NeoPixel : public Lamp_RGB, public SimpleHardwareGadget {
+private:
+  uint8_t pin_;
+  uint16_t len_;
+  Adafruit_NeoPixel led_stripe_;
+
+protected:
+  bool setLEDColor(uint8_t, uint8_t, uint8_t);
+
+  void executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) override;
+
+public:
+  SH_Lamp_NeoPixel(std::string name, uint8_t pin, uint16_t len);
+
+};

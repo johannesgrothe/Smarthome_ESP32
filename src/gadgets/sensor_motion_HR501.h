@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sh_sensor_motion.h"
+#include "sensor_motion.h"
 
 class SH_Sensor_Motion_HR501 : public SH_Sensor_Motion {
 private:

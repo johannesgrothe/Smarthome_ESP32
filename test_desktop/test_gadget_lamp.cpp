@@ -4,13 +4,26 @@
 #include "../src/test_dummys/gadget_lamp_dummy.h"
 
 TEST_CASE("Test Lamp", "[Gadget]") {
-  uint8_t buffer[3];
-  uint8_t r = 0;
-  uint8_t g = 1;
-  uint8_t b = 2;
-  DummyLamp lamp("spongo");
-  CHECK(lamp.getType() == GadgetType::Lightbulb);
-  CHECK(lamp.getName() == "spongo");
+  DummyLampRGB lamp("spongo");
+
+  SECTION("Test Attributes") {
+    CHECK(lamp.getType() == GadgetType::Lightbulb);
+    CHECK(lamp.getName() == "spongo");
+    CHECK(lamp.getCharacteristic(CharacteristicIdentifier::status) != nullptr);
+    CHECK(lamp.getCharacteristic(CharacteristicIdentifier::saturation) != nullptr);
+    CHECK(lamp.getCharacteristic(CharacteristicIdentifier::brightness) != nullptr);
+    CHECK(lamp.getCharacteristic(CharacteristicIdentifier::hue) != nullptr);
+  }
+
+  SECTION("Test Status") {
+    lamp.handleCharacteristicUpdate(CharacteristicIdentifier::status, 0);
+    logger_i("test", "step_val = %d", lamp.getCharacteristic(CharacteristicIdentifier::status)->step_value);
+    CHECK(lamp.getCharacteristic(CharacteristicIdentifier::status)->step_value == 0);
+    lamp.handleCharacteristicUpdate(CharacteristicIdentifier::status, 1);
+    logger_i("test", "step_val = %d", lamp.getCharacteristic(CharacteristicIdentifier::status)->step_value);
+    CHECK(lamp.getCharacteristic(CharacteristicIdentifier::status)->step_value == 1);
+  }
+
 //  lamp.setStatus(false);
 //  CHECK(lamp.getStatus() == 0);
 //  lamp.toggleStatus();
@@ -24,24 +37,24 @@ TEST_CASE("Test Lamp", "[Gadget]") {
 //  CHECK(lamp.getColor(g) == 150);
 //  CHECK(lamp.getColor(b) == 60);
 //  lamp.getColor(buffer);
-  CHECK(buffer[0] == 100);
-  CHECK(buffer[1] == 150);
-  CHECK(buffer[2] == 60);
-  auto result = lamp.getCharacteristics();
-  CHECK(result.size() == 3);
-  CHECK(result[0].type == CharacteristicIdentifier::status);
-  CHECK(result[1].type == CharacteristicIdentifier::hue);
-  CHECK(result[2].type == CharacteristicIdentifier::saturation);
-  CHECK(result[0].max == 1);
-  CHECK(result[1].max == 100);
-  CHECK(result[2].max == 100);
-  CHECK(result[0].min == 0);
-  CHECK(result[1].min == 0);
-  CHECK(result[2].min == 0);
-  CHECK(result[0].steps == 1);
-  CHECK(result[1].steps == 1);
-  CHECK(result[2].steps == 1);
-  CHECK(result[0].step_value == 1);
-  CHECK(result[1].step_value == 300);
-  CHECK(result[2].step_value == 100);
+//  CHECK(buffer[0] == 100);
+//  CHECK(buffer[1] == 150);
+//  CHECK(buffer[2] == 60);
+//  auto result = lamp.getCharacteristics();
+//  CHECK(result.size() == 3);
+//  CHECK(result[0].type == CharacteristicIdentifier::status);
+//  CHECK(result[1].type == CharacteristicIdentifier::hue);
+//  CHECK(result[2].type == CharacteristicIdentifier::saturation);
+//  CHECK(result[0].max == 1);
+//  CHECK(result[1].max == 100);
+//  CHECK(result[2].max == 100);
+//  CHECK(result[0].min == 0);
+//  CHECK(result[1].min == 0);
+//  CHECK(result[2].min == 0);
+//  CHECK(result[0].steps == 1);
+//  CHECK(result[1].steps == 1);
+//  CHECK(result[2].steps == 1);
+//  CHECK(result[0].step_value == 1);
+//  CHECK(result[1].step_value == 300);
+//  CHECK(result[2].step_value == 100);
 }

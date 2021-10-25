@@ -9,8 +9,8 @@ class Characteristic {
   uint16_t step_value_;
 public:
   const CharacteristicIdentifier type;
-  const int max;
   const int min;
+  const int max;
   const uint16_t steps;
 
   Characteristic(CharacteristicIdentifier type, int min, int max, uint16_t step_count, uint16_t default_step_value = 0);

@@ -27,4 +27,10 @@ protected:
 
 public:
   explicit SimpleHardwareGadget(bool needs_initial_update);
+
+  #ifdef UNIT_TEST
+  inline bool needs_hw_update() const {
+    return needs_hw_update_;
+  }
+  #endif
 };

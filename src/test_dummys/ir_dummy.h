@@ -12,16 +12,16 @@ class decode_results;
 class IRsend {
 public:
   IRsend(uint16_t IRsendPin, bool inverted = false,
-         bool use_modulation = true){}
+         bool use_modulation = true) {}
 
-  bool sendIR(const unsigned long command, const uint8_t com_type) {return true;}
+  bool sendIR(const unsigned long command, const uint8_t com_type) { return true; }
 
-  bool sendRawIR(const uint16_t raw_data[], uint8_t com_len) {return true;}
+  bool sendRawIR(const uint16_t raw_data[], uint8_t com_len) { return true; }
 
   void begin() {}
 
   void sendRaw(const uint16_t buf[], const uint16_t len,
-                       const uint16_t hz) {}
+               const uint16_t hz) {}
 
   void sendNEC(uint64_t data) {}
 
@@ -41,7 +41,7 @@ public:
 
   void enableIRIn() {}
 
-  bool decode(decode_results *results) {return true;}
+  bool decode(decode_results *results) { return true; }
 
   void resume(void) {}
 };

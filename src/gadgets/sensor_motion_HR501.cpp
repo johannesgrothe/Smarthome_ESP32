@@ -1,4 +1,4 @@
-#include "sh_sensor_motion_HR501.h"
+#include "sensor_motion_HR501.h"
 
 #include <utility>
 

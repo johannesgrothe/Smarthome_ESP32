@@ -1,7 +1,6 @@
 #pragma once
 
 #include "gadget.h"
-#include "simple_hardware_gadget.h"
 #include "../color.h"
 
 class Lamp_RGB : public Gadget {

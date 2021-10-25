@@ -15,7 +15,7 @@ void EventManager::handleEvent(const std::shared_ptr<Event>& event) {
 }
 
 bool EventManager::hasEvent() {
-  return out_queue_.isEmpty();
+  return !out_queue_.isEmpty();
 }
 
 std::shared_ptr<Event> EventManager::getEvent() {

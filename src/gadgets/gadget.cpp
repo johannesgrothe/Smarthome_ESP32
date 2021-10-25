@@ -18,7 +18,9 @@ std::string Gadget::getName() const {
 }
 
 void Gadget::updateInitStatus(bool status_update) {
-  init_error = init_error && status_update;
+  if (!status_update) {
+    init_error = true;
+  }
 }
 
 bool Gadget::hasInitError() const {
@@ -66,7 +68,7 @@ bool Gadget::hasRadio() const {
 }
 
 bool Gadget::handleCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) {
-  logger_i(getName(), "Updating Characteristic: %d", int(characteristic));
+  logger_i(getName(), "Updating Characteristic %d -> %d", int(characteristic), step_value);
   auto status = setCharacteristicValue(characteristic, step_value);
   if (status) {
     executeCharacteristicUpdate(characteristic, step_value);
@@ -117,7 +119,7 @@ uint16_t Gadget::getCharacteristicValue(CharacteristicIdentifier characteristic)
 }
 
 bool Gadget::setCharacteristicValue(CharacteristicIdentifier characteristic, uint16_t step_value) {
-  for (auto c: characteristics_) {
+  for (auto &c: characteristics_) {
     if (c.type == characteristic) {
       if (c.getStepValue() != step_value) {
         c.setStepValue(step_value);
@@ -128,4 +130,17 @@ bool Gadget::setCharacteristicValue(CharacteristicIdentifier characteristic, uin
     }
   }
   return false;
+}
+
+std::shared_ptr<GadgetCharacteristicSettings> Gadget::getCharacteristic(CharacteristicIdentifier identifier) {
+  for (auto c: characteristics_) {
+    if (c.type == identifier) {
+      return std::make_shared<GadgetCharacteristicSettings>(c.type,
+                                                            c.min,
+                                                            c.max,
+                                                            c.steps,
+                                                            c.getStepValue());
+    }
+  }
+  return nullptr;
 }

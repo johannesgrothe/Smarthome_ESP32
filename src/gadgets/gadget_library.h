@@ -10,21 +10,21 @@
 #include "gadget.h"
 
 //Lamps
-#include "sh_lamp_neopixel.h"
-#include "sh_lamp_neopixel_basic.h"
+#include "lamp_neopixel.h"
+#include "lamp_neopixel_basic.h"
 #include "lamp_basic.h"
-#include "sh_doorbell_basic.h"
+#include "doorbell_basic.h"
 
 //Fan
-#include "sh_fan_westinghouse_ir.h"
-#include "sh_lamp_westinghouse_ir.h"
+#include "fan_westinghouse_ir.h"
+#include "lamp_westinghouse_ir.h"
 
 //Wallswitch
-#include "sh_wallswitch_basic.h"
+#include "wallswitch_basic.h"
 
 //Sensors
-#include "sh_sensor_motion_HR501.h"
-#include "sh_sensor_temperature_DHT.h"
+#include "sensor_motion_HR501.h"
+#include "sensor_temperature_DHT.h"
 
 /**
  * Creates a new gadget out of the given information.

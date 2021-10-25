@@ -11,3 +11,11 @@ LampOnOff::LampOnOff(std::string name) :
                               1,
                               1,
                               0)}) {}
+
+bool LampOnOff::getStatus() {
+  return getCharacteristicValue(CharacteristicIdentifier::status) != 0;
+}
+
+void LampOnOff::setStatus(bool status) {
+  setCharacteristicValue(CharacteristicIdentifier::status, status);
+}

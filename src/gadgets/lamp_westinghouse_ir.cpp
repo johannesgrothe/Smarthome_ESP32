@@ -1,4 +1,4 @@
-#include "sh_lamp_westinghouse_ir.h"
+#include "lamp_westinghouse_ir.h"
 
 #include <utility>
 

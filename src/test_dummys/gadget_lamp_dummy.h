@@ -4,18 +4,21 @@
 
 #include "../gadgets/lamp_rgb.h"
 
-class DummyLamp : public Lamp_RGB {
-public:
-  explicit DummyLamp(std::string name);
-
-  void refresh() final;
+class DummyLampRGB : public Lamp_RGB {
+private:
 
   void executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) final;
+
+public:
+
+  explicit DummyLampRGB(std::string name);
+
+  void refresh() final;
 };
 
-DummyLamp::DummyLamp(std::string name) :
+DummyLampRGB::DummyLampRGB(std::string name) :
     Lamp_RGB(std::move(name)) {}
 
-void DummyLamp::refresh(){}
+void DummyLampRGB::refresh(){}
 
-void DummyLamp::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) {}
+void DummyLampRGB::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) {}

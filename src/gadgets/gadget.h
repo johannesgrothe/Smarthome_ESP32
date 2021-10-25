@@ -29,10 +29,6 @@ enum SH_RGB_Color {
   SH_CLR_red, SH_CLR_green, SH_CLR_blue
 };
 
-enum SH_HSL_Color {
-  SH_CLR_hue, SH_CLR_saturation, SH_CLR_lightness
-};
-
 /**
  * Base class for all gadgets in the system
  */
@@ -142,6 +138,13 @@ public:
    * @return whether writing the characteristics to the string was successful
    */
   std::vector<GadgetCharacteristicSettings> getCharacteristics();
+
+  /**
+   * Returns the data for the selected characteristic
+   * @param identifier Characteristic to get
+   * @return The characteristic data
+   */
+  std::shared_ptr<GadgetCharacteristicSettings> getCharacteristic(CharacteristicIdentifier identifier);
 
   /**
    * Checks if the gadget was successfully initialized

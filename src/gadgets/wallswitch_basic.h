@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sh_wallswitch.h"
+#include "wallswitch.h"
 
 class SH_Wallswitch_Basic : public SH_Wallswitch {
 private:

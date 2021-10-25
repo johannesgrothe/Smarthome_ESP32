@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../gadgets/sh_sensor_temperature.h"
+#include "../gadgets/sensor_temperature.h"
 
 class GadgetSensorTemperatureDummy : public SH_Sensor_Temperature {
 public:

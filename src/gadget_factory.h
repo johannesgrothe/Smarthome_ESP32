@@ -12,23 +12,23 @@
 
 //Lamps
 #ifndef UNIT_TEST
-#include "gadgets/sh_lamp_neopixel.h"
-#include "gadgets/sh_lamp_neopixel_basic.h"
+#include "gadgets/lamp_neopixel.h"
+#include "gadgets/lamp_neopixel_basic.h"
 #endif
 #include "gadgets/lamp_basic.h"
-#include "gadgets/sh_doorbell_basic.h"
+#include "gadgets/doorbell_basic.h"
 
 //Fan
-#include "gadgets/sh_fan_westinghouse_ir.h"
-#include "gadgets/sh_lamp_westinghouse_ir.h"
+#include "gadgets/fan_westinghouse_ir.h"
+#include "gadgets/lamp_westinghouse_ir.h"
 
 //Wallswitch
-#include "gadgets/sh_wallswitch_basic.h"
+#include "gadgets/wallswitch_basic.h"
 
 //Sensors
 #ifndef UNIT_TEST
-#include "gadgets/sh_sensor_motion_HR501.h"
-#include "gadgets/sh_sensor_temperature_DHT.h"
+#include "gadgets/sensor_motion_HR501.h"
+#include "gadgets/sensor_temperature_DHT.h"
 #endif
 
 static const std::vector<GadgetIdentifier> IR_GADGETS = {GadgetIdentifier::fan_westinghouse_ir,

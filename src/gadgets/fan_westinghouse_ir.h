@@ -1,6 +1,7 @@
 #pragma once
 
-#include "sh_fan.h"
+#include "fan.h"
+#include "simple_hardware_gadget.h"
 
 // UNKNOWN 19496A87
 static const uint16_t level_0[95] = {1252, 432, 1250, 432, 420, 1260, 422, 1262, 420, 1258, 422, 1260, 420, 1258, 1254,
@@ -31,16 +32,18 @@ static const uint16_t level_3[95] = {1264, 418, 1210, 470, 398, 1284, 396, 1266,
                                      424, 420, 1280, 424, 1236, 392, 1306, 1212, 450, 390, 1312, 370, 1310, 372, 1308,
                                      396, 1264, 1258, 444, 1238};
 
-class SH_Fan_Westinghouse_IR : public SH_Fan {
+class Fan_Westinghouse_IR : public Fan, public SimpleHardwareGadget {
 protected:
+
+  void executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) override;
 
 public:
 
-  explicit SH_Fan_Westinghouse_IR(const std::string& name);
+  explicit Fan_Westinghouse_IR(const std::string& name);
 
   void refresh() override;
 };
 
-static std::shared_ptr<SH_Fan_Westinghouse_IR> createSHFanWestinghouseIR(std::string name, port_set pins, const JsonObject& gadget_data) {
-  return std::make_shared<SH_Fan_Westinghouse_IR>(name);
+static std::shared_ptr<Fan_Westinghouse_IR> createSHFanWestinghouseIR(std::string name, port_set pins, const JsonObject& gadget_data) {
+  return std::make_shared<Fan_Westinghouse_IR>(name);
 }

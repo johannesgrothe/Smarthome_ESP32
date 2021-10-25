@@ -1,9 +1,10 @@
-#include "sh_fan_westinghouse_ir.h"
+#include "fan_westinghouse_ir.h"
 
-SH_Fan_Westinghouse_IR::SH_Fan_Westinghouse_IR(const std::string& name) :
-  SH_Fan(name, 3) {};
+Fan_Westinghouse_IR::Fan_Westinghouse_IR(const std::string &name) :
+    Fan(name, 3),
+    SimpleHardwareGadget(true) {};
 
-void SH_Fan_Westinghouse_IR::refresh() {
+void Fan_Westinghouse_IR::refresh() {
   if (executeHWChange()) {
     auto level = getCharacteristicValue(CharacteristicIdentifier::fanSpeed);
 
@@ -19,4 +20,8 @@ void SH_Fan_Westinghouse_IR::refresh() {
       sendRawIR(level_3, 95);
     }
   }
+}
+
+void Fan_Westinghouse_IR::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) {
+  setHWChangeStatus(true);
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sh_lamp_neopixel.h"
+#include "lamp_neopixel.h"
 #include <Arduino.h>
 #include "Adafruit_NeoPixel.h"
 

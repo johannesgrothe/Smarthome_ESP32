@@ -219,38 +219,38 @@ void updateCharacteristicOnBridge(const std::string &gadget_name, Characteristic
  */
 void forwardEvent(const std::shared_ptr<Event> &event) {
   for (int i = 0; i < gadgets.getGadgetCount(); i++) {
-    gadgets[i]->handleEvent(event->getType());
+    gadgets[i]->handleEvent(event->name);
   }
 }
 
 
-void updateEventOnBridge(const std::string &sender, EventType type) {
-  if (sender.empty()) {
-    logger_i("System", "No sender specified, no event send");
-    return;
-  }
-
-  auto timestamp = system_timer.getTime();
-
-  auto event_buf = std::make_shared<Event>(sender,
-                                           timestamp,
-                                           type);
-
-  DynamicJsonDocument req_doc(2000);
-
-  req_doc["name"] = event_buf->getSender();
-  req_doc["timestamp"] = event_buf->getTimestamp();
-  req_doc["event_type"] = int(event_buf->getType());
-
-  auto out_req = std::make_shared<Request>(PATH_EVENT_UPDATE_TO_BRIDGE,
-                                           gen_req_id(),
-                                           client_id_,
-                                           PROTOCOL_BRIDGE_NAME,
-                                           req_doc);
-
-  network_gadget->sendRequest(out_req);
-
-  forwardEvent(event_buf);
+void updateEventOnBridge(const std::string &sender) {
+//  if (sender.empty()) {
+//    logger_i("System", "No sender specified, no event send");
+//    return;
+//  }
+//
+//  auto timestamp = system_timer.getTime();
+//
+//  auto event_buf = std::make_shared<Event>(sender,
+//                                           timestamp,
+//                                           type);
+//
+//  DynamicJsonDocument req_doc(2000);
+//
+//  req_doc["name"] = event_buf->getSender();
+//  req_doc["timestamp"] = event_buf->getTimestamp();
+//  req_doc["event_type"] = int(event_buf->getType());
+//
+//  auto out_req = std::make_shared<Request>(PATH_EVENT_UPDATE_TO_BRIDGE,
+//                                           gen_req_id(),
+//                                           client_id_,
+//                                           PROTOCOL_BRIDGE_NAME,
+//                                           req_doc);
+//
+//  network_gadget->sendRequest(out_req);
+//
+//  forwardEvent(event_buf);
 }
 
 //endregion
@@ -268,7 +268,7 @@ void addCodeToBuffer(const std::shared_ptr<CodeCommand> &code) {
 void forwardCodeToGadgets(const std::shared_ptr<CodeCommand> &code) {
   logger_e("System", "Forwarding code %d to %d gadgets", code->getCode(), gadgets.getGadgetCount());
   for (int i = 0; i < gadgets.getGadgetCount(); i++) {
-    gadgets[i]->handleCodeUpdate(code->getCode());
+//    gadgets[i]->handleCodeUpdate(code->getCode());
   }
 }
 
@@ -361,11 +361,11 @@ void handleEventUpdateRequest(std::shared_ptr<Request> req) {
   auto req_body = req->getPayload();
 
   logger_i("System", "Received event_type update");
-  auto sender = req_body["name"].as<std::string>();
-  auto timestamp = req_body["timestamp"].as<unsigned long long>();
-  auto type = EventType(req_body["event_type"].as<int>());
-  auto event_buf = std::make_shared<Event>(sender, timestamp, type);
-  forwardEvent(event_buf);
+//  auto sender = req_body["name"].as<std::string>();
+//  auto timestamp = req_body["timestamp"].as<unsigned long long>();
+//  auto type = EventType(req_body["event_type"].as<int>());
+//  auto event_buf = std::make_shared<Event>(sender, timestamp, type);
+//  forwardEvent(event_buf);
 }
 
 /**
@@ -626,8 +626,8 @@ void handleSyncRequest(std::shared_ptr<Request> req) {
   // Add gadgets
   JsonArray json_gadgets = data_json.createNestedArray("gadgets");
   for (int i = 0; i < gadgets.getGadgetCount(); i++) {
-    auto characteristic_data = gadgets[i]->serialized();
-    json_gadgets[i] = characteristic_data;
+//    auto characteristic_data = gadgets[i]->serialized();
+//    json_gadgets[i] = characteristic_data;
   }
 
   req->respond(data_json);
@@ -808,8 +808,8 @@ bool initGadgets() {
           using std::placeholders::_2;
           using std::placeholders::_3;
 
-          buf_gadget->setGadgetRemoteCallback(std::bind(&updateCharacteristicOnBridge, _1, _2, _3));
-          buf_gadget->setEventRemoteCallback(std::bind(&updateEventOnBridge, _1, _2));
+//          buf_gadget->setGadgetRemoteCallback(std::bind(&updateCharacteristicOnBridge, _1, _2, _3));
+//          buf_gadget->setEventRemoteCallback(std::bind(&updateEventOnBridge, _1, _2));
         }
 
         // Code Remote
@@ -824,12 +824,12 @@ bool initGadgets() {
               JsonArray code_arr = code_config[method_str].as<JsonArray>();
               for (int i = 0; i < code_arr.size(); i++) {
                 unsigned long code = code_arr[i].as<unsigned long>();
-                buf_gadget->setMethodForCode((GadgetMethod) method_index, code);
+//                buf_gadget->setMethodForCode((GadgetMethod) method_index, code);
               }
             }
           }
 
-          buf_gadget->printMapping();
+//          buf_gadget->printMapping();
         }
 
         // Event Remote

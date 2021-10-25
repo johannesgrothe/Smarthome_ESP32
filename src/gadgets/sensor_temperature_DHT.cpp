@@ -1,4 +1,4 @@
-#include "sh_sensor_temperature_DHT.h"
+#include "sensor_temperature_DHT.h"
 
 #include <utility>
 

@@ -9,7 +9,7 @@ Lamp_Basic::Lamp_Basic(std::string name, uint8_t pin) :
 
 void Lamp_Basic::refresh() {
   if (executeHWChange()) {
-    bool status = getCharacteristicValue(CharacteristicIdentifier::status);
+    bool status = getStatus();
     logger_i(getName(), "Has changed: %d", status);
     HardwareController::digitalWritePin(pin_, status);
   }

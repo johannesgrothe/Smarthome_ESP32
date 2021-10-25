@@ -190,12 +190,12 @@ bool ClientMain::initGadgets(const GadgetConfig &config) {
               JsonArray code_arr = code_config[method_str].as<JsonArray>();
               for (int i = 0; i < code_arr.size(); i++) {
                 unsigned long code = code_arr[i].as<unsigned long>();
-                buf_gadget->setMethodForCode((GadgetMethod) method_index, code);
+//                buf_gadget->setMethodForCode((GadgetMethod) method_index, code);
               }
             }
           }
 
-          buf_gadget->printMapping();
+//          buf_gadget->printMapping();
         }
 
         // Event Remote

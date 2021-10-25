@@ -1,4 +1,4 @@
-#include "sh_wallswitch_basic.h"
+#include "wallswitch_basic.h"
 
 #include "../hardware_controller.h"
 

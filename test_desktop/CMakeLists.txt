@@ -24,11 +24,11 @@ set(ADDITIONAL_SOURCES
         ../src/color.cpp
         ../src/mapping_reference.cpp
         ../src/gadgets/lamp_rgb.cpp
-        ../src/gadgets/sh_fan.cpp
-        ../src/gadgets/sh_doorbell.cpp
-        ../src/gadgets/sh_sensor_motion.cpp
-        ../src/gadgets/sh_sensor_temperature.cpp
-        ../src/gadgets/sh_wallswitch.cpp
+        ../src/gadgets/fan.cpp
+        ../src/gadgets/doorbell.cpp
+        ../src/gadgets/sensor_motion.cpp
+        ../src/gadgets/sensor_temperature.cpp
+        ../src/gadgets/wallswitch.cpp
         ../src/api/api_manager.cpp
         ../src/api/api_manager_delegate.cpp
         ../src/api/gadget_meta.cpp
@@ -58,13 +58,14 @@ set(ADDITIONAL_SOURCES
         ../src/event_manager.cpp
         ../src/gadget_factory.cpp
         ../src/gadgets/lamp_basic.cpp
-        ../src/gadgets/sh_doorbell_basic.cpp
-        ../src/gadgets/sh_wallswitch_basic.cpp
-        ../src/gadgets/sh_fan_westinghouse_ir.cpp
-        ../src/gadgets/sh_lamp_westinghouse_ir.cpp
+        ../src/gadgets/doorbell_basic.cpp
+        ../src/gadgets/wallswitch_basic.cpp
+        ../src/gadgets/fan_westinghouse_ir.cpp
+        ../src/gadgets/lamp_westinghouse_ir.cpp
         ../src/gadgets/characteristic.cpp
         ../src/gadgets/simple_hardware_gadget.cpp
         ../src/gadgets/lamp_onoff.cpp
+        ../src/connectors/radio_gadget.cpp
         )
 
 set(TEST_SOURCES)

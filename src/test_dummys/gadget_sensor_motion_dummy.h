@@ -1,15 +1,17 @@
 #pragma once
 
-#include "../gadgets/sh_sensor_motion.h"
+#include <utility>
+
+#include "../gadgets/sensor_motion.h"
 
 class GadgetSensorMotionDummy : public SH_Sensor_Motion {
 public:
-  GadgetSensorMotionDummy(std::string name);
+  explicit GadgetSensorMotionDummy(std::string name);
 
-  void refresh();
+  void refresh() final;
 };
 
 GadgetSensorMotionDummy::GadgetSensorMotionDummy(std::string name):
-  SH_Sensor_Motion(name) {}
+  SH_Sensor_Motion(std::move(name)) {}
 
 void GadgetSensorMotionDummy::refresh() {}

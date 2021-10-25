@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../gadgets/sh_wallswitch.h"
+#include "../gadgets/wallswitch.h"
 
 class GadgetWallswitchDummy : public SH_Wallswitch {
 public:
