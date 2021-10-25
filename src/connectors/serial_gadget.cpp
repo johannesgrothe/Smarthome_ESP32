@@ -2,12 +2,6 @@
 
 #include <sstream>
 
-#ifndef UNIT_TEST
-#include <Arduino.h>
-#else
-#include "../test_dummys/dummy_serial.h"
-#endif
-
 static const char *TAG = "SerialGadget";
 
 void SerialGadget::executeRequestSending(std::shared_ptr<Request> req) {

@@ -18,14 +18,12 @@ TEST_CASE("Test EEPROM Storage", "[Storage]") {
 
   SECTION("Test empty eeprom: Gadget Config") {
     auto cfg = storage.loadGadgetConfig();
-    CHECK(cfg != nullptr);
-    CHECK(cfg->gadgets.empty());
+    CHECK(cfg == nullptr);
   }
 
   SECTION("Test empty eeprom: Event Config") {
     auto cfg = storage.loadEventConfig();
-    CHECK(cfg != nullptr);
-    CHECK(cfg->event_mapping.empty());
+    CHECK(cfg == nullptr);
   }
 
   SECTION("Test writing and loading system config") {

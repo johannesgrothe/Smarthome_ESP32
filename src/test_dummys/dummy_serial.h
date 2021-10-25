@@ -5,16 +5,27 @@
 inline void delayMicroseconds(int delay) {}
 
 class DummySerial {
+private:
+  std::string mock_data_{};
 public:
 
   std::string last_print;
 
   bool available() {
-    return true;
+    return !mock_data_.empty();
   }
 
   uint8_t read() {
-    return 45;
+    if (!mock_data_.empty()) {
+      char buffer = mock_data_[0];
+      std::stringstream buf_strm;
+      for (int i = 1; i < mock_data_.size(); i++) {
+        buf_strm << mock_data_[i];
+      }
+      mock_data_ = buf_strm.str();
+      return (uint8_t) buffer;
+    }
+    return 0;
   }
 
   void printf(const char * format, ...) {
@@ -31,6 +42,10 @@ public:
     last_print = sstr.str();
     logger_i("DummySerial >>", last_print);
   }
+
+  void mockData(const std::string& data) {
+    mock_data_ = data;
+  }
 };
 
-DummySerial Serial;
+inline DummySerial Serial;

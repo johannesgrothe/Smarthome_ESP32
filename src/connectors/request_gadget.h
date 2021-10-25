@@ -109,7 +109,7 @@ public:
    * @param wait_time The time in ms to wait before returning nullptr
    * @return A pointer to the response or a nullptr
    */
-  std::shared_ptr<Request> sendRequestAndWaitForResponse(std::shared_ptr<Request> request, unsigned long wait_time);
+  std::shared_ptr<Request> sendRequestAndWaitForResponse(const std::shared_ptr<Request>& request, unsigned long wait_time);
 
   /**
    * Waits for the Request with the given ID to

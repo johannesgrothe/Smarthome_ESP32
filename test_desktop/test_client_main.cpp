@@ -1,11 +1,12 @@
 #include "catch.hpp"
 
 #include "../src/client_main.h"
+#include "../src/test_dummys/dummy_serial.h"
 
 TEST_CASE("Test Client Main", "[Main]") {
 
   SystemConfig system_cfg("test_client",
-                          NetworkMode::MQTT,
+                          NetworkMode::Serial,
                           0,
                           1,
                           2,
@@ -16,34 +17,37 @@ TEST_CASE("Test Client Main", "[Main]") {
                           std::make_shared<uint16_t>(4),
                           std::make_shared<std::string>("username"),
                           std::make_shared<std::string>("password"));
-  GadgetConfig gadget_cfg({});
+
+  std::vector<gadget_event_map> mapping = {{"yolo", {{2, 44}, {6, 77}}}, {"yolo2", {{3, 77}, {7, 44}}}};
+  gadget_tuple gadget1(2,
+                       {false, false, false, false, false, false, false, false},
+                       {2, 4, 0, 0, 0},
+                       "gadget1",
+                       "",
+                       mapping);
+
+  GadgetConfig gadget_cfg({gadget1});
+
   EventConfig event_cfg({});
-  auto main = ClientMain(BootMode::Serial_Only, system_cfg, gadget_cfg, event_cfg);
+  auto main = ClientMain(BootMode::Full_Operation, system_cfg, gadget_cfg, event_cfg);
 
-  SECTION("Test Attributes") {
-    CHECK(system_cfg.id == "test_client");
-    CHECK(system_cfg.network_mode == NetworkMode::MQTT);
-    CHECK(system_cfg.ir_recv_pin == 0);
-    CHECK(system_cfg.ir_send_pin == 1);
-    CHECK(system_cfg.radio_recv_pin == 2);
-    CHECK(system_cfg.radio_send_pin == 3);
+  SECTION("Test Loop Gadgets") {
+    for (int i = 0; i < 5000; i++) {
+      main.loopGadgets();
+    }
+  }
 
-    CHECK(system_cfg.wifi_ssid != nullptr);
-    CHECK(*system_cfg.wifi_ssid == "wifi_ssid");
+  SECTION("Test Loop System") {
+    for (int i = 0; i < 5000; i++) {
+      main.loopSystem();
+    }
+  }
 
-    CHECK(system_cfg.wifi_pw != nullptr);
-    CHECK(*system_cfg.wifi_pw == "wifi_password");
-
-    CHECK(system_cfg.mqtt_ip != nullptr);
-    CHECK(*system_cfg.mqtt_ip == IPContainer(192, 168, 178, 214));
-
-    CHECK(system_cfg.mqtt_port != nullptr);
-    CHECK(*system_cfg.mqtt_port == 4);
-
-    CHECK(system_cfg.mqtt_username != nullptr);
-    CHECK(*system_cfg.mqtt_username == "username");
-
-    CHECK(system_cfg.mqtt_password != nullptr);
-    CHECK(*system_cfg.mqtt_password == "password");
+  SECTION("Test Loop Network") {
+    for (int i = 0; i < 5000; i++) {
+      main.loopNetwork();
+    }
+    Serial.mockData("yolokopter");
+    main.loopNetwork();
   }
 }

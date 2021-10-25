@@ -80,7 +80,7 @@ std::shared_ptr<Request> RequestGadget::waitForResponse(int id, unsigned long wa
 }
 
 std::shared_ptr<Request>
-RequestGadget::sendRequestAndWaitForResponse(std::shared_ptr<Request> request, unsigned long wait_time) {
+RequestGadget::sendRequestAndWaitForResponse(const std::shared_ptr<Request>& request, unsigned long wait_time) {
   sendRequest(request);
   return waitForResponse(request->getID(), wait_time);
 }
@@ -101,7 +101,7 @@ void RequestGadget::refresh() {
       auto p_index = req_payload["package_index"].as<int>();
       auto split_payload = req_payload["split_payload"].as<std::string>();
 
-      // Check if its the first request
+      // Check if it's the first request
       if (p_index == 0) {
 
         if (req_payload.containsKey("last_index")) {

@@ -162,7 +162,16 @@ std::shared_ptr<SystemConfig> EepromStorage::loadSystemConfig() {
 
 std::shared_ptr<GadgetConfig> EepromStorage::loadGadgetConfig() {
   auto gadget_data = EepromManager::readAllGadgets();
-  return std::make_shared<GadgetConfig>(gadget_data);
+  auto config = std::make_shared<GadgetConfig>(gadget_data);
+
+  auto stored_crc16 = EepromManager::readUInt16(GADGET_CFG_CRC);
+
+  if (config->crc16() != stored_crc16) {
+    logger_e("EEPROMStorage", "Config checksums do not match (%d / %d)", stored_crc16, config->crc16());
+    return nullptr;
+  }
+
+  return config;
 }
 
 bool EepromStorage::saveGadgetConfig(GadgetConfig config) {
@@ -185,13 +194,33 @@ bool EepromStorage::saveGadgetConfig(GadgetConfig config) {
     }
   }
 
+  if (write_successful) {
+    write_successful &= EepromManager::writeUInt16(GADGET_CFG_CRC, config.crc16());
+  }
+
+  auto loaded_config = loadGadgetConfig();
+  if (loaded_config == nullptr) {
+    return false;
+  }
+  if (config != *loaded_config) {
+    return false;
+  }
+
   return write_successful;
 }
 
 std::shared_ptr<EventConfig> EepromStorage::loadEventConfig() {
   auto event_data = EepromManager::readEventMapping();
-  auto out_cfg = std::make_shared<EventConfig>(event_data);
-  return out_cfg;
+  auto config = std::make_shared<EventConfig>(event_data);
+
+  auto stored_crc16 = EepromManager::readUInt16(EVENT_MAP_CRC);
+
+  if (config->crc16() != stored_crc16) {
+    logger_e("EEPROMStorage", "Config checksums do not match (%d / %d)", stored_crc16, config->crc16());
+    return nullptr;
+  }
+
+  return config;
 }
 
 bool EepromStorage::saveEventConfig(EventConfig config) {
@@ -200,6 +229,8 @@ bool EepromStorage::saveEventConfig(EventConfig config) {
   if (!status) {
     return false;
   }
+
+  EepromManager::writeUInt16(EVENT_MAP_CRC, config.crc16());
 
   auto test_cfg = loadEventConfig();
   if (test_cfg == nullptr) {

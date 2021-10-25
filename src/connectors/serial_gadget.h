@@ -3,6 +3,12 @@
 #include <ArduinoJson.h>
 #include "request_gadget.h"
 
+#ifndef UNIT_TEST
+#include <Arduino.h>
+#else
+#include "../test_dummys/dummy_serial.h"
+#endif
+
 class SerialGadget : public RequestGadget {
 protected:
 

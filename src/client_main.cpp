@@ -226,7 +226,9 @@ void ClientMain::loopSystem() {
 }
 
 void ClientMain::loopGadgets() {
-  gadget_manager_->refresh();
+  if (gadget_manager_ != nullptr) {
+    gadget_manager_->refresh();
+  }
 }
 
 void ClientMain::loopNetwork() {
