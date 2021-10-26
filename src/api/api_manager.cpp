@@ -9,8 +9,8 @@
 
 ApiManager::ApiManager(ApiManagerDelegate *delegate, std::shared_ptr<RequestGadget> network, uint16_t runtime_id,
                        std::string client_identifier) :
-    runtime_id_(runtime_id),
     client_id_(std::move(client_identifier)),
+    runtime_id_(runtime_id),
     delegate_(delegate),
     network_(std::move(network)) {};
 
