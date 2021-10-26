@@ -14,7 +14,7 @@ public:
    * @param client_data Data of the client to encode
    * @return A json document containing the client data
    */
-  static DynamicJsonDocument encodeClient(const ClientMeta& client_data);
+  static DynamicJsonDocument encodeClient(const ClientMeta &client_data, uint16_t runtime_id);
 
   /**
    * Encodes a set of gadget data into a json document compliant to the api specification
@@ -38,7 +38,9 @@ public:
    * @param gadget_data Datasets of all the gadgets
    * @return A json document containing all the information
    */
-  static DynamicJsonDocument encodeSync(const ClientMeta& client_data, const std::vector<GadgetMeta> &gadgets);
+  static DynamicJsonDocument encodeSync(const ClientMeta& client_data,
+                                        const std::vector<GadgetMeta> &gadgets,
+                                        uint16_t runtime_id);
 
   /**
    * Encodes the data needed to update information for a specific gadget on the bridge
@@ -47,4 +49,12 @@ public:
    * @return A json document containing all the information
    */
   static DynamicJsonDocument encodeGadgetUpdate(const GadgetMeta& gadget_data);
+
+  /**
+   * Encodes the data for the periodic heartbeat message
+   *
+   * @param runtime_id Runtime ID of the system
+   * @return A json document containing all the information
+   */
+  static DynamicJsonDocument encodeHeartbeat(uint16_t runtime_id);
 };

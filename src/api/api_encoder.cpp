@@ -2,9 +2,9 @@
 
 #include <sstream>
 
-DynamicJsonDocument ApiEncoder::encodeClient(const ClientMeta &client_data) {
+DynamicJsonDocument ApiEncoder::encodeClient(const ClientMeta &client_data, uint16_t runtime_id) {
   DynamicJsonDocument doc(500);
-  doc["runtime_id"] = client_data.runtime_id;
+  doc["runtime_id"] = runtime_id;
   doc["boot_mode"] = int(client_data.boot_mode);
   doc["sw_uploaded"] = client_data.sw_uploaded;
   doc["sw_commit"] = client_data.sw_commit;
@@ -42,9 +42,11 @@ DynamicJsonDocument ApiEncoder::encodeCharacteristic(CharacteristicMeta characte
   return doc;
 }
 
-DynamicJsonDocument ApiEncoder::encodeSync(const ClientMeta &client_data, const std::vector<GadgetMeta> &gadget_data) {
+DynamicJsonDocument ApiEncoder::encodeSync(const ClientMeta &client_data,
+                                           const std::vector<GadgetMeta> &gadget_data,
+                                           uint16_t runtime_id) {
   DynamicJsonDocument doc(1500);
-  doc["client"] = encodeClient(client_data);
+  doc["client"] = encodeClient(client_data, runtime_id);
   doc.createNestedArray("gadgets");
   JsonArray gadgets = doc["gadgets"];
   for (const auto& gadget: gadget_data) {
@@ -56,5 +58,11 @@ DynamicJsonDocument ApiEncoder::encodeSync(const ClientMeta &client_data, const 
 DynamicJsonDocument ApiEncoder::encodeGadgetUpdate(const GadgetMeta &gadget_data) {
   DynamicJsonDocument doc(1500);
   doc["gadget"] = encodeGadget(gadget_data);
+  return doc;
+}
+
+DynamicJsonDocument ApiEncoder::encodeHeartbeat(uint16_t runtime_id) {
+  DynamicJsonDocument doc(100);
+  doc["runtime_id"] = runtime_id;
   return doc;
 }

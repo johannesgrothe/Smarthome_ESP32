@@ -7,15 +7,12 @@
 class ApiManagerDelegateDummy : public ApiManagerDelegate {
 private:
 
-  std::string id_;
-
 public:
 
   bool had_gadget_meta;
 
-  explicit ApiManagerDelegateDummy(std::string id) :
+  explicit ApiManagerDelegateDummy() :
       ApiManagerDelegate(),
-      id_(std::move(id)),
       had_gadget_meta(false) {}
 
   void handleGadgetUpdate(GadgetMeta gadget) override {
@@ -26,13 +23,8 @@ public:
 
   }
 
-  std::string getClientId() override {
-    return id_;
-  }
-
   ClientMeta getClientData() override {
-    return {1776,
-            {},
+    return {{},
             BootMode::Full_Operation,
             "",
             "",

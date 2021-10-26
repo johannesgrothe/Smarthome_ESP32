@@ -7,6 +7,6 @@ void Switch::switchTriggered() {
 }
 
 Switch::Switch(std::string name) :
-    Gadget(std::move(name), GadgetType::Wallswitch, std::vector<Characteristic>()) {}
+    Gadget(std::move(name), GadgetType::Switch, std::vector<Characteristic>()) {}
 
 void Switch::executeCharacteristicUpdate(CharacteristicIdentifier, uint16_t) {}

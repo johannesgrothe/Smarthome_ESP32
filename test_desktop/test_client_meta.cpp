@@ -5,15 +5,13 @@
 
 
 TEST_CASE("Test Client Meta", "[Container]") {
-  ClientMeta meta(1776,
-                  {},
+  ClientMeta meta({},
                   BootMode::Full_Operation,
                   "",
                   "commit_hash",
                   "develop");
 
   SECTION("Test Constructor") {
-    CHECK(meta.runtime_id == 1776);
     CHECK(meta.port_mapping.empty());
     CHECK(meta.boot_mode == BootMode::Full_Operation);
     CHECK(meta.sw_uploaded.empty());

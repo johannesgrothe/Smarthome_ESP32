@@ -21,12 +21,6 @@
 class ClientMain : public ApiManagerDelegate {
 private:
 
-  // Name of the client to be identified in the network
-  std::string client_id_;
-
-  // Runtime id, number generated at startup to identify reboots to network partners
-  uint16_t runtime_id_;
-
   // Mode the system is supposed to be running in
   BootMode system_mode_;
 
@@ -57,8 +51,6 @@ private:
 
   void handleEvent(Event event) override;
 
-  std::string getClientId() override;
-
   ClientMeta getClientData() override;
 
   std::vector<GadgetMeta> getGadgetData() override;
@@ -88,7 +80,7 @@ private:
    * Initializes the api manager
    * @return Whether initializing network was successful or not
    */
-  bool initApi();
+  bool initApi(const std::string& client_id);
 
   /**
    * Initialized the Event Manager with the event mapping from the config

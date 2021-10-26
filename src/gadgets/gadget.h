@@ -19,7 +19,7 @@
 
 // List of all Gadget Types
 enum class GadgetType {
-  None, Lightbulb, Fan, Doorbell, Wallswitch, Motion_Sensor, Temp_Humm_Sensor
+  None, Lightbulb, Fan, Doorbell, Switch, Motion_Sensor, Temp_Humm_Sensor
 };
 
 enum SH_RGB_Color {

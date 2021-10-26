@@ -19,7 +19,7 @@ TEST_CASE("Test Client Main", "[Main]") {
                           std::make_shared<std::string>("password"));
 
   std::vector<gadget_event_map> mapping = {{"yolo", {{2, 44}, {6, 77}}}, {"yolo2", {{3, 77}, {7, 44}}}};
-  gadget_tuple gadget1(2,
+  gadget_tuple gadget1((uint16_t) GadgetIdentifier::doorbell_basic,
                        {false, false, false, false, false, false, false, false},
                        {2, 4, 0, 0, 0},
                        "gadget1",

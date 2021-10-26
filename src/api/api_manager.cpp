@@ -7,7 +7,10 @@
 #include "api_encoder.h"
 #include "api_decoder.h"
 
-ApiManager::ApiManager(ApiManagerDelegate *delegate, std::shared_ptr<RequestGadget> network) :
+ApiManager::ApiManager(ApiManagerDelegate *delegate, std::shared_ptr<RequestGadget> network, uint16_t runtime_id,
+                       std::string client_identifier) :
+    runtime_id_(runtime_id),
+    client_id_(std::move(client_identifier)),
     delegate_(delegate),
     network_(std::move(network)) {};
 
@@ -25,8 +28,8 @@ void ApiManager::handleRequest(const std::shared_ptr<Request> &req) {
       return;
     }
     // Update receiver to 'self' if there is none (request is a broadcast)
-    req->updateReceiver(delegate_->getClientId());
-  } else if (delegate_->getClientId() != req->getReceiver()) {
+    req->updateReceiver(client_id_);
+  } else if (client_id_ != req->getReceiver()) {
     // Return if the client is not the receiver of the message
     return;
   }
@@ -64,6 +67,10 @@ void ApiManager::handleRequest(const std::shared_ptr<Request> &req) {
   }
 
   logger_e("ApiManager", "Received request to unhandled path");
+}
+
+uint16_t ApiManager::genRequestID() {
+  return random_int(10000);
 }
 
 // region PATH CHECKERS
@@ -111,38 +118,44 @@ void ApiManager::handleEventUpdate(const std::shared_ptr<Request> &req) {
 void ApiManager::publishSync(std::string *receiver = nullptr) {
   auto client_data = delegate_->getClientData();
   auto gadget_data = delegate_->getGadgetData();
-  auto payload = ApiEncoder::encodeSync(client_data, gadget_data);
+  auto payload = ApiEncoder::encodeSync(client_data, gadget_data, runtime_id_);
   if (receiver == nullptr) {
     auto out_req = std::make_shared<Request>(PATH_PUBLISH_CLIENT,
-                                             123,
-                                             delegate_->getClientId(),
+                                             genRequestID(),
+                                             client_id_,
                                              payload);
     network_->sendRequest(out_req);
   } else {
     auto out_req = std::make_shared<Request>(PATH_PUBLISH_CLIENT,
-                                             123,
-                                             delegate_->getClientId(),
+                                             genRequestID(),
+                                             client_id_,
                                              *receiver,
                                              payload);
     network_->sendRequest(out_req);
   }
 }
 
-void ApiManager::publishGadgetUpdate(const GadgetMeta& gadget_data) {
+void ApiManager::publishGadgetUpdate(const GadgetMeta &gadget_data) {
   auto payload = ApiEncoder::encodeGadgetUpdate(gadget_data);
   auto out_req = std::make_shared<Request>(PATH_SYNC_GADGET,
-                                           123,
-                                           delegate_->getClientId(),
+                                           genRequestID(),
+                                           client_id_,
                                            payload);
   network_->sendRequest(out_req);
 }
 
-void ApiManager::publishCode(const std::shared_ptr<CodeCommand> &code) {
-  // TODO: implement code publishing
-}
-
 void ApiManager::publishEvent(const std::shared_ptr<Event> &event) {
   // TODO: implement event publishing
+}
+
+void ApiManager::publishHeartbeat() {
+  auto payload = ApiEncoder::encodeHeartbeat(runtime_id_);
+
+  auto heartbeat_request = std::make_shared<Request>(PATH_HEARTBEAT,
+                                                     genRequestID(),
+                                                     client_id_,
+                                                     payload);
+  network_->sendRequest(heartbeat_request);
 }
 
 // endregion PUBLISH CHANGES

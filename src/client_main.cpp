@@ -11,7 +11,6 @@
 ClientMain::ClientMain(BootMode boot_mode, const SystemConfig &system_config, const GadgetConfig &gadget_config,
                        const EventConfig &event_config) :
     ApiManagerDelegate(),
-    runtime_id_(),
     system_mode_(boot_mode),
     system_storage_(nullptr),
     api_manager_(nullptr),
@@ -21,17 +20,10 @@ ClientMain::ClientMain(BootMode boot_mode, const SystemConfig &system_config, co
     ir_gadget(nullptr),
     radio_gadget(nullptr) {
   logger_i("System", "Launching...");
-
-  runtime_id_ = random_int(10000);
-  logger_i("System", "Runtime ID: %d", runtime_id_);
-
   logger_i("System", "Software Info:");
   logger_i("System", "Flash Date: %s", getSoftwareFlashDate().c_str());
   logger_i("System", "Git Branch: %s", getSoftwareGitBranch().c_str());
   logger_i("System", "Git Commit: %s", getSoftwareGitCommit().c_str());
-
-  client_id_ = system_config.id;
-  logger_i("System", "Client ID: '%s'", client_id_.c_str());
 
   bool status;
 
@@ -70,7 +62,7 @@ ClientMain::ClientMain(BootMode boot_mode, const SystemConfig &system_config, co
   logger_i("System", "Free Heap: %d", ESP.getFreeHeap());
   #endif
 
-  initApi();
+  initApi(std::string());
 }
 
 bool ClientMain::initNetwork(const SystemConfig &config, NetworkMode mode) {
@@ -184,8 +176,13 @@ bool ClientMain::initEventMapping(const EventConfig &config) {
   return true;
 }
 
-bool ClientMain::initApi() {
-  api_manager_ = std::make_shared<ApiManager>(this, network_);
+bool ClientMain::initApi(const std::string& client_id) {
+  uint16_t runtime_id = random_int(10000);
+
+  logger_i("System", "Runtime ID: %d", runtime_id);
+  logger_i("System", "Client ID: '%s'", client_id.c_str());
+
+  api_manager_ = std::make_shared<ApiManager>(this, network_, runtime_id, client_id);
   return true;
 }
 
@@ -197,13 +194,8 @@ void ClientMain::handleEvent(Event event) {
   event_manager_->handleEvent(std::make_shared<Event>(event));
 }
 
-std::string ClientMain::getClientId() {
-  return client_id_;
-}
-
 ClientMeta ClientMain::getClientData() {
-  return {runtime_id_,
-          {},
+  return {{},
           system_mode_,
           getSoftwareFlashDate(),
           getSoftwareGitCommit(),

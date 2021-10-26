@@ -6,8 +6,7 @@
 
 TEST_CASE("Test API Encoder", "[API]") {
 
-  ClientMeta client(1776,
-                    {{0, 33}},
+  ClientMeta client({{0, 33}},
                     BootMode::Full_Operation,
                     "date",
                     "commit",
@@ -24,7 +23,7 @@ TEST_CASE("Test API Encoder", "[API]") {
                     {characteristic});
 
   SECTION("Encode client") {
-    auto json_data = ApiEncoder::encodeClient(client);
+    auto json_data = ApiEncoder::encodeClient(client, 1776);
 
     CHECK(json_data["runtime_id"] == 1776);
     CHECK(json_data["boot_mode"] == int(BootMode::Full_Operation));
@@ -54,7 +53,7 @@ TEST_CASE("Test API Encoder", "[API]") {
   }
 
   SECTION("Encode client sync") {
-    auto json_data = ApiEncoder::encodeSync(client, {gadget});
+    auto json_data = ApiEncoder::encodeSync(client, {gadget}, 1776);
 
     CHECK(json_data["client"]["runtime_id"] == 1776);
     CHECK(json_data["gadgets"][0]["name"] == "test_gadget");

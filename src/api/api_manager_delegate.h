@@ -15,8 +15,6 @@ public:
 
   virtual void handleEvent(Event event) = 0;
 
-  virtual std::string getClientId() = 0;
-
   virtual ClientMeta getClientData() = 0;
 
   virtual std::vector<GadgetMeta> getGadgetData() = 0;

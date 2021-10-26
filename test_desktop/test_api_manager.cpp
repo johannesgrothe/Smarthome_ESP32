@@ -15,9 +15,9 @@
 
 TEST_CASE("Test API Manager", "[API]") {
 
-  ApiManagerDelegateDummy delegate(TEST_CLIENT_ID);
+  ApiManagerDelegateDummy delegate;
   auto network = std::make_shared<RequestGadgetDummy>();
-  ApiManager manager(&delegate, network);
+  ApiManager manager(&delegate, network, 1776, TEST_CLIENT_ID);
 
   SECTION("Test Illegal Path") {
     DynamicJsonDocument payload(400);

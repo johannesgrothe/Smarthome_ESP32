@@ -1224,13 +1224,6 @@ static void createTasks() {
 //region MAIN FUNCTIONS
 
 /**
- * Test-Fuction for debugging
- */
-void testStuff() {
-  logger_i("System", "Testing Stuff");
-}
-
-/**
  * Setup-method that is automatically called once on launch
  */
 void setup() {

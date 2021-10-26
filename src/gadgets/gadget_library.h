@@ -19,7 +19,7 @@
 #include "fan_westinghouse_ir.h"
 #include "lamp_westinghouse_ir.h"
 
-//Wallswitch
+//Switch
 #include "wallswitch_basic.h"
 
 //Sensors
