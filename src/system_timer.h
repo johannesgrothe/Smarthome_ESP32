@@ -20,6 +20,10 @@ private:
   // Mutex to lock resources for multithreading
   std::mutex mtx;
 
+  #ifdef UNIT_TEST
+  unsigned long long set_time_{};
+  #endif
+
 public:
   SystemTimer();
 
@@ -35,6 +39,12 @@ public:
    * @param offset Offset to compensate for network delays
    */
   void setTime(unsigned long long new_time, unsigned long offset);
+
+  #ifdef UNIT_TEST
+  void lockTime(unsigned long long time) {
+    set_time_ = time;
+  }
+  #endif
 };
 
 extern SystemTimer system_timer;

@@ -3,7 +3,7 @@
 static const char *TAG = "RequestGadget";
 
 // RequestGadget
-void RequestGadget::addIncomingRequest(std::shared_ptr<Request> request) {
+void RequestGadget::addIncomingRequest(const std::shared_ptr<Request>& request) {
   buffer_in_request_queue_.push(request);
 }
 
@@ -49,7 +49,7 @@ std::shared_ptr<Request> RequestGadget::getRequest() {
   return in_request_queue_.pop();
 }
 
-void RequestGadget::sendRequest(std::shared_ptr<Request> request) {
+void RequestGadget::sendRequest(const std::shared_ptr<Request>& request) {
   out_request_queue_.push(request);
 }
 
@@ -131,7 +131,7 @@ void RequestGadget::refresh() {
   }
 }
 
-void RequestGadget::addRequestToInQueue(std::shared_ptr<Request> req) {
+void RequestGadget::addRequestToInQueue(const std::shared_ptr<Request>& req) {
   if (req != nullptr) {
     using std::placeholders::_1;
     req->setResponseCallback(std::bind(&RequestGadget::sendRequest, this, _1));

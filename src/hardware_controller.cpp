@@ -22,9 +22,6 @@ unsigned long HardwareController::getMillis() {
   #ifndef UNIT_TEST
   return millis();
   #else
-//  using namespace std::chrono;
-//  unsigned long now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-//  return now;
   typedef std::chrono::system_clock Clock;
   auto now = Clock::now();
   auto seconds = std::chrono::time_point_cast<std::chrono::seconds>(now);

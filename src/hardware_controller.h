@@ -13,8 +13,6 @@
 #include "console_logger.h"
 
 class HardwareController {
-private:
-
 public:
 
   /**

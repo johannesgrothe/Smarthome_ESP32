@@ -5,6 +5,12 @@ static const char *TAG = "SystemTimer";
 SystemTimer::SystemTimer() = default;
 
 unsigned long long SystemTimer::getTime() {
+  #ifdef UNIT_TEST
+  if (set_time_) {
+    return set_time_;
+  }
+  #endif
+
   mtx.lock();
   auto buf_time = time_ + HardwareController::getMillis();
 
@@ -28,4 +34,4 @@ void SystemTimer::setTime(const unsigned long long new_time, const unsigned long
   logger_i(TAG, "Momentary System Time: %d", getTime());
 }
 
-SystemTimer system_timer;
+inline SystemTimer system_timer;
