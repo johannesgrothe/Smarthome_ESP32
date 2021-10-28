@@ -22,5 +22,7 @@ public:
 
   uint8_t getGadgetCount() const;
 
+  void forwardEvent(const std::shared_ptr<Event>& event);
+
   void refresh();
 };

@@ -40,10 +40,10 @@ private:
   std::shared_ptr<RequestGadget> network_;
 
   // Infrared-gadget receiving and/or sending infrared codes
-  std::shared_ptr<IR_Gadget> ir_gadget;
+  std::shared_ptr<IR_Gadget> ir_gadget_;
 
   // Radio-gadget receiving and/or sending 433mhz-codes
-  std::shared_ptr<Radio_Gadget> radio_gadget;
+  std::shared_ptr<Radio_Gadget> radio_gadget_;
 
   //region API_MANAGER_DELEGATE
 

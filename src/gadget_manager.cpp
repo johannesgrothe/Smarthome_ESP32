@@ -37,3 +37,12 @@ void GadgetManager::refresh() {
     gadget->refresh();
   }
 }
+
+void GadgetManager::forwardEvent(const std::shared_ptr<Event>& event) {
+  if (event == nullptr) {
+    return;
+  }
+  for (const auto& gadget: gadgets_) {
+    gadget->handleEvent(event->name);
+  }
+}

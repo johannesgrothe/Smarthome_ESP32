@@ -34,4 +34,4 @@ void SystemTimer::setTime(const unsigned long long new_time, const unsigned long
   logger_i(TAG, "Momentary System Time: %d", getTime());
 }
 
-inline SystemTimer system_timer;
+SystemTimer system_timer;

@@ -32,10 +32,11 @@ void EventManager::handleEvent(const std::shared_ptr<Event> &event) {
   std::tuple<std::string, unsigned long long> add_tuple(event->name, event->timestamp);
 
   for (int i = 0; i < last_events_.size(); i++) {
-    auto event_name = std::get<0>(last_events_[i]);
+    auto list_event = last_events_[i];
+    auto event_name = std::get<0>(list_event);
     if (event_name == event->name) {
       replace_index = i;
-      if (std::get<1>(last_events_[i]) + 50 < event->timestamp) {
+      if (std::get<1>(list_event) + 50 < event->timestamp) {
         out_queue_.push(event);
       }
     }

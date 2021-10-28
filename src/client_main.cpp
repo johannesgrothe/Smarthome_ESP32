@@ -17,8 +17,8 @@ ClientMain::ClientMain(BootMode boot_mode, const SystemConfig &system_config, co
     gadget_manager_(nullptr),
     event_manager_(nullptr),
     network_(nullptr),
-    ir_gadget(nullptr),
-    radio_gadget(nullptr) {
+    ir_gadget_(nullptr),
+    radio_gadget_(nullptr) {
   logger_i("System", "Launching...");
   logger_i("System", "Software Info:");
   logger_i("System", "Flash Date: %s", getSoftwareFlashDate().c_str());
@@ -49,6 +49,7 @@ ClientMain::ClientMain(BootMode boot_mode, const SystemConfig &system_config, co
         HardwareController::rebootChip("Network initialization failed.", 15);
       }
 
+      initEventMapping(event_config);
       initConnectors(system_config);
       initGadgets(gadget_config);
 
@@ -85,10 +86,10 @@ bool ClientMain::initConnectors(const SystemConfig &config) {
   logger_i("System", "Creating IR-Gadget:");
 
   if (ir_recv || ir_send) {
-    ir_gadget = std::make_shared<IR_Gadget>(ir_recv, ir_send);
+    ir_gadget_ = std::make_shared<IR_Gadget>(ir_recv, ir_send);
   } else {
     logger_i("System", "No IR Configured");
-    ir_gadget = nullptr;
+    ir_gadget_ = nullptr;
   }
 
   logger_i("System", "Creating Radio-Gadget:");
@@ -97,7 +98,7 @@ bool ClientMain::initConnectors(const SystemConfig &config) {
     logger_i("System", "Radio Configured bot not implemented");
   } else {
     logger_i("System", "No Radio Configured");
-    radio_gadget = nullptr;
+    radio_gadget_ = nullptr;
   }
 
   return true;
@@ -109,7 +110,7 @@ bool ClientMain::initGadgets(const GadgetConfig &config) {
 
   auto eeprom_gadgets = config.gadgets;
 
-  auto factory = GadgetFactory(ir_gadget, radio_gadget);
+  auto factory = GadgetFactory(ir_gadget_, radio_gadget_);
 
   logger_i("System", "Initializing Gadgets: %d", eeprom_gadgets.size());
 
@@ -214,6 +215,27 @@ void ClientMain::loopSystem() {
   if (network_->hasRequest()) {
     auto req = network_->getRequest();
     api_manager_->handleRequest(req);
+  }
+
+  if (ir_gadget_ != nullptr) {
+    ir_gadget_->refresh();
+    if (ir_gadget_->hasNewCommand()) {
+      auto command = ir_gadget_->getCommand();
+      event_manager_->handleCode(command->getCode());
+    }
+  }
+
+  if (radio_gadget_ != nullptr) {
+    radio_gadget_->refresh();
+    if (radio_gadget_->hasNewCommand()) {
+      auto command = radio_gadget_->getCommand();
+      event_manager_->handleCode(command->getCode());
+    }
+  }
+
+  if (event_manager_->hasEvent()) {
+    auto event = event_manager_->getEvent();
+    gadget_manager_->forwardEvent(event);
   }
 }
 
