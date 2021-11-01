@@ -1,5 +1,8 @@
 #include "system_config.h"
+
+#include <utility>
 #include "../crc_calculator.h"
+#include "../console_logger.h"
 
 SystemConfig::SystemConfig(std::string id,
                            NetworkMode network_mode,

@@ -63,7 +63,7 @@ ClientMain::ClientMain(BootMode boot_mode, const SystemConfig &system_config, co
   logger_i("System", "Free Heap: %d", ESP.getFreeHeap());
   #endif
 
-  initApi(std::string());
+  initApi(system_config.id);
 }
 
 bool ClientMain::initNetwork(const SystemConfig &config, NetworkMode mode) {
@@ -184,11 +184,12 @@ bool ClientMain::initApi(const std::string& client_id) {
   logger_i("System", "Client ID: '%s'", client_id.c_str());
 
   api_manager_ = std::make_shared<ApiManager>(this, network_, runtime_id, client_id);
+  scheduled_messages_ = std::make_shared<ScheduledMessagesManager>(api_manager_);
   return true;
 }
 
 void ClientMain::handleGadgetUpdate(GadgetMeta gadget) {
-
+  //TODO: implement
 }
 
 void ClientMain::handleEvent(Event event) {
@@ -217,6 +218,8 @@ void ClientMain::loopSystem() {
     api_manager_->handleRequest(req);
   }
 
+  scheduled_messages_->loop();
+
   if (ir_gadget_ != nullptr) {
     ir_gadget_->refresh();
     if (ir_gadget_->hasNewCommand()) {
@@ -233,10 +236,13 @@ void ClientMain::loopSystem() {
     }
   }
 
-  if (event_manager_->hasEvent()) {
-    auto event = event_manager_->getEvent();
-    gadget_manager_->forwardEvent(event);
+  if (event_manager_ != nullptr) {
+    if (event_manager_->hasEvent()) {
+      auto event = event_manager_->getEvent();
+      gadget_manager_->forwardEvent(event);
+    }
   }
+
 }
 
 void ClientMain::loopGadgets() {

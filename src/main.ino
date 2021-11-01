@@ -12,6 +12,8 @@
 
 //region GLOBAL VARIABLES
 
+static const char *TAG = "Initialization";
+
 // Main class instance, handles the complete system
 std::shared_ptr<ClientMain> main;
 
@@ -114,6 +116,7 @@ std::shared_ptr<GadgetConfig> loadBackupGadgetConfig() {
  * Creates and starts the tasks used by the system
  */
 static void createTasks() {
+  logger_i(TAG, "Creating tasks...");
 //  xTaskCreatePinnedToCore(
 //      mainTask,              // Task function.
 //      "Smarthome_Main",      // String with name of task.
@@ -149,6 +152,7 @@ static void createTasks() {
 //      1,
 //      &heartbeat_task,
 //      1);
+  logger_i(TAG, "Tasks up and running.");
 }
 
 //endregion TASKS
@@ -161,6 +165,8 @@ static void createTasks() {
 void setup() {
   Serial.begin(SERIAL_SPEED);
 
+  logger_i(TAG, "Launching...");
+
   storage = std::make_shared<EepromStorage>();
 
   auto system_config = storage->loadSystemConfig();
@@ -168,17 +174,17 @@ void setup() {
   auto event_config = storage->loadEventConfig();
 
   if (system_config == nullptr) {
-    logger_e("Initialization", "Could not load system config, falling back to all backup configs");
+    logger_e(TAG, "Could not load system config, falling back to all backup configs");
     system_config = loadBackupSystemConfig();
     gadget_config = loadBackupGadgetConfig();
     event_config = loadBackupEventConfig();
   } else {
     if (gadget_config == nullptr) {
-      logger_e("Initialization", "Could not load gadget config, falling back to backup config");
+      logger_e(TAG, "Could not load gadget config, falling back to backup config");
       gadget_config = loadBackupGadgetConfig();
     }
     if (event_config == nullptr) {
-      logger_e("Initialization", "Could not load event mapping config, falling back to backup config");
+      logger_e(TAG, "Could not load event mapping config, falling back to backup config");
       event_config = loadBackupEventConfig();
     }
   }
@@ -189,7 +195,7 @@ void setup() {
                                       *system_config,
                                       *gadget_config,
                                       *event_config);
-
+  logger_i(TAG, "Main launched successfully");
   createTasks();
 }
 

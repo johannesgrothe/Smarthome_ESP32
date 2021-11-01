@@ -14,6 +14,7 @@
 #include "storage/system_storage.h"
 #include "connectors/ir_gadget.h"
 #include "connectors/radio_gadget.h"
+#include "scheduled_messages_manager.h"
 
 #include "gadget_manager.h"
 #include "event_manager.h"
@@ -29,6 +30,9 @@ private:
 
   // Helper to handle all incoming and outgoing network traffic
   std::shared_ptr<ApiManager> api_manager_;
+
+  // Manages the sending of scheduled messages like the heartbeat
+  std::shared_ptr<ScheduledMessagesManager> scheduled_messages_;
 
   // Stores and manages all gadgets
   std::shared_ptr<GadgetManager> gadget_manager_;

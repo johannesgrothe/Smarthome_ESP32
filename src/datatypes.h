@@ -12,6 +12,7 @@ using bitfield_set = std::array<bool, 8>;
 // Ports needed by the gadget
 using port_set = std::array<uint8_t, GADGET_PIN_BLOCK_LEN>;
 
+// (Characteristic, New Step Value)
 using gadget_mapping_tuple = std::tuple<uint16_t, uint16_t>;
 
 // Map of event names gadget actions: event_name -> [(characteristic, value)]
