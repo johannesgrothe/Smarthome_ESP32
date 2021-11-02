@@ -2,7 +2,7 @@
 
 //#define STATIC_CONFIG_ACTIVE
 
-#include "config_from_json.h"
+#include "../api/config_decoder.h"
 #include "system_storage.h"
 
 #ifdef STATIC_CONFIG_ACTIVE

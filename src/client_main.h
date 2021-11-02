@@ -55,6 +55,12 @@ private:
 
   void handleEvent(Event event) override;
 
+  bool handleSystemConfigWrite(SystemConfig cfg) override;
+
+  bool handleGadgetConfigWrite(GadgetConfig cfg) override;
+
+  bool handleEventConfigWrite(EventConfig cfg) override;
+
   ClientMeta getClientData() override;
 
   std::vector<GadgetMeta> getGadgetData() override;

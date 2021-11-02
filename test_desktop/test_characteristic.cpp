@@ -1,6 +1,6 @@
 #include "catch.hpp"
 
-#include "../test_fixtures/gadget_jsons.h"
+#include "../test_fixtures/api_jsons.h"
 #include "../src/gadgets/characteristic.h"
 
 

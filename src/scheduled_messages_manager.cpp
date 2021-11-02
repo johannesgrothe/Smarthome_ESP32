@@ -1,7 +1,6 @@
 #include "scheduled_messages_manager.h"
 
 #include <utility>
-#include "system_timer.h"
 
 static const char *TAG = "ScheduledMessagesManager";
 

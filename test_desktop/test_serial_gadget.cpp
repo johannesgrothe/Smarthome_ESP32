@@ -3,7 +3,6 @@
 #include "../src/connectors/serial_gadget.h"
 
 TEST_CASE("Test Serial Gadget", "[Network]") {
-//  auto network = SerialGadget();
   SerialGadget network;
 
   DynamicJsonDocument payload(400);

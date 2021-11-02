@@ -5,7 +5,7 @@
 #include "../src/test_helpers/request_response_listener.h"
 #include "../src/api/protocol_paths.h"
 #include "../src/test_dummys/request_gadget_dummy.h"
-#include "../test_fixtures/gadget_jsons.h"
+#include "../test_fixtures/api_jsons.h"
 
 #define TEST_CLIENT_ID "test_client"
 #define TEST_BRIDGE_ID "test_bridge"

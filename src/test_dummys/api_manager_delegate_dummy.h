@@ -36,4 +36,16 @@ public:
     return out_vector;
   }
 
+  bool handleSystemConfigWrite(SystemConfig cfg) override {
+    return true;
+  }
+
+  bool handleGadgetConfigWrite(GadgetConfig cfg) override {
+    return true;
+  }
+
+  bool handleEventConfigWrite(EventConfig cfg) override {
+    return true;
+  }
+
 };

@@ -1,4 +1,5 @@
 #include "api_decoder.h"
+#include "config_decoder.h"
 
 GadgetMeta ApiDecoder::decodeGadget(DynamicJsonDocument gadget_data) {
   std::string name = gadget_data["name"];
@@ -19,4 +20,16 @@ CharacteristicMeta ApiDecoder::decodeCharacteristic(DynamicJsonDocument characte
   int step_value = characteristic_data["step_value"];
 
   return {characteristic_type, min_val, max_val, step_value, steps};
+}
+
+std::shared_ptr<SystemConfig> ApiDecoder::decodeSystemConfig(const DynamicJsonDocument& data) {
+  return ConfigDecoder::decodeSystemConfig(data);
+}
+
+std::shared_ptr<EventConfig> ApiDecoder::decodeEventConfig(const DynamicJsonDocument& data) {
+  return ConfigDecoder::decodeEventConfig(data);
+}
+
+std::shared_ptr<GadgetConfig> ApiDecoder::decodeGadgetConfig(const DynamicJsonDocument& data) {
+  return ConfigDecoder::decodeGadgetConfig(data);
 }

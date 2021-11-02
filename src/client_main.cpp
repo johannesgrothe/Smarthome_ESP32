@@ -196,6 +196,27 @@ void ClientMain::handleEvent(Event event) {
   event_manager_->handleEvent(std::make_shared<Event>(event));
 }
 
+bool ClientMain::handleSystemConfigWrite(SystemConfig cfg) {
+  if (system_storage_ == nullptr) {
+    return false;
+  }
+  return system_storage_->saveSystemConfig(cfg);
+}
+
+bool ClientMain::handleGadgetConfigWrite(GadgetConfig cfg) {
+  if (system_storage_ == nullptr) {
+    return false;
+  }
+  return system_storage_->saveGadgetConfig(cfg);
+}
+
+bool ClientMain::handleEventConfigWrite(EventConfig cfg) {
+  if (system_storage_ == nullptr) {
+    return false;
+  }
+  return system_storage_->saveEventConfig(cfg);
+}
+
 ClientMeta ClientMain::getClientData() {
   return {{},
           system_mode_,

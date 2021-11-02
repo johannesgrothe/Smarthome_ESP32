@@ -54,15 +54,51 @@ void ApiManager::handleRequest(const std::shared_ptr<Request> &req) {
     return;
   }
 
-  // Code from bridge
-  if (req->getPath() == PATH_SYNC_CODE) {
-    handleCodeUpdate(req);
-    return;
-  }
-
   // Event from Bridge
   if (req->getPath() == PATH_SYNC_EVENT) {
     handleEventUpdate(req);
+    return;
+  }
+
+  // Reset Config
+  if (req->getPath() == PATH_CONFIG_RESET) {
+    // TODO: implement
+    return;
+  }
+
+  // Write System Config
+  if (req->getPath() == PATH_CONFIG_SYSTEM_WRITE) {
+    auto cfg = ApiDecoder::decodeSystemConfig(req->getPayload());
+    if (cfg == nullptr) {
+      req->respond(false);
+    } else {
+      bool status = delegate_->handleSystemConfigWrite(*cfg);
+      req->respond(status);
+    }
+    return;
+  }
+
+  // Write Event Config
+  if (req->getPath() == PATH_CONFIG_EVENTS_WRITE) {
+    auto cfg = ApiDecoder::decodeEventConfig(req->getPayload());
+    if (cfg == nullptr) {
+      req->respond(false);
+    } else {
+      bool status = delegate_->handleEventConfigWrite(*cfg);
+      req->respond(status);
+    }
+    return;
+  }
+
+  // Write Gadget Config
+  if (req->getPath() == PATH_CONFIG_GADGETS_WRITE) {
+    auto cfg = ApiDecoder::decodeGadgetConfig(req->getPayload());
+    if (cfg == nullptr) {
+      req->respond(false);
+    } else {
+      bool status = delegate_->handleGadgetConfigWrite(*cfg);
+      req->respond(status);
+    }
     return;
   }
 
@@ -103,12 +139,16 @@ void ApiManager::handleGadgetUpdate(const std::shared_ptr<Request> &req) {
   }
 }
 
-void ApiManager::handleCodeUpdate(const std::shared_ptr<Request> &req) {
-  // TODO: implement forwarding incoming code
-}
-
 void ApiManager::handleEventUpdate(const std::shared_ptr<Request> &req) {
   // TODO: implement forwarding incoming event
+}
+
+void ApiManager::handleConfigWrite(const std::shared_ptr<Request> &req) {
+
+}
+
+void ApiManager::handleConfigReset(const std::shared_ptr<Request> &req) {
+
 }
 
 // endregion HANDLE INCOMING REQUESTS

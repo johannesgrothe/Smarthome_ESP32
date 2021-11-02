@@ -33,9 +33,11 @@ private:
 
   void handleGadgetUpdate(const std::shared_ptr<Request>& req);
 
-  void handleCodeUpdate(const std::shared_ptr<Request>& req);
-
   void handleEventUpdate(const std::shared_ptr<Request>& req);
+
+  void handleConfigWrite(const std::shared_ptr<Request>& req);
+
+  void handleConfigReset(const std::shared_ptr<Request>& req);
 
 public:
 

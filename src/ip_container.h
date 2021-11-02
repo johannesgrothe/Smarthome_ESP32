@@ -10,7 +10,7 @@ private:
 public:
   IPContainer(uint8_t first, uint8_t second, uint8_t third, uint8_t forth);
 
-  explicit IPContainer(std::string data);
+//  explicit IPContainer(std::string data);
 
   const uint8_t *getData() const;
 

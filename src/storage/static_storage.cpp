@@ -26,7 +26,7 @@ std::shared_ptr<SystemConfig> StaticStorage::loadSystemConfig() {
     return nullptr;
   }
 
-  auto config = createConfigFromJson(static_json_config);
+  auto config = ConfigDecoder::decodeSystemConfig(static_json_config);
 
   if (config == nullptr) {
     logger_e("StaticStorage", "Could not load static config: Failed to create config from json");
