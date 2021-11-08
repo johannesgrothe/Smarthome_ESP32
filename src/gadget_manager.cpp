@@ -46,3 +46,13 @@ void GadgetManager::forwardEvent(const std::shared_ptr<Event>& event) {
     gadget->handleEvent(event->name);
   }
 }
+
+void GadgetManager::forwardUpdate(const GadgetMeta& data) {
+  for (const auto& gadget: gadgets_) {
+    if (gadget->getName() == data.name) {
+      for (auto characteristic: data.characteristics) {
+        gadget->handleCharacteristicUpdate(characteristic.type, characteristic.step_val);
+      }
+    }
+  }
+}

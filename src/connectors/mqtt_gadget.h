@@ -22,6 +22,9 @@ protected:
 
   std::string password_;
 
+  // Channel the gadget operates in
+  std::string channel_;
+
   bool has_credentials_;
 
   const std::string& client_name_;

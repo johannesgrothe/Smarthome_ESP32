@@ -62,47 +62,29 @@ void ApiManager::handleRequest(const std::shared_ptr<Request> &req) {
 
   // Reset Config
   if (req->getPath() == PATH_CONFIG_RESET) {
-    // TODO: implement
+    handleConfigReset(req);
     return;
   }
 
   // Write System Config
   if (req->getPath() == PATH_CONFIG_SYSTEM_WRITE) {
-    auto cfg = ApiDecoder::decodeSystemConfig(req->getPayload());
-    if (cfg == nullptr) {
-      req->respond(false);
-    } else {
-      bool status = delegate_->handleSystemConfigWrite(*cfg);
-      req->respond(status);
-    }
+    handleSystemConfigWrite(req);
     return;
   }
 
   // Write Event Config
   if (req->getPath() == PATH_CONFIG_EVENTS_WRITE) {
-    auto cfg = ApiDecoder::decodeEventConfig(req->getPayload());
-    if (cfg == nullptr) {
-      req->respond(false);
-    } else {
-      bool status = delegate_->handleEventConfigWrite(*cfg);
-      req->respond(status);
-    }
+    handleEventConfigWrite(req);
     return;
   }
 
   // Write Gadget Config
   if (req->getPath() == PATH_CONFIG_GADGETS_WRITE) {
-    auto cfg = ApiDecoder::decodeGadgetConfig(req->getPayload());
-    if (cfg == nullptr) {
-      req->respond(false);
-    } else {
-      bool status = delegate_->handleGadgetConfigWrite(*cfg);
-      req->respond(status);
-    }
+    handleGadgetConfigWrite(req);
     return;
   }
 
-  logger_e("ApiManager", "Received request to unhandled path");
+  logger_e("ApiManager", "Received request to unhandled path '%s'", req->getPath().c_str());
 }
 
 uint16_t ApiManager::genRequestID() {
@@ -143,12 +125,38 @@ void ApiManager::handleEventUpdate(const std::shared_ptr<Request> &req) {
   // TODO: implement forwarding incoming event
 }
 
-void ApiManager::handleConfigWrite(const std::shared_ptr<Request> &req) {
-
+void ApiManager::handleConfigReset(const std::shared_ptr<Request> &req) {
+  // TODO: implement resetting config
 }
 
-void ApiManager::handleConfigReset(const std::shared_ptr<Request> &req) {
+void ApiManager::handleSystemConfigWrite(const std::shared_ptr<Request> &req) {
+  auto cfg = ApiDecoder::decodeSystemConfig(req->getPayload());
+  if (cfg == nullptr) {
+    req->respond(false);
+  } else {
+    bool status = delegate_->handleSystemConfigWrite(*cfg);
+    req->respond(status);
+  }
+}
 
+void ApiManager::handleEventConfigWrite(const std::shared_ptr<Request> &req) {
+  auto cfg = ApiDecoder::decodeEventConfig(req->getPayload());
+  if (cfg == nullptr) {
+    req->respond(false);
+  } else {
+    bool status = delegate_->handleEventConfigWrite(*cfg);
+    req->respond(status);
+  }
+}
+
+void ApiManager::handleGadgetConfigWrite(const std::shared_ptr<Request> &req) {
+  auto cfg = ApiDecoder::decodeGadgetConfig(req->getPayload());
+  if (cfg == nullptr) {
+    req->respond(false);
+  } else {
+    bool status = delegate_->handleGadgetConfigWrite(*cfg);
+    req->respond(status);
+  }
 }
 
 // endregion HANDLE INCOMING REQUESTS

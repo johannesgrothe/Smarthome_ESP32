@@ -2,8 +2,8 @@
 
 #include <vector>
 
-#define PATH_HEARTBEAT "smarthome/heartbeat"
-#define PATH_SYNC_REQ "smarthome/sync"
+#define PATH_HEARTBEAT "heartbeat"
+#define PATH_SYNC_REQ "sync"
 
 // Testing
 #define PATH_ECHO_TEST "test"

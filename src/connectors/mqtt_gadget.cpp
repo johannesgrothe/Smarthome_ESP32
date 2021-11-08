@@ -57,6 +57,17 @@ void MQTTGadget::callback(char *topic, const byte *payload, const unsigned int l
   auto req_path = local_topic.str();
   auto req_body = local_message.str();
 
+  if (req_path.size() < channel_.size() + 2) {
+    return;
+  }
+
+  // Filter out channel
+  local_topic = std::stringstream();
+  for (unsigned long i = channel_.size() + 1; i < req_path.size(); i++) {
+    local_topic << req_path[i];
+  }
+  req_path = local_topic.str();
+
   DynamicJsonDocument doc(2056);
   deserializeJson(doc, req_body);
   if (!doc.containsKey("session_id")) {
@@ -91,7 +102,10 @@ void MQTTGadget::executeRequestSending(std::shared_ptr<Request> req) {
 //  bool status = mqttClient_->publish(topic.c_str(), body.c_str());
 //  mqttClient_->endPublish();
 
-  bool status = mqttClient_->beginPublish(topic.c_str(), msg_len, false);
+  std::stringstream topic_strm;
+  topic_strm << channel_ << "/" << topic;
+
+  bool status = mqttClient_->beginPublish(topic_strm.str().c_str(), msg_len, false);
   uint16_t k;
   for (
       k = 0;
@@ -118,6 +132,7 @@ MQTTGadget::MQTTGadget(const std::string &client_name,
     mqtt_port_(mqtt_port),
     username_(),
     password_(),
+    channel_("smarthome"),
     has_credentials_(true),
     client_name_(client_name) {
   if (wifiIsInitialized()) {
@@ -143,6 +158,7 @@ MQTTGadget::MQTTGadget(const std::string &client_name, std::string wifi_ssid, st
     mqtt_port_(mqtt_port),
     username_(),
     password_(),
+    channel_("smarthome"), // TODO: add to constructor to allow for changes
     has_credentials_(false),
     client_name_(client_name) {
   if (wifiIsInitialized()) {

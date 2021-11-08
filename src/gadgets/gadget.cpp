@@ -68,9 +68,9 @@ bool Gadget::hasRadio() const {
 }
 
 bool Gadget::handleCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) {
-  logger_i(getName(), "Updating Characteristic %d -> %d", int(characteristic), step_value);
   auto status = setCharacteristicValue(characteristic, step_value);
   if (status) {
+    logger_i(getName(), "Updating Characteristic %d -> %d", int(characteristic), step_value);
     executeCharacteristicUpdate(characteristic, step_value);
   }
   return status;

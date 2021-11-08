@@ -3,6 +3,7 @@
 #include <memory>
 #include "gadgets/gadget.h"
 #include "system_settings.h"
+#include "api/gadget_meta.h"
 
 class GadgetManager {
 private:
@@ -23,6 +24,8 @@ public:
   uint8_t getGadgetCount() const;
 
   void forwardEvent(const std::shared_ptr<Event>& event);
+
+  void forwardUpdate(const GadgetMeta& data);
 
   void refresh();
 };
