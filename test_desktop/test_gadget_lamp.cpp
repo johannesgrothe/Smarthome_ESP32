@@ -17,11 +17,11 @@ TEST_CASE("Test Lamp", "[Gadget]") {
 
   SECTION("Test Status") {
     lamp.handleCharacteristicUpdate(CharacteristicIdentifier::status, 0);
-    logger_i("test", "step_val = %d", lamp.getCharacteristic(CharacteristicIdentifier::status)->step_value);
-    CHECK(lamp.getCharacteristic(CharacteristicIdentifier::status)->step_value == 0);
+    logger_i("test", "step_val = %d", lamp.getCharacteristic(CharacteristicIdentifier::status)->getStepValue());
+    CHECK(lamp.getCharacteristic(CharacteristicIdentifier::status)->getStepValue() == 0);
     lamp.handleCharacteristicUpdate(CharacteristicIdentifier::status, 1);
-    logger_i("test", "step_val = %d", lamp.getCharacteristic(CharacteristicIdentifier::status)->step_value);
-    CHECK(lamp.getCharacteristic(CharacteristicIdentifier::status)->step_value == 1);
+    logger_i("test", "step_val = %d", lamp.getCharacteristic(CharacteristicIdentifier::status)->getStepValue());
+    CHECK(lamp.getCharacteristic(CharacteristicIdentifier::status)->getStepValue() == 1);
   }
 
 //  lamp.setStatus(false);

@@ -1,4 +1,5 @@
 #include "eeprom_manager.h"
+#include "../gadgets/gadget_enums.h"
 
 #include "eeprom_gadget_mapping_coder.h"
 

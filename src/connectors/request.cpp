@@ -44,7 +44,7 @@ DynamicJsonDocument Request::getPayload() const {
 }
 
 bool Request::respond(bool ack) {
-  return respond(ack, path_);
+  return respond(ack, "");
 }
 
 bool Request::respond(bool ack, const std::string &status_msg) {
@@ -74,6 +74,16 @@ bool Request::respond(const std::string &res_path, const DynamicJsonDocument &pa
     logger_e("Request", "Failed to respond to request: No response callback set");
     return false;
   }
+
+  // TODO: needed?
+//  if (!payload.containsKey("ack")) {
+//    payload["ack"] = nullptr;
+//  }
+//
+//  if (!payload.containsKey("status_msg")) {
+//    payload["status_msg"] = nullptr;
+//  }
+
   auto new_sender = receiver_;
   auto new_receiver = sender_;
   auto req = std::make_shared<Request>(res_path,
@@ -81,7 +91,6 @@ bool Request::respond(const std::string &res_path, const DynamicJsonDocument &pa
                                        new_sender,
                                        new_receiver,
                                        payload);
-  // TODO: change how responses are handled by returning the response request and not using a callback
   send_answer_(req);
   return true;
 }

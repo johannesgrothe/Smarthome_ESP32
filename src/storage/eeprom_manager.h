@@ -17,7 +17,6 @@
 
 #include "../network_mode.h"
 #include "../pin_profile.h"
-#include "../gadgets/gadget_characteristic_settings.h"
 #include "../status_codes.h"
 #include "../ip_container.h"
 #include "../string_methods.h"

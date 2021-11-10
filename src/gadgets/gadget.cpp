@@ -1,6 +1,7 @@
 #include "gadget.h"
 
 #include <utility>
+#include <c++/v1/vector>
 
 Gadget::Gadget::Gadget(std::string name, GadgetType type, std::vector<Characteristic> characteristics) :
     init_error(false),
@@ -100,17 +101,8 @@ void Gadget::setMapping(std::vector<gadget_event_map> event_mapping) {
   event_mapping_ = std::move(event_mapping);
 }
 
-std::vector<GadgetCharacteristicSettings> Gadget::getCharacteristics() {
-  std::vector<GadgetCharacteristicSettings> out_list;
-  for (auto c: characteristics_) {
-    GadgetCharacteristicSettings data(GadgetCharacteristicSettings(c.type,
-                                                                   c.min,
-                                                                   c.max,
-                                                                   c.steps,
-                                                                   c.getStepValue()));
-    out_list.push_back(data);
-  }
-  return out_list;
+std::vector<Characteristic> Gadget::getCharacteristics() {
+  return characteristics_;
 }
 
 uint16_t Gadget::getCharacteristicValue(CharacteristicIdentifier characteristic) {
@@ -136,14 +128,10 @@ bool Gadget::setCharacteristicValue(CharacteristicIdentifier characteristic, uin
   return false;
 }
 
-std::shared_ptr<GadgetCharacteristicSettings> Gadget::getCharacteristic(CharacteristicIdentifier identifier) {
+std::shared_ptr<Characteristic> Gadget::getCharacteristic(CharacteristicIdentifier identifier) {
   for (auto c: characteristics_) {
     if (c.type == identifier) {
-      return std::make_shared<GadgetCharacteristicSettings>(c.type,
-                                                            c.min,
-                                                            c.max,
-                                                            c.steps,
-                                                            c.getStepValue());
+      return std::make_shared<Characteristic>(c);
     }
   }
   return nullptr;

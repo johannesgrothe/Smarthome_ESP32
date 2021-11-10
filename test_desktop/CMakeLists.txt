@@ -70,6 +70,7 @@ set(ADDITIONAL_SOURCES
         ../src/scheduled_messages_manager.cpp
         ../src/json_validator.cpp
         ../src/api/config_decoder.cpp
+        ../src/api/gadget_meta_coder.cpp
         )
 
 set(TEST_SOURCES)

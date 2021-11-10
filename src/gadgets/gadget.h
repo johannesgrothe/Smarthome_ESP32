@@ -11,10 +11,10 @@
 
 #include "../connectors/ir_gadget.h"
 #include "../connectors/radio_gadget.h"
-#include "gadget_characteristic_settings.h"
 #include "../connectors/event.h"
 #include "../hardware_controller.h"
 #include "characteristic.h"
+#include "../api/characteristic_meta.h"
 
 
 // List of all Gadget Types
@@ -140,14 +140,14 @@ public:
    * @param characteristic_str [out] a string containing all characteristics
    * @return whether writing the characteristics to the string was successful
    */
-  std::vector<GadgetCharacteristicSettings> getCharacteristics();
+  std::vector<Characteristic> getCharacteristics();
 
   /**
    * Returns the data for the selected characteristic
    * @param identifier Characteristic to get
    * @return The characteristic data
    */
-  std::shared_ptr<GadgetCharacteristicSettings> getCharacteristic(CharacteristicIdentifier identifier);
+  std::shared_ptr<Characteristic> getCharacteristic(CharacteristicIdentifier identifier);
 
   /**
    * Checks if the gadget was successfully initialized
@@ -156,8 +156,8 @@ public:
   bool hasInitError() const;
 
   /**
-   * Checks if the gadget has changed since the last refresh
-   * @return Whether the gadget has changed since the last refresh
+   * Checks if any characteristic of the gadget has changed since last check
+   * @return Whether any characteristic of the gadget has changed since last check
    */
   bool hasChanged();
 

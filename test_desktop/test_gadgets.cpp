@@ -36,21 +36,21 @@ TEST_CASE("Test Gadget", "[Gadget]") {
   }
 
   SECTION("Test Characteristic Updates") {
-    CHECK(gadget.getCharacteristic(CharacteristicIdentifier::status)->step_value == 1);
+    CHECK(gadget.getCharacteristic(CharacteristicIdentifier::status)->getStepValue() == 1);
     CHECK(gadget.handleCharacteristicUpdate(CharacteristicIdentifier::status, 0) == true);
-    CHECK(gadget.getCharacteristic(CharacteristicIdentifier::status)->step_value == 0);
+    CHECK(gadget.getCharacteristic(CharacteristicIdentifier::status)->getStepValue() == 0);
     CHECK(gadget.handleCharacteristicUpdate(CharacteristicIdentifier::status, 1) == true);
-    CHECK(gadget.getCharacteristic(CharacteristicIdentifier::status)->step_value == 1);
+    CHECK(gadget.getCharacteristic(CharacteristicIdentifier::status)->getStepValue() == 1);
     CHECK(gadget.handleCharacteristicUpdate(CharacteristicIdentifier::status, 1) == false);
-    CHECK(gadget.getCharacteristic(CharacteristicIdentifier::status)->step_value == 1);
+    CHECK(gadget.getCharacteristic(CharacteristicIdentifier::status)->getStepValue() == 1);
 
-    CHECK(gadget.getCharacteristic(CharacteristicIdentifier::temperature)->step_value == 0);
+    CHECK(gadget.getCharacteristic(CharacteristicIdentifier::temperature)->getStepValue() == 0);
     CHECK(gadget.handleCharacteristicUpdate(CharacteristicIdentifier::temperature, 1) == true);
-    CHECK(gadget.getCharacteristic(CharacteristicIdentifier::temperature)->step_value == 1);
+    CHECK(gadget.getCharacteristic(CharacteristicIdentifier::temperature)->getStepValue() == 1);
     CHECK(gadget.handleCharacteristicUpdate(CharacteristicIdentifier::temperature, 0) == true);
-    CHECK(gadget.getCharacteristic(CharacteristicIdentifier::temperature)->step_value == 0);
+    CHECK(gadget.getCharacteristic(CharacteristicIdentifier::temperature)->getStepValue() == 0);
     CHECK(gadget.handleCharacteristicUpdate(CharacteristicIdentifier::temperature, 0) == false);
-    CHECK(gadget.getCharacteristic(CharacteristicIdentifier::temperature)->step_value == 0);
+    CHECK(gadget.getCharacteristic(CharacteristicIdentifier::temperature)->getStepValue() == 0);
   }
 
   SECTION("Test 'changed'-flag") {

@@ -132,30 +132,42 @@ void ApiManager::handleConfigReset(const std::shared_ptr<Request> &req) {
 void ApiManager::handleSystemConfigWrite(const std::shared_ptr<Request> &req) {
   auto cfg = ApiDecoder::decodeSystemConfig(req->getPayload());
   if (cfg == nullptr) {
-    req->respond(false);
+    req->respond(false, "Could not decode config properly");
   } else {
     bool status = delegate_->handleSystemConfigWrite(*cfg);
-    req->respond(status);
+    if (status) {
+      req->respond(true, "Writing of system config was successful");
+    } else {
+      req->respond(false, "Failed to write system config");
+    }
   }
 }
 
 void ApiManager::handleEventConfigWrite(const std::shared_ptr<Request> &req) {
   auto cfg = ApiDecoder::decodeEventConfig(req->getPayload());
   if (cfg == nullptr) {
-    req->respond(false);
+    req->respond(false, "Could not decode config properly");
   } else {
     bool status = delegate_->handleEventConfigWrite(*cfg);
-    req->respond(status);
+    if (status) {
+      req->respond(true, "Writing of event config was successful");
+    } else {
+      req->respond(false, "Failed to write event config");
+    }
   }
 }
 
 void ApiManager::handleGadgetConfigWrite(const std::shared_ptr<Request> &req) {
   auto cfg = ApiDecoder::decodeGadgetConfig(req->getPayload());
   if (cfg == nullptr) {
-    req->respond(false);
+    req->respond(false, "Could not decode config properly");
   } else {
     bool status = delegate_->handleGadgetConfigWrite(*cfg);
-    req->respond(status);
+    if (status) {
+      req->respond(true, "Writing of gadget config was successful");
+    } else {
+      req->respond(false, "Failed to write gadget config");
+    }
   }
 }
 

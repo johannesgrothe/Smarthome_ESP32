@@ -7,6 +7,7 @@
 #include "hardware_controller.h"
 #include "network_loader.h"
 #include "random.h"
+#include "api/gadget_meta_coder.h"
 
 ClientMain::ClientMain(BootMode boot_mode, const SystemConfig &system_config, const GadgetConfig &gadget_config,
                        const EventConfig &event_config) :
@@ -269,6 +270,13 @@ void ClientMain::loopSystem() {
 void ClientMain::loopGadgets() {
   if (gadget_manager_ != nullptr) {
     gadget_manager_->refresh();
+    for (uint8_t i = 0; i < gadget_manager_->getGadgetCount(); i++) {
+      auto gadget = gadget_manager_->getGadget(i);
+      if (gadget->hasChanged()) {
+        auto g = GadgetMetaEncoder::encodeGadget(gadget);
+        api_manager_->publishGadgetUpdate(g);
+      }
+    }
   }
 }
 
