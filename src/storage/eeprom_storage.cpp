@@ -17,7 +17,7 @@ bool EepromStorage::eraseAllConfigs() {
 }
 
 bool EepromStorage::saveSystemConfig(SystemConfig config) {
-
+  logger_i(TAG, "Writing system config");
   // Write ID
   bool write_successful = EepromManager::writeID(config.id);
 
@@ -175,7 +175,7 @@ std::shared_ptr<GadgetConfig> EepromStorage::loadGadgetConfig() {
 }
 
 bool EepromStorage::saveGadgetConfig(GadgetConfig config) {
-
+  logger_i(TAG, "Writing gadget config");
   EepromManager::resetGadgets();
 
   bool write_successful = true;
@@ -224,9 +224,11 @@ std::shared_ptr<EventConfig> EepromStorage::loadEventConfig() {
 }
 
 bool EepromStorage::saveEventConfig(EventConfig config) {
+  logger_i(TAG, "Writing event config");
   auto status = EepromManager::writeEventMapping(config.event_mapping);
 
   if (!status) {
+    logger_e(TAG, "Writing event config failed");
     return false;
   }
 
@@ -234,12 +236,15 @@ bool EepromStorage::saveEventConfig(EventConfig config) {
 
   auto test_cfg = loadEventConfig();
   if (test_cfg == nullptr) {
+    logger_e(TAG, "Written config could not be loaded for verification");
     return false;
   }
 
   if (config != *test_cfg) {
+    logger_e(TAG, "Config loaded for verification does not match the written one");
     return false;
   }
+  logger_i(TAG, "Writing was successful");
   return true;
 }
 

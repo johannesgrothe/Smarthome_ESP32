@@ -12,6 +12,10 @@
 class SerialGadget : public RequestGadget {
 protected:
 
+  std::stringstream buffer_stream_;
+  bool stream_has_data;
+  unsigned long long last_received_;
+
   void executeRequestSending(std::shared_ptr<Request> req) override;
 
   void receiveSerialRequest();

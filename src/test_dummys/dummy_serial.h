@@ -2,8 +2,6 @@
 
 #include "../console_logger.h"
 
-inline void delayMicroseconds(int delay) {}
-
 class DummySerial {
 private:
   std::string mock_data_{};
@@ -44,6 +42,7 @@ public:
   }
 
   void mockData(const std::string& data) {
+    logger_i("DummySerial <<", data);
     mock_data_ = data;
   }
 };

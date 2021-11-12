@@ -1,7 +1,7 @@
 #include "gadget.h"
 
 #include <utility>
-#include <c++/v1/vector>
+#include <vector>
 
 Gadget::Gadget::Gadget(std::string name, GadgetType type, std::vector<Characteristic> characteristics) :
     init_error(false),

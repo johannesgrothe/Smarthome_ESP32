@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #else
 #include <chrono>
+#include <thread>
 #define INPUT 0
 #define OUTPUT 1
 #define LOW 0
@@ -26,6 +27,11 @@ public:
    * @return The current timestamp in milliseconds
    */
   static unsigned long getMillis();
+
+  /**
+   * Sleeps for a set time
+   */
+  static void sleepMilliseconds(uint16_t milliseconds);
 
   /**
    * Sets the mode for a hardware pin

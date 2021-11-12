@@ -159,4 +159,16 @@ public:
    * @return Whether the two requests are identical
    */
   bool operator==(const Request &rhs) const;
+
+  /**
+   * Compares two Requests
+   * @param rhs Request to compare the first request with
+   * @return Whether the two requests are different
+   */
+  bool operator!=(const Request &rhs) const;
 };
+
+inline std::ostream& operator<<(std::ostream& os, Request const& req) {
+  os << "<" << req.getPath() << "[" << req.getID() << "; " << req.getSender() << "; " << req.getReceiver()<< "]>";
+  return os;
+}

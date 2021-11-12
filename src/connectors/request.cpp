@@ -138,6 +138,10 @@ bool Request::operator==(const Request &rhs) const {
          getPayload() == rhs.getPayload();
 }
 
+bool Request::operator!=(const Request &rhs) const {
+  return !(*this == rhs);
+}
+
 void Request::setResponseCallback(std::function<void(std::shared_ptr<Request>)> answer_method) {
   can_respond_ = true;
   send_answer_ = std::move(answer_method);

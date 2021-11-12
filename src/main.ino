@@ -195,6 +195,7 @@ void setup() {
                                       *system_config,
                                       *gadget_config,
                                       *event_config);
+  main->setStorageManager(storage);
   logger_i(TAG, "Main launched successfully");
   createTasks();
 }

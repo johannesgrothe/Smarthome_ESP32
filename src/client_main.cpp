@@ -9,6 +9,8 @@
 #include "random.h"
 #include "api/gadget_meta_coder.h"
 
+static const char *TAG = "Initialization";
+
 ClientMain::ClientMain(BootMode boot_mode, const SystemConfig &system_config, const GadgetConfig &gadget_config,
                        const EventConfig &event_config) :
     ApiManagerDelegate(),
@@ -199,6 +201,7 @@ void ClientMain::handleEvent(Event event) {
 
 bool ClientMain::handleSystemConfigWrite(SystemConfig cfg) {
   if (system_storage_ == nullptr) {
+    logger_e(TAG, "Cannot write system config because of missing storage manager");
     return false;
   }
   return system_storage_->saveSystemConfig(cfg);
@@ -206,6 +209,7 @@ bool ClientMain::handleSystemConfigWrite(SystemConfig cfg) {
 
 bool ClientMain::handleGadgetConfigWrite(GadgetConfig cfg) {
   if (system_storage_ == nullptr) {
+    logger_e(TAG, "Cannot write gadget config because of missing storage manager");
     return false;
   }
   return system_storage_->saveGadgetConfig(cfg);
@@ -213,6 +217,7 @@ bool ClientMain::handleGadgetConfigWrite(GadgetConfig cfg) {
 
 bool ClientMain::handleEventConfigWrite(EventConfig cfg) {
   if (system_storage_ == nullptr) {
+    logger_e(TAG, "Cannot write event config because of missing storage manager");
     return false;
   }
   return system_storage_->saveEventConfig(cfg);
