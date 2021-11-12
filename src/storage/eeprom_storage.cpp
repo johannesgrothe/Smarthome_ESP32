@@ -1,13 +1,14 @@
 #include "eeprom_storage.h"
 
-#include "../string_methods.h"
 #include "eeprom_manager.h"
+
+static const char *TAG = "EepromStorage";
 
 EepromStorage::EepromStorage() {
   initialized_ = EepromManager::initEEPROM();
 
   if (initialized_) {
-    logger_i("EepromStorage", "EEPROM usage: %d / %d bytes", getEEPROMUsage(), EEPROM_SIZE);
+    logger_i(TAG, "EEPROM usage: %d / %d bytes", getEEPROMUsage(), EEPROM_SIZE);
   }
 }
 
