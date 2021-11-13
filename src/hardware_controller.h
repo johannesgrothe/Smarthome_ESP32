@@ -5,10 +5,13 @@
 #else
 #include <chrono>
 #include <thread>
+#include <vector>
+
 #define INPUT 0
 #define OUTPUT 1
 #define LOW 0
 #define HIGH 1
+inline bool pin_sim_values[50]{};
 #endif
 
 #include "console_logger.h"
@@ -52,4 +55,16 @@ public:
    * @param value Value to write
    */
   static void digitalWritePin(uint8_t pin, bool value);
+
+  #ifdef UNIT_TEST
+  /**
+   * TEST: Sets a value received when reading from a certain pin
+   * @param pin Pin to set value for
+   * @param value Value to set
+   */
+  static void lockPinValue(uint8_t pin, bool value) {
+    logger_i("HardwareController DEBUG", "Locking value for pin %d to %d", pin, value);
+    pin_sim_values[pin] = value;
+  }
+  #endif
 };

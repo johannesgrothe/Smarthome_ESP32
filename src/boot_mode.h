@@ -1,12 +1,13 @@
 #pragma once
 
 #include "pin_profile.h"
+#include "hardware_controller.h"
 
 #ifndef UNIT_TEST
 #include <Arduino.h>
 #endif
 
-//#define STATIC_BOOTMODE 2
+//#define STATIC_BOOT_MODE 2
 
 enum class BootMode {
   Serial_Only = 0,
@@ -15,19 +16,18 @@ enum class BootMode {
 };
 
 static BootMode getBootMode() {
-  #ifndef UNIT_TEST
-#ifdef STATIC_BOOTMODE
-  return BootMode(STATIC_BOOTMODE);
+#ifdef STATIC_BOOT_MODE
+  return BootMode(STATIC_BOOT_MODE);
 #else
-  pinMode(REG0, INPUT);
-  pinMode(REG1, INPUT);
-  pinMode(REG2, INPUT);
+  HardwareController::setPinMode(REG0, INPUT);
+  HardwareController::setPinMode(REG1, INPUT);
+  HardwareController::setPinMode(REG2, INPUT);
 
   BootMode mode = BootMode::Serial_Only;
 
-  bool reg0 = digitalRead(REG0);
-  bool reg1 = digitalRead(REG1);
-  bool reg2 = digitalRead(REG2);
+  bool reg0 = HardwareController::digitalReadPin(REG0);
+  bool reg1 = HardwareController::digitalReadPin(REG1);
+  bool reg2 = HardwareController::digitalReadPin(REG2);
 
   if (!reg0 && !reg1 && !reg2) {
     mode = BootMode::Serial_Only;
@@ -38,7 +38,4 @@ static BootMode getBootMode() {
   }
   return mode;
 #endif
-  #else
-  return BootMode::Full_Operation;
-  #endif
 }

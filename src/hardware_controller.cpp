@@ -50,7 +50,7 @@ bool HardwareController::digitalReadPin(uint8_t pin) {
   logger_d("HardwareController", "Reading from pin %d: %d", pin, val);
   return val;
   #else
-  return false;
+  return pin_sim_values[pin];
   #endif
 }
 
