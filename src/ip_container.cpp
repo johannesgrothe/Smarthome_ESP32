@@ -14,9 +14,9 @@ const uint8_t *IPContainer::getData() const {
 }
 
 std::string IPContainer::toString() const {
-  std::stringstream sstr;
-  sstr << data_[0] << "." << data_[1] << "." << data_[2] << "." << data_[3];
-  return sstr.str();
+  std::stringstream out_strm;
+  out_strm << (int) data_[0] << "." << (int)  data_[1] << "." << (int) data_[2] << "." << (int) data_[3];
+  return out_strm.str();
 }
 
 bool IPContainer::operator==(const IPContainer &rhs) const {
@@ -27,6 +27,10 @@ bool IPContainer::operator==(const IPContainer &rhs) const {
 
 bool IPContainer::operator!=(const IPContainer &rhs) const {
   return !(*this==rhs);
+}
+
+uint8_t IPContainer::operator[](int index) const {
+  return data_[index];
 }
 
 //IPContainer::IPContainer(std::string data) {

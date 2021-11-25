@@ -19,4 +19,6 @@ public:
   bool operator==(const IPContainer &rhs) const;
 
   bool operator!=(const IPContainer &rhs) const;
+
+  uint8_t operator[](int index) const;
 };

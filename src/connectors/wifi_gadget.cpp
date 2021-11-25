@@ -4,9 +4,9 @@ static const char *TAG = "WiFiGadget";
 
 WiFiGadget::WiFiGadget() = default;
 
-WiFiGadget::WiFiGadget(std::string ssid, std::string pw):
-wifi_ssid_(std::move(ssid)),
-wifi_password_(std::move(pw)) {
+WiFiGadget::WiFiGadget(std::string ssid, std::string pw) :
+    wifi_ssid_(std::move(ssid)),
+    wifi_password_(std::move(pw)) {
   logger_i(TAG, "Connecting to WiFi:");
   network_client_ = WiFiClient();
 
@@ -17,7 +17,7 @@ wifi_password_(std::move(pw)) {
   }
 
   logger_i(TAG, "Connecting to %s", wifi_ssid_.c_str());
-  
+
   WiFi.begin(wifi_ssid_.c_str(), wifi_password_.c_str());
   WiFi.waitForConnectResult();
 

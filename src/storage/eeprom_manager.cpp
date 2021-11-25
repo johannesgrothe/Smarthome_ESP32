@@ -553,9 +553,8 @@ bool EepromManager::hasValidWifiPW() {
 
 bool EepromManager::writeMQTTIP(const IPContainer &ip) {
   bool success = true;
-  auto data = ip.getData();
   for (int i = 0; i < 4; i++) {
-    success = success && writeUInt8(MQTT_IP_POS + i, data[i]);
+    success = success && writeUInt8(MQTT_IP_POS + i, ip[i]);
   }
   if (ip == IPContainer(0, 0, 0, 0)) {
     setContentFlag(CONFIG_CHECK_INDEX_MQTT_IP, false);

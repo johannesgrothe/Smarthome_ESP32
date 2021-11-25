@@ -31,9 +31,21 @@ TEST_CASE("Test API Decoder", "[API]") {
   SECTION("Decode system config") {
     DynamicJsonDocument broken_doc(40);
     CHECK(ApiDecoder::decodeSystemConfig(broken_doc) == nullptr);
+
     auto decoded_config = ApiDecoder::decodeSystemConfig(generateSystemConfig());
     CHECK(decoded_config != nullptr);
     CHECK(decoded_config->id == "test_client");
+    CHECK(decoded_config->network_mode == NetworkMode::MQTT);
+    CHECK(decoded_config->ir_recv_pin == 1);
+    CHECK(decoded_config->ir_send_pin == 2);
+    CHECK(decoded_config->radio_recv_pin == 3);
+    CHECK(decoded_config->radio_send_pin == 4);
+    CHECK(*(decoded_config->wifi_ssid) == "yolowifi");
+    CHECK(*(decoded_config->wifi_pw) == "yolopw");
+    CHECK(decoded_config->mqtt_ip->toString() == "192.168.166.44");
+    CHECK(*(decoded_config->mqtt_port) == 1884);
+    CHECK(*(decoded_config->mqtt_username) == "user");
+    CHECK(*(decoded_config->mqtt_password) == "pw");
   }
 
   SECTION("Decode event config") {

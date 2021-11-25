@@ -99,14 +99,11 @@ void MQTTGadget::executeRequestSending(std::shared_ptr<Request> req) {
 
   logger_i(TAG, "Publishing on %s: %d bytes", topic.c_str(), msg_len);
 
-//  bool status = mqttClient_->publish(topic.c_str(), body.c_str());
-//  mqttClient_->endPublish();
-
   std::stringstream topic_strm;
   topic_strm << channel_ << "/" << topic;
 
   bool status = mqttClient_->beginPublish(topic_strm.str().c_str(), msg_len, false);
-  uint16_t k;
+  unsigned long k;
   for (
       k = 0;
       k < msg_len;
@@ -115,8 +112,9 @@ void MQTTGadget::executeRequestSending(std::shared_ptr<Request> req) {
   }
   status = status && mqttClient_->endPublish();
 
-  if (!status)
+  if (!status) {
     logger_e(TAG, "Failed to publish Message to MQTT Broker");
+  }
 }
 
 MQTTGadget::MQTTGadget(const std::string &client_name,

@@ -108,17 +108,19 @@ std::shared_ptr<SystemConfig> ConfigDecoder::decodeSystemConfig(DynamicJsonDocum
     uint8_t buf_ip[4];
     uint8_t counter = 0;
     std::stringstream ip_strm;
+    int buf_val = 0;
     for (char c: config["mqtt_ip"].as<std::string>()) {
       if (c == '.') {
-        uint8_t buf_val = 0;
         ip_strm >> buf_val;
-        buf_ip[counter] = buf_val;
+        buf_ip[counter] = (uint8_t) buf_val;
         counter++;
-        ip_strm.clear();
+        ip_strm = std::stringstream();
       } else {
         ip_strm << c;
       }
     }
+    ip_strm >> buf_val;
+    buf_ip[counter] = (uint8_t) buf_val;
     mqtt_ip = std::make_shared<IPContainer>(buf_ip[0], buf_ip[1], buf_ip[2], buf_ip[3]);
   }
 

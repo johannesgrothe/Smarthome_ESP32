@@ -3,6 +3,7 @@
 #include <ArduinoJson.h>
 #include "../src/gadgets/gadget_enums.h"
 #include "../src/console_logger.h"
+#include "../src/network_mode.h"
 
 inline DynamicJsonDocument generateCharacteristicStatus() {
   DynamicJsonDocument json(400);
@@ -50,7 +51,7 @@ inline DynamicJsonDocument generateSystemConfig() {
   json["irsend_pin"] = 2;
   json["radio_recv_pin"] = 3;
   json["radio_send_pin"] = 4;
-  json["network_mode"] = 1;
+  json["network_mode"] = (int) NetworkMode::MQTT;
 
   return json;
 }
