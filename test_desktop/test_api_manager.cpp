@@ -10,7 +10,7 @@
 #define TEST_CLIENT_ID "test_client"
 #define TEST_BRIDGE_ID "test_bridge"
 #define TEST_ILLEGAL_PATH "yolokopter"
-#define TEST_ILLEGAL_BROADCAST PATH_CONFIG_RESET
+#define TEST_ILLEGAL_BROADCAST PATH_CLIENT_CONFIG_DELETE
 #define TEST_OTHER_CLIENT_ID "not_test_client"
 
 TEST_CASE("Test API Manager", "[API]") {
@@ -56,7 +56,7 @@ TEST_CASE("Test API Manager", "[API]") {
     DynamicJsonDocument payload(400);
     payload["test"] = "yolo";
 
-    RequestResponseListener listener(PATH_ECHO_TEST, TEST_BRIDGE_ID, TEST_CLIENT_ID, payload);
+    RequestResponseListener listener(PATH_TEST_ECHO, TEST_BRIDGE_ID, TEST_CLIENT_ID, payload);
 
     manager.handleRequest(listener.getRequest());
 
@@ -68,7 +68,7 @@ TEST_CASE("Test API Manager", "[API]") {
     DynamicJsonDocument payload(400);
     payload["test"] = "yolokopter pew pew";
 
-    RequestResponseListener listener(PATH_ECHO_TEST, TEST_CLIENT_ID, payload);
+    RequestResponseListener listener(PATH_TEST_ECHO, TEST_CLIENT_ID, payload);
 
     manager.handleRequest(listener.getRequest());
 
@@ -80,7 +80,7 @@ TEST_CASE("Test API Manager", "[API]") {
     CHECK(network->getLastSentRequest() == nullptr);
 
     DynamicJsonDocument payload(400);
-    auto sync_request = std::make_shared<Request>(PATH_SYNC_REQ,
+    auto sync_request = std::make_shared<Request>(PATH_SYNC_REQUEST,
                                                   177787,
                                                   TEST_BRIDGE_ID,
                                                   TEST_CLIENT_ID,

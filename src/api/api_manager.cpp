@@ -36,13 +36,13 @@ void ApiManager::handleRequest(const std::shared_ptr<Request> &req) {
 
   // Switch only works for integer types, therefore all the IFs
   // For testing purposes
-  if (req->getPath() == PATH_ECHO_TEST) {
+  if (req->getPath() == PATH_TEST_ECHO) {
     handleEcho(req);
     return;
   }
 
   // Sync request from bridge
-  if (req->getPath() == PATH_SYNC_REQ) {
+  if (req->getPath() == PATH_SYNC_REQUEST) {
     auto sender = req->getSender();
     publishSync(&sender);
     return;
@@ -61,25 +61,25 @@ void ApiManager::handleRequest(const std::shared_ptr<Request> &req) {
   }
 
   // Reset Config
-  if (req->getPath() == PATH_CONFIG_RESET) {
+  if (req->getPath() == PATH_CLIENT_CONFIG_DELETE) {
     handleConfigReset(req);
     return;
   }
 
   // Write System Config
-  if (req->getPath() == PATH_CONFIG_SYSTEM_WRITE) {
+  if (req->getPath() == PATH_CLIENT_SYSTEM_CONFIG_WRITE) {
     handleSystemConfigWrite(req);
     return;
   }
 
   // Write Event Config
-  if (req->getPath() == PATH_CONFIG_EVENTS_WRITE) {
+  if (req->getPath() == PATH_CLIENT_EVENT_CONFIG_WRITE) {
     handleEventConfigWrite(req);
     return;
   }
 
   // Write Gadget Config
-  if (req->getPath() == PATH_CONFIG_GADGETS_WRITE) {
+  if (req->getPath() == PATH_CLIENT_GADGET_CONFIG_WRITE) {
     handleGadgetConfigWrite(req);
     return;
   }
@@ -180,13 +180,13 @@ void ApiManager::publishSync(std::string *receiver = nullptr) {
   auto gadget_data = delegate_->getGadgetData();
   auto payload = ApiEncoder::encodeSync(client_data, gadget_data, runtime_id_);
   if (receiver == nullptr) {
-    auto out_req = std::make_shared<Request>(PATH_PUBLISH_CLIENT,
+    auto out_req = std::make_shared<Request>(PATH_SYNC_CLIENT,
                                              genRequestID(),
                                              client_id_,
                                              payload);
     network_->sendRequest(out_req);
   } else {
-    auto out_req = std::make_shared<Request>(PATH_PUBLISH_CLIENT,
+    auto out_req = std::make_shared<Request>(PATH_SYNC_CLIENT,
                                              genRequestID(),
                                              client_id_,
                                              *receiver,
