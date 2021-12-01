@@ -1,0 +1,14 @@
+name: Git History Checks
+
+on: [ pull_request ]
+
+jobs:
+  build:
+
+    name: Check Semi-Linear History
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check Semi-Linear History
+        run: git merge-base --is-ancestor develop $GITHUB_SHA
