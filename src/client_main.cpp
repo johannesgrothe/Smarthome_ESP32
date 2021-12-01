@@ -191,7 +191,7 @@ bool ClientMain::initApi(const std::string& client_id) {
   return true;
 }
 
-void ClientMain::handleGadgetUpdate(GadgetMeta gadget) {
+void ClientMain::handleGadgetUpdate(GadgetUpdateMeta gadget) {
   gadget_manager_->forwardUpdate(gadget);
 }
 

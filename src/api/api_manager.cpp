@@ -48,12 +48,6 @@ void ApiManager::handleRequest(const std::shared_ptr<Request> &req) {
     return;
   }
 
-  // Gadget update from bridge
-  if (req->getPath() == PATH_SYNC_GADGET) {
-    handleGadgetUpdate(req);
-    return;
-  }
-
   // Event from Bridge
   if (req->getPath() == PATH_SYNC_EVENT) {
     handleEventUpdate(req);
@@ -81,6 +75,12 @@ void ApiManager::handleRequest(const std::shared_ptr<Request> &req) {
   // Write Gadget Config
   if (req->getPath() == PATH_CLIENT_GADGET_CONFIG_WRITE) {
     handleGadgetConfigWrite(req);
+    return;
+  }
+
+  // Handle external gadget update
+  if (req->getPath() == PATH_UPDATE_GADGET) {
+    handleGadgetUpdate(req);
     return;
   }
 
@@ -115,10 +115,8 @@ void ApiManager::handleEcho(const std::shared_ptr<Request> &req) {
 };
 
 void ApiManager::handleGadgetUpdate(const std::shared_ptr<Request> &req) {
-  if (req->getPayload()["gadget"].is<JsonObject>()) {
-    auto gadget_meta = ApiDecoder::decodeGadget(req->getPayload()["gadget"]);
-    delegate_->handleGadgetUpdate(gadget_meta);
-  }
+  auto gadget_update_meta = ApiDecoder::decodeGadgetUpdateInfo(req->getPayload());
+  delegate_->handleGadgetUpdate(gadget_update_meta);
 }
 
 void ApiManager::handleEventUpdate(const std::shared_ptr<Request> &req) {

@@ -7,7 +7,7 @@
 #include <Arduino.h>
 #endif
 
-#define STATIC_BOOT_MODE 1
+#define STATIC_BOOT_MODE 2
 
 enum class BootMode {
   Serial_Only = 0,

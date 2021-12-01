@@ -35,4 +35,5 @@ static const std::vector<std::string> api_paths_incoming = {PATH_SYNC_REQUEST,
                                                             PATH_CLIENT_CONFIG_DELETE,
                                                             PATH_CLIENT_GADGET_CONFIG_WRITE,
                                                             PATH_CLIENT_EVENT_CONFIG_WRITE,
-                                                            PATH_CLIENT_SYSTEM_CONFIG_WRITE};
+                                                            PATH_CLIENT_SYSTEM_CONFIG_WRITE,
+                                                            PATH_UPDATE_GADGET};

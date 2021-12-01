@@ -3,7 +3,7 @@
 #include <memory>
 #include "gadgets/gadget.h"
 #include "system_settings.h"
-#include "api/gadget_meta.h"
+#include "api/gadget_update_meta.h"
 
 class GadgetManager {
 private:
@@ -25,7 +25,7 @@ public:
 
   void forwardEvent(const std::shared_ptr<Event>& event);
 
-  void forwardUpdate(const GadgetMeta& data);
+  void forwardUpdate(const GadgetUpdateMeta &data);
 
   void refresh();
 };

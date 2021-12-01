@@ -2,6 +2,7 @@
 
 #include <utility>
 
+#include "../api/gadget_update_meta.h"
 #include "../api/api_manager_delegate.h"
 
 class ApiManagerDelegateDummy : public ApiManagerDelegate {
@@ -15,7 +16,7 @@ public:
       ApiManagerDelegate(),
       had_gadget_meta(false) {}
 
-  void handleGadgetUpdate(GadgetMeta gadget) override {
+  void handleGadgetUpdate(GadgetUpdateMeta gadget) override {
     had_gadget_meta = true;
   }
 

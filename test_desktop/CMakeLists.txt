@@ -71,6 +71,8 @@ set(ADDITIONAL_SOURCES
         ../src/json_validator.cpp
         ../src/api/config_decoder.cpp
         ../src/api/gadget_meta_coder.cpp
+        ../src/api/gadget_update_meta.cpp
+        ../src/api/characteristic_update_meta.cpp
         )
 
 set(TEST_SOURCES)

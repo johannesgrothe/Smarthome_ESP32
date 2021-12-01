@@ -10,11 +10,12 @@
 #include "../storage/system_config.h"
 #include "../storage/gadget_config.h"
 #include "../storage/event_config.h"
+#include "gadget_update_meta.h"
 
 class ApiManagerDelegate {
 public:
 
-  virtual void handleGadgetUpdate(GadgetMeta gadget) = 0;
+  virtual void handleGadgetUpdate(GadgetUpdateMeta gadget) = 0;
 
   virtual void handleEvent(Event event) = 0;
 

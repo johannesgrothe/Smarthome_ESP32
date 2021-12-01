@@ -33,7 +33,8 @@ bool EepromStorage::saveSystemConfig(SystemConfig config) {
 
   // Write Wifi SSID
   if (config.wifi_ssid != nullptr &&
-      ((EepromManager::hasValidWifiSSID() && *config.wifi_ssid != EepromManager::readWifiSSID()) || !EepromManager::hasValidWifiSSID())) {
+      ((EepromManager::hasValidWifiSSID() && *config.wifi_ssid != EepromManager::readWifiSSID()) ||
+       !EepromManager::hasValidWifiSSID())) {
     write_successful &= EepromManager::writeWifiSSID(*config.wifi_ssid);
   } else if (config.wifi_ssid == nullptr && EepromManager::hasValidWifiSSID()) {
     write_successful &= EepromManager::writeWifiSSID("");
@@ -41,7 +42,8 @@ bool EepromStorage::saveSystemConfig(SystemConfig config) {
 
   // Write Wifi PW
   if (config.wifi_pw != nullptr &&
-      ((EepromManager::hasValidWifiPW() && *config.wifi_pw != EepromManager::readWifiPW()) || !EepromManager::hasValidWifiPW())) {
+      ((EepromManager::hasValidWifiPW() && *config.wifi_pw != EepromManager::readWifiPW()) ||
+       !EepromManager::hasValidWifiPW())) {
     write_successful &= EepromManager::writeWifiPW(*config.wifi_pw);
   } else if (config.wifi_pw == nullptr && EepromManager::hasValidWifiPW()) {
     write_successful &= EepromManager::writeWifiPW("");
@@ -49,7 +51,8 @@ bool EepromStorage::saveSystemConfig(SystemConfig config) {
 
   // Write MQTT IP
   if (config.mqtt_ip != nullptr &&
-      ((EepromManager::hasValidMQTTIP() && *config.mqtt_ip != EepromManager::readMQTTIP()) || !EepromManager::hasValidMQTTIP())) {
+      ((EepromManager::hasValidMQTTIP() && *config.mqtt_ip != EepromManager::readMQTTIP()) ||
+       !EepromManager::hasValidMQTTIP())) {
     write_successful &= EepromManager::writeMQTTIP(*config.mqtt_ip);
   } else if (config.mqtt_ip == nullptr && EepromManager::hasValidMQTTIP()) {
     write_successful &= EepromManager::writeMQTTIP(IPContainer(0, 0, 0, 0));
@@ -57,7 +60,8 @@ bool EepromStorage::saveSystemConfig(SystemConfig config) {
 
   // Write MQTT Port
   if (config.mqtt_port != nullptr &&
-      ((EepromManager::hasValidMQTTPort() && *config.mqtt_port != EepromManager::readMQTTPort()) || !EepromManager::hasValidMQTTPort())) {
+      ((EepromManager::hasValidMQTTPort() && *config.mqtt_port != EepromManager::readMQTTPort()) ||
+       !EepromManager::hasValidMQTTPort())) {
     write_successful &= EepromManager::writeMQTTPort(*config.mqtt_port);
   } else if (config.mqtt_port == nullptr && EepromManager::hasValidMQTTPort()) {
     write_successful &= EepromManager::writeMQTTPort(0);
@@ -65,7 +69,8 @@ bool EepromStorage::saveSystemConfig(SystemConfig config) {
 
   // Write MQTT Username
   if (config.mqtt_username != nullptr &&
-      ((EepromManager::hasValidMQTTUsername() && *config.mqtt_username != EepromManager::readMQTTUsername()) || !EepromManager::hasValidMQTTUsername())) {
+      ((EepromManager::hasValidMQTTUsername() && *config.mqtt_username != EepromManager::readMQTTUsername()) ||
+       !EepromManager::hasValidMQTTUsername())) {
     write_successful &= EepromManager::writeMQTTUsername(*config.mqtt_username);
   } else if (config.mqtt_username == nullptr && EepromManager::hasValidMQTTUsername()) {
     write_successful &= EepromManager::writeMQTTUsername("");
@@ -73,7 +78,8 @@ bool EepromStorage::saveSystemConfig(SystemConfig config) {
 
   // Write MQTT PW
   if (config.mqtt_password != nullptr &&
-      ((EepromManager::hasValidMQTTPassword() && *config.mqtt_password != EepromManager::readMQTTPassword()) || !EepromManager::hasValidMQTTPassword())) {
+      ((EepromManager::hasValidMQTTPassword() && *config.mqtt_password != EepromManager::readMQTTPassword()) ||
+       !EepromManager::hasValidMQTTPassword())) {
     write_successful &= EepromManager::writeMQTTPassword(*config.mqtt_password);
   } else if (config.mqtt_password == nullptr && EepromManager::hasValidMQTTPassword()) {
     write_successful &= EepromManager::writeMQTTPassword("");

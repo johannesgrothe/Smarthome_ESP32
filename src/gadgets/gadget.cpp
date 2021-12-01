@@ -31,6 +31,9 @@ bool Gadget::hasInitError() const {
 bool Gadget::hasChanged() {
   bool buf = has_changed;
   has_changed = false;
+  if (buf) {
+    logger_i(getName(), "Change detected.");
+  }
   return buf;
 }
 

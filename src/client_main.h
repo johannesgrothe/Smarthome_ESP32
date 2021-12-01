@@ -1,6 +1,7 @@
 #pragma once
 
 // Tools
+#include "api/gadget_update_meta.h"
 #include "console_logger.h"
 #include "system_timer.h"
 #include "boot_mode.h"
@@ -51,7 +52,7 @@ private:
 
   //region API_MANAGER_DELEGATE
 
-  void handleGadgetUpdate(GadgetMeta gadget) override;
+  void handleGadgetUpdate(GadgetUpdateMeta gadget) override;
 
   void handleEvent(Event event) override;
 

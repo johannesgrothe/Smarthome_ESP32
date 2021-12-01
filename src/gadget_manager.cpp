@@ -1,3 +1,4 @@
+#include "api/gadget_update_meta.h"
 #include "gadget_manager.h"
 
 GadgetManager::GadgetManager() = default;
@@ -47,9 +48,9 @@ void GadgetManager::forwardEvent(const std::shared_ptr<Event>& event) {
   }
 }
 
-void GadgetManager::forwardUpdate(const GadgetMeta& data) {
+void GadgetManager::forwardUpdate(const GadgetUpdateMeta &data) {
   for (const auto& gadget: gadgets_) {
-    if (gadget->getName() == data.name) {
+    if (gadget->getName() == data.id) {
       for (auto characteristic: data.characteristics) {
         gadget->handleCharacteristicUpdate(characteristic.type, characteristic.step_val);
       }

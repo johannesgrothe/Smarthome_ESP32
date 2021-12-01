@@ -16,7 +16,7 @@ public:
   void refresh() override;
 };
 
-static std::shared_ptr<Lamp_NeoPixel_RGB_Basic> createSHLampNeoPixelBasic(std::string name, port_set pins, const JsonObject& gadget_data) {
+static std::shared_ptr<Lamp_NeoPixel_RGB_Basic> createSHLampNeoPixelBasic(const std::string& name, port_set pins, const JsonObject& gadget_data) {
   uint8_t pin = 0;
   uint16_t len = 0;
 
