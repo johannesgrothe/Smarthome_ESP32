@@ -7,6 +7,10 @@
 class DummyEeprom {
 public:
 
+  // Addresses to block from being written for testing
+  std::vector<int> blocked_addresses{};
+
+  // EEPROM storage data
   uint8_t storage[EEPROM_LEN_MAX]{};
 
   uint8_t readByte(int address) {
@@ -14,6 +18,11 @@ public:
   }
 
   void writeByte(int address, uint8_t value) {
+    for (auto b: blocked_addresses) {
+      if (b == address) {
+        return;
+      }
+    }
     storage[address] = value;
   }
 
@@ -22,6 +31,12 @@ public:
   }
 
   void writeChar(int address, int8_t value) {
+    logger_i("d", "%d", address);
+    for (auto b: blocked_addresses) {
+      if (b == address) {
+        return;
+      }
+    }
     storage[address] = uint8_t(value);
   }
 
@@ -33,10 +48,12 @@ public:
     return true;
   }
 
+  // Reset the simulated EEPROM to empty status
   void clear() {
     for (int i = 0; i < EEPROM_LEN_MAX; i++) {
       storage[i] = 0;
     }
+    blocked_addresses = {};
   }
 
   std::string getContent() {

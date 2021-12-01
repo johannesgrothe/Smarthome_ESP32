@@ -5,9 +5,8 @@
 
 #ifndef UNIT_TEST
 #include <Arduino.h>
-#endif
-
 #define STATIC_BOOT_MODE 2
+#endif
 
 enum class BootMode {
   Serial_Only = 0,
