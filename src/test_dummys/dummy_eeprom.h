@@ -31,7 +31,6 @@ public:
   }
 
   void writeChar(int address, int8_t value) {
-    logger_i("d", "%d", address);
     for (auto b: blocked_addresses) {
       if (b == address) {
         return;

@@ -15,6 +15,13 @@ inline DynamicJsonDocument generateCharacteristicStatus() {
   return json;
 }
 
+inline DynamicJsonDocument generateCharacteristicStatusUpdate() {
+  DynamicJsonDocument json(400);
+  json["type"] = int(CharacteristicIdentifier::status);
+  json["step_value"] = 1;
+  return json;
+}
+
 inline DynamicJsonDocument generateCharacteristicFanspeed() {
   DynamicJsonDocument json(400);
   json["type"] = int(CharacteristicIdentifier::fanSpeed);
@@ -25,7 +32,6 @@ inline DynamicJsonDocument generateCharacteristicFanspeed() {
   return json;
 }
 
-
 inline DynamicJsonDocument generateGadgetFan() {
   DynamicJsonDocument json(400);
   json["type"] = int(GadgetIdentifier::fan_westinghouse_ir);
@@ -34,6 +40,15 @@ inline DynamicJsonDocument generateGadgetFan() {
   JsonArray characteristics = json["characteristics"];
   characteristics.add(generateCharacteristicFanspeed());
   characteristics.add(generateCharacteristicStatus());
+  return json;
+}
+
+inline DynamicJsonDocument generateGadgetFanUpdate() {
+  DynamicJsonDocument json(400);
+  json["id"] = "test_fan";
+  json.createNestedArray("characteristics");
+  JsonArray characteristics = json["characteristics"];
+  characteristics.add(generateCharacteristicStatusUpdate());
   return json;
 }
 

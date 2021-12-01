@@ -92,10 +92,9 @@ TEST_CASE("Test API Manager", "[API]") {
   SECTION("Test Gadget Update") {
     CHECK(delegate.had_gadget_meta == false);
 
-    DynamicJsonDocument payload(400);
-    payload["gadget"] = generateGadgetFan();
+    DynamicJsonDocument payload = generateGadgetFanUpdate();
 
-    auto sync_request = std::make_shared<Request>(PATH_SYNC_GADGET,
+    auto sync_request = std::make_shared<Request>(PATH_UPDATE_GADGET,
                                                   177787,
                                                   TEST_BRIDGE_ID,
                                                   TEST_CLIENT_ID,
