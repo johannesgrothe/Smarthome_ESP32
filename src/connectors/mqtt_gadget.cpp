@@ -26,7 +26,7 @@ bool MQTTGadget::connect_mqtt() {
       logger_i(TAG, "Established connection to mqtt broker");
 
       logger_i(TAG, "Subscribing to topics:");
-      subscribe_to_topic("smarthome/*");
+      subscribe_to_topic("smarthome/#");
 
       mqttClient_->publish("smarthome/debug/out", "Controller Launched");
       return true;

@@ -9,6 +9,10 @@ Lamp_NeoPixel_RGB_Basic::Lamp_NeoPixel_RGB_Basic(std::string name, uint8_t pin, 
 
 void Lamp_NeoPixel_RGB_Basic::refresh() {
   if (hasChanged()) {
+    if (!getCharacteristicValue(CharacteristicIdentifier::status)) {
+      setLEDColor(0, 0, 0);
+      return;
+    }
     Color buf_clr;
     buf_clr.setHSV(getCharacteristicValue(CharacteristicIdentifier::hue),
                    getCharacteristicValue(CharacteristicIdentifier::saturation),

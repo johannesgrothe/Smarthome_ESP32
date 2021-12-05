@@ -34,6 +34,8 @@ void ApiManager::handleRequest(const std::shared_ptr<Request> &req) {
     return;
   }
 
+  logger_i(TAG, "Received Request at path '%s'", req_path.c_str());
+
   // Switch only works for integer types, therefore all the IFs
   // For testing purposes
   if (req->getPath() == PATH_TEST_ECHO) {
@@ -84,7 +86,7 @@ void ApiManager::handleRequest(const std::shared_ptr<Request> &req) {
     return;
   }
 
-  logger_e("ApiManager", "Received request to unhandled path '%s'", req->getPath().c_str());
+  logger_e("ApiManager", "Received request to unhandled path '%s'", req_path.c_str());
 }
 
 uint16_t ApiManager::genRequestID() {
@@ -174,6 +176,7 @@ void ApiManager::handleGadgetConfigWrite(const std::shared_ptr<Request> &req) {
 // region PUBLISH CHANGES
 
 void ApiManager::publishSync(std::string *receiver = nullptr) {
+  logger_i(TAG, "Publishing sync data");
   auto client_data = delegate_->getClientData();
   auto gadget_data = delegate_->getGadgetData();
   auto payload = ApiEncoder::encodeSync(client_data, gadget_data, runtime_id_);

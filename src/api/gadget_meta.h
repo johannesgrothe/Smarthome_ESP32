@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "../gadgets/gadget_enums.h"
+#include "../gadgets/gadget.h"
 #include "../datatypes.h"
 #include "characteristic_meta.h"
 

@@ -32,14 +32,14 @@ unsigned long HardwareController::getMillis() {
 }
 
 void HardwareController::setPinMode(uint8_t pin, uint8_t mode) {
-  #ifndef UNIT_TEST
-  logger_d("HardwareController", "Setting pin %d to %s", pin, mode_str.c_str());
-  pinMode(pin, mode);
-  #else
   std::string mode_str = "OUTPUT";
   if (mode == INPUT) {
     mode_str = "INPUT";
   }
+  #ifndef UNIT_TEST
+  logger_d("HardwareController", "Setting pin %d to %s", pin, mode_str.c_str());
+  pinMode(pin, mode);
+  #else
   logger_i("HardwareController", "Setting pin %d to %s", pin, mode_str.c_str());
   #endif
 }

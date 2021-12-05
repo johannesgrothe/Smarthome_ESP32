@@ -224,7 +224,7 @@ bool ClientMain::handleEventConfigWrite(EventConfig cfg) {
 }
 
 ClientMeta ClientMain::getClientData() {
-  return {{},
+  return {getPortMapping(),
           system_mode_,
           getSoftwareFlashDate(),
           getSoftwareGitCommit(),
@@ -232,7 +232,24 @@ ClientMeta ClientMain::getClientData() {
 }
 
 std::vector<GadgetMeta> ClientMain::getGadgetData() {
-  return {};
+  std::vector<GadgetMeta> gadget_data;
+  for (uint8_t i = 0; i < gadget_manager_->getGadgetCount(); i++) {
+    auto buf_gadget = gadget_manager_->getGadget(i);
+    std::vector<CharacteristicMeta> characteristics;
+    for (auto c: buf_gadget->getCharacteristics()) {
+      auto buf_c = CharacteristicMeta(c.type,
+                                      c.min,
+                                      c.max,
+                                      c.getStepValue(),
+                                      c.steps);
+      characteristics.push_back(buf_c);
+    }
+    auto buf_g = GadgetMeta(GadgetIdentifier::lamp_neopixel_basic,
+                            buf_gadget->getName(),
+                            characteristics);
+    gadget_data.push_back(buf_g);
+  }
+  return gadget_data;
 }
 
 void ClientMain::setStorageManager(const std::shared_ptr<SystemStorage> &storage) {

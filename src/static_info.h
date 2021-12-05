@@ -43,20 +43,3 @@ inline std::string getSoftwareFlashDate() {
   return SW_DATA_DEFAULT;
   #endif
 }
-
-/**
- * Generates a json document containing the complete port mapping
- * @return The port mapping as json document
- */
-inline DynamicJsonDocument getPortMapping() {
-  DynamicJsonDocument doc(400);
-  for (int i = 0; i < MAX_PORT_INDEX; i++) {
-    auto pin = getPinForPort(i);
-    std::stringstream sstr;
-    sstr << i;
-    if (pin != 0) {
-      doc[sstr.str()] = pin;
-    }
-  }
-  return doc;
-}

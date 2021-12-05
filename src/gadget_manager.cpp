@@ -51,9 +51,11 @@ void GadgetManager::forwardEvent(const std::shared_ptr<Event>& event) {
 void GadgetManager::forwardUpdate(const GadgetUpdateMeta &data) {
   for (const auto& gadget: gadgets_) {
     if (gadget->getName() == data.id) {
+      logger_i(TAG, "Updating status for gadget '%s'", data.id.c_str());
       for (auto characteristic: data.characteristics) {
         gadget->handleCharacteristicUpdate(characteristic.type, characteristic.step_val);
       }
+      return;
     }
   }
 }

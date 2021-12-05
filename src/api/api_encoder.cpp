@@ -37,7 +37,7 @@ DynamicJsonDocument ApiEncoder::encodeCharacteristic(CharacteristicMeta characte
   doc["type"] = int(characteristic_data.type);
   doc["min"] = characteristic_data.min_val;
   doc["max"] = characteristic_data.max_val;
-  doc["step_val"] = characteristic_data.step_val;
+  doc["step_value"] = characteristic_data.step_val;
   doc["steps"] = characteristic_data.steps;
   return doc;
 }

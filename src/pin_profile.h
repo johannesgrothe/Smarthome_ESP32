@@ -10,6 +10,8 @@
 // The maximum port index allowed
 #define MAX_PORT_INDEX 9
 
+// TODO: make class
+
 /**
  * Returns the configured pin for the given port.
  * Returns 0 if the port is not configured.
@@ -86,4 +88,16 @@ static uint8_t getPinForPort(uint8_t port) {
     default:
       return 0;
   }
+}
+
+/**
+ * Returns the client port mapping inside of a handy data structure
+ * @return The clients port mapping
+ */
+static std::vector<std::tuple<int, int>> getPortMapping() {
+  std::vector<std::tuple<int, int>> port_mapping;
+  for (int i  = 0; i < MAX_PORT_INDEX + 1; i++) {
+    std::tuple<int, int> map(i, getPinForPort(i));
+  }
+  return port_mapping;
 }
