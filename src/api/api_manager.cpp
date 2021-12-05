@@ -7,6 +7,8 @@
 #include "api_encoder.h"
 #include "api_decoder.h"
 
+static const char *TAG = "ApiManager";
+
 ApiManager::ApiManager(ApiManagerDelegate *delegate, std::shared_ptr<RequestGadget> network, uint16_t runtime_id,
                        std::string client_identifier) :
     client_id_(std::move(client_identifier)),
