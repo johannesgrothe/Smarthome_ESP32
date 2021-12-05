@@ -1,6 +1,8 @@
 #include "api/gadget_update_meta.h"
 #include "gadget_manager.h"
 
+static const char *TAG = "GadgetManager";
+
 GadgetManager::GadgetManager() = default;
 
 bool GadgetManager::addGadget(const std::shared_ptr<Gadget> &new_gadget) {

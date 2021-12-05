@@ -40,7 +40,7 @@ TEST_CASE("Test API Encoder", "[API]") {
     CHECK(json_data["type"] == int(CharacteristicIdentifier::fanSpeed));
     CHECK(json_data["min"] == 0);
     CHECK(json_data["max"] == 100);
-    CHECK(json_data["step_val"] == 2);
+    CHECK(json_data["step_value"] == 2);
     CHECK(json_data["steps"] == 4);
   }
 
