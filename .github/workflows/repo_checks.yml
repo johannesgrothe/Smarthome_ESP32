@@ -1,9 +1,25 @@
-name: Submodule Branch Checks
+name: Repository Checks
 
 on: [ pull_request ]
 
 jobs:
-  build:
+  semi_linear_history_check:
+
+    name: Check Semi-Linear History
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Check Semi-Linear History
+        run: git merge-base --is-ancestor origin/develop HEAD
+
+  submodule_check:
 
     name: Check Submodule Branch Status
 
