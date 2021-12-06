@@ -37,6 +37,11 @@ public:
   static void sleepMilliseconds(uint16_t milliseconds);
 
   /**
+   * Sleeps for a set time
+   */
+  static void sleepMicroseconds(uint16_t microseconds);
+
+  /**
    * Sets the mode for a hardware pin
    * @param pin Pin to set mode for
    * @param mode Mode to set the pin to
@@ -55,6 +60,13 @@ public:
    * @param value Value to write
    */
   static void digitalWritePin(uint8_t pin, bool value);
+
+  /**
+   * Writes a analog value to a hardware pin (HIGH/LOW)
+   * @param pin Pin to write value to
+   * @param value Value to write
+   */
+  static void analogWrite(uint8_t pin,  value);
 
   #ifdef UNIT_TEST
   /**

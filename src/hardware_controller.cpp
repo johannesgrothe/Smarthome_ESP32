@@ -31,6 +31,10 @@ unsigned long HardwareController::getMillis() {
   #endif
 }
 
+void HardwareController::sleepMicroseconds(uint16_t micro_seconds) {
+  std::this_thread::sleep_for(std::chrono::microseconds(micro_seconds))
+}
+
 void HardwareController::setPinMode(uint8_t pin, uint8_t mode) {
   std::string mode_str = "OUTPUT";
   if (mode == INPUT) {
@@ -63,6 +67,15 @@ void HardwareController::digitalWritePin(uint8_t pin, bool value) {
   #endif
 }
 
+void HardwareController::analogWrite(uint8_t pin,  value) {
+  #ifndef UNIT_TEST
+    analogWrite(pin, value);
+    logger_d("HardwareController", "Writing value to pin %d: %d", pin, value);
+  #else
+    logger_i("HardwareController", "Writing value to pin %d: %d", pin, value);
+  #endif
+}
+
 void HardwareController::sleepMilliseconds(uint16_t milliseconds) {
   logger_d("HardwareController", "Sleeping for %dms", milliseconds);
   #ifndef UNIT_TEST
@@ -71,3 +84,5 @@ void HardwareController::sleepMilliseconds(uint16_t milliseconds) {
   std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
   #endif
 }
+
+
