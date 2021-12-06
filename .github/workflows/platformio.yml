@@ -1,86 +1,70 @@
 name: PlatformIO CI
 
-on: [push]
+on: [ push ]
 
 jobs:
   build:
-  
+
     name: Build PlatformIO Project
 
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
 
-    - name: Cache pip
-      uses: actions/cache@v2
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
+      - name: Cache pip
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
-    - name: Cache PlatformIO
-      uses: actions/cache@v2
-      with:
-        path: ~/.platformio
-        key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+      - name: Cache PlatformIO
+        uses: actions/cache@v2
+        with:
+          path: ~/.platformio
+          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
 
-    - name: Install PlatformIO
-      run: |
-        python -m pip install --upgrade pip
-        pip install --upgrade platformio
+      - name: Install PlatformIO
+        run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade platformio
 
-    - name: Init PlatformIO Project
-      run: pio init
-      
-    - name: Install PlatformIO Libraries
-      run: pio lib install
+      - name: Init PlatformIO Project
+        run: pio init
 
-    - name: Compile PlatformIO Project
-      run: pio run
+      - name: Install PlatformIO Libraries
+        run: pio lib install
+
+      - name: Compile PlatformIO Project
+        run: pio run
 
   static_tests:
-  
+
     name: Run Static Unit Tests
 
-    runs-on: ubuntu-latest
+#    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      
-    - name: Cache pip
-      uses: actions/cache@v2
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
 
-    - name: Cache PlatformIO
-      uses: actions/cache@v2
-      with:
-        path: ~/.platformio
-        key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+      - name: Set up Python
+        uses: actions/setup-python@v2
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      
-    - name: Install PlatformIO
-      run: |
-        python -m pip install --upgrade pip
-        pip install --upgrade platformio
-
-    - name: Init PlatformIO Project
-      run: pio init
-      
-    - name: Install PlatformIO Libraries
-      run: pio lib install
-
-    - name: Run Tests
-      run: cd test_desktop && python3 run_desktop_tests.py
+      - name: Run Tests
+        run: |
+          export CC=/usr/bin/clang
+          export CXX=/usr/bin/clang++
+          cd test_desktop
+          python3 run_desktop_tests.py

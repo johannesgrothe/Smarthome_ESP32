@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../gadgets/sh_sensor_temperature.h"
+#include "../gadgets/sensor_temperature.h"
 
-class GadgetSensorTemperatureDummy : public SH_Sensor_Temperature {
+class GadgetSensorTemperatureDummy : public Sensor_Temperature {
 public:
   GadgetSensorTemperatureDummy(std::string name);
 
@@ -10,6 +10,6 @@ public:
 };
 
 GadgetSensorTemperatureDummy::GadgetSensorTemperatureDummy(std::string name):
-  SH_Sensor_Temperature(name) {}
+    Sensor_Temperature(name) {}
 
 void GadgetSensorTemperatureDummy::refresh() {}

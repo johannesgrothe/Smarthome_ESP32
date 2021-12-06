@@ -1,10 +1,8 @@
 #pragma once
 
-#include <vector>
-
 //general
 #define SERIAL_SPEED 115200
-#define EEPROM_SIZE 2000
+#define EEPROM_SIZE 3600
 
 // Client
 #define CLIENT_NAME_LEN_MAX 30

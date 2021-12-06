@@ -1,4 +1,6 @@
 #include "serial_gadget.h"
+#include "../system_timer.h"
+
 #include <sstream>
 
 static const char *TAG = "SerialGadget";
@@ -8,7 +10,10 @@ void SerialGadget::executeRequestSending(std::shared_ptr<Request> req) {
 }
 
 SerialGadget::SerialGadget() :
-    RequestGadget(RequestGadgetType::SERIAL_G) {
+    RequestGadget(RequestGadgetType::SERIAL_G),
+    buffer_stream_(),
+    stream_has_data(false),
+    last_received_(0) {
   logger_i(TAG, "Creating Serial Gadget");
   logger_i(TAG, "Using default Serial Connection");
   request_gadget_is_ready_ = true;
@@ -20,20 +25,32 @@ void SerialGadget::refresh_network() {
 }
 
 void SerialGadget::receiveSerialRequest() {
-  std::stringstream s_str;
+
+  if (stream_has_data && system_timer.getTime() > (last_received_ + 150)) {
+    logger_d(TAG, "Resetting stream due to lost connection");
+    buffer_stream_ = std::stringstream();
+    stream_has_data = false;
+  }
+
   bool new_msg = false;
   while (Serial.available()) {
     char buf = (char) Serial.read();
     if (buf != '\n') {
-      s_str << buf;
+      buffer_stream_ << buf;
+      stream_has_data = true;
+      last_received_ = system_timer.getTime();
+    } else {
       new_msg = true;
     }
-    delayMicroseconds(80);
   }
   if (new_msg) {
-    logger_i(TAG, "Received: %s", s_str.str().c_str());
-
-    std::string req_str = s_str.str();
+    std::string req_str = buffer_stream_.str();
+    if (req_str.size() <= 1) {
+      logger_e(TAG, "Received Empty Request");
+      return;
+    }
+    logger_i(TAG, "Received %d bytes: %s", req_str.size(), req_str.c_str());
+    buffer_stream_ = std::stringstream();
 
     if (req_str[0] == '!' && req_str[1] == 'r') {
       char c1 = 0;

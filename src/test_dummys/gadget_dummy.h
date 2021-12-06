@@ -1,48 +1,45 @@
 #pragma once
 
-#include "../gadgets/sh_gadget.h"
+#include <utility>
 
-class DummyGadget : public SH_Gadget {
+#include "../gadgets/gadget.h"
+
+class DummyGadget : public Gadget {
 protected:
 
-  void executeCharacteristicUpdate(CharacteristicIdentifier characteristic, int value) override;
+  void executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) override;
 
 public:
 
-  DummyGadget(std::string name, GadgetType type);
-
-  std::vector<GadgetCharacteristicSettings> getCharacteristics() override;
-
-  void handleCharacteristicUpdate(CharacteristicIdentifier characteristic, int value) override;
-
-  void handleEvent(std::string sender, EventType event_type) override;
+  DummyGadget(std::string name, GadgetType type, std::vector<Characteristic> characteristics);
 
   void refresh() override;
 
-  void handleMethodUpdate(GadgetMethod method) override;
+  void test_updateInitStatus(bool status_update);
+
+  bool test_sendRawIR(const uint16_t raw_data[], uint8_t content_length);
+
+  bool test_sendIR(unsigned long command, uint8_t com_type);
 
 };
 
-DummyGadget::DummyGadget(std::string name, GadgetType type) : SH_Gadget(name, type) {
+DummyGadget::DummyGadget(std::string name, GadgetType type, std::vector<Characteristic> characteristics) :
+    Gadget(std::move(name),
+           type,
+           std::move(characteristics)) {}
 
-}
-
-void DummyGadget::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, int value) {}
-
-std::vector<GadgetCharacteristicSettings> DummyGadget::getCharacteristics() {
-  return std::vector<GadgetCharacteristicSettings>();
-}
-
-void DummyGadget::handleCharacteristicUpdate(CharacteristicIdentifier characteristic, int value) {
-  SH_Gadget::handleCharacteristicUpdate(characteristic, value);
-}
-
-void DummyGadget::handleEvent(std::string sender, EventType event_type) {
-  SH_Gadget::handleEvent(sender, event_type);
-}
+void DummyGadget::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) {}
 
 void DummyGadget::refresh() {}
 
-void DummyGadget::handleMethodUpdate(GadgetMethod method) {}
+void DummyGadget::test_updateInitStatus(bool status_update) {
+  updateInitStatus(status_update);
+}
 
+bool DummyGadget::test_sendRawIR(const uint16_t raw_data[], const uint8_t content_length) {
+  return sendRawIR(raw_data, content_length);
+}
 
+bool DummyGadget::test_sendIR(const unsigned long command, const uint8_t com_type) {
+  return sendIR(command, com_type);
+}

@@ -1,18 +1,10 @@
-#include <stdexcept>
-#include <cassert>
+#include "catch.hpp"
 
 #include "../src/test_dummys/gadget_wallswitch_dummy.h"
 
-void test_wallswitch() {
+TEST_CASE("Test Switch", "[Gadget]") {
   GadgetWallswitchDummy dummy("switchy");
-  assert(dummy.getName() == "switchy");
-  assert(dummy.getType() == GadgetType::Wallswitch);
+  CHECK(dummy.getName() == "switchy");
+  CHECK(dummy.getType() == GadgetType::Switch);
   auto result = dummy.getCharacteristics();
 }
-
-int main () {
-  logger_i("UnitWallSwitch", "started testing of gadget_wallswitch" );
-  test_wallswitch();
-  logger_i("UnitWallSwitch", "test successful");
-}
-

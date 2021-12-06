@@ -18,13 +18,8 @@ private:
   DynamicJsonDocument payload_;
 
   // respond to (incoming) request
-  bool needs_response_;
   bool can_respond_;
   std::function<void(std::shared_ptr<Request>)> send_answer_;
-
-  // wait for answer to request
-  bool await_response_;
-  std::shared_ptr<Request> response_;
 
 public:
   /**
@@ -40,25 +35,20 @@ public:
           int session_id,
           std::string sender,
           std::string receiver,
-          DynamicJsonDocument payload,
-          bool await_answer = false);
+          DynamicJsonDocument payload);
 
   /**
    * Constructor for the Request if there should ba an option to send an answer.
-   * This constructor should only be used by the receiving gadgets to attach their response-methods
    * @param req_path The path the request should be send to
    * @param session_id The session id the request should use to identify itself
    * @param sender The sender of the request
-   * @param receiver The receiver of the request
    * @param payload The payload that should be send within the request
-   * @param answer_method the method that the internal answer()-methods use to respond to an incoming request
+   * @param await_answer Whether the sender awaits an answer or not. Defaults to false.
    */
   Request(std::string req_path,
           int session_id,
           std::string sender,
-          std::string receiver,
-          DynamicJsonDocument payload,
-          std::function<void(std::shared_ptr<Request> request)> answer_method);
+          DynamicJsonDocument payload);
 
   /**
    * Method to access the path of the request
@@ -126,11 +116,11 @@ public:
 
   /**
    * Responds to this request with the given path and a simple ack body
-   * @param ack whether the action the original request triggered was successful
-   * @param path the path the response should be sent to
+   * @param ack Whether the action the original request triggered was successful
+   * @param status_msg Message to path alongside the ack flag
    * @return whether responding was successful
    */
-  bool respond(bool ack, const std::string &path);
+  bool respond(bool ack, const std::string &status_msg);
 
   /**
    * Responds to this request with the given path and a simple ack body
@@ -157,11 +147,6 @@ public:
   bool respond(const std::string &path, const DynamicJsonDocument &payload);
 
   /**
-   * Discards the 'needs response'-flag without actually sending one
-   */
-  void dontRespond();
-
-  /**
    * Checks if the request has a ack-status and an status message.
    * Returns them if there are any, returns false if there are none.
    * @return {ack-status, status-message}
@@ -174,4 +159,16 @@ public:
    * @return Whether the two requests are identical
    */
   bool operator==(const Request &rhs) const;
+
+  /**
+   * Compares two Requests
+   * @param rhs Request to compare the first request with
+   * @return Whether the two requests are different
+   */
+  bool operator!=(const Request &rhs) const;
 };
+
+inline std::ostream& operator<<(std::ostream& os, Request const& req) {
+  os << "<" << req.getPath() << "[" << req.getID() << "; " << req.getSender() << "; " << req.getReceiver()<< "]>";
+  return os;
+}

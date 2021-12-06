@@ -1,35 +1,37 @@
 #pragma once
 
 #include "pin_profile.h"
+#include "hardware_controller.h"
 
-//#define STATIC_BOOTMODE 2
+#ifndef UNIT_TEST
+#include <Arduino.h>
+#define STATIC_BOOT_MODE 2
+#endif
 
 enum class BootMode {
-  Serial_Ony = 0,
-  Network_Only_EEPROM = 1,
-  Full_Operation = 2,
-  Unknown_Mode = 3,
-  Unbooted = 4
+  Serial_Only = 0,
+  Network_Only = 1,
+  Full_Operation = 2
 };
 
 static BootMode getBootMode() {
-#ifdef STATIC_BOOTMODE
-  return BootMode(STATIC_BOOTMODE);
+#ifdef STATIC_BOOT_MODE
+  return BootMode(STATIC_BOOT_MODE);
 #else
-  pinMode(REG0, INPUT);
-  pinMode(REG1, INPUT);
-  pinMode(REG2, INPUT);
+  HardwareController::setPinMode(REG0, INPUT);
+  HardwareController::setPinMode(REG1, INPUT);
+  HardwareController::setPinMode(REG2, INPUT);
 
-  BootMode mode = BootMode::Unknown_Mode;
+  BootMode mode = BootMode::Serial_Only;
 
-  bool reg0 = digitalRead(REG0);
-  bool reg1 = digitalRead(REG1);
-  bool reg2 = digitalRead(REG2);
+  bool reg0 = HardwareController::digitalReadPin(REG0);
+  bool reg1 = HardwareController::digitalReadPin(REG1);
+  bool reg2 = HardwareController::digitalReadPin(REG2);
 
   if (!reg0 && !reg1 && !reg2) {
-    mode = BootMode::Serial_Ony;
+    mode = BootMode::Serial_Only;
   } else if (!reg0 && reg1 && !reg2) {
-    mode = BootMode::Network_Only_EEPROM;
+    mode = BootMode::Network_Only;
   } else if (reg0 && reg1 && reg2) {
     mode = BootMode::Full_Operation;
   }

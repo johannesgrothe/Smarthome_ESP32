@@ -5,7 +5,7 @@
 static const char *TAG = "MQTTGadget";
 
 bool MQTTGadget::connect_mqtt() {
-  mqttClient_->setServer(mqttServer_, mqtt_port_);
+  mqttClient_->setServer(mqttServer_.getData(), mqtt_port_);
 
   using std::placeholders::_1;
   using std::placeholders::_2;
@@ -26,17 +26,7 @@ bool MQTTGadget::connect_mqtt() {
       logger_i(TAG, "Established connection to mqtt broker");
 
       logger_i(TAG, "Subscribing to topics:");
-      for (const auto &list_path: broadcast_request_paths) {
-        subscribe_to_topic(list_path);
-      }
-
-      for (const auto &list_path: system_request_paths) {
-        subscribe_to_topic(list_path);
-      }
-
-      for (const auto &list_path: additional_request_paths) {
-        subscribe_to_topic(list_path);
-      }
+      subscribe_to_topic("smarthome/#");
 
       mqttClient_->publish("smarthome/debug/out", "Controller Launched");
       return true;
@@ -66,6 +56,17 @@ void MQTTGadget::callback(char *topic, const byte *payload, const unsigned int l
 
   auto req_path = local_topic.str();
   auto req_body = local_message.str();
+
+  if (req_path.size() < channel_.size() + 2) {
+    return;
+  }
+
+  // Filter out channel
+  local_topic = std::stringstream();
+  for (unsigned long i = channel_.size() + 1; i < req_path.size(); i++) {
+    local_topic << req_path[i];
+  }
+  req_path = local_topic.str();
 
   DynamicJsonDocument doc(2056);
   deserializeJson(doc, req_body);
@@ -98,11 +99,11 @@ void MQTTGadget::executeRequestSending(std::shared_ptr<Request> req) {
 
   logger_i(TAG, "Publishing on %s: %d bytes", topic.c_str(), msg_len);
 
-//  bool status = mqttClient_->publish(topic.c_str(), body.c_str());
-//  mqttClient_->endPublish();
+  std::stringstream topic_strm;
+  topic_strm << channel_ << "/" << topic;
 
-  bool status = mqttClient_->beginPublish(topic.c_str(), msg_len, false);
-  uint16_t k;
+  bool status = mqttClient_->beginPublish(topic_strm.str().c_str(), msg_len, false);
+  unsigned long k;
   for (
       k = 0;
       k < msg_len;
@@ -111,14 +112,15 @@ void MQTTGadget::executeRequestSending(std::shared_ptr<Request> req) {
   }
   status = status && mqttClient_->endPublish();
 
-  if (!status)
+  if (!status) {
     logger_e(TAG, "Failed to publish Message to MQTT Broker");
+  }
 }
 
 MQTTGadget::MQTTGadget(const std::string &client_name,
                        std::string wifi_ssid,
                        std::string wifi_pw,
-                       const IPAddress &mqtt_ip,
+                       const IPContainer &mqtt_ip,
                        uint16_t mqtt_port,
                        const std::string &mqtt_username,
                        const std::string &mqtt_pw) :
@@ -128,6 +130,7 @@ MQTTGadget::MQTTGadget(const std::string &client_name,
     mqtt_port_(mqtt_port),
     username_(),
     password_(),
+    channel_("smarthome"),
     has_credentials_(true),
     client_name_(client_name) {
   if (wifiIsInitialized()) {
@@ -145,7 +148,7 @@ MQTTGadget::MQTTGadget(const std::string &client_name,
 }
 
 MQTTGadget::MQTTGadget(const std::string &client_name, std::string wifi_ssid, std::string wifi_pw,
-                       const IPAddress &mqtt_ip,
+                       const IPContainer &mqtt_ip,
                        uint16_t mqtt_port) :
     WiFiGadget(std::move(wifi_ssid), std::move(wifi_pw)),
     RequestGadget(RequestGadgetType::MQTT_G),
@@ -153,6 +156,7 @@ MQTTGadget::MQTTGadget(const std::string &client_name, std::string wifi_ssid, st
     mqtt_port_(mqtt_port),
     username_(),
     password_(),
+    channel_("smarthome"), // TODO: add to constructor to allow for changes
     has_credentials_(false),
     client_name_(client_name) {
   if (wifiIsInitialized()) {
@@ -167,14 +171,14 @@ MQTTGadget::MQTTGadget(const std::string &client_name, std::string wifi_ssid, st
 }
 
 bool
-MQTTGadget::initMqttClient(const IPAddress &mqtt_ip, uint16_t mqtt_port) {
+MQTTGadget::initMqttClient(const IPContainer &mqtt_ip, uint16_t mqtt_port) {
 
   logger_i(TAG, "Creating MQTT Gadget.");
   mqttClient_ = new PubSubClient(network_client_);
   bool everything_ok = true;
 
   // Check IP
-  if (mqtt_ip == IPAddress(0, 0, 0, 0)) {
+  if (mqtt_ip == IPContainer(0, 0, 0, 0)) {
     everything_ok = false;
     logger_e(TAG, "'ip' is null");
   } else {

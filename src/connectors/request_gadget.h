@@ -1,15 +1,15 @@
 #pragma once
 
+
 // External Imports
 #include <ArduinoJson.h>
 #include <cstring>
 #include <utility>
-#include <IPAddress.h>
-#include <WiFi.h>
 
 // Other Imports
 #include "../system_settings.h"
 #include "../console_logger.h"
+#include "../hardware_controller.h"
 #include "request.h"
 #include "split_request_buffer.h"
 #include "request_queue.h"
@@ -23,7 +23,7 @@ private:
   // Buffer to store split request info until all parts are received
   std::shared_ptr<SplitRequestBuffer> split_req_buffer_;
 
-  void addRequestToInQueue(std::shared_ptr<Request> req);
+  void addRequestToInQueue(const std::shared_ptr<Request>& req);
 
 protected:
   // Type of the Gadget
@@ -45,7 +45,7 @@ protected:
    * Adds a request to the 'incoming'-queue
    * @param request Request to be added
    */
-  void addIncomingRequest(std::shared_ptr<Request> request);
+  void addIncomingRequest(const std::shared_ptr<Request>& request);
 
   /**
    * Sends a request to the network
@@ -101,7 +101,7 @@ public:
    * Stores a request to be sent and sends it as soon as possible
    * @param request The request to be sent
    */
-  void sendRequest(std::shared_ptr<Request> request);
+  void sendRequest(const std::shared_ptr<Request>& request);
 
   /**
    * Sends a request and waits for a response to arrive.
@@ -109,7 +109,7 @@ public:
    * @param wait_time The time in ms to wait before returning nullptr
    * @return A pointer to the response or a nullptr
    */
-  std::shared_ptr<Request> sendRequestAndWaitForResponse(std::shared_ptr<Request> request, unsigned long wait_time);
+  std::shared_ptr<Request> sendRequestAndWaitForResponse(const std::shared_ptr<Request>& request, unsigned long wait_time);
 
   /**
    * Waits for the Request with the given ID to

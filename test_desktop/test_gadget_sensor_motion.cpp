@@ -1,20 +1,18 @@
-#include <stdexcept>
-#include <cassert>
+#include "catch.hpp"
 
 #include "../src/test_dummys/gadget_sensor_motion_dummy.h"
 
-void test_sensor_motion() {
+TEST_CASE("Test Motion Sensor", "[Gadget]") {
   GadgetSensorMotionDummy dummy("move");
-  assert(dummy.getName() == "move");
-  assert(dummy.getType() == GadgetType::Motion_Sensor);
-  auto result = dummy.getCharacteristics();
-  assert(result[0].characteristic == CharacteristicIdentifier::status);
-  assert(result[1].characteristic == CharacteristicIdentifier::err_type);
-}
+  auto characteristics = dummy.getCharacteristics();
 
-int main () {
-  logger_i("UnitMotionSensor", "started testing of gadget gadget_sensor_motion" );
-  test_sensor_motion();
-  logger_i("UnitMotionSensor", "test successful");
-}
+  SECTION("Test Constructor") {
+    CHECK(dummy.getName() == "move");
+    CHECK(dummy.getType() == GadgetType::Motion_Sensor);
+  }
 
+  SECTION("Test Status") {
+//    auto status = characteristics[0];
+//    CHECK(status.type == CharacteristicIdentifier::status);
+  }
+}

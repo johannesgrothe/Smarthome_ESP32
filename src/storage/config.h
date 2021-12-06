@@ -2,8 +2,10 @@
 
 #include <vector>
 #include <tuple>
-#include "datatypes.h"
-#include "../network_library.h"
+#include <memory>
+#include "../datatypes.h"
+#include "../network_mode.h"
+#include "../ip_container.h"
 
 
 class Config {
@@ -21,7 +23,7 @@ private:
   std::shared_ptr<std::string> wifi_ssid_;
   std::shared_ptr<std::string> wifi_pw_;
 
-  std::shared_ptr<IPAddress> mqtt_ip_;
+  std::shared_ptr<IPContainer> mqtt_ip_;
   std::shared_ptr<uint16_t> mqtt_port_;
 
   std::shared_ptr<std::string> mqtt_username_;
@@ -54,7 +56,7 @@ public:
          uint8_t radio_send_pin,
          std::shared_ptr<std::string> wifi_ssid,
          std::shared_ptr<std::string> wifi_pw,
-         std::shared_ptr<IPAddress> mqtt_ip,
+         std::shared_ptr<IPContainer> mqtt_ip,
          std::shared_ptr<uint16_t> mqtt_port,
          std::shared_ptr<std::string> mqtt_username,
          std::shared_ptr<std::string> mqtt_password);
@@ -129,7 +131,7 @@ public:
    * Reads the MQTT IP-Address
    * @return The mqtt ip
    */
-  std::shared_ptr<IPAddress> getMqttIP() const;
+  std::shared_ptr<IPContainer> getMqttIP() const;
 
   /**
    * Reads the MQTT port

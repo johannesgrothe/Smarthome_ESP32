@@ -1,18 +1,13 @@
-#include <stdexcept>
-#include <cassert>
+#include "catch.hpp"
 
-#include "../src/console_logger.h"
 #include "../src/connectors/event.h"
 
-void test_event() {
-  Event event("spongo", 7948573847, EventType::StatusOn);
-  assert(event.getSender() == "spongo");
-  assert(event.getType() == EventType::StatusOn);
-  assert(event.getTimestamp() == 7948573847 );
-}
+TEST_CASE("Test Event", "[Event]") {
+  Event event("rem_1_off", "spongo", 79485737);
 
-int main () {
-  logger_i("UnitEvent", "started testing the Event class..." );
-  test_event();
-  logger_i("UnitEvent", "test successful");
+  SECTION("Test Constructor") {
+    CHECK(event.name == "rem_1_off");
+    CHECK(event.sender == "spongo");
+    CHECK(event.timestamp == 79485737);
+  }
 }

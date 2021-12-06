@@ -1,9 +1,8 @@
-#include <stdexcept>
-#include <cassert>
+#include "catch.hpp"
 
 #include "../src/mapping_reference.h"
 
-void test_mapping_reference() {
+TEST_CASE("Test Mapping Reference", "[Gadget]") {
   // TODO: switch mapping_reference() to std::string from const char*
   char json[100];
   char name;
@@ -16,13 +15,7 @@ void test_mapping_reference() {
   arr.add(4);
   serializeJson(doc, json);
   Mapping_Reference ref(arr, "default");
-  assert(strcmp("default", ref.getName()) == 0);
-  assert(ref.getCodeCount() == 4);
-  assert(ref.containsCode(3));
-}
-
-int main () {
-  logger_i("test_mapping_reference", "started testing of mapping_reference..." );
-  test_mapping_reference();
-  logger_i("test_mapping_reference", "test successful");
+  CHECK(strcmp("default", ref.getName()) == 0);
+  CHECK(ref.getCodeCount() == 4);
+  CHECK(ref.containsCode(3));
 }

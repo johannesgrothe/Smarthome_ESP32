@@ -1,5 +1,6 @@
-// Stolen from https://stackoverflow.com/questions/15278343/c11-thread-safe-queue#16075550
 #pragma once
+
+// Stolen from https://stackoverflow.com/questions/15278343/c11-thread-safe-queue#16075550
 
 #include <queue>
 #include <mutex>
@@ -23,7 +24,7 @@ public:
    * Adds an Element to the Queue
    * @param req Element to add
    */
-  void push(std::shared_ptr<Request> req);
+  void push(const std::shared_ptr<Request>& req);
 
   /**
    * Returns the first element and removes it from the queue.

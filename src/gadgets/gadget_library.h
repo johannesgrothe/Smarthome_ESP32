@@ -7,24 +7,24 @@
 #include "storage/system_storage.h"
 
 // Gadget
-#include "sh_gadget.h"
+#include "gadget.h"
 
 //Lamps
-#include "sh_lamp_neopixel.h"
-#include "sh_lamp_neopixel_basic.h"
-#include "sh_lamp_basic.h"
-#include "sh_doorbell_basic.h"
+#include "lamp_neopixel.h"
+#include "lamp_neopixel_basic.h"
+#include "lamp_basic.h"
+#include "doorbell_basic.h"
 
 //Fan
-#include "sh_fan_westinghouse_ir.h"
-#include "sh_lamp_westinghouse_ir.h"
+#include "fan_westinghouse_ir.h"
+#include "lamp_westinghouse_ir.h"
 
-//Wallswitch
-#include "sh_wallswitch_basic.h"
+//Switch
+#include "wallswitch_basic.h"
 
 //Sensors
-#include "sh_sensor_motion_HR501.h"
-#include "sh_sensor_temperature_DHT.h"
+#include "sensor_motion_HR501.h"
+#include "sensor_temperature_DHT.h"
 
 /**
  * Creates a new gadget out of the given information.
@@ -36,7 +36,7 @@
  * @param gadget_config Config information for the gadget
  * @return A shared pointer to the gadget
  */
-static std::shared_ptr<SH_Gadget> createGadgetHelper(GadgetIdentifier gadget_type, pin_set pins, const std::string& name, JsonObject gadget_config) {
+static std::shared_ptr<Gadget> createGadgetHelper(GadgetIdentifier gadget_type, port_set pins, const std::string& name, JsonObject gadget_config) {
   switch (gadget_type) {
     case GadgetIdentifier::doorbell_basic:
       return createSHDoorbellBasic(name, pins, gadget_config);
@@ -51,16 +51,16 @@ static std::shared_ptr<SH_Gadget> createGadgetHelper(GadgetIdentifier gadget_typ
       return createSHFanWestinghouseIR(name, pins, gadget_config);
 
     case GadgetIdentifier::lamp_westinghouse_ir:
-      return createSHLampWestinghouseIR(name, pins, gadget_config);
+      return create_LampWestinghouseIR(name, pins, gadget_config);
 
     case GadgetIdentifier::wallswitch_basic:
-      return createSHWallswitchBasic(name, pins, gadget_config);
+      return create_SwitchBasic(name, pins, gadget_config);
 
     case GadgetIdentifier::sensor_motion_hr501:
-      return createSHSensorMotionHR501(name, pins, gadget_config);
+      return create_SensorMotionHR501(name, pins, gadget_config);
 
     case GadgetIdentifier::sensor_temperature_dht:
-      return createSHSensorTemperatureDHT(name, pins, gadget_config);
+      return create_SensorTemperatureDHT(name, pins, gadget_config);
 
     default:
       return nullptr;
@@ -77,12 +77,12 @@ static std::shared_ptr<SH_Gadget> createGadgetHelper(GadgetIdentifier gadget_typ
  * @param gadget_config Config information for the gadget
  * @return A shared pointer to the gadget
  */
-static std::shared_ptr<SH_Gadget> createGadget(GadgetIdentifier gadget_type, pin_set pins, const std::string& name, JsonObject gadget_config) {
+static std::shared_ptr<Gadget> createGadget(GadgetIdentifier gadget_type, port_set pins, const std::string& name, JsonObject gadget_config) {
   auto buf_gadget = createGadgetHelper(gadget_type, pins, name, gadget_config);
   if (buf_gadget != nullptr && !buf_gadget->hasInitError()) {
     return buf_gadget;
   }
-  logger_e("StaticStorage", "Gadget could not be successfully initialized and was discarded");
+  logger_e("GadgetFactory", "Gadget could not be successfully initialized and was discarded");
   return nullptr;
 }
 

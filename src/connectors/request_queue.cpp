@@ -1,6 +1,6 @@
 #include "request_queue.h"
 
-void RequestQueue::push(std::shared_ptr<Request> req) {
+void RequestQueue::push(const std::shared_ptr<Request>& req) {
   std::lock_guard<std::mutex> lock(mutex_);
   queue_.push(req);
   condition_var_.notify_one();

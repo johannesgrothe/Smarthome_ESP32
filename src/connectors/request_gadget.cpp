@@ -3,7 +3,7 @@
 static const char *TAG = "RequestGadget";
 
 // RequestGadget
-void RequestGadget::addIncomingRequest(std::shared_ptr<Request> request) {
+void RequestGadget::addIncomingRequest(const std::shared_ptr<Request>& request) {
   buffer_in_request_queue_.push(request);
 }
 
@@ -49,19 +49,19 @@ std::shared_ptr<Request> RequestGadget::getRequest() {
   return in_request_queue_.pop();
 }
 
-void RequestGadget::sendRequest(std::shared_ptr<Request> request) {
+void RequestGadget::sendRequest(const std::shared_ptr<Request>& request) {
   out_request_queue_.push(request);
 }
 
 std::shared_ptr<Request> RequestGadget::waitForResponse(int id, unsigned long wait_time) {
   {
-    unsigned long end_time = millis() + wait_time;
+    unsigned long end_time = HardwareController::getMillis() + wait_time;
 
     std::vector<std::shared_ptr<Request>> buffered_requests;
 
     std::shared_ptr<Request> out_req = nullptr;
 
-    while (millis() < end_time) {
+    while (HardwareController::getMillis() < end_time) {
 
       auto buf_req = in_request_queue_.pop();
 
@@ -72,7 +72,7 @@ std::shared_ptr<Request> RequestGadget::waitForResponse(int id, unsigned long wa
         buffered_requests.push_back(buf_req);
       }
     }
-    for (auto buf_req: buffered_requests) {
+    for (const auto& buf_req: buffered_requests) {
       in_request_queue_.push(buf_req);
     }
     return out_req;
@@ -80,7 +80,7 @@ std::shared_ptr<Request> RequestGadget::waitForResponse(int id, unsigned long wa
 }
 
 std::shared_ptr<Request>
-RequestGadget::sendRequestAndWaitForResponse(std::shared_ptr<Request> request, unsigned long wait_time) {
+RequestGadget::sendRequestAndWaitForResponse(const std::shared_ptr<Request>& request, unsigned long wait_time) {
   sendRequest(request);
   return waitForResponse(request->getID(), wait_time);
 }
@@ -101,7 +101,7 @@ void RequestGadget::refresh() {
       auto p_index = req_payload["package_index"].as<int>();
       auto split_payload = req_payload["split_payload"].as<std::string>();
 
-      // Check if its the first request
+      // Check if it's the first request
       if (p_index == 0) {
 
         if (req_payload.containsKey("last_index")) {
@@ -131,7 +131,7 @@ void RequestGadget::refresh() {
   }
 }
 
-void RequestGadget::addRequestToInQueue(std::shared_ptr<Request> req) {
+void RequestGadget::addRequestToInQueue(const std::shared_ptr<Request>& req) {
   if (req != nullptr) {
     using std::placeholders::_1;
     req->setResponseCallback(std::bind(&RequestGadget::sendRequest, this, _1));

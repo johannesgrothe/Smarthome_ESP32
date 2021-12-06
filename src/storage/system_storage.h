@@ -1,6 +1,8 @@
 #pragma once
 
-#include "config.h"
+#include "system_config.h"
+#include "gadget_config.h"
+#include "event_config.h"
 
 class SystemStorage {
 protected:
@@ -23,18 +25,44 @@ public:
    * Loads the system config from the EEPROM
    * @return The loaded Config as shared_ptr, nullptr if config could not be loaded
    */
-  virtual std::shared_ptr<Config> loadConfig() = 0;
+  virtual std::shared_ptr<SystemConfig> loadSystemConfig() = 0;
 
   /**
-   * Saves the config to the EEPROM
+   * Saves a system config to the EEPROM
    * @param config The config to write
    * @return Whether saving was successful
    */
-  virtual bool saveConfig(Config config) = 0;
+  virtual bool saveSystemConfig(SystemConfig config) = 0;
 
   /**
-   * Erases the Config and whatever data was stored from the storage permanently
+   * Loads the gadget config from the EEPROM
+   * @return The loaded Config as shared_ptr, nullptr if config could not be loaded
+   */
+  virtual std::shared_ptr<GadgetConfig> loadGadgetConfig() = 0;
+
+  /**
+   * Saves a gadget config to the EEPROM
+   * @param config The config to write
+   * @return Whether saving was successful
+   */
+  virtual bool saveGadgetConfig(GadgetConfig config) = 0;
+
+  /**
+ * Loads the event config from the EEPROM
+ * @return The loaded Config as shared_ptr, nullptr if config could not be loaded
+ */
+  virtual std::shared_ptr<EventConfig> loadEventConfig() = 0;
+
+  /**
+   * Saves a event config to the EEPROM
+   * @param config The config to write
+   * @return Whether saving was successful
+   */
+  virtual bool saveEventConfig(EventConfig config) = 0;
+
+  /**
+   * Erases all configs and whatever data was stored from the storage permanently
    * @return Whether erasing was successful
    */
-  virtual bool eraseConfig() = 0;
+  virtual bool eraseAllConfigs() = 0;
 };

@@ -1,10 +1,16 @@
 #pragma once
 
-#include "configs/config_test1.h"
-//#include "configs/config_test2.h"
+#ifdef UNIT_TEST
+#include "configs/config_unit_test.h"
+#else
+//#include "configs/config_test1.h"
+#include "configs/config_test2.h"
+#endif
 
 // The maximum port index allowed
 #define MAX_PORT_INDEX 9
+
+// TODO: make class
 
 /**
  * Returns the configured pin for the given port.
@@ -15,7 +21,7 @@
 static uint8_t getPinForPort(uint8_t port) {
   switch (port) {
     case 0:
-      return 0; // 0 means unconfigured
+      return 0; // 0 means not configured
     case 1:
 #ifdef PORT1
       return PORT1;
@@ -82,4 +88,16 @@ static uint8_t getPinForPort(uint8_t port) {
     default:
       return 0;
   }
+}
+
+/**
+ * Returns the client port mapping inside of a handy data structure
+ * @return The clients port mapping
+ */
+static std::vector<std::tuple<int, int>> getPortMapping() {
+  std::vector<std::tuple<int, int>> port_mapping;
+  for (int i  = 0; i < MAX_PORT_INDEX + 1; i++) {
+    std::tuple<int, int> map(i, getPinForPort(i));
+  }
+  return port_mapping;
 }
