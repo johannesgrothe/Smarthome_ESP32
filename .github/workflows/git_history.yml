@@ -17,4 +17,4 @@ jobs:
           fetch-depth: 0
 
       - name: Check Semi-Linear History
-        run: git merge-base --is-ancestor develop $GITHUB_SHA
+        run: git merge-base --is-ancestor origin/develop HEAD
