@@ -23,7 +23,7 @@ DynamicJsonDocument ApiEncoder::encodeClient(const ClientMeta &client_data, uint
 DynamicJsonDocument ApiEncoder::encodeGadget(const GadgetMeta &gadget_data) {
   DynamicJsonDocument doc(1000);
   doc["type"] = int(gadget_data.type);
-  doc["name"] = gadget_data.name;
+  doc["id"] = gadget_data.name;
   doc.createNestedArray("characteristics");
   JsonArray characteristics = doc["characteristics"];
   for (auto &characteristic_data: gadget_data.characteristics) {
