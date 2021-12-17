@@ -2,6 +2,7 @@
 
 #ifndef UNIT_TEST
 #include <Arduino.h>
+#include <driver/dac.h>
 #else
 #include <chrono>
 #include <thread>
@@ -62,11 +63,11 @@ public:
   static void digitalWritePin(uint8_t pin, bool value);
 
   /**
-   * Writes a analog value to a hardware pin (HIGH/LOW)
+   * Writes a DAC value to GPIO pin 25 or 26 (HIGH/LOW)
    * @param pin Pin to write value to
    * @param value Value to write
    */
-  static void analogWrite(uint8_t pin,  value);
+  static void dacWritePin(uint8_t pin, uint8_t value);
 
   #ifdef UNIT_TEST
   /**
