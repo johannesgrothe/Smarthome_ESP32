@@ -6,7 +6,7 @@ Fan_Westinghouse_IR::Fan_Westinghouse_IR(const std::string &name) :
 
 void Fan_Westinghouse_IR::refresh() {
   if (executeHWChange()) {
-    auto level = getCharacteristicValue(CharacteristicIdentifier::fanSpeed);
+    auto level = getCharacteristicValue(CharacteristicIdentifier::fan_speed);
 
     logger_i(getName(), "Has changed: %d", level);
     if (level == 0) {
