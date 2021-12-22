@@ -48,7 +48,7 @@ TEST_CASE("Test API Encoder", "[API]") {
     auto json_data = ApiEncoder::encodeGadget(gadget);
 
     CHECK(json_data["type"] == int(GadgetIdentifier::fan_westinghouse_ir));
-    CHECK(json_data["name"] == "test_gadget");
+    CHECK(json_data["id"] == "test_gadget");
     CHECK(json_data["characteristics"].size() == 1);
   }
 
@@ -56,13 +56,13 @@ TEST_CASE("Test API Encoder", "[API]") {
     auto json_data = ApiEncoder::encodeSync(client, {gadget}, 1776);
 
     CHECK(json_data["client"]["runtime_id"] == 1776);
-    CHECK(json_data["gadgets"][0]["name"] == "test_gadget");
+    CHECK(json_data["gadgets"][0]["id"] == "test_gadget");
   }
 
   SECTION("Encode gadget sync") {
     auto json_data = ApiEncoder::encodeGadgetUpdate(gadget);
 
-    CHECK(json_data["gadget"]["name"] == "test_gadget");
+    CHECK(json_data["gadget"]["id"] == "test_gadget");
   }
 
 }
