@@ -19,9 +19,9 @@ jobs:
       - name: Check Semi-Linear History
         run: git merge-base --is-ancestor origin/develop HEAD
 
-  submodule_check:
+  submodule_master_check:
 
-    name: Check Submodule Branch Status
+    name: System Submodule is on master
 
     runs-on: ubuntu-latest
 
@@ -31,7 +31,25 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Check if Submodules are on master
+      - name: Check if submodule is on master
+        uses: jtmullen/submodule-branch-check-action@v1
+        with:
+          path: "src/system"
+          branch: "master"
+
+  submodule_most_recent_master_check:
+
+    name: System Submodule is on most recent master
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Check if submodule is on most recent master commit
         uses: jtmullen/submodule-branch-check-action@v1
         with:
           path: "src/system"
