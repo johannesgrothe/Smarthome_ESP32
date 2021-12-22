@@ -2,18 +2,22 @@
 
 
 PowerManager::PowerManager(PowerMode mode):
-    battery_level_(0),
-    battery_drain_(0),
-    mode_(mode) {}
+  mode_(mode) {}
 
 uint8_t PowerManager::getBatteryLevel() const {
-  //TODO calculate battery level
-  return battery_level_;
+  // TODO calculate battery level
+  return 1;
 }
 
-uint8_t PowerManager::getBatteryDrain() const {
-  //TODO calculating battery drain
-  return battery_drain_;
+PowerMode PowerManager::getPowerMode() const {
+  return mode_;
 }
+
+uint8_t PowerManager::getVoltage() const {
+  // TODO calculate current voltage
+  return 50;
+}
+
+
 
 

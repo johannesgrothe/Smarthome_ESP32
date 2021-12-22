@@ -1,6 +1,5 @@
 #pragma once
 
-#include "power_mode.h"
 #include <cstdint>
 #include <string>
 
@@ -9,15 +8,11 @@ enum class PowerMode {
   Battery_Mode = 1
 };
 
-
-
 class PowerManager {
 private:
 
 
 protected:
-  uint8_t battery_level_;
-  uint8_t battery_drain_;
   PowerMode mode_;
 
 public:
@@ -25,15 +20,23 @@ public:
   explicit PowerManager(PowerMode mode);
 
   /**
-   * Retrieves
-   * @return Initialization status
+   * Returns current battery level in %
+   * @return current battery level
    */
   uint8_t getBatteryLevel() const;
 
   /**
-   * Whether the PowerManagement was successfully initialized and is ready to use
-   * @return Initialization status
+   * Return the active power mode
+   * @return active power mode
    */
-  uint8_t getBatteryDrain() const;
+  PowerMode getPowerMode() const;
+
+  /**
+   * Return current input voltage
+   * in_voltage: x, out_voltage: y
+   * y = x * 10
+   * @return current voltage
+   */
+  uint8_t getVoltage() const;
 
 };
