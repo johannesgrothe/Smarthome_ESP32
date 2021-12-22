@@ -36,6 +36,7 @@ jobs:
         with:
           path: "src/system"
           branch: "master"
+          pass_if_unchanged: true
 
   submodule_most_recent_master_check:
 
