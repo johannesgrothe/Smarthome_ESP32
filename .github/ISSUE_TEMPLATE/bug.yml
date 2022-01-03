@@ -37,10 +37,22 @@ body:
     validations:
       required: true
   - type: textarea
+    id: backtrace
+    attributes:
+      label: Backtrace
+      description: If you have a backtrace from a crash please paste it here.
+      render: shell
+  - type: textarea
+    id: version_hash
+    attributes:
+      label: Git Version-Hash
+      description: If you provided a backtrace please add the commit hash of the version the client ran when the crash happened (you can always see it at the top of the logs in the serial monitor)
+      render: shell
+  - type: textarea
     id: logs
     attributes:
       label: Relevant log output
-      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      description: Please copy and paste any additional log output. This will be automatically formatted into code, so no need for backticks.
       render: shell
   - type: checkboxes
     id: reproducability
