@@ -13,34 +13,36 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          submodules: recursive
           fetch-depth: 0
 
-      - name: Check Semi-Linear History
-        run: git merge-base --is-ancestor origin/develop HEAD
+      - name: Detect commit to check
+        id: commit_detect
+        run: echo "::set-output name=CHECK_COMMIT::"$(echo $(git show --no-patch --format="%P" HEAD) | cut -d' ' -f2)""
 
-  submodule_master_check:
+      - name: Detect primary branch on the repository
+        id: branch_detect
+        run: echo "::set-output name=PRIMARY_BRANCH::"$(echo origin/${{ github.event.repository.default_branch }})""
 
-    name: System Submodule is on master
+      - name: Display commit that needs to be checked
+        run: echo ${{ steps.commit_detect.outputs.CHECK_COMMIT }}
 
-    runs-on: ubuntu-latest
+      - name: Display detected primary branch of the repository
+        run: echo ${{ steps.branch_detect.outputs.PRIMARY_BRANCH }}
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
+      - name: Show git log
+        run: git log --all --decorate --oneline --graph
 
-      - name: Check if submodule is on master
-        uses: jtmullen/submodule-branch-check-action@v1
-        with:
-          path: "src/system"
-          branch: "master"
-          pass_if_unchanged: true
+      # Real check: Check if the branch to merge is actually on top of the primary branch
+      - name: Check history to primary branch
+        run: git merge-base --is-ancestor ${{ steps.branch_detect.outputs.PRIMARY_BRANCH }} ${{ steps.commit_detect.outputs.CHECK_COMMIT }}
+
+      # For some fucking reason github gets stuck if we remove this totally useless step
+      - name: Check history to master
+        run: git merge-base --is-ancestor origin/master HEAD
 
   submodule_most_recent_master_check:
 
-    name: System Submodule is on most recent master
+    name: System Submodule is on most recent master or unchanged
 
     runs-on: ubuntu-latest
 
@@ -56,3 +58,4 @@ jobs:
           path: "src/system"
           branch: "master"
           require_head: true
+          pass_if_unchanged: true
