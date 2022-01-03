@@ -9,19 +9,19 @@ TEST_CASE("Test Lamp", "[Gadget]") {
   SECTION("Test Attributes") {
     CHECK(lamp.getType() == GadgetType::Lightbulb);
     CHECK(lamp.getName() == "spongo");
-    CHECK(lamp.getCharacteristic(CharacteristicIdentifier::status) != nullptr);
-    CHECK(lamp.getCharacteristic(CharacteristicIdentifier::saturation) != nullptr);
-    CHECK(lamp.getCharacteristic(CharacteristicIdentifier::brightness) != nullptr);
-    CHECK(lamp.getCharacteristic(CharacteristicIdentifier::hue) != nullptr);
+    CHECK(lamp.getCharacteristic(gadget_definitions::CharacteristicIdentifier::status) != nullptr);
+    CHECK(lamp.getCharacteristic(gadget_definitions::CharacteristicIdentifier::saturation) != nullptr);
+    CHECK(lamp.getCharacteristic(gadget_definitions::CharacteristicIdentifier::brightness) != nullptr);
+    CHECK(lamp.getCharacteristic(gadget_definitions::CharacteristicIdentifier::hue) != nullptr);
   }
 
   SECTION("Test Status") {
-    lamp.handleCharacteristicUpdate(CharacteristicIdentifier::status, 0);
-    logger_i("test", "step_val = %d", lamp.getCharacteristic(CharacteristicIdentifier::status)->getStepValue());
-    CHECK(lamp.getCharacteristic(CharacteristicIdentifier::status)->getStepValue() == 0);
-    lamp.handleCharacteristicUpdate(CharacteristicIdentifier::status, 1);
-    logger_i("test", "step_val = %d", lamp.getCharacteristic(CharacteristicIdentifier::status)->getStepValue());
-    CHECK(lamp.getCharacteristic(CharacteristicIdentifier::status)->getStepValue() == 1);
+    lamp.handleCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier::status, 0);
+    logger_i("test", "step_val = %d", lamp.getCharacteristic(gadget_definitions::CharacteristicIdentifier::status)->getStepValue());
+    CHECK(lamp.getCharacteristic(gadget_definitions::CharacteristicIdentifier::status)->getStepValue() == 0);
+    lamp.handleCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier::status, 1);
+    logger_i("test", "step_val = %d", lamp.getCharacteristic(gadget_definitions::CharacteristicIdentifier::status)->getStepValue());
+    CHECK(lamp.getCharacteristic(gadget_definitions::CharacteristicIdentifier::status)->getStepValue() == 1);
   }
 
 //  lamp.setStatus(false);
@@ -42,9 +42,9 @@ TEST_CASE("Test Lamp", "[Gadget]") {
 //  CHECK(buffer[2] == 60);
 //  auto result = lamp.getCharacteristics();
 //  CHECK(result.size() == 3);
-//  CHECK(result[0].type == CharacteristicIdentifier::status);
-//  CHECK(result[1].type == CharacteristicIdentifier::hue);
-//  CHECK(result[2].type == CharacteristicIdentifier::saturation);
+//  CHECK(result[0].type == gadget_definitions::CharacteristicIdentifier::status);
+//  CHECK(result[1].type == gadget_definitions::CharacteristicIdentifier::hue);
+//  CHECK(result[2].type == gadget_definitions::CharacteristicIdentifier::saturation);
 //  CHECK(result[0].max == 1);
 //  CHECK(result[1].max == 100);
 //  CHECK(result[2].max == 100);

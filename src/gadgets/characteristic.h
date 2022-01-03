@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gadget_enums.h"
+#include "../system/gadget_definitions.h"
 
 #include <cstdint>
 
@@ -8,12 +8,12 @@ class Characteristic {
   const int default_step_value_;
   uint16_t step_value_;
 public:
-  const CharacteristicIdentifier type;
+  const gadget_definitions::CharacteristicIdentifier type;
   const int min;
   const int max;
   const uint16_t steps;
 
-  Characteristic(CharacteristicIdentifier type, int min, int max, uint16_t step_count, uint16_t default_step_value = 0);
+  Characteristic(gadget_definitions::CharacteristicIdentifier type, int min, int max, uint16_t step_count, uint16_t default_step_value = 0);
 
   uint16_t getStepValue() const;
 

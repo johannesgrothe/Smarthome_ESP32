@@ -15,6 +15,6 @@ void Lamp_Basic::refresh() {
   }
 }
 
-void Lamp_Basic::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) {
+void Lamp_Basic::executeCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier characteristic, uint16_t step_value) {
   setHWChangeStatus(true);
 }

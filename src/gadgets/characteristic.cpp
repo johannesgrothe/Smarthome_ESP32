@@ -1,6 +1,6 @@
 #include "characteristic.h"
 
-Characteristic::Characteristic(CharacteristicIdentifier type, int min, int max, uint16_t step_count,
+Characteristic::Characteristic(gadget_definitions::CharacteristicIdentifier type, int min, int max, uint16_t step_count,
                                uint16_t default_step_value):
                                default_step_value_(default_step_value),
                                step_value_(default_step_value_),

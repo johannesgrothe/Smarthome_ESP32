@@ -71,7 +71,7 @@ bool Gadget::hasRadio() const {
   return radio_gadget_ != nullptr;
 }
 
-bool Gadget::handleCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) {
+bool Gadget::handleCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier characteristic, uint16_t step_value) {
   auto status = setCharacteristicValue(characteristic, step_value);
   if (status) {
     logger_i(getName(), "Updating Characteristic %d -> %d", int(characteristic), step_value);
@@ -86,7 +86,7 @@ bool Gadget::handleEvent(const std::string &event_id) {
     auto i_event_id = std::get<0>(event_data);
     if (i_event_id == event_id) {
       for (auto characteristic_tuple: std::get<1>(event_data)) {
-        auto i_char = CharacteristicIdentifier(std::get<0>(characteristic_tuple));
+        auto i_char = gadget_definitions::CharacteristicIdentifier(std::get<0>(characteristic_tuple));
         uint16_t i_val = std::get<1>(characteristic_tuple);
         handleCharacteristicUpdate(i_char, i_val);
       }
@@ -108,7 +108,7 @@ std::vector<Characteristic> Gadget::getCharacteristics() {
   return characteristics_;
 }
 
-uint16_t Gadget::getCharacteristicValue(CharacteristicIdentifier characteristic) {
+uint16_t Gadget::getCharacteristicValue(gadget_definitions::CharacteristicIdentifier characteristic) {
   for (auto c: characteristics_) {
     if (c.type == characteristic) {
       return c.getStepValue();
@@ -117,7 +117,7 @@ uint16_t Gadget::getCharacteristicValue(CharacteristicIdentifier characteristic)
   return 0;
 }
 
-bool Gadget::setCharacteristicValue(CharacteristicIdentifier characteristic, uint16_t step_value) {
+bool Gadget::setCharacteristicValue(gadget_definitions::CharacteristicIdentifier characteristic, uint16_t step_value) {
   for (auto &c: characteristics_) {
     if (c.type == characteristic) {
       if (c.getStepValue() != step_value) {
@@ -131,7 +131,7 @@ bool Gadget::setCharacteristicValue(CharacteristicIdentifier characteristic, uin
   return false;
 }
 
-std::shared_ptr<Characteristic> Gadget::getCharacteristic(CharacteristicIdentifier identifier) {
+std::shared_ptr<Characteristic> Gadget::getCharacteristic(gadget_definitions::CharacteristicIdentifier identifier) {
   for (auto c: characteristics_) {
     if (c.type == identifier) {
       return std::make_shared<Characteristic>(c);

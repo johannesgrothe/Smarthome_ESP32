@@ -1,13 +1,13 @@
 #pragma once
 
 #include <ArduinoJson.h>
-#include "../src/gadgets/gadget_enums.h"
+#include "../src/system/gadget_definitions.h"
 #include "../src/console_logger.h"
 #include "../src/network_mode.h"
 
 inline DynamicJsonDocument generateCharacteristicStatus() {
   DynamicJsonDocument json(400);
-  json["type"] = int(CharacteristicIdentifier::status);
+  json["type"] = int(gadget_definitions::CharacteristicIdentifier::status);
   json["min"] = 0;
   json["max"] = 1;
   json["steps"] = 1;
@@ -17,14 +17,14 @@ inline DynamicJsonDocument generateCharacteristicStatus() {
 
 inline DynamicJsonDocument generateCharacteristicStatusUpdate() {
   DynamicJsonDocument json(400);
-  json["type"] = int(CharacteristicIdentifier::status);
+  json["type"] = int(gadget_definitions::CharacteristicIdentifier::status);
   json["step_value"] = 1;
   return json;
 }
 
 inline DynamicJsonDocument generateCharacteristicFanspeed() {
   DynamicJsonDocument json(400);
-  json["type"] = int(CharacteristicIdentifier::fan_speed);
+  json["type"] = int(gadget_definitions::CharacteristicIdentifier::fan_speed);
   json["min"] = 0;
   json["max"] = 100;
   json["steps"] = 4;
@@ -34,7 +34,7 @@ inline DynamicJsonDocument generateCharacteristicFanspeed() {
 
 inline DynamicJsonDocument generateGadgetFan() {
   DynamicJsonDocument json(400);
-  json["type"] = int(GadgetIdentifier::fan_westinghouse_ir);
+  json["type"] = int(gadget_definitions::GadgetIdentifier::fan_westinghouse_ir);
   json["name"] = "test_fan";
   json.createNestedArray("characteristics");
   JsonArray characteristics = json["characteristics"];

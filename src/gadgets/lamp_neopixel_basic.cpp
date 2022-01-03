@@ -9,14 +9,14 @@ Lamp_NeoPixel_RGB_Basic::Lamp_NeoPixel_RGB_Basic(std::string name, uint8_t pin, 
 
 void Lamp_NeoPixel_RGB_Basic::refresh() {
   if (hasChanged()) {
-    if (!getCharacteristicValue(CharacteristicIdentifier::status)) {
+    if (!getCharacteristicValue(gadget_definitions::CharacteristicIdentifier::status)) {
       setLEDColor(0, 0, 0);
       return;
     }
     Color buf_clr;
-    buf_clr.setHSV(getCharacteristicValue(CharacteristicIdentifier::hue),
-                   getCharacteristicValue(CharacteristicIdentifier::saturation),
-                   getCharacteristicValue(CharacteristicIdentifier::brightness));
+    buf_clr.setHSV(getCharacteristicValue(gadget_definitions::CharacteristicIdentifier::hue),
+                   getCharacteristicValue(gadget_definitions::CharacteristicIdentifier::saturation),
+                   getCharacteristicValue(gadget_definitions::CharacteristicIdentifier::brightness));
     auto rgb_color = buf_clr.getRGB();
     setLEDColor(rgb_color->getRed(), rgb_color->getGreen(), rgb_color->getBlue());
   }

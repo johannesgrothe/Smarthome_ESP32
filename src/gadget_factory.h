@@ -33,10 +33,10 @@
 #include "gadgets/sensor_temperature_DHT.h"
 #endif
 
-static const std::vector<GadgetIdentifier> IR_GADGETS = {GadgetIdentifier::fan_westinghouse_ir,
-                                                         GadgetIdentifier::lamp_westinghouse_ir};
+static const std::vector<gadget_definitions::GadgetIdentifier> IR_GADGETS = {gadget_definitions::GadgetIdentifier::fan_westinghouse_ir,
+                                                         gadget_definitions::GadgetIdentifier::lamp_westinghouse_ir};
 
-static const std::vector<GadgetIdentifier> RADIO_GADGETS = {};
+static const std::vector<gadget_definitions::GadgetIdentifier> RADIO_GADGETS = {};
 
 class GadgetFactory {
 private:
@@ -57,7 +57,7 @@ private:
    * @param gadget_config Config information for the gadget
    * @return A shared pointer to the gadget
    */
-  static std::shared_ptr<Gadget> createGadgetHelper(GadgetIdentifier gadget_type,
+  static std::shared_ptr<Gadget> createGadgetHelper(gadget_definitions::GadgetIdentifier gadget_type,
                                                     port_set pins,
                                                     const std::string &name,
                                                     JsonObject gadget_config);
@@ -77,7 +77,7 @@ public:
    * @param gadget_config Config information for the gadget
    * @return A shared pointer to the gadget
    */
-  std::shared_ptr<Gadget> createGadget(GadgetIdentifier gadget_type,
+  std::shared_ptr<Gadget> createGadget(gadget_definitions::GadgetIdentifier gadget_type,
                                        port_set pins,
                                        const std::string &name,
                                        JsonObject gadget_config,
@@ -88,12 +88,12 @@ public:
    * @param gadget Gadget type to check
    * @return Whether the stated gadget type needs ir access
    */
-  static bool gadgetRequiresIR(GadgetIdentifier gadget);
+  static bool gadgetRequiresIR(gadget_definitions::GadgetIdentifier gadget);
 
   /**
    * Function that returns whether the gadget requires radio access
    * @param gadget Gadget type to check
    * @return Whether the stated gadget type needs radio access
    */
-  static bool gadgetRequiresRadio(GadgetIdentifier gadget);
+  static bool gadgetRequiresRadio(gadget_definitions::GadgetIdentifier gadget);
 };

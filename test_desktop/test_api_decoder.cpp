@@ -14,7 +14,7 @@ TEST_CASE("Test API Decoder", "[API]") {
 
   SECTION("Decode characteristic") {
     auto characteristic_meta = ApiDecoder::decodeCharacteristic(c_fanspeed_json);
-    CHECK(characteristic_meta.type == CharacteristicIdentifier::fan_speed);
+    CHECK(characteristic_meta.type == gadget_definitions::CharacteristicIdentifier::fan_speed);
     CHECK(characteristic_meta.min_val == 0);
     CHECK(characteristic_meta.max_val == 100);
     CHECK(characteristic_meta.step_val == 2);
@@ -23,7 +23,7 @@ TEST_CASE("Test API Decoder", "[API]") {
 
   SECTION("Decode gadget") {
     auto gadget_meta = ApiDecoder::decodeGadget(g_fan_json);
-    CHECK(gadget_meta.type == GadgetIdentifier::fan_westinghouse_ir);
+    CHECK(gadget_meta.type == gadget_definitions::GadgetIdentifier::fan_westinghouse_ir);
     CHECK(gadget_meta.name == "test_fan");
     CHECK(gadget_meta.characteristics.size() == 2);
   }

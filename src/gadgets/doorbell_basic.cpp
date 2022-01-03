@@ -27,4 +27,4 @@ void Doorbell_Basic::refresh() {
   }
 }
 
-void Doorbell_Basic::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) {}
+void Doorbell_Basic::executeCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier characteristic, uint16_t step_value) {}

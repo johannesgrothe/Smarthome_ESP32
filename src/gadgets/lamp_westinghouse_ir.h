@@ -43,7 +43,7 @@ static const uint16_t lamp_off[119] = {1248, 432, 1250, 434, 408, 1298, 382, 130
 class Lamp_WestinghouseIR : public Lamp_OnOff, public SimpleHardwareGadget {
 protected:
 
-  void executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) override;
+  void executeCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier characteristic, uint16_t step_value) override;
 
 public:
 

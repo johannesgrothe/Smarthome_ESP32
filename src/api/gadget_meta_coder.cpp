@@ -13,7 +13,7 @@ GadgetMeta GadgetMetaEncoder::encodeGadget(const std::shared_ptr<Gadget> &gadget
   for (auto c: gadget->getCharacteristics()) {
     out_characteristics.push_back(GadgetMetaEncoder::encodeCharacteristic(c));
   }
-  return {GadgetIdentifier::fan_westinghouse_ir,
+  return {gadget_definitions::GadgetIdentifier::fan_westinghouse_ir,
           gadget->getName(),
           out_characteristics};
 }

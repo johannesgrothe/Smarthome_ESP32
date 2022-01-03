@@ -12,7 +12,7 @@ public:
 
   explicit Lamp_Basic(std::string name, uint8_t pin);
 
-  void executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) override;
+  void executeCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier characteristic, uint16_t step_value) override;
 
   void refresh() override;
 };

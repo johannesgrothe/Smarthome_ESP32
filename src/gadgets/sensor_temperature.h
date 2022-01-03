@@ -5,7 +5,7 @@
 class Sensor_Temperature : public Gadget {
 protected:
 
-  void executeCharacteristicUpdate(CharacteristicIdentifier, uint16_t) override;
+  void executeCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier, uint16_t) override;
 
   void setTemperature(int temp);
 

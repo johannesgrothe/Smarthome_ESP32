@@ -13,7 +13,7 @@ private:
 protected:
   bool setLEDColor(uint8_t, uint8_t, uint8_t);
 
-  void executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) override;
+  void executeCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier characteristic, uint16_t step_value) override;
 
 public:
   Lamp_NeoPixel_RGB(std::string name, uint8_t pin, uint16_t len);

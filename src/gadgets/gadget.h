@@ -63,7 +63,7 @@ protected:
    * @param characteristic Characteristic to get value for
    * @return The current step value of this characteristic
    */
-  uint16_t getCharacteristicValue(CharacteristicIdentifier characteristic);
+  uint16_t getCharacteristicValue(gadget_definitions::CharacteristicIdentifier characteristic);
 
   /**
    * Sets the step value for the selected characteristic
@@ -71,7 +71,7 @@ protected:
    * @param step_value Step value to set
    * @return True if a characteristic has changed, False if nothing has changed or characteristic does not exist
    */
-  bool setCharacteristicValue(CharacteristicIdentifier characteristic, uint16_t step_value);
+  bool setCharacteristicValue(gadget_definitions::CharacteristicIdentifier characteristic, uint16_t step_value);
 
   /**
    * Updates the initialization error. If status_update is true, the error will not change. If its false, the error will now be false.
@@ -100,7 +100,7 @@ protected:
    * @param characteristic Characteristic to update
    * @param step_value The step-value to update with
    */
-  virtual void executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) = 0;
+  virtual void executeCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier characteristic, uint16_t step_value) = 0;
 
 public:
 
@@ -147,7 +147,7 @@ public:
    * @param identifier Characteristic to get
    * @return The characteristic data
    */
-  std::shared_ptr<Characteristic> getCharacteristic(CharacteristicIdentifier identifier);
+  std::shared_ptr<Characteristic> getCharacteristic(gadget_definitions::CharacteristicIdentifier identifier);
 
   /**
    * Checks if the gadget was successfully initialized
@@ -166,7 +166,7 @@ public:
    * @param characteristic Characteristic the gadget should be updated with
    * @param step_value The value the characteristic should be updated with
    */
-  virtual bool handleCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value);
+  virtual bool handleCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier characteristic, uint16_t step_value);
 
   /**
    * Handles and changes the gadget based on an Event triggered by any other system component

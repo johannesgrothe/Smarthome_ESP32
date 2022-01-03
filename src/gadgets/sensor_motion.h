@@ -14,7 +14,7 @@ protected:
    */
   void setStatus(bool);
 
-  void executeCharacteristicUpdate(CharacteristicIdentifier, uint16_t) override;
+  void executeCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier, uint16_t) override;
 
 public:
   explicit Sensor_Motion(std::string name);

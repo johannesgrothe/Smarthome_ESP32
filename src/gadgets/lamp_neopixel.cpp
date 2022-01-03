@@ -21,6 +21,6 @@ Lamp_NeoPixel_RGB::Lamp_NeoPixel_RGB(std::string name, uint8_t pin, uint16_t len
   led_stripe_.clear();
 }
 
-void Lamp_NeoPixel_RGB::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) {
+void Lamp_NeoPixel_RGB::executeCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier characteristic, uint16_t step_value) {
   setHWChangeStatus(true);
 }

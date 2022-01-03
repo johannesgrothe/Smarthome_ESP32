@@ -6,36 +6,36 @@ GadgetFactory::GadgetFactory(std::shared_ptr<IR_Gadget> ir, std::shared_ptr<Radi
     ir_(std::move(ir)),
     radio_(std::move(radio)) {}
 
-std::shared_ptr<Gadget> GadgetFactory::createGadgetHelper(GadgetIdentifier gadget_type,
+std::shared_ptr<Gadget> GadgetFactory::createGadgetHelper(gadget_definitions::GadgetIdentifier gadget_type,
                                                           port_set pins,
                                                           const std::string &name,
                                                           JsonObject gadget_config) {
   switch (gadget_type) {
-    case GadgetIdentifier::doorbell_basic:
+    case gadget_definitions::GadgetIdentifier::doorbell_basic:
       return createSHDoorbellBasic(name, pins, gadget_config);
 
       #ifndef UNIT_TEST
-      case GadgetIdentifier::lamp_neopixel_basic:
+      case gadget_definitions::GadgetIdentifier::lamp_neopixel_rgb_basic:
         return createSHLampNeoPixelBasic(name, pins, gadget_config);
       #endif
 
-    case GadgetIdentifier::lamp_basic:
+    case gadget_definitions::GadgetIdentifier::lamp_basic:
       return createSHLampBasic(name, pins, gadget_config);
 
-    case GadgetIdentifier::fan_westinghouse_ir:
+    case gadget_definitions::GadgetIdentifier::fan_westinghouse_ir:
       return createSHFanWestinghouseIR(name, pins, gadget_config);
 
-    case GadgetIdentifier::lamp_westinghouse_ir:
+    case gadget_definitions::GadgetIdentifier::lamp_westinghouse_ir:
       return create_LampWestinghouseIR(name, pins, gadget_config);
 
-    case GadgetIdentifier::wallswitch_basic:
+    case gadget_definitions::GadgetIdentifier::wallswitch_basic:
       return create_SwitchBasic(name, pins, gadget_config);
 
       #ifndef UNIT_TEST
-      case GadgetIdentifier::sensor_motion_hr501:
+      case gadget_definitions::GadgetIdentifier::sensor_motion_hr501:
         return create_SensorMotionHR501(name, pins, gadget_config);
 
-      case GadgetIdentifier::sensor_temperature_dht:
+      case gadget_definitions::GadgetIdentifier::sensor_temperature_dht:
         return create_SensorTemperatureDHT(name, pins, gadget_config);
       #endif
 
@@ -44,7 +44,7 @@ std::shared_ptr<Gadget> GadgetFactory::createGadgetHelper(GadgetIdentifier gadge
   }
 }
 
-std::shared_ptr<Gadget> GadgetFactory::createGadget(GadgetIdentifier gadget_type,
+std::shared_ptr<Gadget> GadgetFactory::createGadget(gadget_definitions::GadgetIdentifier gadget_type,
                                                     port_set pins,
                                                     const std::string &name,
                                                     JsonObject gadget_config,
@@ -86,18 +86,18 @@ std::shared_ptr<Gadget> GadgetFactory::createGadget(GadgetIdentifier gadget_type
   return buf_gadget;
 }
 
-bool GadgetFactory::gadgetRequiresIR(GadgetIdentifier gadget) {
+bool GadgetFactory::gadgetRequiresIR(gadget_definitions::GadgetIdentifier gadget) {
   if (std::any_of(IR_GADGETS.begin(),
                   IR_GADGETS.end(),
-                  [gadget](GadgetIdentifier ident) { return ident == gadget; }))
+                  [gadget](gadget_definitions::GadgetIdentifier ident) { return ident == gadget; }))
     return true;
   return false;
 }
 
-bool GadgetFactory::gadgetRequiresRadio(GadgetIdentifier gadget) {
+bool GadgetFactory::gadgetRequiresRadio(gadget_definitions::GadgetIdentifier gadget) {
   if (std::any_of(RADIO_GADGETS.begin(),
                   RADIO_GADGETS.end(),
-                  [gadget](GadgetIdentifier ident) { return ident == gadget; }))
+                  [gadget](gadget_definitions::GadgetIdentifier ident) { return ident == gadget; }))
     return true;
   return false;
 }

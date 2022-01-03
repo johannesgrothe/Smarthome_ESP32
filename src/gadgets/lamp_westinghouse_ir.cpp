@@ -9,7 +9,7 @@ Lamp_WestinghouseIR::Lamp_WestinghouseIR(std::string name) :
 
 void Lamp_WestinghouseIR::refresh() {
   if (executeHWChange()) {
-    if (getCharacteristicValue(CharacteristicIdentifier::status))
+    if (getCharacteristicValue(gadget_definitions::CharacteristicIdentifier::status))
       sendRawIR(lamp_on, 143);
     else
       sendRawIR(lamp_off, 119);
@@ -17,6 +17,6 @@ void Lamp_WestinghouseIR::refresh() {
 }
 
 void
-Lamp_WestinghouseIR::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) {
+Lamp_WestinghouseIR::executeCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier characteristic, uint16_t step_value) {
   setHWChangeStatus(true);
 }
