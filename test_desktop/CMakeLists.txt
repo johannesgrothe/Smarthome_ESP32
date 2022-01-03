@@ -7,11 +7,23 @@ set(CMAKE_CXX_STANDARD 14)
 add_compile_definitions(UNIT_TEST)
 
 include(FetchContent)
+
 FetchContent_Declare(ArduinoJson
         GIT_REPOSITORY https://github.com/bblanchon/ArduinoJson.git
         GIT_TAG        v6.18.3
         )
-FetchContent_MakeAvailable(ArduinoJson)
+
+FetchContent_Declare(nlohmann
+        GIT_REPOSITORY https://github.com/nlohmann/json.git
+        GIT_TAG        v3.10.5
+        )
+
+FetchContent_Declare(json_validator
+        GIT_REPOSITORY https://github.com/pboettch/json-schema-validator.git
+        GIT_TAG        2.1.0
+        )
+
+FetchContent_MakeAvailable(ArduinoJson nlohmann json_validator)
 
 set(ADDITIONAL_SOURCES
         ../src/connectors/request.cpp
