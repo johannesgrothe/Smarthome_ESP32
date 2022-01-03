@@ -7,7 +7,7 @@
 class DummyGadget : public Gadget {
 protected:
 
-  void executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) override;
+  void executeCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier characteristic, uint16_t step_value) override;
 
 public:
 
@@ -28,7 +28,7 @@ DummyGadget::DummyGadget(std::string name, GadgetType type, std::vector<Characte
            type,
            std::move(characteristics)) {}
 
-void DummyGadget::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) {}
+void DummyGadget::executeCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier characteristic, uint16_t step_value) {}
 
 void DummyGadget::refresh() {}
 

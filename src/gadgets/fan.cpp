@@ -6,11 +6,11 @@ Fan::Fan(const std::string &name, uint16_t levels_count) :
     Gadget(name,
            GadgetType::Fan,
            {
-               Characteristic(CharacteristicIdentifier::status,
+               Characteristic(gadget_definitions::CharacteristicIdentifier::status,
                               0,
                               1,
                               1),
-               Characteristic(CharacteristicIdentifier::fanSpeed,
+               Characteristic(gadget_definitions::CharacteristicIdentifier::fan_speed,
                               0,
                               100,
                               levels_count)}) {}

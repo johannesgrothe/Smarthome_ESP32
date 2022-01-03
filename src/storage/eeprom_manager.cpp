@@ -1,6 +1,5 @@
 #include "eeprom_manager.h"
-#include "../gadgets/gadget_enums.h"
-
+#include "../system/gadget_definitions.h"
 #include "eeprom_gadget_mapping_coder.h"
 
 uint8_t EepromManager::calculateNewContentFlag(uint8_t index, bool new_value, uint8_t bitfield) {
@@ -346,14 +345,14 @@ WriteGadgetStatus EepromManager::writeGadget(uint8_t gadget_type,
                                              const std::string &gadget_json,
                                              const std::vector<gadget_event_map> &mapping_data) {
 
-  if (gadget_type >= GadgetIdentifierCount) {
+  if (gadget_type >= gadget_definitions::GadgetIdentifierCount) {
     logger_e("EepromManager", "Unknown gadget identifier '%d'", gadget_type);
     return WriteGadgetStatus::GadgetTypeError0;
   }
 
-  auto type = (GadgetIdentifier) gadget_type;
+  auto type = (gadget_definitions::GadgetIdentifier) gadget_type;
 
-  if (type == GadgetIdentifier::err_type) {
+  if (type == gadget_definitions::GadgetIdentifier::any_gadget) {
     logger_e("EepromManager", "Cannot save gadget: gadget has err-type 0");
     return WriteGadgetStatus::GadgetTypeErrorUnknown;
   } else {

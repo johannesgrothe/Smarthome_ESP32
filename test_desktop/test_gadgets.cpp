@@ -7,12 +7,12 @@ TEST_CASE("Test Gadget", "[Gadget]") {
   DummyGadget gadget("homer",
                      GadgetType::Lightbulb,
                      {
-                         Characteristic(CharacteristicIdentifier::status,
+                         Characteristic(gadget_definitions::CharacteristicIdentifier::status,
                                         0,
                                         1,
                                         1,
                                         1),
-                         Characteristic(CharacteristicIdentifier::temperature,
+                         Characteristic(gadget_definitions::CharacteristicIdentifier::temperature,
                                         -40,
                                         80,
                                         120,
@@ -36,30 +36,30 @@ TEST_CASE("Test Gadget", "[Gadget]") {
   }
 
   SECTION("Test Characteristic Updates") {
-    CHECK(gadget.getCharacteristic(CharacteristicIdentifier::status)->getStepValue() == 1);
-    CHECK(gadget.handleCharacteristicUpdate(CharacteristicIdentifier::status, 0) == true);
-    CHECK(gadget.getCharacteristic(CharacteristicIdentifier::status)->getStepValue() == 0);
-    CHECK(gadget.handleCharacteristicUpdate(CharacteristicIdentifier::status, 1) == true);
-    CHECK(gadget.getCharacteristic(CharacteristicIdentifier::status)->getStepValue() == 1);
-    CHECK(gadget.handleCharacteristicUpdate(CharacteristicIdentifier::status, 1) == false);
-    CHECK(gadget.getCharacteristic(CharacteristicIdentifier::status)->getStepValue() == 1);
+    CHECK(gadget.getCharacteristic(gadget_definitions::CharacteristicIdentifier::status)->getStepValue() == 1);
+    CHECK(gadget.handleCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier::status, 0) == true);
+    CHECK(gadget.getCharacteristic(gadget_definitions::CharacteristicIdentifier::status)->getStepValue() == 0);
+    CHECK(gadget.handleCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier::status, 1) == true);
+    CHECK(gadget.getCharacteristic(gadget_definitions::CharacteristicIdentifier::status)->getStepValue() == 1);
+    CHECK(gadget.handleCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier::status, 1) == false);
+    CHECK(gadget.getCharacteristic(gadget_definitions::CharacteristicIdentifier::status)->getStepValue() == 1);
 
-    CHECK(gadget.getCharacteristic(CharacteristicIdentifier::temperature)->getStepValue() == 0);
-    CHECK(gadget.handleCharacteristicUpdate(CharacteristicIdentifier::temperature, 1) == true);
-    CHECK(gadget.getCharacteristic(CharacteristicIdentifier::temperature)->getStepValue() == 1);
-    CHECK(gadget.handleCharacteristicUpdate(CharacteristicIdentifier::temperature, 0) == true);
-    CHECK(gadget.getCharacteristic(CharacteristicIdentifier::temperature)->getStepValue() == 0);
-    CHECK(gadget.handleCharacteristicUpdate(CharacteristicIdentifier::temperature, 0) == false);
-    CHECK(gadget.getCharacteristic(CharacteristicIdentifier::temperature)->getStepValue() == 0);
+    CHECK(gadget.getCharacteristic(gadget_definitions::CharacteristicIdentifier::temperature)->getStepValue() == 0);
+    CHECK(gadget.handleCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier::temperature, 1) == true);
+    CHECK(gadget.getCharacteristic(gadget_definitions::CharacteristicIdentifier::temperature)->getStepValue() == 1);
+    CHECK(gadget.handleCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier::temperature, 0) == true);
+    CHECK(gadget.getCharacteristic(gadget_definitions::CharacteristicIdentifier::temperature)->getStepValue() == 0);
+    CHECK(gadget.handleCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier::temperature, 0) == false);
+    CHECK(gadget.getCharacteristic(gadget_definitions::CharacteristicIdentifier::temperature)->getStepValue() == 0);
   }
 
   SECTION("Test 'changed'-flag") {
     CHECK(gadget.hasChanged() == true);
     CHECK(gadget.hasChanged() == false);
-    gadget.handleCharacteristicUpdate(CharacteristicIdentifier::status, 0);
+    gadget.handleCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier::status, 0);
     CHECK(gadget.hasChanged() == true);
     CHECK(gadget.hasChanged() == false);
-    gadget.handleCharacteristicUpdate(CharacteristicIdentifier::status, 0);
+    gadget.handleCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier::status, 0);
     CHECK(gadget.hasChanged() == false);
   }
 

@@ -6,7 +6,7 @@
 
 TEST_CASE("Test Characteristic", "[Gadget]") {
 
-  Characteristic characteristic(CharacteristicIdentifier::temperature,
+  Characteristic characteristic(gadget_definitions::CharacteristicIdentifier::temperature,
                                 -40,
                                 80,
                                 120,

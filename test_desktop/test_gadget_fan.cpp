@@ -8,8 +8,8 @@ TEST_CASE("Test Fan", "[Gadget]") {
   SECTION("Test Attributes") {
     CHECK(fan.getType() == GadgetType::Fan);
     CHECK(fan.getName() == "yolokopter");
-    CHECK(fan.getCharacteristic(CharacteristicIdentifier::status) != nullptr);
-    CHECK(fan.getCharacteristic(CharacteristicIdentifier::fanSpeed) != nullptr);
+    CHECK(fan.getCharacteristic(gadget_definitions::CharacteristicIdentifier::status) != nullptr);
+    CHECK(fan.getCharacteristic(gadget_definitions::CharacteristicIdentifier::fan_speed) != nullptr);
   }
 
   SECTION("Test Characteristics") {

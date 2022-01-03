@@ -23,6 +23,6 @@ TEST_CASE("Test ScheduledMessagesManager", "[Utility]") {
     auto sent_heartbeat = network->getLastSentRequest();
     CHECK(sent_heartbeat != nullptr);
     CHECK(sent_heartbeat->getSender() == "api");
-    CHECK(sent_heartbeat->getPath() == PATH_HEARTBEAT);
+    CHECK(sent_heartbeat->getPath() == api_definitions::uris::heartbeat);
   }
 }

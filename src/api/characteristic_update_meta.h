@@ -4,8 +4,8 @@
 
 class CharacteristicUpdateMeta {
 public:
-  CharacteristicIdentifier type;
+  gadget_definitions::CharacteristicIdentifier type;
   uint16_t step_val;
 
-  CharacteristicUpdateMeta(CharacteristicIdentifier type, uint16_t step_val);
+  CharacteristicUpdateMeta(gadget_definitions::CharacteristicIdentifier type, uint16_t step_val);
 };

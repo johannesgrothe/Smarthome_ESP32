@@ -7,7 +7,7 @@
 class DummyLampRGB : public Lamp_RGB {
 private:
 
-  void executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) final;
+  void executeCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier characteristic, uint16_t step_value) final;
 
 public:
 
@@ -21,4 +21,4 @@ DummyLampRGB::DummyLampRGB(std::string name) :
 
 void DummyLampRGB::refresh(){}
 
-void DummyLampRGB::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) {}
+void DummyLampRGB::executeCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier characteristic, uint16_t step_value) {}

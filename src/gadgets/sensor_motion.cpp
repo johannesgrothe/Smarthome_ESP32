@@ -7,9 +7,9 @@ Sensor_Motion::Sensor_Motion(std::string name) :
     sensor_status_(false) {}
 
 void Sensor_Motion::setStatus(bool status) {
-  auto sensor_status = getCharacteristicValue(CharacteristicIdentifier::status);
+  auto sensor_status = getCharacteristicValue(gadget_definitions::CharacteristicIdentifier::status);
   if (status != sensor_status) {
-    setCharacteristicValue(CharacteristicIdentifier::status, (uint16_t) status);
+    setCharacteristicValue(gadget_definitions::CharacteristicIdentifier::status, (uint16_t) status);
     if (status) {
       logger_i(getName(), "Movement detected");
     } else {
@@ -18,5 +18,5 @@ void Sensor_Motion::setStatus(bool status) {
   }
 }
 
-void Sensor_Motion::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) {
+void Sensor_Motion::executeCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier characteristic, uint16_t step_value) {
 }

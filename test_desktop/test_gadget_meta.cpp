@@ -4,23 +4,23 @@
 
 
 TEST_CASE("Test Gadget Meta", "[Container]") {
-  CharacteristicMeta charac_status(CharacteristicIdentifier::status,
+  CharacteristicMeta charac_status(gadget_definitions::CharacteristicIdentifier::status,
                                    0,
                                    1,
                                    1,
                                    0);
-  CharacteristicMeta charac_fanspeed(CharacteristicIdentifier::fanSpeed,
+  CharacteristicMeta charac_fanspeed(gadget_definitions::CharacteristicIdentifier::fan_speed,
                                      0,
                                      100,
                                      4,
                                      2);
-  GadgetMeta meta(GadgetIdentifier::fan_westinghouse_ir,
+  GadgetMeta meta(gadget_definitions::GadgetIdentifier::fan_westinghouse_ir,
                   "test_fan",
                   {charac_status,
                    charac_fanspeed});
 
   SECTION("Test Constructor") {
-    CHECK(meta.type == GadgetIdentifier::fan_westinghouse_ir);
+    CHECK(meta.type == gadget_definitions::GadgetIdentifier::fan_westinghouse_ir);
     CHECK(meta.name == "test_fan");
     CHECK(!meta.characteristics.empty());
   }

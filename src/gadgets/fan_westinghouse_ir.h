@@ -35,7 +35,7 @@ static const uint16_t level_3[95] = {1264, 418, 1210, 470, 398, 1284, 396, 1266,
 class Fan_Westinghouse_IR : public Fan, public SimpleHardwareGadget {
 protected:
 
-  void executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) override;
+  void executeCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier characteristic, uint16_t step_value) override;
 
 public:
 

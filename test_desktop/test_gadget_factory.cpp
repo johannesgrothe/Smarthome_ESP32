@@ -7,7 +7,7 @@ TEST_CASE("Test Gadget Factory", "[Gadget]") {
 
   SECTION("Test Gadget Creation") {
     DynamicJsonDocument doc(5);
-    auto test_g = factory.createGadget(GadgetIdentifier::doorbell_basic,
+    auto test_g = factory.createGadget(gadget_definitions::GadgetIdentifier::doorbell_basic,
                                        {3, 0, 0, 0, 0},
                                        "test_doorbell",
                                        doc.as<JsonObject>(),

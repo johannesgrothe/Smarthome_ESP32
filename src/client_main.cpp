@@ -118,7 +118,7 @@ bool ClientMain::initGadgets(const GadgetConfig &config) {
   logger_i("System", "Initializing Gadgets: %d", eeprom_gadgets.size());
 
   for (auto gadget: eeprom_gadgets) {
-    auto gadget_ident = (GadgetIdentifier) std::get<0>(gadget);
+    auto gadget_ident = (gadget_definitions::GadgetIdentifier) std::get<0>(gadget);
 //    auto remote_bf = std::get<1>(gadget);
     auto ports = std::get<2>(gadget);
     auto name = std::get<3>(gadget);
@@ -244,7 +244,7 @@ std::vector<GadgetMeta> ClientMain::getGadgetData() {
                                       c.steps);
       characteristics.push_back(buf_c);
     }
-    auto buf_g = GadgetMeta(GadgetIdentifier::lamp_neopixel_basic,
+    auto buf_g = GadgetMeta(gadget_definitions::GadgetIdentifier::lamp_neopixel_rgb_basic,
                             buf_gadget->getName(),
                             characteristics);
     gadget_data.push_back(buf_g);

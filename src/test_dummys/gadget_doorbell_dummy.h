@@ -10,11 +10,11 @@ public:
 
   void refresh() final;
 
-  void executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) final;
+  void executeCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier characteristic, uint16_t step_value) final;
 };
 
 GadgetDoorbellDummy::GadgetDoorbellDummy(std::string name): Doorbell(std::move(name)) {}
 
 void GadgetDoorbellDummy::refresh() {}
 
-void GadgetDoorbellDummy::executeCharacteristicUpdate(CharacteristicIdentifier characteristic, uint16_t step_value) {}
+void GadgetDoorbellDummy::executeCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier characteristic, uint16_t step_value) {}

@@ -1,13 +1,13 @@
 #pragma once
 
-#include "../gadgets/gadget_enums.h"
+#include "../system/gadget_definitions.h"
 #include "../datatypes.h"
 
 class CharacteristicMeta {
 public:
-  CharacteristicMeta(CharacteristicIdentifier type, int min_val, int max_val, int step_val, uint16_t steps);
+  CharacteristicMeta(gadget_definitions::CharacteristicIdentifier type, int min_val, int max_val, int step_val, uint16_t steps);
 
-  const CharacteristicIdentifier type;
+  const gadget_definitions::CharacteristicIdentifier type;
   const int min_val;
   const int max_val;
   const int step_val;

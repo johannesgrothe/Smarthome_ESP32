@@ -36,30 +36,30 @@
  * @param gadget_config Config information for the gadget
  * @return A shared pointer to the gadget
  */
-static std::shared_ptr<Gadget> createGadgetHelper(GadgetIdentifier gadget_type, port_set pins, const std::string& name, JsonObject gadget_config) {
+static std::shared_ptr<Gadget> createGadgetHelper(gadget_definitions::GadgetIdentifier gadget_type, port_set pins, const std::string& name, JsonObject gadget_config) {
   switch (gadget_type) {
-    case GadgetIdentifier::doorbell_basic:
+    case gadget_definitions::GadgetIdentifier::doorbell_basic:
       return createSHDoorbellBasic(name, pins, gadget_config);
 
-    case GadgetIdentifier::lamp_neopixel_basic:
+    case gadget_definitions::GadgetIdentifier::lamp_neopixel_basic:
       return createSHLampNeoPixelBasic(name, pins, gadget_config);
 
-    case GadgetIdentifier::lamp_basic:
+    case gadget_definitions::GadgetIdentifier::lamp_basic:
       return createSHLampBasic(name, pins, gadget_config);
 
-    case GadgetIdentifier::fan_westinghouse_ir:
+    case gadget_definitions::GadgetIdentifier::fan_westinghouse_ir:
       return createSHFanWestinghouseIR(name, pins, gadget_config);
 
-    case GadgetIdentifier::lamp_westinghouse_ir:
+    case gadget_definitions::GadgetIdentifier::lamp_westinghouse_ir:
       return create_LampWestinghouseIR(name, pins, gadget_config);
 
-    case GadgetIdentifier::wallswitch_basic:
+    case gadget_definitions::GadgetIdentifier::wallswitch_basic:
       return create_SwitchBasic(name, pins, gadget_config);
 
-    case GadgetIdentifier::sensor_motion_hr501:
+    case gadget_definitions::GadgetIdentifier::sensor_motion_hr501:
       return create_SensorMotionHR501(name, pins, gadget_config);
 
-    case GadgetIdentifier::sensor_temperature_dht:
+    case gadget_definitions::GadgetIdentifier::sensor_temperature_dht:
       return create_SensorTemperatureDHT(name, pins, gadget_config);
 
     default:
@@ -77,7 +77,7 @@ static std::shared_ptr<Gadget> createGadgetHelper(GadgetIdentifier gadget_type, 
  * @param gadget_config Config information for the gadget
  * @return A shared pointer to the gadget
  */
-static std::shared_ptr<Gadget> createGadget(GadgetIdentifier gadget_type, port_set pins, const std::string& name, JsonObject gadget_config) {
+static std::shared_ptr<Gadget> createGadget(gadget_definitions::GadgetIdentifier gadget_type, port_set pins, const std::string& name, JsonObject gadget_config) {
   auto buf_gadget = createGadgetHelper(gadget_type, pins, name, gadget_config);
   if (buf_gadget != nullptr && !buf_gadget->hasInitError()) {
     return buf_gadget;
@@ -91,10 +91,10 @@ static std::shared_ptr<Gadget> createGadget(GadgetIdentifier gadget_type, port_s
  * @param gadget Gadget type to check
  * @return Whether the stated gadget type needs ir access
  */
-static bool gadgetRequiresIR(GadgetIdentifier gadget) {
+static bool gadgetRequiresIR(gadget_definitions::GadgetIdentifier gadget) {
   switch (gadget) {
-    case GadgetIdentifier::fan_westinghouse_ir:
-    case GadgetIdentifier::lamp_westinghouse_ir:
+    case gadget_definitions::GadgetIdentifier::fan_westinghouse_ir:
+    case gadget_definitions::GadgetIdentifier::lamp_westinghouse_ir:
       return true;
     default:
       return false;
@@ -106,9 +106,9 @@ static bool gadgetRequiresIR(GadgetIdentifier gadget) {
  * @param gadget Gadget type to check
  * @return Whether the stated gadget type needs radio access
  */
-static bool gadgetRequiresRadio(GadgetIdentifier gadget) {
+static bool gadgetRequiresRadio(gadget_definitions::GadgetIdentifier gadget) {
   switch (gadget) {
-//    case GadgetIdentifier::lamp_westinghouse_ir:
+//    case gadget_definitions::GadgetIdentifier::lamp_westinghouse_ir:
 //      return true;
     default:
       return false;

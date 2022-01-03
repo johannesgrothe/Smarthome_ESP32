@@ -12,13 +12,13 @@ TEST_CASE("Test API Encoder", "[API]") {
                     "commit",
                     "branch");
 
-  CharacteristicMeta characteristic(CharacteristicIdentifier::fanSpeed,
+  CharacteristicMeta characteristic(gadget_definitions::CharacteristicIdentifier::fan_speed,
                                     0,
                                     100,
                                     2,
                                     4);
 
-  GadgetMeta gadget(GadgetIdentifier::fan_westinghouse_ir,
+  GadgetMeta gadget(gadget_definitions::GadgetIdentifier::fan_westinghouse_ir,
                     "test_gadget",
                     {characteristic});
 
@@ -37,7 +37,7 @@ TEST_CASE("Test API Encoder", "[API]") {
   SECTION("Encode characteristic") {
     auto json_data = ApiEncoder::encodeCharacteristic(characteristic);
 
-    CHECK(json_data["type"] == int(CharacteristicIdentifier::fanSpeed));
+    CHECK(json_data["type"] == int(gadget_definitions::CharacteristicIdentifier::fan_speed));
     CHECK(json_data["min"] == 0);
     CHECK(json_data["max"] == 100);
     CHECK(json_data["step_value"] == 2);
@@ -47,7 +47,7 @@ TEST_CASE("Test API Encoder", "[API]") {
   SECTION("Encode gadget") {
     auto json_data = ApiEncoder::encodeGadget(gadget);
 
-    CHECK(json_data["type"] == int(GadgetIdentifier::fan_westinghouse_ir));
+    CHECK(json_data["type"] == int(gadget_definitions::GadgetIdentifier::fan_westinghouse_ir));
     CHECK(json_data["id"] == "test_gadget");
     CHECK(json_data["characteristics"].size() == 1);
   }

@@ -3,7 +3,7 @@
 
 GadgetMeta ApiDecoder::decodeGadget(DynamicJsonDocument gadget_data) {
   std::string name = gadget_data["name"];
-  GadgetIdentifier gadget_type = GadgetIdentifier(gadget_data["type"].as<int>());
+  gadget_definitions::GadgetIdentifier gadget_type = gadget_definitions::GadgetIdentifier(gadget_data["type"].as<int>());
   auto characteristics_array = gadget_data["characteristics"].as<JsonArray>();
   std::vector<CharacteristicMeta> characteristics;
   for (auto characteristic_data: characteristics_array) {
@@ -18,7 +18,7 @@ GadgetUpdateMeta ApiDecoder::decodeGadgetUpdateInfo(DynamicJsonDocument gadget_d
   auto characteristics_array = gadget_data["characteristics"].as<JsonArray>();
   std::vector<CharacteristicUpdateMeta> characteristics;
   for (auto characteristic_data: characteristics_array) {
-    CharacteristicUpdateMeta buf_meta(CharacteristicIdentifier(characteristic_data["type"].as<int>()),
+    CharacteristicUpdateMeta buf_meta(gadget_definitions::CharacteristicIdentifier(characteristic_data["type"].as<int>()),
                                       characteristic_data["step_value"]);
     characteristics.push_back(buf_meta);
   }
@@ -26,7 +26,7 @@ GadgetUpdateMeta ApiDecoder::decodeGadgetUpdateInfo(DynamicJsonDocument gadget_d
 }
 
 CharacteristicMeta ApiDecoder::decodeCharacteristic(DynamicJsonDocument characteristic_data) {
-  CharacteristicIdentifier characteristic_type = CharacteristicIdentifier(characteristic_data["type"].as<int>());
+  gadget_definitions::CharacteristicIdentifier characteristic_type = gadget_definitions::CharacteristicIdentifier(characteristic_data["type"].as<int>());
   int min_val = characteristic_data["min"];
   int max_val = characteristic_data["max"];
   uint16_t steps = characteristic_data["steps"];
