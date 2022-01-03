@@ -1,0 +1,26 @@
+name: Feature Request
+description: File a Feature Request
+labels: [ "enhancement" ]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this feature request!
+  - type: textarea
+    id: userstory
+    attributes:
+      label: Userstory
+      description: Please formulate a userstory for this feature.
+      placeholder: User story example
+      value: "As a user, i want this feature because the software sucks without it."
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Additional description
+      description: Please enter any idea you have for the features implementation.
+      placeholder: Tell us how you imagine this feature could be implemented
+      value: "Add no new bugs this time please"
+    validations:
+      required: false

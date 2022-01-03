@@ -1,0 +1,35 @@
+name: Change Request
+description: File a Change Request
+labels: [ "enhancement" ]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this change request!
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Please write down what should be changed.
+      placeholder: Tell us what should be changed
+      value: "Refactor everything"
+    validations:
+      required: true
+  - type: textarea
+    id: reasoning
+    attributes:
+      label: Reason
+      description: Why are the proposed changes a net win for the project?
+      placeholder: Tell us why the changed should be made
+      value: "Because it's the right thing to do"
+    validations:
+      required: true
+  - type: textarea
+    id: implementation
+    attributes:
+      label: Implementation
+      description: How should this be done?
+      placeholder: Tell us how you would make these changes
+      value: "SHIFT F6"
+    validations:
+      required: false
