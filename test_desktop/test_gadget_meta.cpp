@@ -9,7 +9,7 @@ TEST_CASE("Test Gadget Meta", "[Container]") {
                                    1,
                                    1,
                                    0);
-  CharacteristicMeta charac_fanspeed(CharacteristicIdentifier::fanSpeed,
+  CharacteristicMeta charac_fanspeed(CharacteristicIdentifier::fan_speed,
                                      0,
                                      100,
                                      4,

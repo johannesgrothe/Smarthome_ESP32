@@ -14,7 +14,7 @@ TEST_CASE("Test API Decoder", "[API]") {
 
   SECTION("Decode characteristic") {
     auto characteristic_meta = ApiDecoder::decodeCharacteristic(c_fanspeed_json);
-    CHECK(characteristic_meta.type == CharacteristicIdentifier::fanSpeed);
+    CHECK(characteristic_meta.type == CharacteristicIdentifier::fan_speed);
     CHECK(characteristic_meta.min_val == 0);
     CHECK(characteristic_meta.max_val == 100);
     CHECK(characteristic_meta.step_val == 2);

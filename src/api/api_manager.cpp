@@ -40,50 +40,50 @@ void ApiManager::handleRequest(const std::shared_ptr<Request> &req) {
 
   // Switch only works for integer types, therefore all the IFs
   // For testing purposes
-  if (req->getPath() == PATH_TEST_ECHO) {
+  if (req->getPath() == api_definitions::uris::test_echo) {
     handleEcho(req);
     return;
   }
 
   // Sync request from bridge
-  if (req->getPath() == PATH_SYNC_REQUEST) {
+  if (req->getPath() == api_definitions::uris::sync_request) {
     auto sender = req->getSender();
     publishSync(&sender);
     return;
   }
 
   // Event from Bridge
-  if (req->getPath() == PATH_SYNC_EVENT) {
+  if (req->getPath() == api_definitions::uris::sync_event) {
     handleEventUpdate(req);
     return;
   }
 
   // Reset Config
-  if (req->getPath() == PATH_CLIENT_CONFIG_DELETE) {
+  if (req->getPath() == api_definitions::uris::client_config_delete) {
     handleConfigReset(req);
     return;
   }
 
   // Write System Config
-  if (req->getPath() == PATH_CLIENT_SYSTEM_CONFIG_WRITE) {
+  if (req->getPath() == api_definitions::uris::client_system_config_write) {
     handleSystemConfigWrite(req);
     return;
   }
 
   // Write Event Config
-  if (req->getPath() == PATH_CLIENT_EVENT_CONFIG_WRITE) {
+  if (req->getPath() == api_definitions::uris::client_event_config_write) {
     handleEventConfigWrite(req);
     return;
   }
 
   // Write Gadget Config
-  if (req->getPath() == PATH_CLIENT_GADGET_CONFIG_WRITE) {
+  if (req->getPath() == api_definitions::uris::client_gadget_config_write) {
     handleGadgetConfigWrite(req);
     return;
   }
 
   // Handle external gadget update
-  if (req->getPath() == PATH_UPDATE_GADGET) {
+  if (req->getPath() == api_definitions::uris::update_gadget) {
     handleGadgetUpdate(req);
     return;
   }
@@ -183,13 +183,13 @@ void ApiManager::publishSync(std::string *receiver = nullptr) {
   auto gadget_data = delegate_->getGadgetData();
   auto payload = ApiEncoder::encodeSync(client_data, gadget_data, runtime_id_);
   if (receiver == nullptr) {
-    auto out_req = std::make_shared<Request>(PATH_SYNC_CLIENT,
+    auto out_req = std::make_shared<Request>(api_definitions::uris::sync_client,
                                              genRequestID(),
                                              client_id_,
                                              payload);
     network_->sendRequest(out_req);
   } else {
-    auto out_req = std::make_shared<Request>(PATH_SYNC_CLIENT,
+    auto out_req = std::make_shared<Request>(api_definitions::uris::sync_client,
                                              genRequestID(),
                                              client_id_,
                                              *receiver,
@@ -200,7 +200,7 @@ void ApiManager::publishSync(std::string *receiver = nullptr) {
 
 void ApiManager::publishGadgetUpdate(const GadgetMeta &gadget_data) {
   auto payload = ApiEncoder::encodeGadgetUpdate(gadget_data);
-  auto out_req = std::make_shared<Request>(PATH_SYNC_GADGET,
+  auto out_req = std::make_shared<Request>(api_definitions::uris::update_gadget,
                                            genRequestID(),
                                            client_id_,
                                            payload);
@@ -214,7 +214,7 @@ void ApiManager::publishEvent(const std::shared_ptr<Event> &event) {
 void ApiManager::publishHeartbeat() {
   auto payload = ApiEncoder::encodeHeartbeat(runtime_id_);
 
-  auto heartbeat_request = std::make_shared<Request>(PATH_HEARTBEAT,
+  auto heartbeat_request = std::make_shared<Request>(api_definitions::uris::heartbeat,
                                                      genRequestID(),
                                                      client_id_,
                                                      payload);

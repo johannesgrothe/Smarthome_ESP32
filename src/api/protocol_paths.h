@@ -2,20 +2,18 @@
 
 #include <vector>
 
-#include "../system/api_params.h"
+#include "../system/api_definitions.h"
 
-static const std::vector<std::string> api_paths_broadcast_enabled = {PATH_SYNC_REQUEST,
-                                                                     PATH_TEST_ECHO,
-                                                                     PATH_SYNC_GADGET,
-                                                                     PATH_SYNC_EVENT,
-                                                                     PATH_UPDATE_GADGET};
+static const std::vector<std::string> api_paths_broadcast_enabled = {api_definitions::uris::sync_request,
+                                                                     api_definitions::uris::test_echo,
+                                                                     api_definitions::uris::sync_event,
+                                                                     api_definitions::uris::update_gadget};
 
-static const std::vector<std::string> api_paths_incoming = {PATH_SYNC_REQUEST,
-                                                            PATH_TEST_ECHO,
-                                                            PATH_SYNC_GADGET,
-                                                            PATH_SYNC_EVENT,
-                                                            PATH_CLIENT_CONFIG_DELETE,
-                                                            PATH_CLIENT_GADGET_CONFIG_WRITE,
-                                                            PATH_CLIENT_EVENT_CONFIG_WRITE,
-                                                            PATH_CLIENT_SYSTEM_CONFIG_WRITE,
-                                                            PATH_UPDATE_GADGET};
+static const std::vector<std::string> api_paths_incoming = {api_definitions::uris::sync_request,
+                                                            api_definitions::uris::test_echo,
+                                                            api_definitions::uris::sync_event,
+                                                            api_definitions::uris::client_config_delete,
+                                                            api_definitions::uris::client_system_config_write,
+                                                            api_definitions::uris::client_event_config_write,
+                                                            api_definitions::uris::client_gadget_config_write,
+                                                            api_definitions::uris::update_gadget};

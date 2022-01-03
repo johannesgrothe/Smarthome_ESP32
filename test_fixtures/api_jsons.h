@@ -24,7 +24,7 @@ inline DynamicJsonDocument generateCharacteristicStatusUpdate() {
 
 inline DynamicJsonDocument generateCharacteristicFanspeed() {
   DynamicJsonDocument json(400);
-  json["type"] = int(CharacteristicIdentifier::fanSpeed);
+  json["type"] = int(CharacteristicIdentifier::fan_speed);
   json["min"] = 0;
   json["max"] = 100;
   json["steps"] = 4;

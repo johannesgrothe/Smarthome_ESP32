@@ -16,7 +16,7 @@ enum class GadgetIdentifier {
 
 // Count of the values in GadgetIdentifier
 //#define GadgetIdentifierCount 8
-constexpr uint8_t GadgetIdentifierCount = 8;
+constexpr int GadgetIdentifierCount = 8;
 
 // A number identifier for every characteristic type
 enum class CharacteristicIdentifier {

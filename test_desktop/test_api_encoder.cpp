@@ -12,7 +12,7 @@ TEST_CASE("Test API Encoder", "[API]") {
                     "commit",
                     "branch");
 
-  CharacteristicMeta characteristic(CharacteristicIdentifier::fanSpeed,
+  CharacteristicMeta characteristic(CharacteristicIdentifier::fan_speed,
                                     0,
                                     100,
                                     2,
@@ -37,7 +37,7 @@ TEST_CASE("Test API Encoder", "[API]") {
   SECTION("Encode characteristic") {
     auto json_data = ApiEncoder::encodeCharacteristic(characteristic);
 
-    CHECK(json_data["type"] == int(CharacteristicIdentifier::fanSpeed));
+    CHECK(json_data["type"] == int(CharacteristicIdentifier::fan_speed));
     CHECK(json_data["min"] == 0);
     CHECK(json_data["max"] == 100);
     CHECK(json_data["step_value"] == 2);
