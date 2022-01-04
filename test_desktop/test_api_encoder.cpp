@@ -13,7 +13,10 @@ TEST_CASE("Test API Encoder", "[API]") {
                     BootMode::Full_Operation,
                     "date",
                     "commit",
-                    "branch");
+                    "branch",
+                    1,
+                    3,
+                    10);
 
   CharacteristicMeta characteristic(gadget_definitions::CharacteristicIdentifier::fan_speed,
                                     0,
@@ -34,6 +37,8 @@ TEST_CASE("Test API Encoder", "[API]") {
     CHECK(json_data["sw_uploaded"] == "date");
     CHECK(json_data["sw_commit"] == "commit");
     CHECK(json_data["sw_branch"] == "branch");
+    CHECK(json_data["api_version"] == "1.3.10");
+
     CHECK(json_data["port_mapping"]["0"] == 33);
   }
 

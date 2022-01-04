@@ -3,12 +3,17 @@
 #include <sstream>
 
 DynamicJsonDocument ApiEncoder::encodeClient(const ClientMeta &client_data, uint16_t runtime_id) {
-  DynamicJsonDocument doc(500);
+  DynamicJsonDocument doc(800);
   doc["runtime_id"] = runtime_id;
   doc["boot_mode"] = int(client_data.boot_mode);
   doc["sw_uploaded"] = client_data.sw_uploaded;
   doc["sw_commit"] = client_data.sw_commit;
   doc["sw_branch"] = client_data.sw_branch;
+
+  std::stringstream api_version_strm;
+  api_version_strm << (int) client_data.api_version_major << "." << (int) client_data.api_version_minor << "." << (int) client_data.api_version_bugfix;
+  doc["api_version"] = api_version_strm.str();
+
   doc.createNestedObject("port_mapping");
   JsonObject ports = doc["port_mapping"];
   for (auto &port_data: client_data.port_mapping) {
