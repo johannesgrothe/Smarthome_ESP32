@@ -4,4 +4,6 @@
 // validator transforms arduinoJson into json objects and validates them
 // https://github.com/pboettch/json-schema-validator
 
-#include <nlohmann/json-schema.hpp>
+#include <ArduinoJson.h>
+#include <json-patch.hpp>
+

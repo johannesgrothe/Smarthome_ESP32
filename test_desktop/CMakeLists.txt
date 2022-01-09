@@ -107,4 +107,5 @@ message("Detected " ${TEST_COUNT} " test files")
 message("")
 
 add_executable(CatchTests ${TEST_SOURCES} ${ADDITIONAL_SOURCES})
-target_link_libraries(CatchTests ArduinoJson nlohmann json_validator)
+target_link_libraries(CatchTests nlohmann_json_schema_validator)
+target_link_libraries(CatchTests ArduinoJson)
