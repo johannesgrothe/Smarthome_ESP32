@@ -12,15 +12,20 @@
 #include <fstream>
 #include <iostream>
 
+#include "../console_logger.h"
+
 
 // Folder to load schemas from
 constexpr char schema_folder[] = "src/system/json_schemas";
 
+// Error handler for the validator
 class custom_error_handler : public nlohmann::json_schema::basic_error_handler {
   void
   error(const nlohmann::json::json_pointer &ptr, const nlohmann::json &instance, const std::string &message) override {
     nlohmann::json_schema::basic_error_handler::error(ptr, instance, message);
-    std::cerr << "ERROR: '" << ptr << "' - '" << instance << "': " << message << "\n";
+    std::stringstream err_strm;
+    err_strm << "ERROR: '" << ptr << "' - '" << instance << "': " << message;
+    logger_e("Validator", err_strm.str());
   }
 };
 
@@ -49,22 +54,12 @@ private:
    */
   void reload_schemas();
 
-
-  // COPIED SHIT FROM HERE ON
-
-  static void loader(const nlohmann::json_uri &uri, nlohmann::json &schema) {
-    std::string filename = "./" + uri.path();
-    std::ifstream lf(filename);
-    if (!lf.good())
-      throw std::invalid_argument("could not open " + uri.url() + " tried with " + filename);
-    try {
-      lf >> schema;
-    } catch (const std::exception &e) {
-      throw e;
-    }
-  }
-
-  // COPIED SHIT END
+  /**
+   * Loader function for validator. Copied from json-validator.cpp
+   * @param uri Uri, whatever
+   * @param schema Schema I guess
+   */
+  static void loader(const nlohmann::json_uri &uri, nlohmann::json &schema);
 
 public:
   Validator();
@@ -92,8 +87,8 @@ bool Validator::validate(const DynamicJsonDocument &target, const std::string &s
     // this resolves remote-schemas, sub-schemas and references via the given loader-function
     validator.set_root_schema(schema_json);
   } catch (const std::exception &e) {
-    std::cerr << "setting root schema failed\n";
-    std::cerr << e.what() << "\n";
+    logger_e("Validator", "Setting root schema failed.");
+    logger_e("Validator", e.what());
   }
 
   custom_error_handler err;
@@ -107,11 +102,27 @@ bool Validator::validate(const DynamicJsonDocument &target, const std::string &s
 }
 
 nlohmann::json Validator::get_schema_for_name(const std::string &schema_name) {
+  // TODO: get schema from schemas_
   std::stringstream err_strm;
   err_strm << "Schema with name '" << schema_name << "'does not exist.";
-  throw err_strm.str().c_str();
+  logger_e("Validator", err_strm.str());
+  throw std::exception();
 }
 
 void Validator::reload_schemas() {
+  // TODO: load all schemas from "constexpr char schema_folder"
+  // TODO: resolve all $ref tags, copy logic from python
   schemas_ = std::vector<nlohmann::json>();
+}
+
+void Validator::loader(const nlohmann::json_uri &uri, nlohmann::json &schema) {
+  std::string filename = "./" + uri.path();
+  std::ifstream lf(filename);
+  if (!lf.good())
+    throw std::invalid_argument("could not open " + uri.url() + " tried with " + filename);
+  try {
+    lf >> schema;
+  } catch (const std::exception &e) {
+    throw e;
+  }
 }
