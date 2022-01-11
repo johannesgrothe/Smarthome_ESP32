@@ -106,6 +106,13 @@ Validator::Validator() {
   }
 
   reload_schemas();
+
+  logger_i("Validator", "SCHEMAS:");
+  for (const auto& schema: schemas_) {
+    std::stringstream buf_str;
+    buf_str << schema;
+    logger_i("Validator", "%s", buf_str.str().c_str());
+  }
 }
 
 bool Validator::validate(const DynamicJsonDocument &target, const std::string &schema_name) {
@@ -146,8 +153,6 @@ nlohmann::json Validator::get_schema_for_name(const std::string &schema_name) {
 }
 
 void Validator::reload_schemas() {
-  // TODO: load all schemas from "constexpr char schema_folder"
-  // TODO: resolve all $ref tags, copy logic from python
   logger_i("Validator", "Schemas:");
   std::vector<std::tuple<std::string, nlohmann::json>> schemas;
   auto schema_paths = get_schema_files();
@@ -158,11 +163,10 @@ void Validator::reload_schemas() {
     schemas.push_back(buf_tuple);
   }
 
+  // Replace refs
   for (auto data: schemas) {
-    auto path = std::get<0>(data);
-    const nlohmann::json &json = std::get<1>(data);
-//    for
-
+    nlohmann::json &json = std::get<1>(data);
+    replace_refs(json, schemas);
   }
 
   std::vector<nlohmann::json> buf_schemas;
@@ -230,11 +234,13 @@ void Validator::replace_refs(nlohmann::json &json, const std::vector<std::tuple<
     if (it.value().is_object()) {
       if (it.value().contains("$ref")) {
         std::string replacement_name = it.value()["$ref"];
+        logger_e("Validator", "Resolving ref: %s", replacement_name.c_str());
         bool found = false;
         for (auto t: schemas) {
           auto buf_name = std::get<0>(t);
-          if (buf_name == replacement_name) {
+          if (str_ends_with(buf_name, replacement_name)) {
             auto replacement_schema = std::get<1>(t);
+            // TODO: replacement does not work
             json[it.key()] = replacement_schema;
             found = true;
             break;
@@ -244,6 +250,8 @@ void Validator::replace_refs(nlohmann::json &json, const std::vector<std::tuple<
           logger_e("Validator", "Reference could not be resolved");
           throw std::exception();
         }
+      } else {
+        replace_refs(it.value(), schemas);
       }
     }
   }
