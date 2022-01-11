@@ -11,12 +11,15 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <cstdio>
+#include <dirent.h>
+#include <unistd.h>
 
 #include "../console_logger.h"
 
 
 // Folder to load schemas from
-constexpr char schema_folder[] = "src/system/json_schemas";
+constexpr char schema_folder[] = "./../../src/system/json_schemas";
 
 // Error handler for the validator
 class custom_error_handler : public nlohmann::json_schema::basic_error_handler {
@@ -61,6 +64,27 @@ private:
    */
   static void loader(const nlohmann::json_uri &uri, nlohmann::json &schema);
 
+  /**
+   * Gets all schema files from the schema directory
+   * @return All schema file paths as vector
+   */
+  static std::vector<std::string> get_schema_files();
+
+  /**
+   * Checks if a string ends with the selected string
+   * @param str String to check the ending of
+   * @param ending Ending to check for
+   * @return Whether the passed string ends with the selected one
+   */
+  static bool str_ends_with(const std::string &str, const std::string &ending);
+
+  /**
+   * Recursive function to replace all references in schemas
+   * @param json Json to replace references in
+   * @param schemas Schemas take replacement data from
+   */
+  static void replace_refs(nlohmann::json &json, const std::vector<std::tuple<std::string, nlohmann::json>>& schemas);
+
 public:
   Validator();
 
@@ -74,6 +98,13 @@ nlohmann::json Validator::transform_json(const DynamicJsonDocument &input) {
 }
 
 Validator::Validator() {
+  char buffer[PATH_MAX];
+  if (getcwd(buffer, sizeof(buffer)) != NULL) {
+    printf("Current working directory : %s\n", buffer);
+  } else {
+    perror("getcwd() error");
+  }
+
   reload_schemas();
 }
 
@@ -102,7 +133,12 @@ bool Validator::validate(const DynamicJsonDocument &target, const std::string &s
 }
 
 nlohmann::json Validator::get_schema_for_name(const std::string &schema_name) {
-  // TODO: get schema from schemas_
+  for (auto schema: schemas_) {
+    if (schema["name"] == schema_name) {
+      return schema;
+    }
+  }
+
   std::stringstream err_strm;
   err_strm << "Schema with name '" << schema_name << "'does not exist.";
   logger_e("Validator", err_strm.str());
@@ -112,7 +148,30 @@ nlohmann::json Validator::get_schema_for_name(const std::string &schema_name) {
 void Validator::reload_schemas() {
   // TODO: load all schemas from "constexpr char schema_folder"
   // TODO: resolve all $ref tags, copy logic from python
-  schemas_ = std::vector<nlohmann::json>();
+  logger_i("Validator", "Schemas:");
+  std::vector<std::tuple<std::string, nlohmann::json>> schemas;
+  auto schema_paths = get_schema_files();
+  for (const auto &path: schema_paths) {
+    nlohmann::json buf_json;
+    loader(path, buf_json);
+    std::tuple<std::string, nlohmann::json> buf_tuple = {path, buf_json};
+    schemas.push_back(buf_tuple);
+  }
+
+  for (auto data: schemas) {
+    auto path = std::get<0>(data);
+    const nlohmann::json &json = std::get<1>(data);
+//    for
+
+  }
+
+  std::vector<nlohmann::json> buf_schemas;
+  for (auto data: schemas) {
+    auto json = std::get<1>(data);
+    buf_schemas.push_back(json);
+  }
+
+  schemas_ = buf_schemas;
 }
 
 void Validator::loader(const nlohmann::json_uri &uri, nlohmann::json &schema) {
@@ -124,5 +183,68 @@ void Validator::loader(const nlohmann::json_uri &uri, nlohmann::json &schema) {
     lf >> schema;
   } catch (const std::exception &e) {
     throw e;
+  }
+}
+
+std::vector<std::string> Validator::get_schema_files() {
+  std::vector<std::string> out_tmp;
+
+  struct dirent *entry = nullptr;
+  DIR *dp = nullptr;
+  dp = opendir(schema_folder);
+  if (dp != nullptr) {
+    while ((entry = readdir(dp))) {
+
+      std::stringstream tmp_strm;
+      tmp_strm << entry->d_name;
+      auto tmp_str = tmp_strm.str();
+      if (str_ends_with(tmp_str, ".json")) {
+        std::stringstream path_strm;
+        path_strm << schema_folder << "/" << tmp_str;
+        out_tmp.push_back(path_strm.str());
+        logger_i("Validator", "File Found: %s", tmp_str.c_str());
+      }
+    }
+  }
+
+  closedir(dp);
+  return out_tmp;
+}
+
+bool Validator::str_ends_with(const std::string &str, const std::string &ending) {
+  if (str.length() < ending.length()) {
+    return false;
+  }
+  for (int i = 0; i < ending.length(); i++) {
+    char first = str[str.length() - (i)];
+    char second = ending[ending.length() - (i)];
+    if (first != second) {
+      return false;
+    }
+  }
+  return true;
+}
+
+void Validator::replace_refs(nlohmann::json &json, const std::vector<std::tuple<std::string, nlohmann::json>>& schemas) {
+  for (auto & it: json.items()) {
+    if (it.value().is_object()) {
+      if (it.value().contains("$ref")) {
+        std::string replacement_name = it.value()["$ref"];
+        bool found = false;
+        for (auto t: schemas) {
+          auto buf_name = std::get<0>(t);
+          if (buf_name == replacement_name) {
+            auto replacement_schema = std::get<1>(t);
+            json[it.key()] = replacement_schema;
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          logger_e("Validator", "Reference could not be resolved");
+          throw std::exception();
+        }
+      }
+    }
   }
 }
