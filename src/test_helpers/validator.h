@@ -164,7 +164,7 @@ void Validator::reload_schemas() {
   }
 
   // Replace refs
-  for (auto data: schemas) {
+  for (auto &data: schemas) {
     nlohmann::json &json = std::get<1>(data);
     replace_refs(json, schemas);
   }
@@ -240,7 +240,6 @@ void Validator::replace_refs(nlohmann::json &json, const std::vector<std::tuple<
           auto buf_name = std::get<0>(t);
           if (str_ends_with(buf_name, replacement_name)) {
             auto replacement_schema = std::get<1>(t);
-            // TODO: replacement does not work
             json[it.key()] = replacement_schema;
             found = true;
             break;
