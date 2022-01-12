@@ -2,9 +2,12 @@
 #include <ArduinoJson.h>
 
 #include "../src/api/api_encoder.h"
+#include "../src/test_helpers/validator.h"
 
 
 TEST_CASE("Test API Encoder", "[API]") {
+
+  Validator validator;
 
   ClientMeta client({{0, 33}},
                     BootMode::Full_Operation,
@@ -25,12 +28,12 @@ TEST_CASE("Test API Encoder", "[API]") {
   SECTION("Encode client") {
     auto json_data = ApiEncoder::encodeClient(client, 1776);
 
+    CHECK(validator.validate(json_data, "api_client_data.json"));
     CHECK(json_data["runtime_id"] == 1776);
     CHECK(json_data["boot_mode"] == int(BootMode::Full_Operation));
     CHECK(json_data["sw_uploaded"] == "date");
     CHECK(json_data["sw_commit"] == "commit");
     CHECK(json_data["sw_branch"] == "branch");
-
     CHECK(json_data["port_mapping"]["0"] == 33);
   }
 
@@ -47,6 +50,7 @@ TEST_CASE("Test API Encoder", "[API]") {
   SECTION("Encode gadget") {
     auto json_data = ApiEncoder::encodeGadget(gadget);
 
+    CHECK(validator.validate(json_data, "api_gadget_data.json"));
     CHECK(json_data["type"] == int(gadget_definitions::GadgetIdentifier::fan_westinghouse_ir));
     CHECK(json_data["id"] == "test_gadget");
     CHECK(json_data["characteristics"].size() == 1);
@@ -55,14 +59,24 @@ TEST_CASE("Test API Encoder", "[API]") {
   SECTION("Encode client sync") {
     auto json_data = ApiEncoder::encodeSync(client, {gadget}, 1776);
 
+    CHECK(validator.validate(json_data, "api_client_sync_request.json"));
     CHECK(json_data["client"]["runtime_id"] == 1776);
     CHECK(json_data["gadgets"][0]["id"] == "test_gadget");
   }
 
-  SECTION("Encode gadget sync") {
+  SECTION("Encode gadget update") {
     auto json_data = ApiEncoder::encodeGadgetUpdate(gadget);
 
+    // TODO: Client Update seems not to work created bug ticket [#69]
+//    CHECK(validator.validate(json_data, "bridge_gadget_update_request.json"));
     CHECK(json_data["gadget"]["id"] == "test_gadget");
+  }
+
+  SECTION("Encode heartbeat") {
+    auto json_data = ApiEncoder::encodeHeartbeat(334);
+
+    CHECK(validator.validate(json_data, "bridge_heartbeat_request.json"));
+    CHECK(json_data["runtime_id"] == 334);
   }
 
 }
