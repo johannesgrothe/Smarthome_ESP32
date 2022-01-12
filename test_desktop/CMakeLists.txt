@@ -85,7 +85,7 @@ set(ADDITIONAL_SOURCES
         ../src/api/gadget_meta_coder.cpp
         ../src/api/gadget_update_meta.cpp
         ../src/api/characteristic_update_meta.cpp
-        ../src/test_helpers/validator.cpp
+        test_helpers/validator.cpp
         )
 
 set(TEST_SOURCES)

@@ -1,6 +1,6 @@
 #include "catch.hpp"
 
-#include "../src/test_helpers/validator.h"
+#include "test_helpers/validator.h"
 
 TEST_CASE("Test JSON Validator", "[Helpers]") {
 

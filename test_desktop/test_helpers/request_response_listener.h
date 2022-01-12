@@ -1,9 +1,6 @@
 #pragma once
 
-#include <memory>
-#include <utility>
-
-#include "../connectors/request.h"
+#include "../../src/connectors/request.h"
 
 class RequestResponseListener {
 private:

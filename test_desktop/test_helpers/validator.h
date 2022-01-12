@@ -15,7 +15,7 @@
 #include <dirent.h>
 #include <unistd.h>
 
-#include "../console_logger.h"
+#include "../../src/console_logger.h"
 
 
 // Folder to load schemas from

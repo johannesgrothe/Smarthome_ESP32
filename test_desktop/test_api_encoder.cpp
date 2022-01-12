@@ -2,7 +2,7 @@
 #include <ArduinoJson.h>
 
 #include "../src/api/api_encoder.h"
-#include "../src/test_helpers/validator.h"
+#include "test_helpers/validator.h"
 
 
 TEST_CASE("Test API Encoder", "[API]") {
