@@ -157,7 +157,7 @@ TEST_CASE("Test API Manager", "[API]") {
     manager.handleRequest(req.getRequest());
     auto resp = req.getResponse();
 //    CHECK(resp != nullptr);
-//    CHECK(resp->getPayload()["ack"] == true);  // TODO: implement test
+//    CHECK(resp->getPayload()["ack"] == true);  // TODO: implement test [#71]
   }
 
   SECTION("Test write gadget config broken") {
@@ -187,7 +187,7 @@ TEST_CASE("Test API Manager", "[API]") {
     manager.handleRequest(req.getRequest());
     auto resp = req.getResponse();
 //    CHECK(resp != nullptr);
-//    CHECK(resp->getPayload()["ack"] == true);  // TODO: implement test
+//    CHECK(resp->getPayload()["ack"] == true);  // TODO: implement test [#71]
   }
 
   SECTION("Test write event config broken") {
@@ -217,7 +217,7 @@ TEST_CASE("Test API Manager", "[API]") {
     manager.handleRequest(req.getRequest());
     auto resp = req.getResponse();
 //    CHECK(resp != nullptr);
-//    CHECK(resp->getPayload()["ack"] == true);  // TODO: implement test
+//    CHECK(resp->getPayload()["ack"] == true);  // TODO: implement test [#71]
   }
 
 }
