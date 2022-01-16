@@ -4,6 +4,7 @@
 #include <ArduinoJson.h>
 #include "gadget_meta.h"
 #include "client_meta.h"
+#include "gadget_update_meta.h"
 
 class ApiEncoder {
 public:
@@ -22,7 +23,7 @@ public:
    * @param gadget_data Data of the gadget to encode
    * @return A json document containing the gadget data
    */
-  static DynamicJsonDocument encodeGadget(const GadgetMeta& gadget_data);
+  static DynamicJsonDocument encodeGadget(const GadgetMeta &gadget_data);
 
   /**
    *
@@ -38,7 +39,7 @@ public:
    * @param gadget_data Datasets of all the gadgets
    * @return A json document containing all the information
    */
-  static DynamicJsonDocument encodeSync(const ClientMeta& client_data,
+  static DynamicJsonDocument encodeSync(const ClientMeta &client_data,
                                         const std::vector<GadgetMeta> &gadgets,
                                         uint16_t runtime_id);
 
@@ -48,7 +49,7 @@ public:
    * @param gadget_data Data of the gadget
    * @return A json document containing all the information
    */
-  static DynamicJsonDocument encodeGadgetUpdate(const GadgetMeta& gadget_data);
+  static DynamicJsonDocument encodeGadgetUpdate(const GadgetUpdateMeta &data);
 
   /**
    * Encodes the data for the periodic heartbeat message

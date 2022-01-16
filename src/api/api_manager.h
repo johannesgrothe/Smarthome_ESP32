@@ -25,23 +25,23 @@ private:
 
   static uint16_t genRequestID();
 
-  static bool pathIsLegal(const std::string& path);
+  static bool pathIsLegal(const std::string &path);
 
-  static bool pathIsBroadcast(const std::string& path);
+  static bool pathIsBroadcast(const std::string &path);
 
-  static void handleEcho(const std::shared_ptr<Request>& req);
+  static void handleEcho(const std::shared_ptr<Request> &req);
 
-  void handleGadgetUpdate(const std::shared_ptr<Request>& req);
+  void handleGadgetUpdate(const std::shared_ptr<Request> &req);
 
-  void handleEventUpdate(const std::shared_ptr<Request>& req);
+  void handleEventUpdate(const std::shared_ptr<Request> &req);
 
-  void handleConfigReset(const std::shared_ptr<Request>& req);
+  void handleConfigReset(const std::shared_ptr<Request> &req);
 
-  void handleSystemConfigWrite(const std::shared_ptr<Request>& req);
+  void handleSystemConfigWrite(const std::shared_ptr<Request> &req);
 
-  void handleEventConfigWrite(const std::shared_ptr<Request>& req);
+  void handleEventConfigWrite(const std::shared_ptr<Request> &req);
 
-  void handleGadgetConfigWrite(const std::shared_ptr<Request>& req);
+  void handleGadgetConfigWrite(const std::shared_ptr<Request> &req);
 
 public:
 
@@ -50,13 +50,13 @@ public:
              uint16_t runtime_id,
              std::string client_identifier);
 
-  void handleRequest(const std::shared_ptr<Request>& req);
+  void handleRequest(const std::shared_ptr<Request> &req);
 
   void publishSync(std::string *receiver);
 
-  void publishGadgetUpdate(const GadgetMeta& gadget_data);
+  void publishGadgetUpdate(const GadgetUpdateMeta &gadget_data);
 
-  void publishEvent(const std::shared_ptr<Event>& event);
+  void publishEvent(const std::shared_ptr<Event> &event);
 
   void publishHeartbeat();
 };

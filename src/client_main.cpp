@@ -299,7 +299,7 @@ void ClientMain::loopGadgets() {
     for (uint8_t i = 0; i < gadget_manager_->getGadgetCount(); i++) {
       auto gadget = gadget_manager_->getGadget(i);
       if (gadget->hasChanged()) {
-        auto g = GadgetMetaEncoder::encodeGadget(gadget);
+        auto g = GadgetMetaEncoder::encodeGadgetUpdate(gadget);
         api_manager_->publishGadgetUpdate(g);
       }
     }

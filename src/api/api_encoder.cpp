@@ -1,7 +1,5 @@
 #include "api_encoder.h"
 
-#include <sstream>
-
 DynamicJsonDocument ApiEncoder::encodeClient(const ClientMeta &client_data, uint16_t runtime_id) {
   DynamicJsonDocument doc(800);
   doc["runtime_id"] = runtime_id;
@@ -54,15 +52,21 @@ DynamicJsonDocument ApiEncoder::encodeSync(const ClientMeta &client_data,
   doc["client"] = encodeClient(client_data, runtime_id);
   doc.createNestedArray("gadgets");
   JsonArray gadgets = doc["gadgets"];
-  for (const auto& gadget: gadget_data) {
+  for (const auto &gadget: gadget_data) {
     gadgets.add(encodeGadget(gadget));
   }
   return doc;
 }
 
-DynamicJsonDocument ApiEncoder::encodeGadgetUpdate(const GadgetMeta &gadget_data) {
+DynamicJsonDocument ApiEncoder::encodeGadgetUpdate(const GadgetUpdateMeta &data) {
   DynamicJsonDocument doc(1500);
-  doc["gadget"] = encodeGadget(gadget_data);
+  doc["id"] = data.id;
+  doc.createNestedArray("characteristics");
+  for (auto c: data.characteristics) {
+    auto c_data = doc["characteristics"].createNestedObject();
+    c_data["type"] = int(c.type);
+    c_data["step_value"] = c.step_val;
+  }
   return doc;
 }
 

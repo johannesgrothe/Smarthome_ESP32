@@ -70,11 +70,13 @@ TEST_CASE("Test API Encoder", "[API]") {
   }
 
   SECTION("Encode gadget update") {
-    auto json_data = ApiEncoder::encodeGadgetUpdate(gadget);
+    GadgetUpdateMeta data("test_gadget",
+                          {CharacteristicUpdateMeta(gadget_definitions::CharacteristicIdentifier::fan_speed,
+                                                    2)});
+    auto json_data = ApiEncoder::encodeGadgetUpdate(data);
 
-    // TODO: Client Update seems not to work created bug ticket [#69]
-//    CHECK(validator.validate(json_data, "bridge_gadget_update_request.json"));
-    CHECK(json_data["gadget"]["id"] == "test_gadget");
+    CHECK(validator.validate(json_data, "api_gadget_update_request.json"));
+    CHECK(json_data["id"] == "test_gadget");
   }
 
   SECTION("Encode heartbeat") {
