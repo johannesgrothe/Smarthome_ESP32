@@ -8,6 +8,7 @@
 #include "network_loader.h"
 #include "random.h"
 #include "api/gadget_meta_coder.h"
+#include "system/api_definitions.h"
 
 static const char *TAG = "Initialization";
 
@@ -228,7 +229,10 @@ ClientMeta ClientMain::getClientData() {
           system_mode_,
           getSoftwareFlashDate(),
           getSoftwareGitCommit(),
-          getSoftwareGitBranch()};
+          getSoftwareGitBranch(),
+          api_definitions::version::major,
+          api_definitions::version::minor,
+          api_definitions::version::bugfix};
 }
 
 std::vector<GadgetMeta> ClientMain::getGadgetData() {

@@ -29,7 +29,10 @@ public:
             BootMode::Full_Operation,
             "",
             "",
-            ""};
+            "",
+            1,
+            0,
+            0};
   }
 
   std::vector<GadgetMeta> getGadgetData() override {
