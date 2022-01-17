@@ -198,7 +198,7 @@ void ApiManager::publishSync(std::string *receiver = nullptr) {
   }
 }
 
-void ApiManager::publishGadgetUpdate(const GadgetMeta &gadget_data) {
+void ApiManager::publishGadgetUpdate(const GadgetUpdateMeta &gadget_data) {
   auto payload = ApiEncoder::encodeGadgetUpdate(gadget_data);
   auto out_req = std::make_shared<Request>(api_definitions::uris::update_gadget,
                                            genRequestID(),
