@@ -17,7 +17,7 @@ void Lamp_NeoPixel_RGB_Basic::refresh() {
     auto saturation = getCharacteristicValue(gadget_definitions::CharacteristicIdentifier::saturation);
     uint8_t lightness = 50;
     auto brightness = getCharacteristicValue(gadget_definitions::CharacteristicIdentifier::brightness);
-    logger_i(TAG, "Hue: %d; Sat: %d; Bri: %d", hue, saturation, brightness);
+    logger_i(TAG, "Hue: %d; Saturation: %d; Lightness: %d; Brightness: %d", hue, saturation, lightness, brightness);
     Color buf_clr;
     buf_clr.setHSL(hue,
                    saturation,
@@ -26,12 +26,10 @@ void Lamp_NeoPixel_RGB_Basic::refresh() {
     uint8_t r = rgb_color->getRed();
     uint8_t g = rgb_color->getGreen();
     uint8_t b = rgb_color->getBlue();
-    logger_i(TAG, "Before Brightness: R: %d; G: %d; B: %d", r, g, b);
 
     r = ((r * brightness) / 100);
     g = ((g * brightness) / 100);
     b = ((b * brightness) / 100);
-    logger_i(TAG, "After Brightness: R: %d; G: %d; B: %d", r, g, b);
 
     setLEDColor(r, g, b);
   }
