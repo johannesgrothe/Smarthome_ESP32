@@ -66,7 +66,8 @@ void HardwareController::digitalWritePin(uint8_t pin, bool value) {
 void HardwareController::sleepMilliseconds(uint16_t milliseconds) {
   logger_d("HardwareController", "Sleeping for %dms", milliseconds);
   #ifndef UNIT_TEST
-  sleep(milliseconds);
+  unsigned int ms = milliseconds / 1000;
+  sleep(ms);
   #else
   std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
   #endif
