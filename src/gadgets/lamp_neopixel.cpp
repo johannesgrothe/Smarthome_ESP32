@@ -3,9 +3,10 @@
 #include <utility>
 
 bool Lamp_NeoPixel_RGB::setLEDColor(uint8_t r, uint8_t g, uint8_t b) {
-  logger_i(getName(), "Setting Color: (%d, %d, %d)", r, g, b);
+  logger_i(getName(), "Setting Color: (%d, %d, %d)", int(r), int(g), int(b));
   for (uint16_t k = 0; k < len_; k++) {
     led_stripe_.setPixelColor(k, Adafruit_NeoPixel::Color(r, g, b));
+    led_stripe_.show();
   }
   led_stripe_.show();
   return true;

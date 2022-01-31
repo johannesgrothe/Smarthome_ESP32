@@ -13,11 +13,26 @@ void Lamp_NeoPixel_RGB_Basic::refresh() {
       setLEDColor(0, 0, 0);
       return;
     }
+    auto hue = getCharacteristicValue(gadget_definitions::CharacteristicIdentifier::hue);
+    auto saturation = getCharacteristicValue(gadget_definitions::CharacteristicIdentifier::saturation);
+    uint8_t lightness = 50;
+    auto brightness = getCharacteristicValue(gadget_definitions::CharacteristicIdentifier::brightness);
+    logger_i(TAG, "Hue: %d; Sat: %d; Bri: %d", hue, saturation, brightness);
     Color buf_clr;
-    buf_clr.setHSV(getCharacteristicValue(gadget_definitions::CharacteristicIdentifier::hue),
-                   getCharacteristicValue(gadget_definitions::CharacteristicIdentifier::saturation),
-                   getCharacteristicValue(gadget_definitions::CharacteristicIdentifier::brightness));
+    buf_clr.setHSL(hue,
+                   saturation,
+                   lightness);
     auto rgb_color = buf_clr.getRGB();
-    setLEDColor(rgb_color->getRed(), rgb_color->getGreen(), rgb_color->getBlue());
+    uint8_t r = rgb_color->getRed();
+    uint8_t g = rgb_color->getGreen();
+    uint8_t b = rgb_color->getBlue();
+    logger_i(TAG, "Before Brightness: R: %d; G: %d; B: %d", r, g, b);
+
+    r = ((r * brightness) / 100);
+    g = ((g * brightness) / 100);
+    b = ((b * brightness) / 100);
+    logger_i(TAG, "After Brightness: R: %d; G: %d; B: %d", r, g, b);
+
+    setLEDColor(r, g, b);
   }
 }
