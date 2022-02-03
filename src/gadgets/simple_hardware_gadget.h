@@ -1,9 +1,14 @@
 #pragma once
 
+#include <mutex>
+
 class SimpleHardwareGadget {
 private:
   // Indicates something has changed and the hardware needs to update
   bool needs_hw_update_;
+
+  // Mutex to protect the hardware update flag
+  std::mutex mtx_;
 
 protected:
 
