@@ -36,6 +36,10 @@ void ApiManager::handleRequest(const std::shared_ptr<Request> &req) {
     return;
   }
 
+  if (req->getIsResponse()) {
+    return;
+  }
+
   logger_i(TAG, "Received Request at path '%s'", req_path.c_str());
 
   // Switch only works for integer types, therefore all the IFs
@@ -186,6 +190,7 @@ void ApiManager::publishSync(std::string *receiver = nullptr) {
     auto out_req = std::make_shared<Request>(api_definitions::uris::sync_client,
                                              genRequestID(),
                                              client_id_,
+                                             false,
                                              payload);
     network_->sendRequest(out_req);
   } else {
@@ -193,6 +198,7 @@ void ApiManager::publishSync(std::string *receiver = nullptr) {
                                              genRequestID(),
                                              client_id_,
                                              *receiver,
+                                             false,
                                              payload);
     network_->sendRequest(out_req);
   }
@@ -203,6 +209,7 @@ void ApiManager::publishGadgetUpdate(const GadgetUpdateMeta &gadget_data) {
   auto out_req = std::make_shared<Request>(api_definitions::uris::update_gadget,
                                            genRequestID(),
                                            client_id_,
+                                           false,
                                            payload);
   network_->sendRequest(out_req);
 }
@@ -217,6 +224,7 @@ void ApiManager::publishHeartbeat() {
   auto heartbeat_request = std::make_shared<Request>(api_definitions::uris::heartbeat,
                                                      genRequestID(),
                                                      client_id_,
+                                                     false,
                                                      payload);
   network_->sendRequest(heartbeat_request);
 }

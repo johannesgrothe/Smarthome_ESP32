@@ -15,8 +15,8 @@ private:
   int session_id_;
   std::string sender_;
   std::string receiver_;
-  DynamicJsonDocument payload_;
   bool is_response_;
+  DynamicJsonDocument payload_;
 
   // respond to (incoming) request
   bool can_respond_;

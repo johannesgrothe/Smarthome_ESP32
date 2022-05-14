@@ -110,6 +110,7 @@ void RequestGadget::refresh() {
                                                                    buf_req->getPath(),
                                                                    buf_req->getSender(),
                                                                    buf_req->getReceiver(),
+                                                                   buf_req->getIsResponse(),
                                                                    last_index
           );
           split_req_buffer_->addData(0, split_payload);
