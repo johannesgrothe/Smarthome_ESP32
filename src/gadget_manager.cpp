@@ -32,7 +32,7 @@ std::shared_ptr<Gadget> GadgetManager::operator[](int index) const {
 }
 
 uint8_t GadgetManager::getGadgetCount() const {
-  return gadgets_.size();
+  return (uint8_t) gadgets_.size();
 }
 
 void GadgetManager::refresh() {
