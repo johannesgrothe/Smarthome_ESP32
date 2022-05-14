@@ -128,6 +128,7 @@ void SerialGadget::receiveSerialRequest() {
                                              doc["session_id"].as<int>(),
                                              doc["sender"].as<std::string>(),
                                              doc["receiver"].as<std::string>(),
+                                             doc["is_response"].as<bool>(),
                                              doc["payload"]);
         addIncomingRequest(req);
       } else {

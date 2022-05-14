@@ -16,6 +16,7 @@ private:
   std::string sender_;
   std::string receiver_;
   DynamicJsonDocument payload_;
+  bool is_response_;
 
   // respond to (incoming) request
   bool can_respond_;
@@ -35,6 +36,7 @@ public:
           int session_id,
           std::string sender,
           std::string receiver,
+          bool is_response,
           DynamicJsonDocument payload);
 
   /**
@@ -48,6 +50,7 @@ public:
   Request(std::string req_path,
           int session_id,
           std::string sender,
+          bool is_response,
           DynamicJsonDocument payload);
 
   /**
@@ -81,6 +84,12 @@ public:
    * @return the receiver
    */
   std::string getReceiver() const;
+
+  /**
+   * Method to check if the request has an receiver
+   * @return whether the request is a response
+   */
+  bool getIsResponse() const;
 
   /**
    * Changes the receiver in the request to the new value.
@@ -168,7 +177,7 @@ public:
   bool operator!=(const Request &rhs) const;
 };
 
-inline std::ostream& operator<<(std::ostream& os, Request const& req) {
-  os << "<" << req.getPath() << "[" << req.getID() << "; " << req.getSender() << "; " << req.getReceiver()<< "]>";
+inline std::ostream &operator<<(std::ostream &os, Request const &req) {
+  os << "<" << req.getPath() << "[" << req.getID() << "; " << req.getSender() << "; " << req.getReceiver() << "]>";
   return os;
 }
