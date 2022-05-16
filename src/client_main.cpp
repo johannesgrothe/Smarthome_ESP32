@@ -237,6 +237,9 @@ ClientMeta ClientMain::getClientData() {
 
 std::vector<GadgetMeta> ClientMain::getGadgetData() {
   std::vector<GadgetMeta> gadget_data;
+  if (gadget_manager_ == nullptr) {
+    return gadget_data;
+  }
   for (uint8_t i = 0; i < gadget_manager_->getGadgetCount(); i++) {
     auto buf_gadget = gadget_manager_->getGadget(i);
     std::vector<CharacteristicMeta> characteristics;
@@ -248,7 +251,7 @@ std::vector<GadgetMeta> ClientMain::getGadgetData() {
                                       c.steps);
       characteristics.push_back(buf_c);
     }
-    auto buf_g = GadgetMeta(gadget_definitions::GadgetIdentifier::lamp_neopixel_rgb_basic,
+    auto buf_g = GadgetMeta(gadget_definitions::GadgetIdentifier::lamp_neopixel_rgb_basic,  // TODO: Get actual gadget type from somewhere
                             buf_gadget->getName(),
                             characteristics);
     gadget_data.push_back(buf_g);

@@ -15,7 +15,7 @@
 static const char *TAG = "Initialization";
 
 // Main class instance, handles the complete system
-std::shared_ptr<ClientMain> main;
+std::shared_ptr<ClientMain> client_main;
 
 // Storage to load and save configs
 std::shared_ptr<SystemStorage> storage;
@@ -74,7 +74,7 @@ std::shared_ptr<GadgetConfig> loadBackupGadgetConfig() {
  */
 [[noreturn]] static void mainTask(void *args) {
   while (true) {
-    main->loopSystem();
+    client_main->loopSystem();
     vTaskDelay(10 / portTICK_PERIOD_MS);
   }
 }
@@ -85,7 +85,7 @@ std::shared_ptr<GadgetConfig> loadBackupGadgetConfig() {
  */
 [[noreturn]] static void networkTask(void *args) {
   while (true) {
-    main->loopNetwork();
+    client_main->loopNetwork();
     vTaskDelay(10 / portTICK_PERIOD_MS);
   }
 }
@@ -96,7 +96,7 @@ std::shared_ptr<GadgetConfig> loadBackupGadgetConfig() {
  */
 [[noreturn]] static void gadgetTask(void *args) {
   while (true) {
-    main->loopGadgets();
+    client_main->loopGadgets();
     vTaskDelay(10 / portTICK_PERIOD_MS);
   }
 }
@@ -191,11 +191,11 @@ void setup() {
 
   auto boot_mode = getBootMode();
 
-  main = std::make_shared<ClientMain>(boot_mode,
-                                      *system_config,
-                                      *gadget_config,
-                                      *event_config);
-  main->setStorageManager(storage);
+  client_main = std::make_shared<ClientMain>(boot_mode,
+                                             *system_config,
+                                             *gadget_config,
+                                             *event_config);
+  client_main->setStorageManager(storage);
   logger_i(TAG, "Main launched successfully");
   createTasks();
 }
@@ -205,7 +205,7 @@ void setup() {
  * Used for the heartbeat sending.
  */
 void loop() {
-  main->loopSystem();
+  client_main->loopSystem();
 }
 
 //endregion
