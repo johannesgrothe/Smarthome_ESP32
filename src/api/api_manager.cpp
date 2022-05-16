@@ -19,6 +19,11 @@ ApiManager::ApiManager(ApiManagerDelegate *delegate, std::shared_ptr<RequestGadg
 void ApiManager::handleRequest(const std::shared_ptr<Request> &req) {
   std::string req_path = req->getPath();
 
+  if (req->getIsResponse()) {
+    // The API Manager is only handling requests
+    return;
+  }
+
   if (!pathIsLegal(req_path)) {
     // Quit if path is unknown to api
     return;
@@ -33,10 +38,6 @@ void ApiManager::handleRequest(const std::shared_ptr<Request> &req) {
     req->updateReceiver(client_id_);
   } else if (client_id_ != req->getReceiver()) {
     // Return if the client is not the receiver of the message
-    return;
-  }
-
-  if (req->getIsResponse()) {
     return;
   }
 
