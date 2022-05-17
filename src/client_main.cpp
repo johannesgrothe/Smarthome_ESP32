@@ -28,6 +28,10 @@ ClientMain::ClientMain(BootMode boot_mode, const SystemConfig &system_config, co
   logger_i("System", "Flash Date: %s", getSoftwareFlashDate().c_str());
   logger_i("System", "Git Branch: %s", getSoftwareGitBranch().c_str());
   logger_i("System", "Git Commit: %s", getSoftwareGitCommit().c_str());
+  logger_i("System", "API Version: %d.%d.%d",
+           api_definitions::version::major,
+           api_definitions::version::minor,
+           api_definitions::version::bugfix);
 
   bool status;
 

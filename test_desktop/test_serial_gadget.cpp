@@ -14,18 +14,20 @@ TEST_CASE("Test Serial Gadget", "[Network]") {
                                            1776,
                                            "yolokopter",
                                            "receiver",
+                                           false,
                                            payload);
 
-  std::string string_req = "!r_p[path/out]_b[{\"session_id\":1776,\"sender\":\"yolokopter\",\"receiver\":\"receiver\",\"payload\":{\"blub\":55}}]_\n";
+  std::string string_req = "!r_p[path/out]_b[{\"session_id\":1776,\"sender\":\"yolokopter\",\"receiver\":\"receiver\",\"is_response\":false,\"payload\":{\"blub\":55}}]_\n";
 
 
   auto out_req_split = std::make_shared<Request>("path/out",
                                                  1776,
                                                  "brokenboi",
                                                  "receiver",
+                                                 false,
                                                  payload);
   std::string string_req_0 = "!r_p[path/out]_b[{\"session_id\":1776,\"sender\":\"brokenboi\",\"r";
-  std::string string_req_1 = "eceiver\":\"receiver\",\"payload\":{\"blub\":55}}]_\n";
+  std::string string_req_1 = "eceiver\":\"receiver\",\"is_response\":false,\"payload\":{\"blub\":55}}]_\n";
 
 
   SECTION("Test Constructor") {

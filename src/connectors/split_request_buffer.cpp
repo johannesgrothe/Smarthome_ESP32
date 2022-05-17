@@ -17,13 +17,14 @@ std::string replaceParts(std::string in_str, const std::string &part_to_replace,
 }
 
 SplitRequestBuffer::SplitRequestBuffer(int session_id, std::string path, std::string sender, std::string receiver,
-                                       int length) :
+                                       bool is_response, int length) :
     data_buffer_(length),
     session_id_(session_id),
     path_(std::move(path)),
     sender_(std::move(sender)),
     receiver_(std::move(receiver)),
-    length_(length) {}
+    length_(length),
+    is_response_(is_response) {}
 
 void SplitRequestBuffer::addData(int index, std::string payload) {
   if (index >= length_ || index < 0) {
@@ -54,11 +55,12 @@ std::shared_ptr<Request> SplitRequestBuffer::getRequest() const {
       logger_i(TAG, "Receiver-Pin: %d", "Error in split request deserialization process");
       return nullptr;
     }
-    
+
     auto out_req = std::make_shared<Request>(path_,
                                              session_id_,
                                              sender_,
                                              receiver_,
+                                             is_response_,
                                              doc);
 
     return out_req;

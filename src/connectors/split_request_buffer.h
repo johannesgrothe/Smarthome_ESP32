@@ -17,8 +17,9 @@ public:
   const std::string sender_;
   const std::string receiver_;
   const int length_;
+  const bool is_response_;
 
-  SplitRequestBuffer(int session_id, std::string path, std::string sender, std::string receiver, int length);
+  SplitRequestBuffer(int session_id, std::string path, std::string sender, std::string receiver, bool is_response, int length);
 
   void addData(int index, std::string payload);
 

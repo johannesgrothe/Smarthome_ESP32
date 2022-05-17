@@ -2,20 +2,23 @@
 
 #include <utility>
 
-Request::Request(std::string req_path, int session_id, std::string sender, std::string receiver,
+Request::Request(std::string req_path, int session_id, std::string sender, std::string receiver, bool is_response,
                  DynamicJsonDocument payload) :
     path_(std::move(req_path)),
     session_id_(session_id),
     sender_(std::move(sender)),
     receiver_(std::move(receiver)),
+    is_response_(is_response),
     payload_(std::move(payload)),
     can_respond_(false) {}
 
-Request::Request(std::string req_path, int session_id, std::string sender, DynamicJsonDocument payload) :
+Request::Request(std::string req_path, int session_id, std::string sender, bool is_response,
+                 DynamicJsonDocument payload) :
     path_(std::move(req_path)),
     session_id_(session_id),
     sender_(std::move(sender)),
     receiver_("null"),
+    is_response_(is_response),
     payload_(std::move(payload)),
     can_respond_(false) {}
 
@@ -90,6 +93,7 @@ bool Request::respond(const std::string &res_path, const DynamicJsonDocument &pa
                                        session_id_,
                                        new_sender,
                                        new_receiver,
+                                       true,
                                        payload);
   send_answer_(req);
   return true;
@@ -100,6 +104,7 @@ std::string Request::getBody() const {
   body_doc["session_id"] = session_id_;
   body_doc["sender"] = sender_;
   body_doc["receiver"] = receiver_;
+  body_doc["is_response"] = is_response_;
   body_doc["payload"] = payload_;
 
   char buf_arr[3200];
@@ -114,7 +119,6 @@ std::string Request::getBody() const {
 }
 
 bool Request::hasReceiver() const {
-  // TODO: Kinda bullshit
   return receiver_ != "null";
 }
 
@@ -145,4 +149,8 @@ bool Request::operator!=(const Request &rhs) const {
 void Request::setResponseCallback(std::function<void(std::shared_ptr<Request>)> answer_method) {
   can_respond_ = true;
   send_answer_ = std::move(answer_method);
+}
+
+bool Request::getIsResponse() const {
+  return is_response_;
 }

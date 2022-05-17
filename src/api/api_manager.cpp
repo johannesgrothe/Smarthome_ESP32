@@ -19,6 +19,11 @@ ApiManager::ApiManager(ApiManagerDelegate *delegate, std::shared_ptr<RequestGadg
 void ApiManager::handleRequest(const std::shared_ptr<Request> &req) {
   std::string req_path = req->getPath();
 
+  if (req->getIsResponse()) {
+    // The API Manager is only handling requests
+    return;
+  }
+
   if (!pathIsLegal(req_path)) {
     // Quit if path is unknown to api
     return;
@@ -186,6 +191,7 @@ void ApiManager::publishSync(std::string *receiver = nullptr) {
     auto out_req = std::make_shared<Request>(api_definitions::uris::sync_client,
                                              genRequestID(),
                                              client_id_,
+                                             false,
                                              payload);
     network_->sendRequest(out_req);
   } else {
@@ -193,6 +199,7 @@ void ApiManager::publishSync(std::string *receiver = nullptr) {
                                              genRequestID(),
                                              client_id_,
                                              *receiver,
+                                             false,
                                              payload);
     network_->sendRequest(out_req);
   }
@@ -203,6 +210,7 @@ void ApiManager::publishGadgetUpdate(const GadgetUpdateMeta &gadget_data) {
   auto out_req = std::make_shared<Request>(api_definitions::uris::update_gadget,
                                            genRequestID(),
                                            client_id_,
+                                           false,
                                            payload);
   network_->sendRequest(out_req);
 }
@@ -217,6 +225,7 @@ void ApiManager::publishHeartbeat() {
   auto heartbeat_request = std::make_shared<Request>(api_definitions::uris::heartbeat,
                                                      genRequestID(),
                                                      client_id_,
+                                                     false,
                                                      payload);
   network_->sendRequest(heartbeat_request);
 }

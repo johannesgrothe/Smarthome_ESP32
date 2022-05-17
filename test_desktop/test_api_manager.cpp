@@ -85,6 +85,7 @@ TEST_CASE("Test API Manager", "[API]") {
                                                   177787,
                                                   TEST_BRIDGE_ID,
                                                   TEST_CLIENT_ID,
+                                                  false,
                                                   payload);
     manager.handleRequest(sync_request);
     CHECK(network->getLastSentRequest() != nullptr);
@@ -99,6 +100,7 @@ TEST_CASE("Test API Manager", "[API]") {
                                                   177787,
                                                   TEST_BRIDGE_ID,
                                                   TEST_CLIENT_ID,
+                                                  false,
                                                   payload);
     manager.handleRequest(sync_request);
     CHECK(delegate.had_gadget_meta == true);

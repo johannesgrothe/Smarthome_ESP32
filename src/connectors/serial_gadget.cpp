@@ -119,6 +119,10 @@ void SerialGadget::receiveSerialRequest() {
           logger_w(TAG, "Received request without receiver");
           return;
         }
+        if (!doc.containsKey("is_response")) {
+          logger_w(TAG, "Received request without response flag");
+          return;
+        }
         if (!doc.containsKey("payload")) {
           logger_w(TAG, "Received request without payload");
           return;
@@ -128,6 +132,7 @@ void SerialGadget::receiveSerialRequest() {
                                              doc["session_id"].as<int>(),
                                              doc["sender"].as<std::string>(),
                                              doc["receiver"].as<std::string>(),
+                                             doc["is_response"].as<bool>(),
                                              doc["payload"]);
         addIncomingRequest(req);
       } else {
