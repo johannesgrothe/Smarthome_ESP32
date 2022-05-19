@@ -66,4 +66,8 @@ public:
   bool saveEventConfig(EventConfig config) override;
 
   bool eraseAllConfigs() override;
+
+  void setDoubleRebootFlag(bool value) override;
+
+  bool getDoubleRebootFlag() override;
 };

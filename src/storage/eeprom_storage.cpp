@@ -283,3 +283,11 @@ std::string EepromStorage::getEepromLayout() {
   ss << "\nmqtt_pw: " << MQTT_PW_POS << " - " << MQTT_PW_POS + MQTT_PW_MAX_LEN;
   return ss.str();
 }
+
+void EepromStorage::setDoubleRebootFlag(bool value) {
+  EepromManager::writeUInt8(TEMP_DOUBLE_REBOOT_FLAG, value);
+}
+
+bool EepromStorage::getDoubleRebootFlag() {
+  return (EepromManager::readUInt8(TEMP_DOUBLE_REBOOT_FLAG) != 0);
+}

@@ -167,7 +167,18 @@ void setup() {
 
   logger_i(TAG, "Launching...");
 
+  auto boot_mode = getBootMode();
+
   storage = std::make_shared<EepromStorage>();
+
+  if (storage->getDoubleRebootFlag()) {
+    boot_mode = BootMode::Serial_Only;
+    logger_i(TAG, "Double reboot detected, starting in SerialOnly mode...");
+  } else {
+    storage->setDoubleRebootFlag(true);
+    HardwareController::sleepMilliseconds(1500);
+  }
+  storage->setDoubleRebootFlag(false);
 
   auto system_config = storage->loadSystemConfig();
   auto gadget_config = storage->loadGadgetConfig();
@@ -188,8 +199,6 @@ void setup() {
       event_config = loadBackupEventConfig();
     }
   }
-
-  auto boot_mode = getBootMode();
 
   client_main = std::make_shared<ClientMain>(boot_mode,
                                              *system_config,

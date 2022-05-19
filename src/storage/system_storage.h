@@ -65,4 +65,16 @@ public:
    * @return Whether erasing was successful
    */
   virtual bool eraseAllConfigs() = 0;
+
+  /**
+   * Sets the double reboot flag
+   * @param value Value to set
+   */
+  virtual void setDoubleRebootFlag(bool value) = 0;
+
+  /**
+   * Reads the double reboot flag
+   * @return Whether the flag is set or not
+   */
+  virtual bool getDoubleRebootFlag() = 0;
 };

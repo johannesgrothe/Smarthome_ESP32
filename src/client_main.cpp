@@ -185,7 +185,7 @@ bool ClientMain::initEventMapping(const EventConfig &config) {
   return true;
 }
 
-bool ClientMain::initApi(const std::string& client_id) {
+bool ClientMain::initApi(const std::string &client_id) {
   uint16_t runtime_id = random_int(10000);
 
   logger_i("System", "Runtime ID: %d", runtime_id);
@@ -255,9 +255,10 @@ std::vector<GadgetMeta> ClientMain::getGadgetData() {
                                       c.steps);
       characteristics.push_back(buf_c);
     }
-    auto buf_g = GadgetMeta(gadget_definitions::GadgetIdentifier::lamp_neopixel_rgb_basic,  // TODO: Get actual gadget type from somewhere
-                            buf_gadget->getName(),
-                            characteristics);
+    auto buf_g = GadgetMeta(
+        gadget_definitions::GadgetIdentifier::lamp_neopixel_rgb_basic,  // TODO: Get actual gadget type from somewhere
+        buf_gadget->getName(),
+        characteristics);
     gadget_data.push_back(buf_g);
   }
   return gadget_data;
