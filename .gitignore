@@ -16,3 +16,4 @@ static_config.h
 /test_desktop/libs/
 test_desktop/Testing/Temporary
 cmake-build-*
+__pycache__

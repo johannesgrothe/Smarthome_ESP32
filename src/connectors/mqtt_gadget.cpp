@@ -201,9 +201,10 @@ MQTTGadget::initMqttClient(const IPContainer &mqtt_ip, uint16_t mqtt_port) {
 void MQTTGadget::refresh_network() {
   if (!mqttClient_->connected()) {
     connect_mqtt();
+  } else {
+    mqttClient_->loop();
+    sendQueuedItems();
   }
-  mqttClient_->loop();
-  sendQueuedItems();
 }
 
 bool MQTTGadget::subscribe_to_topic(const std::string &topic) {

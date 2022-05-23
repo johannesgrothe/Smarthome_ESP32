@@ -9,6 +9,10 @@ ScheduledMessagesManager::ScheduledMessagesManager(std::shared_ptr <ApiManager> 
     last_heartbeat_(0) {}
 
 void ScheduledMessagesManager::loop() {
+  if (api_ == nullptr) {
+    logger_e(TAG, "Cannot send heartbeat: API is not initialized");
+    return;
+  }
   auto now = system_timer.getTime();
   if (last_heartbeat_ + HEARTBEAT_INTERVAL < now) {
     logger_i(TAG, "Sending heartbeat");
