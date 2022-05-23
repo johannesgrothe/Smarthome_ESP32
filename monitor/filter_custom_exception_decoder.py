@@ -69,12 +69,12 @@ class ExceptionDecoder(DeviceMonitorFilterBase):
     def extract_backtrace_info(self, trace: str) -> str:
         expr = r"0x[0-9a-f]{8}:0x[0-9a-f]{8}"
         addresses = " ".join(re.findall(expr, trace))
-        command = f"{self.addr2line_path} -e {self.firmware_path} -a {addresses}"
+        command = f"{self.addr2line_path} -e {self.firmware_path} -a {addresses} -f -C"
         addr2line_result = os.popen(command).read().split("\n")
         buf_data = ""
-        for i in range(len(addr2line_result) - 1):
-            if i % 2 == 0:
-                line = f"{addr2line_result[i]} -> {addr2line_result[i - 1]}\n"
+        for i in range(len(addr2line_result)-1):
+            if i % 3 == 0:
+                line = f"{addr2line_result[i]} -> {addr2line_result[i + 1]}:\n   {addr2line_result[i + 2]}\n\n"
                 buf_data += line
 
         return trace + "\n" + buf_data + "\n\n"
