@@ -10,4 +10,5 @@
 #define REG2 26
 
 #define PWR_PIN 39
-#define PWR_TYPE 0 // 0 = grid, 1 = alkaline AAA, ...
+#define PWR_CELL_COUNT 4
+#define PWR_TYPE 1 // 0 = grid, 1 = alkaline AAA, ...

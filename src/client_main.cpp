@@ -61,7 +61,7 @@ ClientMain::ClientMain(BootMode boot_mode, const SystemConfig &system_config, co
       }
 
       initEventMapping(event_config);
-      initPowerManager((PowerMode)1);
+      initPowerManager();
       initConnectors(system_config);
       initGadgets(gadget_config);
 
@@ -203,7 +203,7 @@ bool ClientMain::initApi(const std::string& client_id) {
 bool ClientMain::initPowerManager() {
   logger_i("System", "Initializing power manager");
   if (PWR_TYPE == 1) {
-    power_manager_ = std::make_shared<AAA_Alkaline>();
+    power_manager_ = std::make_shared<AAA_Alkaline>(PWR_PIN, PWR_CELL_COUNT);
   } else if (PWR_TYPE == 0) {
     power_manager_ = std::make_shared<GridManager>();
   } else {
@@ -318,7 +318,7 @@ void ClientMain::loopSystem() {
     if (power_manager_->refresh()) {
       auto power_mode = power_manager_->getPowerMode();
       if (power_mode == PowerMode::Battery_Mode) {
-        auto battery_manager = dynamic_cast<BatteryManager*>(power_manager_.get());
+        auto* battery_manager = static_cast<BatteryManager *>(power_manager_.get());
         auto battery_level = battery_manager->getBatteryLevel();
         api_manager_->publishClientUpdate(battery_level);
         logger_i("System", "remaining battery charge: %d", battery_level);

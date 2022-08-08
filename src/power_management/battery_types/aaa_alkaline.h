@@ -10,9 +10,10 @@ class AAA_Alkaline: public BatteryManager {
 
 protected:
   double max_voltage_difference_;
+  uint8_t num_batteries_;
 
 public:
-  explicit AAA_Alkaline();
+  explicit AAA_Alkaline(uint8_t pwr_pin, uint8_t num_batteries);
 
   uint8_t getBatteryLevel() override;
 
