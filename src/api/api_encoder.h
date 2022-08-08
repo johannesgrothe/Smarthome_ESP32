@@ -58,4 +58,13 @@ public:
    * @return A json document containing all the information
    */
   static DynamicJsonDocument encodeHeartbeat(uint16_t runtime_id);
+
+  /**
+   * Encodes the data for the periodic client update
+   * currently only the battery_level (if not on grid mode)
+   *
+   * @param battery_level Battery level of the system
+   * @return A json document containing all the information
+   */
+  static DynamicJsonDocument encodeClientUpdate(uint8_t battery_level);
 };

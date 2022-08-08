@@ -75,3 +75,9 @@ DynamicJsonDocument ApiEncoder::encodeHeartbeat(uint16_t runtime_id) {
   doc["runtime_id"] = runtime_id;
   return doc;
 }
+
+DynamicJsonDocument ApiEncoder::encodeClientUpdate(uint8_t battery_level) {
+  DynamicJsonDocument doc(100);
+  doc["battery_level"] = battery_level;
+  return doc;
+}

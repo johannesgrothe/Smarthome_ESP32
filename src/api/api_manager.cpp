@@ -230,4 +230,15 @@ void ApiManager::publishHeartbeat() {
   network_->sendRequest(heartbeat_request);
 }
 
+void ApiManager::publishClientUpdate(uint8_t battery_charge) {
+  auto payload = ApiEncoder::encodeClientUpdate(battery_charge);
+
+  auto client_update_request = std::make_shared<Request>(api_definitions::uris::update_client_info,
+                                                     genRequestID(),
+                                                     client_id_,
+                                                     false,
+                                                     payload);
+  network_->sendRequest(client_update_request);
+}
+
 // endregion PUBLISH CHANGES

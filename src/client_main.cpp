@@ -320,8 +320,10 @@ void ClientMain::loopSystem() {
       if (power_mode == PowerMode::Battery_Mode) {
         auto battery_manager = dynamic_cast<BatteryManager*>(power_manager_.get());
         auto battery_level = battery_manager->getBatteryLevel();
+        api_manager_->publishClientUpdate(battery_level);
         logger_i("System", "remaining battery charge: %d", battery_level);
       } else {
+        api_manager_->publishClientUpdate(42); // TODO: remove this at some point
         logger_e("System", "tha fuck?");
       }
     }

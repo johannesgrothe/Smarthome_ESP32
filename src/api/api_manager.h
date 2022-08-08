@@ -58,5 +58,7 @@ public:
 
   void publishEvent(const std::shared_ptr<Event> &event);
 
+  void publishClientUpdate(uint8_t battery_charge);
+
   void publishHeartbeat();
 };
