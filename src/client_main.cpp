@@ -9,6 +9,8 @@
 #include "random.h"
 #include "api/gadget_meta_coder.h"
 #include "system/api_definitions.h"
+#include "power_management/battery_types/aaa_alkaline.h"
+#include "power_management/grid_manager.h"
 
 static const char *TAG = "Initialization";
 
@@ -17,6 +19,7 @@ ClientMain::ClientMain(BootMode boot_mode, const SystemConfig &system_config, co
     ApiManagerDelegate(),
     system_mode_(boot_mode),
     system_storage_(nullptr),
+    power_manager_(nullptr),
     api_manager_(nullptr),
     gadget_manager_(nullptr),
     event_manager_(nullptr),
@@ -58,6 +61,7 @@ ClientMain::ClientMain(BootMode boot_mode, const SystemConfig &system_config, co
       }
 
       initEventMapping(event_config);
+      initPowerManager((PowerMode)1);
       initConnectors(system_config);
       initGadgets(gadget_config);
 
@@ -196,6 +200,18 @@ bool ClientMain::initApi(const std::string& client_id) {
   return true;
 }
 
+bool ClientMain::initPowerManager() {
+  logger_i("System", "Initializing power manager");
+  if (PWR_TYPE == 1) {
+    power_manager_ = std::make_shared<AAA_Alkaline>();
+  } else if (PWR_TYPE == 0) {
+    power_manager_ = std::make_shared<GridManager>();
+  } else {
+    return false;
+  }
+  return true;
+}
+
 void ClientMain::handleGadgetUpdate(GadgetUpdateMeta gadget) {
   gadget_manager_->forwardUpdate(gadget);
 }
@@ -295,6 +311,19 @@ void ClientMain::loopSystem() {
     if (event_manager_->hasEvent()) {
       auto event = event_manager_->getEvent();
       gadget_manager_->forwardEvent(event);
+    }
+  }
+
+  if (power_manager_ != nullptr) {
+    if (power_manager_->refresh()) {
+      auto power_mode = power_manager_->getPowerMode();
+      if (power_mode == PowerMode::Battery_Mode) {
+        auto battery_manager = dynamic_cast<BatteryManager*>(power_manager_.get());
+        auto battery_level = battery_manager->getBatteryLevel();
+        logger_i("System", "remaining battery charge: %d", battery_level);
+      } else {
+        logger_e("System", "tha fuck?");
+      }
     }
   }
 

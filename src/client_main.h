@@ -19,6 +19,7 @@
 
 #include "gadget_manager.h"
 #include "event_manager.h"
+#include "power_management/power_manager.h"
 
 class ClientMain : public ApiManagerDelegate {
 private:
@@ -28,6 +29,9 @@ private:
 
   // System config management object
   std::shared_ptr<SystemStorage> system_storage_;
+
+  //System power management object
+  std::shared_ptr<PowerManager> power_manager_;
 
   // Helper to handle all incoming and outgoing network traffic
   std::shared_ptr<ApiManager> api_manager_;
@@ -92,6 +96,12 @@ private:
    * @return Whether initializing network was successful or not
    */
   bool initApi(const std::string& client_id);
+
+  /**
+   * Initializes the power manager
+   * @return Whether initializing power manager was successful or not
+   * */
+  bool initPowerManager();
 
   /**
    * Initialized the Event Manager with the event mapping from the config
