@@ -7,7 +7,9 @@ BatteryManager::BatteryManager(uint8_t pwr_pin) :
 }
 
 double BatteryManager::getBatteryVoltage() const {
-  return digitalRead(voltage_read_pin_);
+  auto voltage_reading =  analogRead(voltage_read_pin_);
+  auto voltage = (voltage_reading * 3.3) / 4095;
+  return voltage;
 }
 
 bool BatteryManager::refresh() {
