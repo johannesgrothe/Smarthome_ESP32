@@ -14,6 +14,7 @@
 
 class ApiManagerDelegate {
 public:
+  virtual ~ApiManagerDelegate() = default;
 
   virtual void handleGadgetUpdate(GadgetUpdateMeta gadget) = 0;
 
@@ -25,7 +26,7 @@ public:
 
   virtual bool handleSystemConfigWrite(SystemConfig cfg) = 0;
 
-  virtual bool handleGadgetConfigWrite(GadgetConfig cfg) = 0;
-
-  virtual bool handleEventConfigWrite(EventConfig cfg) = 0;
+  // virtual bool handleGadgetConfigWrite(GadgetConfig cfg) = 0;
+  //
+  // virtual bool handleEventConfigWrite(EventConfig cfg) = 0;
 };

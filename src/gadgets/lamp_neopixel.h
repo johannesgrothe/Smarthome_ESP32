@@ -5,7 +5,6 @@
 #include <Adafruit_NeoPixel.h>
 
 class Lamp_NeoPixel_RGB : public Lamp_RGB, public SimpleHardwareGadget {
-private:
   uint8_t pin_;
   uint16_t len_;
   Adafruit_NeoPixel led_stripe_;

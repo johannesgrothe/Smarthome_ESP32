@@ -9,7 +9,7 @@
 /**
  * System storage class handling EEPROM saving
  */
-class EepromStorage: public SystemStorage {
+class EepromStorage final : public SystemStorage {
 public:
 
   EepromStorage();
@@ -39,31 +39,31 @@ public:
    */
   bool saveSystemConfig(SystemConfig config) override;
 
-  /**
-   * Loads the gadget config from the EEPROM
-   * @return The loaded Config as shared_ptr, nullptr if config could not be loaded
-   */
-  std::shared_ptr<GadgetConfig> loadGadgetConfig() override;
+  // /**
+  //  * Loads the gadget config from the EEPROM
+  //  * @return The loaded Config as shared_ptr, nullptr if config could not be loaded
+  //  */
+  // std::shared_ptr<GadgetConfig> loadGadgetConfig() override;
 
-  /**
-   * Saves a gadget config to the EEPROM
-   * @param config The config to write
-   * @return Whether saving was successful
-   */
-  bool saveGadgetConfig(GadgetConfig config) override;
+  // /**
+  //  * Saves a gadget config to the EEPROM
+  //  * @param config The config to write
+  //  * @return Whether saving was successful
+  //  */
+  // bool saveGadgetConfig(GadgetConfig config) override;
 
-  /**
-   * Loads the event config from the EEPROM
-   * @return The loaded Config as shared_ptr, nullptr if config could not be loaded
-   */
-  std::shared_ptr<EventConfig> loadEventConfig() override;
+  // /**
+  //  * Loads the event config from the EEPROM
+  //  * @return The loaded Config as shared_ptr, nullptr if config could not be loaded
+  //  */
+  // std::shared_ptr<EventConfig> loadEventConfig() override;
 
-  /**
-   * Saves a event config to the EEPROM
-   * @param config The config to write
-   * @return Whether saving was successful
-   */
-  bool saveEventConfig(EventConfig config) override;
+  // /**
+  //  * Saves a event config to the EEPROM
+  //  * @param config The config to write
+  //  * @return Whether saving was successful
+  //  */
+  // bool saveEventConfig(EventConfig config) override;
 
   bool eraseAllConfigs() override;
 };

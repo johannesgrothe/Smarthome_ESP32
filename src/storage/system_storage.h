@@ -1,14 +1,15 @@
 #pragma once
 
 #include "system_config.h"
-#include "gadget_config.h"
-#include "event_config.h"
+// #include "gadget_config.h"
+// #include "event_config.h"
 
 class SystemStorage {
 protected:
   bool initialized_;
 
 public:
+  virtual ~SystemStorage() = default;
 
   /**
    * Constructor for this meta class
@@ -34,31 +35,31 @@ public:
    */
   virtual bool saveSystemConfig(SystemConfig config) = 0;
 
-  /**
-   * Loads the gadget config from the EEPROM
-   * @return The loaded Config as shared_ptr, nullptr if config could not be loaded
-   */
-  virtual std::shared_ptr<GadgetConfig> loadGadgetConfig() = 0;
-
-  /**
-   * Saves a gadget config to the EEPROM
-   * @param config The config to write
-   * @return Whether saving was successful
-   */
-  virtual bool saveGadgetConfig(GadgetConfig config) = 0;
-
-  /**
- * Loads the event config from the EEPROM
- * @return The loaded Config as shared_ptr, nullptr if config could not be loaded
- */
-  virtual std::shared_ptr<EventConfig> loadEventConfig() = 0;
-
-  /**
-   * Saves a event config to the EEPROM
-   * @param config The config to write
-   * @return Whether saving was successful
-   */
-  virtual bool saveEventConfig(EventConfig config) = 0;
+ //  /**
+ //   * Loads the gadget config from the EEPROM
+ //   * @return The loaded Config as shared_ptr, nullptr if config could not be loaded
+ //   */
+ //  virtual std::shared_ptr<GadgetConfig> loadGadgetConfig() = 0;
+ //
+ //  /**
+ //   * Saves a gadget config to the EEPROM
+ //   * @param config The config to write
+ //   * @return Whether saving was successful
+ //   */
+ //  virtual bool saveGadgetConfig(GadgetConfig config) = 0;
+ //
+ //  /**
+ // * Loads the event config from the EEPROM
+ // * @return The loaded Config as shared_ptr, nullptr if config could not be loaded
+ // */
+ //  virtual std::shared_ptr<EventConfig> loadEventConfig() = 0;
+ //
+ //  /**
+ //   * Saves a event config to the EEPROM
+ //   * @param config The config to write
+ //   * @return Whether saving was successful
+ //   */
+ //  virtual bool saveEventConfig(EventConfig config) = 0;
 
   /**
    * Erases all configs and whatever data was stored from the storage permanently

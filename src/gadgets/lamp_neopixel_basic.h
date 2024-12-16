@@ -8,7 +8,7 @@
 #include <avr/power.h>
 #endif
 
-class Lamp_NeoPixel_RGB_Basic : public Lamp_NeoPixel_RGB {
+class Lamp_NeoPixel_RGB_Basic final : public Lamp_NeoPixel_RGB {
 public:
 
   explicit Lamp_NeoPixel_RGB_Basic(std::string name, uint8_t pin, uint16_t len);

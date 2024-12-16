@@ -6,19 +6,12 @@
 #include "../ip_container.h"
 #include "base_config.h"
 
-class SystemConfig: public BaseConfig {
-private:
+class SystemConfig final : public BaseConfig {
 
 public:
 
   const std::string id;
   const NetworkMode network_mode;
-
-  const uint8_t ir_recv_pin;
-  const uint8_t ir_send_pin;
-
-  const uint8_t radio_recv_pin;
-  const uint8_t radio_send_pin;
 
   const std::shared_ptr <std::string> wifi_ssid;
   const std::shared_ptr <std::string> wifi_pw;
@@ -33,11 +26,6 @@ public:
     * Constructor for the Config
     * @param id The ID of the chip
     * @param network_mode The network mode to boot in
-    * @param gadgets List of gadgets configured on the system
-    * @param ir_recv_pin Pin used by IR receiver
-    * @param ir_send_pin Pin used by IR blaster
-    * @param radio_recv_pin Pin used by Radio receiver
-    * @param radio_send_pin Pin used by Radio sender
     * @param wifi_ssid SSID of the wifi to connect to
     * @param wifi_pw Password of the wifi to connect to
     * @param mqtt_ip IP of the MQTT broker to connect to
@@ -47,10 +35,6 @@ public:
     */
   SystemConfig(std::string id,
                NetworkMode network_mode,
-               uint8_t ir_recv_pin,
-               uint8_t ir_send_pin,
-               uint8_t radio_recv_pin,
-               uint8_t radio_send_pin,
                std::shared_ptr <std::string> wifi_ssid,
                std::shared_ptr <std::string> wifi_pw,
                std::shared_ptr <IPContainer> mqtt_ip,

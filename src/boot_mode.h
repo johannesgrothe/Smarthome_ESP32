@@ -16,7 +16,7 @@ enum class BootMode {
 
 static BootMode getBootMode() {
 #ifdef STATIC_BOOT_MODE
-  return BootMode(STATIC_BOOT_MODE);
+  return static_cast<BootMode>(STATIC_BOOT_MODE);
 #else
   HardwareController::setPinMode(REG0, INPUT);
   HardwareController::setPinMode(REG1, INPUT);

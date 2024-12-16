@@ -4,7 +4,7 @@
 GadgetMeta ApiDecoder::decodeGadget(DynamicJsonDocument gadget_data) {
   std::string name = gadget_data["name"];
   gadget_definitions::GadgetIdentifier gadget_type = gadget_definitions::GadgetIdentifier(gadget_data["type"].as<int>());
-  auto characteristics_array = gadget_data["characteristics"].as<JsonArray>();
+  const auto characteristics_array = gadget_data["characteristics"].as<JsonArray>();
   std::vector<CharacteristicMeta> characteristics;
   for (auto characteristic_data: characteristics_array) {
     characteristics.push_back(decodeCharacteristic(characteristic_data));
@@ -15,7 +15,7 @@ GadgetMeta ApiDecoder::decodeGadget(DynamicJsonDocument gadget_data) {
 GadgetUpdateMeta ApiDecoder::decodeGadgetUpdateInfo(DynamicJsonDocument gadget_data) {
   // TODO: make safe
   std::string id = gadget_data["id"];
-  auto characteristics_array = gadget_data["characteristics"].as<JsonArray>();
+  const auto characteristics_array = gadget_data["characteristics"].as<JsonArray>();
   std::vector<CharacteristicUpdateMeta> characteristics;
   for (auto characteristic_data: characteristics_array) {
     CharacteristicUpdateMeta buf_meta(gadget_definitions::CharacteristicIdentifier(characteristic_data["type"].as<int>()),

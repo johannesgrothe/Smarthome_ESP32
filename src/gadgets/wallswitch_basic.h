@@ -28,7 +28,8 @@ create_SwitchBasic(std::string name, port_set pins, const JsonObject &gadget_dat
     return nullptr;
   }
 
-  if (gadget_data.containsKey("default_state")) {
+  // if (gadget_data.containsKey("default_state")) {
+  if (gadget_data["default_state"].is<bool>()) {
     default_state = gadget_data["default_state"].as<bool>();
   }
 

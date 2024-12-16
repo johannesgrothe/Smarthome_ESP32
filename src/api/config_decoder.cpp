@@ -3,9 +3,9 @@
 #include <sstream>
 
 gadget_tuple ConfigDecoder::decodeGadget(DynamicJsonDocument json_body) {
-  auto type = json_body["type"].as<uint8_t>();
+  const auto type = json_body["type"].as<uint8_t>();
 
-  auto name = json_body["name"].as<std::string>();
+  const auto name = json_body["name"].as<std::string>();
 
   uint8_t port0 = 0;
   uint8_t port1 = 0;
@@ -46,7 +46,7 @@ gadget_tuple ConfigDecoder::decodeGadget(DynamicJsonDocument json_body) {
   bitfield_set remote_bf = {false, false, false, false, false, false, false, false};
 
   if (json_body.containsKey("remotes")) {
-    JsonObject remote_json = json_body["remotes"].as<JsonObject>();
+    const auto remote_json = json_body["remotes"].as<JsonObject>();
     if (remote_json.containsKey("gadget")) {
       remote_bf[0] = remote_json["gadget"].as<bool>();
     }
@@ -138,10 +138,6 @@ std::shared_ptr<SystemConfig> ConfigDecoder::decodeSystemConfig(DynamicJsonDocum
 
   return std::make_shared<SystemConfig>(id,
                                         network_mode,
-                                        ir_recv,
-                                        ir_send,
-                                        radio_recv,
-                                        radio_send,
                                         wifi_ssid,
                                         wifi_pw,
                                         mqtt_ip,

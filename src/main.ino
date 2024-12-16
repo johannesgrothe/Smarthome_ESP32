@@ -39,10 +39,6 @@ TaskHandle_t heartbeat_task;
 std::shared_ptr<SystemConfig> loadBackupSystemConfig() {
   auto cfg = std::make_shared<SystemConfig>("empty_client",
                                             NetworkMode::Serial,
-                                            0,
-                                            0,
-                                            0,
-                                            0,
                                             nullptr,
                                             nullptr,
                                             nullptr,
@@ -170,31 +166,15 @@ void setup() {
   storage = std::make_shared<EepromStorage>();
 
   auto system_config = storage->loadSystemConfig();
-  auto gadget_config = storage->loadGadgetConfig();
-  auto event_config = storage->loadEventConfig();
 
   if (system_config == nullptr) {
     logger_e(TAG, "Could not load system config, falling back to all backup configs");
     system_config = loadBackupSystemConfig();
-    gadget_config = loadBackupGadgetConfig();
-    event_config = loadBackupEventConfig();
-  } else {
-    if (gadget_config == nullptr) {
-      logger_e(TAG, "Could not load gadget config, falling back to backup config");
-      gadget_config = loadBackupGadgetConfig();
-    }
-    if (event_config == nullptr) {
-      logger_e(TAG, "Could not load event mapping config, falling back to backup config");
-      event_config = loadBackupEventConfig();
-    }
   }
 
   auto boot_mode = getBootMode();
 
-  client_main = std::make_shared<ClientMain>(boot_mode,
-                                             *system_config,
-                                             *gadget_config,
-                                             *event_config);
+  client_main = std::make_shared<ClientMain>(boot_mode, *system_config);
   client_main->setStorageManager(storage);
   logger_i(TAG, "Main launched successfully");
   createTasks();

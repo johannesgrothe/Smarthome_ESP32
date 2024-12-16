@@ -20,7 +20,7 @@
 #include "gadget_manager.h"
 #include "event_manager.h"
 
-class ClientMain : public ApiManagerDelegate {
+class ClientMain final : public ApiManagerDelegate {
 private:
 
   // Mode the system is supposed to be running in
@@ -58,9 +58,9 @@ private:
 
   bool handleSystemConfigWrite(SystemConfig cfg) override;
 
-  bool handleGadgetConfigWrite(GadgetConfig cfg) override;
+  // bool handleGadgetConfigWrite(GadgetConfig cfg) override;
 
-  bool handleEventConfigWrite(EventConfig cfg) override;
+  // bool handleEventConfigWrite(EventConfig cfg) override;
 
   ClientMeta getClientData() override;
 
@@ -70,6 +70,7 @@ private:
 
   /**
    * Initializes the network gadget
+   * @param config Config data like network credentials
    * @param mode The mode the chip should start at
    * @return Whether initializing network was successful or not
    */
@@ -79,13 +80,13 @@ private:
    * Initializes all Connectors (IR/Radio)
    * @return Whether initializing connectors was successful or not
    */
-  bool initConnectors(const SystemConfig &config);
+  bool initConnectors();
 
   /**
    * Initialized all of the gadgets stored in the config
    * @return Whether initializing all gadgets was successful or not
    */
-  bool initGadgets(const GadgetConfig &config);
+  bool initGadgets();
 
   /**
    * Initializes the api manager
@@ -101,7 +102,7 @@ private:
   bool initEventMapping(const EventConfig &config);
 
 public:
-  ClientMain(BootMode boot_mode, const SystemConfig& system_config, const GadgetConfig& gadget_config, const EventConfig& event_config);
+  ClientMain(BootMode boot_mode, const SystemConfig& system_config);
 
   void setStorageManager(const std::shared_ptr<SystemStorage>& storage);
 

@@ -2,7 +2,7 @@
 
 #include "eeprom_manager.h"
 
-static const char *TAG = "EepromStorage";
+static auto TAG = "EepromStorage";
 
 EepromStorage::EepromStorage() {
   initialized_ = EepromManager::initEEPROM();
@@ -26,10 +26,10 @@ bool EepromStorage::saveSystemConfig(SystemConfig config) {
   write_successful &= EepromManager::writeNetworkMode(config.network_mode);
 
   // Write Pins
-  write_successful &= EepromManager::writeIRrecvPin(config.ir_recv_pin);
-  write_successful &= EepromManager::writeIrSendPin(config.ir_send_pin);
-  write_successful &= EepromManager::writeRadioRecvPin(config.radio_recv_pin);
-  write_successful &= EepromManager::writeRadioSendPin(config.radio_send_pin);
+  // write_successful &= EepromManager::writeIRrecvPin(config.ir_recv_pin);
+  // write_successful &= EepromManager::writeIrSendPin(config.ir_send_pin);
+  // write_successful &= EepromManager::writeRadioRecvPin(config.radio_recv_pin);
+  // write_successful &= EepromManager::writeRadioSendPin(config.radio_send_pin);
 
   // Write Wifi SSID
   if (config.wifi_ssid != nullptr &&
@@ -105,12 +105,6 @@ std::shared_ptr<SystemConfig> EepromStorage::loadSystemConfig() {
   NetworkMode network_mode = EepromManager::readNetworkMode();
   auto gadgets = EepromManager::readAllGadgets();
 
-  uint8_t ir_recv = EepromManager::readIRrecvPin();
-  uint8_t ir_send = EepromManager::readIrSendPin();
-
-  uint8_t radio_recv = EepromManager::readRadioRecvPin();
-  uint8_t radio_send = EepromManager::readRadioSendPin();
-
   std::shared_ptr<std::string> wifi_ssid = nullptr;
   std::shared_ptr<std::string> wifi_pw = nullptr;
 
@@ -146,10 +140,6 @@ std::shared_ptr<SystemConfig> EepromStorage::loadSystemConfig() {
 
   auto config = std::make_shared<SystemConfig>(id,
                                                network_mode,
-                                               ir_recv,
-                                               ir_send,
-                                               radio_recv,
-                                               radio_send,
                                                wifi_ssid,
                                                wifi_pw,
                                                mqtt_ip,
@@ -167,93 +157,93 @@ std::shared_ptr<SystemConfig> EepromStorage::loadSystemConfig() {
   return config;
 }
 
-std::shared_ptr<GadgetConfig> EepromStorage::loadGadgetConfig() {
-  auto gadget_data = EepromManager::readAllGadgets();
-  auto config = std::make_shared<GadgetConfig>(gadget_data);
+// std::shared_ptr<GadgetConfig> EepromStorage::loadGadgetConfig() {
+//   auto gadget_data = EepromManager::readAllGadgets();
+//   auto config = std::make_shared<GadgetConfig>(gadget_data);
+//
+//   auto stored_crc16 = EepromManager::readUInt16(GADGET_CFG_CRC);
+//
+//   if (config->crc16() != stored_crc16) {
+//     logger_e("EEPROMStorage", "Config checksums do not match (%d / %d)", stored_crc16, config->crc16());
+//     return nullptr;
+//   }
+//
+//   return config;
+// }
 
-  auto stored_crc16 = EepromManager::readUInt16(GADGET_CFG_CRC);
+// // bool EepromStorage::saveGadgetConfig(GadgetConfig config) {
+// //   logger_i(TAG, "Writing gadget config");
+// //   EepromManager::resetGadgets();
+// //
+// //   bool write_successful = true;
+// //
+// //   for (auto gadget_data: config.gadgets) {
+// //     uint8_t type = std::get<0>(gadget_data);
+// //     bitfield_set bitfield = std::get<1>(gadget_data);
+// //     port_set ports = std::get<2>(gadget_data);
+// //     std::string name = std::get<3>(gadget_data);
+// //     std::string gadget_config = std::get<4>(gadget_data);
+// //     std::vector<gadget_event_map> event_map = std::get<5>(gadget_data);
+// //
+// //     auto status = EepromManager::writeGadget(type, bitfield, ports, name, gadget_config, event_map);
+// //     if (status != WriteGadgetStatus::WritingOK) {
+// //       write_successful = false;
+// //     }
+// //   }
+//
+//   if (write_successful) {
+//     write_successful &= EepromManager::writeUInt16(GADGET_CFG_CRC, config.crc16());
+//   }
+//
+//   auto loaded_config = loadGadgetConfig();
+//   if (loaded_config == nullptr) {
+//     return false;
+//   }
+//   if (config != *loaded_config) {
+//     return false;
+//   }
+//
+//   return write_successful;
+// }
 
-  if (config->crc16() != stored_crc16) {
-    logger_e("EEPROMStorage", "Config checksums do not match (%d / %d)", stored_crc16, config->crc16());
-    return nullptr;
-  }
+// std::shared_ptr<EventConfig> EepromStorage::loadEventConfig() {
+//   auto event_data = EepromManager::readEventMapping();
+//   auto config = std::make_shared<EventConfig>(event_data);
+//
+//   auto stored_crc16 = EepromManager::readUInt16(EVENT_MAP_CRC);
+//
+//   if (config->crc16() != stored_crc16) {
+//     logger_e("EEPROMStorage", "Config checksums do not match (%d / %d)", stored_crc16, config->crc16());
+//     return nullptr;
+//   }
+//
+//   return config;
+// }
 
-  return config;
-}
-
-bool EepromStorage::saveGadgetConfig(GadgetConfig config) {
-  logger_i(TAG, "Writing gadget config");
-  EepromManager::resetGadgets();
-
-  bool write_successful = true;
-
-  for (auto gadget_data: config.gadgets) {
-    uint8_t type = std::get<0>(gadget_data);
-    bitfield_set bitfield = std::get<1>(gadget_data);
-    port_set ports = std::get<2>(gadget_data);
-    std::string name = std::get<3>(gadget_data);
-    std::string gadget_config = std::get<4>(gadget_data);
-    std::vector<gadget_event_map> event_map = std::get<5>(gadget_data);
-
-    auto status = EepromManager::writeGadget(type, bitfield, ports, name, gadget_config, event_map);
-    if (status != WriteGadgetStatus::WritingOK) {
-      write_successful = false;
-    }
-  }
-
-  if (write_successful) {
-    write_successful &= EepromManager::writeUInt16(GADGET_CFG_CRC, config.crc16());
-  }
-
-  auto loaded_config = loadGadgetConfig();
-  if (loaded_config == nullptr) {
-    return false;
-  }
-  if (config != *loaded_config) {
-    return false;
-  }
-
-  return write_successful;
-}
-
-std::shared_ptr<EventConfig> EepromStorage::loadEventConfig() {
-  auto event_data = EepromManager::readEventMapping();
-  auto config = std::make_shared<EventConfig>(event_data);
-
-  auto stored_crc16 = EepromManager::readUInt16(EVENT_MAP_CRC);
-
-  if (config->crc16() != stored_crc16) {
-    logger_e("EEPROMStorage", "Config checksums do not match (%d / %d)", stored_crc16, config->crc16());
-    return nullptr;
-  }
-
-  return config;
-}
-
-bool EepromStorage::saveEventConfig(EventConfig config) {
-  logger_i(TAG, "Writing event config");
-  auto status = EepromManager::writeEventMapping(config.event_mapping);
-
-  if (!status) {
-    logger_e(TAG, "Writing event config failed");
-    return false;
-  }
-
-  EepromManager::writeUInt16(EVENT_MAP_CRC, config.crc16());
-
-  auto test_cfg = loadEventConfig();
-  if (test_cfg == nullptr) {
-    logger_e(TAG, "Written config could not be loaded for verification");
-    return false;
-  }
-
-  if (config != *test_cfg) {
-    logger_e(TAG, "Config loaded for verification does not match the written one");
-    return false;
-  }
-  logger_i(TAG, "Writing was successful");
-  return true;
-}
+// bool EepromStorage::saveEventConfig(EventConfig config) {
+//   logger_i(TAG, "Writing event config");
+//   auto status = EepromManager::writeEventMapping(config.event_mapping);
+//
+//   if (!status) {
+//     logger_e(TAG, "Writing event config failed");
+//     return false;
+//   }
+//
+//   EepromManager::writeUInt16(EVENT_MAP_CRC, config.crc16());
+//
+//   const auto test_cfg = loadEventConfig();
+//   if (test_cfg == nullptr) {
+//     logger_e(TAG, "Written config could not be loaded for verification");
+//     return false;
+//   }
+//
+//   if (config != *test_cfg) {
+//     logger_e(TAG, "Config loaded for verification does not match the written one");
+//     return false;
+//   }
+//   logger_i(TAG, "Writing was successful");
+//   return true;
+// }
 
 
 uint16_t EepromStorage::getEEPROMUsage() {

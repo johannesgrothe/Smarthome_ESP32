@@ -22,7 +22,7 @@ void Lamp_NeoPixel_RGB_Basic::refresh() {
     buf_clr.setHSL(hue,
                    saturation,
                    lightness);
-    auto rgb_color = buf_clr.getRGB();
+    const auto rgb_color = buf_clr.getRGB();
     uint8_t r = rgb_color->getRed();
     uint8_t g = rgb_color->getGreen();
     uint8_t b = rgb_color->getBlue();

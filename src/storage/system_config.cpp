@@ -6,10 +6,6 @@
 
 SystemConfig::SystemConfig(std::string id,
                            NetworkMode network_mode,
-                           uint8_t ir_recv_pin,
-                           uint8_t ir_send_pin,
-                           uint8_t radio_recv_pin,
-                           uint8_t radio_send_pin,
                            std::shared_ptr<std::string> wifi_ssid,
                            std::shared_ptr<std::string> wifi_pw,
                            std::shared_ptr<IPContainer> mqtt_ip,
@@ -18,10 +14,6 @@ SystemConfig::SystemConfig(std::string id,
                            std::shared_ptr<std::string> mqtt_password) :
     id(std::move(id)),
     network_mode(network_mode),
-    ir_recv_pin(ir_recv_pin),
-    ir_send_pin(ir_send_pin),
-    radio_recv_pin(radio_recv_pin),
-    radio_send_pin(radio_send_pin),
     wifi_ssid(std::move(wifi_ssid)),
     wifi_pw(std::move(wifi_pw)),
     mqtt_ip(std::move(mqtt_ip)),
@@ -33,18 +25,18 @@ unsigned short SystemConfig::crc16() const {
   CRC16Calculator crc;
 
   // Add ID
-  for (char c: id) {
-    crc.add((uint8_t) c);
+  for (const char c: id) {
+    crc.add(static_cast<uint8_t>(c));
   }
 
   // Add network mode
-  crc.add(uint8_t(network_mode));
+  crc.add(static_cast<uint8_t>(network_mode));
 
   // Add IR/Radio pins
-  crc.add(ir_recv_pin);
-  crc.add(ir_send_pin);
-  crc.add(radio_recv_pin);
-  crc.add(radio_recv_pin);
+  // crc.add(ir_recv_pin);
+  // crc.add(ir_send_pin);
+  // crc.add(radio_recv_pin);
+  // crc.add(radio_recv_pin);
 
   // Add Wifi SSID
   if (wifi_ssid) {

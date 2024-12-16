@@ -1,10 +1,10 @@
 #pragma once
 
 #ifdef UNIT_TEST
-#include "configs/config_unit_test.h"
+#include "configs/port_configs/config_unit_test.h"
 #else
-//#include "configs/config_test1.h"
-#include "configs/config_test2.h"
+//#include "configs/port_configs/config_test1.h"
+#include "configs/port_configs/config_test2.h"
 #endif
 
 // The maximum port index allowed

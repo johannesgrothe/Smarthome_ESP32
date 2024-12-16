@@ -103,6 +103,7 @@ protected:
   virtual void executeCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier characteristic, uint16_t step_value) = 0;
 
 public:
+  virtual ~Gadget() = default;
 
   /**
    * Constructor for the base gadget

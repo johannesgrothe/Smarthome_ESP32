@@ -51,18 +51,18 @@ bool StaticStorage::eraseAllConfigs() {
   return false;
 }
 
-std::shared_ptr<GadgetConfig> StaticStorage::loadGadgetConfig() {
-  return nullptr;
-}
+// std::shared_ptr<GadgetConfig> StaticStorage::loadGadgetConfig() {
+//   return nullptr;
+// }
 
-bool StaticStorage::saveGadgetConfig(GadgetConfig config) {
-  return false;
-}
+// bool StaticStorage::saveGadgetConfig(GadgetConfig config) {
+//   return false;
+// }
 
-std::shared_ptr<EventConfig> StaticStorage::loadEventConfig() {
-  return nullptr;
-}
+// std::shared_ptr<EventConfig> StaticStorage::loadEventConfig() {
+//   return nullptr;
+// }
 
-bool StaticStorage::saveEventConfig(EventConfig config) {
-  return false;
-}
+// bool StaticStorage::saveEventConfig(EventConfig config) {
+//   return false;
+// }

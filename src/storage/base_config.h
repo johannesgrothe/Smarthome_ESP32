@@ -2,6 +2,8 @@
 
 class BaseConfig {
 public:
+  virtual ~BaseConfig() = default;
+
   virtual unsigned short crc16() const = 0;
 
   bool operator==(const BaseConfig &rhs) const;
