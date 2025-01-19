@@ -2,6 +2,7 @@
 .vscode
 .idea
 .pio
+.venv
 
 CMakeListsPrivate.txt
 /CMakeLists.txt

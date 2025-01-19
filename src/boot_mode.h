@@ -5,7 +5,7 @@
 
 #ifndef UNIT_TEST
 #include <Arduino.h>
-#define STATIC_BOOT_MODE 2
+#define STATIC_BOOT_MODE 0
 #endif
 
 enum class BootMode {
