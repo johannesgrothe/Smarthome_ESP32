@@ -1,27 +1,23 @@
 #include "fan_westinghouse_ir.h"
 
-Fan_Westinghouse_IR::Fan_Westinghouse_IR(const std::string &name) :
-    Fan(name, 3),
-    SimpleHardwareGadget(true) {};
+#include <console_logger.h>
+
+Fan_Westinghouse_IR::Fan_Westinghouse_IR(const std::string &name, const IR_Gadget &ir) : Fan(name, 3),
+    ir_(ir) {
+};
 
 void Fan_Westinghouse_IR::refresh() {
-  if (executeHWChange()) {
-    auto level = getCharacteristicValue(gadget_definitions::CharacteristicIdentifier::fan_speed);
-
-    logger_i(getName(), "Has changed: %d", level);
-    if (level == 0) {
-      sendRawIR(level_0, 95);
-    } else if (level == 1) {
-      sendRawIR(level_1, 119);
-    } else if (level == 2) {
-      // TODO: level_2 code needed
-      // sendRawIR(level_0, 95);
-    } else if (level == 3) {
-      sendRawIR(level_3, 95);
+    if (wasChanged()) {
+        logger_i(getName(), "Has changed: %d", level);
+        if (getLevel() == 0) {
+            ir_.sendRawIR(level_0, 95);
+        } else if (getLevel() == 1) {
+            ir_.sendRawIR(level_1, 119);
+        } else if (getLevel() == 2) {
+            // TODO: level_2 code needed
+            // sendRawIR(level_0, 95);
+        } else if (getLevel() == 3) {
+            ir_.sendRawIR(level_3, 95);
+        }
     }
-  }
-}
-
-void Fan_Westinghouse_IR::executeCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier characteristic, uint16_t step_value) {
-  setHWChangeStatus(true);
 }

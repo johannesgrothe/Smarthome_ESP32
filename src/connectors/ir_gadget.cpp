@@ -1,8 +1,8 @@
 #include "ir_gadget.h"
 
-static const char *TAG = "IR_Gadget";
+static auto TAG = "IR_Gadget";
 
-IR_Gadget::IR_Gadget(int ir_recv_pin, int ir_send_pin) :
+IR_Gadget::IR_Gadget(const int ir_recv_pin, const int ir_send_pin) :
     Code_Gadget() {
   bool everything_ok = true;
   if (ir_recv_pin != 0) {
@@ -91,7 +91,7 @@ void IR_Gadget::refresh() {
   }
 }
 
-bool IR_Gadget::sendRawIR(const uint16_t raw_data[], const uint8_t content_length) {
+bool IR_Gadget::sendRawIR(const uint16_t raw_data[], const uint8_t content_length) const {
   if (!code_gadget_is_ready_) {
     return false;
   }
@@ -101,7 +101,7 @@ bool IR_Gadget::sendRawIR(const uint16_t raw_data[], const uint8_t content_lengt
   return true;
 }
 
-bool IR_Gadget::sendIR(unsigned long command, const uint8_t com_type) {
+bool IR_Gadget::sendIR(unsigned long command, const uint8_t com_type) const {
   if (!code_gadget_is_ready_) {
     return false;
   }

@@ -2,26 +2,22 @@
 
 #include <utility>
 
-bool Lamp_NeoPixel_RGB::setLEDColor(uint8_t r, uint8_t g, uint8_t b) {
-  logger_i(getName(), "Setting Color: (%d, %d, %d)", int(r), int(g), int(b));
-  for (uint16_t k = 0; k < len_; k++) {
-    led_stripe_.setPixelColor(k, Adafruit_NeoPixel::Color(r, g, b));
+bool Lamp_NeoPixel_RGB::setLedColor(const uint8_t r, const uint8_t g, const uint8_t b) {
+    logger_i(getName(), "Setting Color: (%d, %d, %d)", int(r), int(g), int(b));
+    const auto color = Adafruit_NeoPixel::Color(r, g, b);
+    for (uint16_t k = 0; k < len_; k++) {
+        led_stripe_.setPixelColor(k, color);
+        // led_stripe_.show();
+    }
     led_stripe_.show();
-  }
-  led_stripe_.show();
-  return true;
+    return true;
 }
 
-Lamp_NeoPixel_RGB::Lamp_NeoPixel_RGB(std::string name, uint8_t pin, uint16_t len) :
-    Lamp_RGB(std::move(name)),
-    SimpleHardwareGadget(true),
-    pin_(pin),
-    len_(len) {
-  led_stripe_ = Adafruit_NeoPixel(len_, pin_, NEO_GRB + NEO_KHZ800);
-  led_stripe_.begin();
-  led_stripe_.clear();
-}
-
-void Lamp_NeoPixel_RGB::executeCharacteristicUpdate(gadget_definitions::CharacteristicIdentifier characteristic, uint16_t step_value) {
-  setHWChangeStatus(true);
+Lamp_NeoPixel_RGB::Lamp_NeoPixel_RGB(std::string name, const uint8_t pin,
+                                     const uint16_t len) : Lamp_RGB(std::move(name)),
+                                                           pin_(pin),
+                                                           len_(len) {
+    led_stripe_ = Adafruit_NeoPixel(len_, pin_, NEO_GRB + NEO_KHZ800);
+    led_stripe_.begin();
+    led_stripe_.clear();
 }

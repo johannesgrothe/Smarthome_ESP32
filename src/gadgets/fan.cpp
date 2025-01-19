@@ -1,16 +1,18 @@
 #include "fan.h"
 
-#include <utility>
 
-Fan::Fan(const std::string &name, uint16_t levels_count) :
-    Gadget(name,
-           GadgetType::Fan,
-           {
-               Characteristic(gadget_definitions::CharacteristicIdentifier::status,
-                              0,
-                              1,
-                              1),
-               Characteristic(gadget_definitions::CharacteristicIdentifier::fan_speed,
-                              0,
-                              100,
-                              levels_count)}) {}
+Fan::Fan(const std::string &name, const uint16_t max_level) : Gadget(name,
+                                                               GadgetType::Fan),
+                                                        max_level_(max_level),
+                                                        level_(0) {
+}
+
+void Fan::setLevel(const uint16_t level) {
+    registerExternalChange();
+    level_ = level;
+}
+
+
+uint16_t Fan::getLevel() const {
+    return level_;
+}

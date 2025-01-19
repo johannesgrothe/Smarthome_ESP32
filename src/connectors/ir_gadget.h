@@ -10,7 +10,7 @@
 #include "code_gadget.h"
 
 // Gadget to send and receive IR-Commands
-class IR_Gadget : public Code_Gadget {
+class IR_Gadget final : public Code_Gadget {
 protected:
 
   IRrecv *receiver_;
@@ -22,7 +22,7 @@ public:
 
   void refresh() override;
 
-  bool sendRawIR(const uint16_t raw_data[], uint8_t content_length);
+  bool sendRawIR(const uint16_t raw_data[], uint8_t content_length) const;
 
-  bool sendIR(unsigned long command, uint8_t com_type);
+  bool sendIR(unsigned long command, uint8_t com_type) const;
 };

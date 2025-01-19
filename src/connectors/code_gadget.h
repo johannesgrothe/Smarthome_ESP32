@@ -16,6 +16,8 @@ protected:
   void setCommand(CodeType, unsigned long);
 
 public:
+  virtual ~Code_Gadget() = default;
+
   Code_Gadget();
 
   virtual void refresh() = 0;

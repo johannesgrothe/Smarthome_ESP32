@@ -2,20 +2,16 @@
 
 #include <utility>
 
-Lamp_OnOff::Lamp_OnOff(std::string name) :
-    Gadget(std::move(name),
-           GadgetType::Lightbulb,
-           {
-               Characteristic(gadget_definitions::CharacteristicIdentifier::status,
-                              0,
-                              1,
-                              1,
-                              0)}) {}
-
-bool Lamp_OnOff::getStatus() {
-  return getCharacteristicValue(gadget_definitions::CharacteristicIdentifier::status) != 0;
+Lamp_OnOff::Lamp_OnOff(std::string name) : Gadget(std::move(name),
+                                                  GadgetType::Lightbulb),
+                                           status_(false) {
 }
 
-void Lamp_OnOff::setStatus(bool status) {
-  setCharacteristicValue(gadget_definitions::CharacteristicIdentifier::status, status);
+bool Lamp_OnOff::getStatus() const {
+    return status_;
+}
+
+void Lamp_OnOff::setStatus(const bool status) {
+    registerExternalChange();
+    status_ = status;
 }

@@ -4,11 +4,21 @@
 #include "../color.h"
 
 class Lamp_RGB : public Gadget {
-public:
+protected:
+    uint8_t red_, green_, blue_;
 
-  /**
-   * Constructor for the Lamp_RGB
-   * @param name Name of the gadget
-   */
-  explicit Lamp_RGB(std::string name);
+public:
+    /**
+     * Constructor for the Lamp_RGB
+     * @param name Name of the gadget
+     */
+    explicit Lamp_RGB(std::string name);
+
+    /**
+     * Sets the color of the RGB Lamp
+     * @param red Red-Value
+     * @param green Green-Value
+     * @param blue Blue-Value
+     */
+    void setColor(uint8_t red, uint8_t green, uint8_t blue);
 };
