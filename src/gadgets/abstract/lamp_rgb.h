@@ -21,4 +21,22 @@ public:
      * @param blue Blue-Value
      */
     void setColor(uint8_t red, uint8_t green, uint8_t blue);
+
+    /**
+     * Returns the red part of the current color of the RGB Lamp
+     * @return red color part
+     */
+    uint8_t getRed() const;
+
+    /**
+     * Returns the green part of the current color of the RGB Lamp
+     * @return green color part
+     */
+    uint8_t getGreen() const;
+
+    /**
+     * Returns the blue part of the current color of the RGB Lamp
+     * @return blue color part
+     */
+    uint8_t getBlue() const;
 };

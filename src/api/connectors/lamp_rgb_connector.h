@@ -4,10 +4,8 @@
 #include "gadgets/abstract/lamp_rgb.h"
 
 
-class LampRGBConnector : public GadgetAPIConector {
-    explicit LampRGBConnector(Lamp_RGB& subject);
+class LampRGBConnector : public GadgetAPIConnector {
+    Lamp_RGB &subject_;
+
+    explicit LampRGBConnector(Lamp_RGB &subject);
 };
-
-
-
-

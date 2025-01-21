@@ -15,3 +15,17 @@ void Lamp_RGB::setColor(const uint8_t red, const uint8_t green, const uint8_t bl
     green_ = green;
     blue_ = blue;
 }
+
+uint8_t Lamp_RGB::getRed() const {
+    return red_;
+}
+
+
+uint8_t Lamp_RGB::getGreen() const {
+    return green_;
+}
+
+
+uint8_t Lamp_RGB::getBlue() const {
+    return blue_;
+}

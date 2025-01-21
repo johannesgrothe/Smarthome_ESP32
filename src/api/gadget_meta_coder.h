@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "gadget_meta.h"
-#include "../gadgets/gadget.h"
+#include "../gadgets/abstract/gadget.h"
 #include "gadget_update_meta.h"
 
 class GadgetMetaEncoder {

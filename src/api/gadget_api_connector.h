@@ -1,13 +1,11 @@
+#pragma once
 #include <ArduinoJson.h>
-#include "gadgets/abstract/gadget.h"
 
-class GadgetAPIConector {
-    const Gadget& subject_;
-
+class GadgetAPIConnector {
 public:
-    explicit GadgetAPIConector(const Gadget& subject);
+    virtual ~GadgetAPIConnector() = default;
 
-    void applyChanges(DynamicJsonDocument data) const;
+    virtual void applyChanges(DynamicJsonDocument data) = 0;
 
-    DynamicJsonDocument encode() const;
+    virtual DynamicJsonDocument encode() = 0;
 };

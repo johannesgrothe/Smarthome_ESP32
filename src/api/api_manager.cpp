@@ -2,6 +2,7 @@
 
 #include <utility>
 #include <memory>
+#include <random.h>
 
 #include "protocol_paths.h"
 #include "api_encoder.h"
