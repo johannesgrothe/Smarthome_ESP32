@@ -2,7 +2,6 @@
 
 #include <utility>
 
-GadgetMeta::GadgetMeta(gadget_definitions::GadgetIdentifier type, std::string name, std::vector<CharacteristicMeta> characteristics) :
-    type(type),
-    name(std::move(name)),
-    characteristics(std::move(characteristics)) {}
+GadgetMeta::GadgetMeta(const gadget_definitions::GadgetIdentifier type, std::string name) : type(type),
+    name(std::move(name)) {
+}

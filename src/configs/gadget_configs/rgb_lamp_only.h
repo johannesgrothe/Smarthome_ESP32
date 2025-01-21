@@ -1,5 +1,5 @@
 #pragma once
-#include "gadget_manager.h"
+#include <gadgets/impl/lamp_neopixel_basic.h>
 
 inline std::shared_ptr<Radio_Gadget> loadRadioGadget() {
     return nullptr;

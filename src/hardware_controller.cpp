@@ -1,6 +1,6 @@
 #include "hardware_controller.h"
 
-void HardwareController::rebootChip(const std::string &reason, uint8_t delay) {
+void HardwareController::rebootChip(const std::string &reason, const uint8_t delay) {
   #ifndef UNIT_TEST
   if (!reason.empty()) {
     logger_i("System", "Rebooting Chip because of '%s' in:", reason.c_str());
@@ -9,7 +9,7 @@ void HardwareController::rebootChip(const std::string &reason, uint8_t delay) {
   }
   for (byte k = delay; k > 0; k--) {
     logger_i("System", "%d", k);
-    unsigned long end_timestamp = millis() + delay;
+    const unsigned long end_timestamp = millis() + delay;
     while (millis() < end_timestamp) {} // TODO: update
   }
   ESP.restart();
@@ -31,7 +31,7 @@ unsigned long HardwareController::getMillis() {
   #endif
 }
 
-void HardwareController::setPinMode(uint8_t pin, uint8_t mode) {
+void HardwareController::setPinMode(uint8_t pin, const uint8_t mode) {
   std::string mode_str = "OUTPUT";
   if (mode == INPUT) {
     mode_str = "INPUT";
@@ -46,7 +46,7 @@ void HardwareController::setPinMode(uint8_t pin, uint8_t mode) {
 
 bool HardwareController::digitalReadPin(uint8_t pin) {
   #ifndef UNIT_TEST
-  bool val = digitalRead(pin);
+  const bool val = digitalRead(pin);
   logger_d("HardwareController", "Reading from pin %d: %d", pin, val);
   return val;
   #else
@@ -66,7 +66,7 @@ void HardwareController::digitalWritePin(uint8_t pin, bool value) {
 void HardwareController::sleepMilliseconds(uint16_t milliseconds) {
   logger_d("HardwareController", "Sleeping for %dms", milliseconds);
   #ifndef UNIT_TEST
-  unsigned int ms = milliseconds / 1000;
+  const unsigned int ms = milliseconds / 1000;
   sleep(ms);
   #else
   std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));

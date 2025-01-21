@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "gadget_meta.h"
 #include "../gadgets/gadget.h"
 #include "gadget_update_meta.h"

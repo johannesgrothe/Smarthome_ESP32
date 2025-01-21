@@ -1,15 +1,11 @@
 #pragma once
 
-#include <memory>
 #include <vector>
 
 #include "gadget_meta.h"
 #include "client_meta.h"
-#include "../connectors/code_command.h"
 #include "../connectors/event.h"
 #include "../storage/system_config.h"
-#include "../storage/gadget_config.h"
-#include "../storage/event_config.h"
 #include "gadget_update_meta.h"
 
 class ApiManagerDelegate {
@@ -25,8 +21,4 @@ public:
   virtual std::vector<GadgetMeta> getGadgetData() = 0;
 
   virtual bool handleSystemConfigWrite(SystemConfig cfg) = 0;
-
-  // virtual bool handleGadgetConfigWrite(GadgetConfig cfg) = 0;
-  //
-  // virtual bool handleEventConfigWrite(EventConfig cfg) = 0;
 };

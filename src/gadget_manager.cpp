@@ -1,7 +1,9 @@
 #include "api/gadget_update_meta.h"
 #include "gadget_manager.h"
 
-static const char *TAG = "GadgetManager";
+#include <console_logger.h>
+
+static auto TAG = "GadgetManager";
 
 GadgetManager::GadgetManager() = default;
 

@@ -4,7 +4,6 @@
 #include "../storage/system_config.h"
 #include "../storage/event_config.h"
 #include "../storage/gadget_config.h"
-#include "../ip_container.h"
 #include "../json_validator.h"
 
 class ConfigDecoder {

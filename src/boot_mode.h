@@ -1,6 +1,5 @@
 #pragma once
 
-#include "pin_profile.h"
 #include "hardware_controller.h"
 
 #ifndef UNIT_TEST

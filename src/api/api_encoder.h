@@ -26,16 +26,10 @@ public:
   static DynamicJsonDocument encodeGadget(const GadgetMeta &gadget_data);
 
   /**
-   *
-   * @param gadget_data
-   * @return
-   */
-  static DynamicJsonDocument encodeCharacteristic(CharacteristicMeta characteristic_data);
-
-  /**
    * Encodes the data needed to perform a sync to api specification
    *
    * @param client_data Data of the client
+   * @param runtime_id
    * @param gadget_data Datasets of all the gadgets
    * @return A json document containing all the information
    */

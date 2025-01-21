@@ -27,7 +27,7 @@ FetchContent_MakeAvailable(ArduinoJson nlohmann json_validator)
 
 set(ADDITIONAL_SOURCES
         ../src/connectors/request.cpp
-        ../src/gadgets/gadget.cpp
+        ../src/gadgets/abstract/gadget.cpp
         ../src/connectors/ir_gadget.cpp
         ../src/connectors/code_gadget.cpp
         ../src/connectors/code_command.cpp
@@ -35,12 +35,12 @@ set(ADDITIONAL_SOURCES
         ../src/connectors/event.cpp
         ../src/color.cpp
         ../src/mapping_reference.cpp
-        ../src/gadgets/lamp_rgb.cpp
-        ../src/gadgets/fan.cpp
-        ../src/gadgets/doorbell.cpp
-        ../src/gadgets/sensor_motion.cpp
-        ../src/gadgets/sensor_temperature.cpp
-        ../src/gadgets/wallswitch.cpp
+        ../src/gadgets/abstract/lamp_rgb.cpp
+        ../src/gadgets/abstract/fan.cpp
+        ../src/gadgets/abstract/doorbell.cpp
+        ../src/gadgets/abstract/sensor_motion.cpp
+        ../src/gadgets/abstract/sensor_temperature.cpp
+        ../src/gadgets/abstract/wallswitch.cpp
         ../src/api/api_manager.cpp
         ../src/api/api_manager_delegate.cpp
         ../src/api/gadget_meta.cpp
@@ -69,14 +69,14 @@ set(ADDITIONAL_SOURCES
         ../src/gadget_manager.cpp
         ../src/event_manager.cpp
         ../src/gadget_factory.cpp
-        ../src/gadgets/lamp_basic.cpp
-        ../src/gadgets/doorbell_basic.cpp
-        ../src/gadgets/wallswitch_basic.cpp
-        ../src/gadgets/fan_westinghouse_ir.cpp
-        ../src/gadgets/lamp_westinghouse_ir.cpp
+        ../src/gadgets/impl/lamp_basic.cpp
+        ../src/gadgets/impl/doorbell_basic.cpp
+        ../src/gadgets/impl/wallswitch_basic.cpp
+        ../src/gadgets/impl/fan_westinghouse_ir.cpp
+        ../src/gadgets/impl/lamp_westinghouse_ir.cpp
         ../src/gadgets/characteristic.cpp
         ../src/gadgets/simple_hardware_gadget.cpp
-        ../src/gadgets/lamp_onoff.cpp
+        ../src/gadgets/abstract/lamp_onoff.cpp
         ../src/connectors/radio_gadget.cpp
         ../src/storage/eeprom_gadget_mapping_coder.cpp
         ../src/scheduled_messages_manager.cpp

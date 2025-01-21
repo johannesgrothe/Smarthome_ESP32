@@ -3,16 +3,11 @@
 #include <memory>
 #include "api_manager_delegate.h"
 #include "gadget_meta.h"
-#include "client_meta.h"
 #include "../connectors/request_gadget.h"
 #include "../connectors/request.h"
-#include "../connectors/code_command.h"
 #include "../connectors/event.h"
-#include "../random.h"
 
 class ApiManager {
-private:
-
   // Name of the client to be identified in the network
   const std::string client_id_;
 
@@ -31,13 +26,13 @@ private:
 
   static void handleEcho(const std::shared_ptr<Request> &req);
 
-  void handleGadgetUpdate(const std::shared_ptr<Request> &req);
+  void handleGadgetUpdate(const std::shared_ptr<Request> &req) const;
 
   void handleEventUpdate(const std::shared_ptr<Request> &req);
 
   void handleConfigReset(const std::shared_ptr<Request> &req);
 
-  void handleSystemConfigWrite(const std::shared_ptr<Request> &req);
+  void handleSystemConfigWrite(const std::shared_ptr<Request> &req) const;
 
   void handleEventConfigWrite(const std::shared_ptr<Request> &req);
 
@@ -52,11 +47,11 @@ public:
 
   void handleRequest(const std::shared_ptr<Request> &req);
 
-  void publishSync(std::string *receiver);
+  void publishSync(std::string *receiver) const;
 
-  void publishGadgetUpdate(const GadgetUpdateMeta &gadget_data);
+  void publishGadgetUpdate(const GadgetUpdateMeta &gadget_data) const;
 
-  void publishEvent(const std::shared_ptr<Event> &event);
+  void publishEvent(const std::shared_ptr<Event> &event) const;
 
-  void publishHeartbeat();
+  void publishHeartbeat() const;
 };
