@@ -15,23 +15,23 @@
 static auto TAG = "Initialization";
 
 ClientMain::ClientMain(const BootMode boot_mode, const SystemConfig &system_config) : ApiManagerDelegate(),
-                                                          system_mode_(boot_mode),
-                                                          system_storage_(nullptr),
-                                                          api_manager_(nullptr),
-                                                          gadget_manager_(nullptr),
-                                                          event_manager_(nullptr),
-                                                          network_(nullptr),
-                                                          ir_gadget_(nullptr),
-                                                          radio_gadget_(nullptr) {
+    system_mode_(boot_mode),
+    system_storage_(nullptr),
+    api_manager_(nullptr),
+    gadget_manager_(nullptr),
+    event_manager_(nullptr),
+    network_(nullptr),
+    ir_gadget_(nullptr),
+    radio_gadget_(nullptr) {
     logger_i("System", "Launching...");
     logger_i("System", "Software Info:");
     logger_i("System", "Flash Date: %s", getSoftwareFlashDate().c_str());
     logger_i("System", "Git Branch: %s", getSoftwareGitBranch().c_str());
     logger_i("System", "Git Commit: %s", getSoftwareGitCommit().c_str());
-  logger_i("System", "API Version: %d.%d.%d",
-           api_definitions::version::major,
-           api_definitions::version::minor,
-           api_definitions::version::bugfix);
+    logger_i("System", "API Version: %d.%d.%d",
+             api_definitions::version::major,
+             api_definitions::version::minor,
+             api_definitions::version::bugfix);
 
     bool status;
 
@@ -176,31 +176,21 @@ ClientMeta ClientMain::getClientData() {
         system_mode_,
         getSoftwareFlashDate(),
         getSoftwareGitCommit(),
-        getSoftwareGitBranch()
-    ,
-          api_definitions::version::major,
-          api_definitions::version::minor,
-          api_definitions::version::bugfix};
+        getSoftwareGitBranch(),
+        api_definitions::version::major,
+        api_definitions::version::minor,
+        api_definitions::version::bugfix
+    };
 }
 
 std::vector<GadgetMeta> ClientMain::getGadgetData() {
     std::vector<GadgetMeta> gadget_data;
     if (gadget_manager_ == nullptr) {
-    return gadget_data;
-  }for (uint8_t i = 0; i < gadget_manager_->getGadgetCount(); i++) {
+        return gadget_data;
+    }
+    for (uint8_t i = 0; i < gadget_manager_->getGadgetCount(); i++) {
         const auto buf_gadget = gadget_manager_->getGadget(i);
-        std::vector<CharacteristicMeta> characteristics;
-        for (auto c: buf_gadget->getCharacteristics()) {
-            auto buf_c = CharacteristicMeta(c.type,
-                                            c.min,
-                                            c.max,
-                                            c.getStepValue(),
-                                            c.steps);
-            characteristics.push_back(buf_c);
-        }
-        auto buf_g = GadgetMeta(gadget_definitions::GadgetIdentifier::lamp_neopixel_rgb_basic,  // TODO: Get actual gadget type from somewhere
-                                buf_gadget->getName(),
-                                characteristics);
+        auto buf_g = buf_gadget->encode();
         gadget_data.push_back(buf_g);
     }
     return gadget_data;
@@ -212,7 +202,7 @@ void ClientMain::setStorageManager(const std::shared_ptr<SystemStorage> &storage
 
 void ClientMain::loopSystem() {
     if (network_->hasRequest()) {
-        auto req = network_->getRequest();
+        const auto req = network_->getRequest();
         api_manager_->handleRequest(req);
     }
 
@@ -221,7 +211,7 @@ void ClientMain::loopSystem() {
     if (ir_gadget_ != nullptr) {
         ir_gadget_->refresh();
         if (ir_gadget_->hasNewCommand()) {
-            auto command = ir_gadget_->getCommand();
+            const auto command = ir_gadget_->getCommand();
             event_manager_->handleCode(command->getCode());
         }
     }
@@ -229,7 +219,7 @@ void ClientMain::loopSystem() {
     if (radio_gadget_ != nullptr) {
         radio_gadget_->refresh();
         if (radio_gadget_->hasNewCommand()) {
-            auto command = radio_gadget_->getCommand();
+            const auto command = radio_gadget_->getCommand();
             event_manager_->handleCode(command->getCode());
         }
     }

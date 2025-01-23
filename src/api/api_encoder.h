@@ -30,7 +30,7 @@ public:
    *
    * @param client_data Data of the client
    * @param runtime_id
-   * @param gadget_data Datasets of all the gadgets
+   * @param gadgets Datasets of all the gadgets
    * @return A json document containing all the information
    */
   static DynamicJsonDocument encodeSync(const ClientMeta &client_data,
@@ -40,7 +40,7 @@ public:
   /**
    * Encodes the data needed to update information for a specific gadget on the bridge
    *
-   * @param gadget_data Data of the gadget
+   * @param data Data of the gadget
    * @return A json document containing all the information
    */
   static DynamicJsonDocument encodeGadgetUpdate(const GadgetUpdateMeta &data);

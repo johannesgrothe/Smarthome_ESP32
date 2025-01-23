@@ -14,6 +14,10 @@ public:
      */
     explicit Lamp_RGB(std::string name);
 
+    void applyChanges(const DynamicJsonDocument &data) override;
+
+    DynamicJsonDocument encodeProperties() override;
+
     /**
      * Sets the color of the RGB Lamp
      * @param red Red-Value

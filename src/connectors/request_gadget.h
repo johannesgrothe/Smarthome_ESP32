@@ -1,15 +1,10 @@
 #pragma once
 
-
 // External Imports
-#include <ArduinoJson.h>
 #include <cstring>
-#include <utility>
 
 // Other Imports
-#include "../system_settings.h"
 #include "../console_logger.h"
-#include "../hardware_controller.h"
 #include "request.h"
 #include "split_request_buffer.h"
 #include "request_queue.h"
@@ -64,6 +59,8 @@ protected:
   virtual void refresh_network() = 0;
 
 public:
+  virtual ~RequestGadget() = default;
+
   /**
    * Default constructor for the request gadget
    */

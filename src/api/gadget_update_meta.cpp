@@ -2,5 +2,6 @@
 
 #include <utility>
 
-GadgetUpdateMeta::GadgetUpdateMeta(std::string id) : id(std::move(id)) {
+GadgetUpdateMeta::GadgetUpdateMeta(std::string id, DynamicJsonDocument properties) : id(std::move(id)),
+    properties(std::move(properties)) {
 }

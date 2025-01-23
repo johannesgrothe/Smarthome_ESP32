@@ -10,15 +10,13 @@
 
 class ApiDecoder {
 public:
+    static GadgetMeta decodeGadget(DynamicJsonDocument gadget_data);
 
-  static GadgetMeta decodeGadget(DynamicJsonDocument gadget_data);
+    static GadgetUpdateMeta decodeGadgetUpdateInfo(DynamicJsonDocument gadget_data);
 
-  static GadgetUpdateMeta decodeGadgetUpdateInfo(DynamicJsonDocument gadget_data);
+    static std::shared_ptr<SystemConfig> decodeSystemConfig(const DynamicJsonDocument &data);
 
-  static std::shared_ptr<SystemConfig> decodeSystemConfig(const DynamicJsonDocument& data);
+    static std::shared_ptr<EventConfig> decodeEventConfig(const DynamicJsonDocument &data);
 
-  static std::shared_ptr<EventConfig> decodeEventConfig(const DynamicJsonDocument& data);
-
-  static std::shared_ptr<GadgetConfig> decodeGadgetConfig(const DynamicJsonDocument& data);
-
+    static std::shared_ptr<GadgetConfig> decodeGadgetConfig(const DynamicJsonDocument &data);
 };

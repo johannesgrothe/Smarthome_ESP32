@@ -1,8 +1,6 @@
 #pragma once
 
-#include "pin_profile.h"
 #include <ArduinoJson.h>
-#include <sstream>
 
 #define SW_DATA_DEFAULT "<unknown>"
 

@@ -1,8 +1,8 @@
 #pragma once
 
 #include <mutex>
-
-#include "../../datatypes.h"
+#include <ArduinoJson.h>
+#include <api/gadget_meta.h>
 
 
 // List of all Gadget Types
@@ -56,6 +56,11 @@ protected:
      */
     void registerExternalChange();
 
+    /**
+     * Encodes the gadgets properties for the api
+     */
+    virtual DynamicJsonDocument encodeProperties() = 0;
+
 public:
     virtual ~Gadget() = default;
 
@@ -94,4 +99,18 @@ public:
      * Refresh the gadget and its hardware. Used as loop method.
      */
     virtual void refresh() = 0;
+
+    /**
+     * Applies changes from the data given by the api to the gadget
+     *
+     * @param data Data containing the new property values
+     */
+    virtual void applyChanges(const DynamicJsonDocument &data) = 0;
+
+    /**
+     * Encodes the complete gadget into json for the api to consume
+     *
+     * @return The full gadget encoded in json
+     */
+    GadgetMeta encode();
 };

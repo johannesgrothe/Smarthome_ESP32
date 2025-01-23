@@ -62,3 +62,8 @@ void Gadget::registerExternalChange() {
     was_changed_ = true;
     mtx_.unlock();
 }
+
+GadgetMeta Gadget::encode() {
+    auto properties = encodeProperties();
+    return GadgetMeta(type_, name_, properties);
+}

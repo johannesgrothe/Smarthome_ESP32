@@ -4,9 +4,12 @@
 
 //region IMPORTS
 
-#include "client_main.h"
+
 #include "storage/eeprom_storage.h"
 #include "boot_mode.h"
+#include "api/api_manager.h"
+#include "client_manager.h"
+#include "variants/load_variant.h"
 
 //endregion
 
@@ -15,10 +18,19 @@
 static const char *TAG = "Initialization";
 
 // Main class instance, handles the complete system
-std::shared_ptr<ClientMain> client_main;
+//std::shared_ptr<ClientMain> client_main;
+
+// Mode the system is supposed to be running in
+BootMode system_mode;
 
 // Storage to load and save configs
 std::shared_ptr<SystemStorage> storage;
+
+// Client-Manager as API delegate
+std::shared_ptr<ClientManager> client_manager;
+
+// Helper to handle all incoming and outgoing network traffic
+std::shared_ptr<ApiManager> api_manager;
 
 // Main task, handling the system in general
 TaskHandle_t main_task;
@@ -45,18 +57,6 @@ std::shared_ptr<SystemConfig> loadBackupSystemConfig() {
                                             nullptr,
                                             nullptr,
                                             nullptr);
-  return cfg;
-}
-
-std::shared_ptr<EventConfig> loadBackupEventConfig() {
-  std::vector<event_map> event_mapping;
-  auto cfg = std::make_shared<EventConfig>(event_mapping);
-  return cfg;
-}
-
-std::shared_ptr<GadgetConfig> loadBackupGadgetConfig() {
-  std::vector<gadget_tuple> gadget_data;
-  auto cfg = std::make_shared<GadgetConfig>(gadget_data);
   return cfg;
 }
 
@@ -173,6 +173,9 @@ void setup() {
   }
 
   auto boot_mode = getBootMode();
+
+  client_manager = std::make_shared<ClientManager>(system_config, boot_mode);
+
 
   client_main = std::make_shared<ClientMain>(boot_mode, *system_config);
   client_main->setStorageManager(storage);

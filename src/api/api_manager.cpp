@@ -8,13 +8,15 @@
 #include "api_encoder.h"
 #include "api_decoder.h"
 
-static const char *TAG = "ApiManager";
+static auto TAG = "ApiManager";
 
-ApiManager::ApiManager(ApiManagerDelegate *delegate, std::shared_ptr<RequestGadget> network, uint16_t runtime_id,
+ApiManager::ApiManager(std::shared_ptr<GadgetManager> gadgets,
+                       std::shared_ptr<RequestGadget> network,
+                       const uint16_t runtime_id,
                        std::string client_identifier) : client_id_(std::move(client_identifier)),
                                                         runtime_id_(runtime_id),
-                                                        delegate_(delegate),
-                                                        network_(std::move(network)) {
+                                                        network_(std::move(network)),
+                                                        gadgets_(std::move(gadgets)) {
 };
 
 void ApiManager::handleRequest(const std::shared_ptr<Request> &req) {
@@ -73,18 +75,6 @@ void ApiManager::handleRequest(const std::shared_ptr<Request> &req) {
     // Write System Config
     if (req->getPath() == api_definitions::uris::client_system_config_write) {
         handleSystemConfigWrite(req);
-        return;
-    }
-
-    // Write Event Config
-    if (req->getPath() == api_definitions::uris::client_event_config_write) {
-        handleEventConfigWrite(req);
-        return;
-    }
-
-    // Write Gadget Config
-    if (req->getPath() == api_definitions::uris::client_gadget_config_write) {
-        handleGadgetConfigWrite(req);
         return;
     }
 
@@ -159,7 +149,16 @@ void ApiManager::handleSystemConfigWrite(const std::shared_ptr<Request> &req) co
 void ApiManager::publishSync(std::string *receiver = nullptr) const {
     logger_i(TAG, "Publishing sync data");
     const auto client_data = delegate_->getClientData();
-    const auto gadget_data = delegate_->getGadgetData();
+
+    std::vector<GadgetMeta> gadget_data;
+    if (gadgets_ != nullptr) {
+        for (uint8_t i = 0; i < gadgets_->getGadgetCount(); i++) {
+            const auto buf_gadget = gadgets_->getGadget(i);
+            auto buf_g = buf_gadget->encode();
+            gadget_data.push_back(buf_g);
+        }
+    }
+
     auto payload = ApiEncoder::encodeSync(client_data, gadget_data, runtime_id_);
     if (receiver == nullptr) {
         const auto out_req = std::make_shared<Request>(api_definitions::uris::sync_client,

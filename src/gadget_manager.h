@@ -1,12 +1,11 @@
 #pragma once
 
 #include <memory>
-#include "gadgets/gadget.h"
-#include "system_settings.h"
-#include "api/gadget_update_meta.h"
+#include <vector>
+
+#include "gadgets/abstract/gadget.h"
 
 class GadgetManager {
-private:
 
   std::vector<std::shared_ptr<Gadget>> gadgets_{};
 
@@ -22,8 +21,6 @@ public:
   std::shared_ptr<Gadget> operator[](int index) const;
 
   uint8_t getGadgetCount() const;
-
-  void forwardEvent(const std::shared_ptr<Event>& event);
 
   void forwardUpdate(const GadgetUpdateMeta &data);
 

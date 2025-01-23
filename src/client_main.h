@@ -21,7 +21,6 @@
 #include "event_manager.h"
 
 class ClientMain final : public ApiManagerDelegate {
-private:
 
   // Mode the system is supposed to be running in
   BootMode system_mode_;
