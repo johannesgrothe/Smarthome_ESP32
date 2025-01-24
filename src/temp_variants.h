@@ -1,7 +1,11 @@
+#pragma once
+
 enum class HwVariant {
-    single_port = 0
+    unknown = 0,
+    single_port = 1
 };
 
 enum class SwVariant {
-    single_neopixel = 0
+    unknown = 0,
+    single_neopixel = 1
 };

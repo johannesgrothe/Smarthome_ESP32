@@ -1,6 +1,7 @@
 #pragma once
 
 #include "system_config.h"
+#include "eol_config.h"
 
 class SystemStorage {
 protected:
@@ -32,6 +33,19 @@ public:
      * @return Whether saving was successful
      */
     virtual bool saveSystemConfig(SystemConfig config) = 0;
+
+    /**
+     * Loads the eol config from the EEPROM
+     * @return The loaded Config as shared_ptr, nullptr if config could not be loaded
+     */
+    virtual std::shared_ptr<EolConfig> loadEolConfig() = 0;
+
+    /**
+     * Saves a eol config to the EEPROM
+     * @param config The config to write
+     * @return Whether saving was successful
+     */
+    virtual bool saveEolConfig(EolConfig config) = 0;
 
     /**
      * Erases all configs and whatever data was stored from the storage permanently

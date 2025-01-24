@@ -174,7 +174,9 @@ void setup() {
 
   auto boot_mode = getBootMode();
 
-  client_manager = std::make_shared<ClientManager>(system_config, boot_mode);
+  auto hw_serial =
+
+  client_manager = std::make_shared<ClientManager>(system_config, SW_VARIANT, boot_mode);
 
 
   client_main = std::make_shared<ClientMain>(boot_mode, *system_config);

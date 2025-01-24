@@ -50,19 +50,3 @@ bool StaticStorage::staticConfigStringAvailable() {
 bool StaticStorage::eraseAllConfigs() {
   return false;
 }
-
-// std::shared_ptr<GadgetConfig> StaticStorage::loadGadgetConfig() {
-//   return nullptr;
-// }
-
-// bool StaticStorage::saveGadgetConfig(GadgetConfig config) {
-//   return false;
-// }
-
-// std::shared_ptr<EventConfig> StaticStorage::loadEventConfig() {
-//   return nullptr;
-// }
-
-// bool StaticStorage::saveEventConfig(EventConfig config) {
-//   return false;
-// }

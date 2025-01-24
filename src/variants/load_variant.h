@@ -1,3 +1,3 @@
 #ifdef SINGLE_NEOPIXEL
-#include "vaiants/sw_variants/single_neo_pixel.h"
+#include "sw_variants/variant_single_neopixel.h"
 #endif

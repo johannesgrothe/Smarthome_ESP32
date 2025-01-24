@@ -9,9 +9,7 @@
 class SystemConfig final : public BaseConfig {
 
 public:
-
   const std::string id;
-  const NetworkMode network_mode;
 
   const std::shared_ptr <std::string> wifi_ssid;
   const std::shared_ptr <std::string> wifi_pw;
@@ -25,7 +23,6 @@ public:
   /**
     * Constructor for the Config
     * @param id The ID of the chip
-    * @param network_mode The network mode to boot in
     * @param wifi_ssid SSID of the wifi to connect to
     * @param wifi_pw Password of the wifi to connect to
     * @param mqtt_ip IP of the MQTT broker to connect to
@@ -34,7 +31,6 @@ public:
     * @param mqtt_password Password used on the MQTT broker
     */
   SystemConfig(std::string id,
-               NetworkMode network_mode,
                std::shared_ptr <std::string> wifi_ssid,
                std::shared_ptr <std::string> wifi_pw,
                std::shared_ptr <IPContainer> mqtt_ip,

@@ -32,16 +32,10 @@ unsigned short SystemConfig::crc16() const {
   // Add network mode
   crc.add(static_cast<uint8_t>(network_mode));
 
-  // Add IR/Radio pins
-  // crc.add(ir_recv_pin);
-  // crc.add(ir_send_pin);
-  // crc.add(radio_recv_pin);
-  // crc.add(radio_recv_pin);
-
   // Add Wifi SSID
   if (wifi_ssid) {
-    for (auto chr: *wifi_ssid) {
-      crc.add((uint8_t) chr);
+    for (const auto chr: *wifi_ssid) {
+      crc.add(static_cast<uint8_t>(chr));
     }
   } else {
     crc.add(0);
@@ -49,8 +43,8 @@ unsigned short SystemConfig::crc16() const {
 
   // Add Wifi PW
   if (wifi_pw) {
-    for (auto chr: *wifi_pw) {
-      crc.add((uint8_t) chr);
+    for (const auto chr: *wifi_pw) {
+      crc.add(static_cast<uint8_t>(chr));
     }
   } else {
     crc.add(0);
@@ -68,16 +62,16 @@ unsigned short SystemConfig::crc16() const {
 
   // Add MQTT port
   if (mqtt_port) {
-    crc.add((uint8_t) *mqtt_port & 0xFF);
-    crc.add((uint8_t) *mqtt_port >> 8);
+    crc.add(static_cast<uint8_t>(*mqtt_port) & 0xFF);
+    crc.add(static_cast<uint8_t>(*mqtt_port) >> 8);
   } else {
     crc.add(0);
   }
 
   // Add MQTT username
   if (mqtt_username) {
-    for (auto chr: *mqtt_username) {
-      crc.add((uint8_t) chr);
+    for (const auto chr: *mqtt_username) {
+      crc.add(static_cast<uint8_t>(chr));
     }
   } else {
     crc.add(0);
@@ -85,8 +79,8 @@ unsigned short SystemConfig::crc16() const {
 
   // Add MQTT password
   if (mqtt_password) {
-    for (auto chr: *mqtt_password) {
-      crc.add((uint8_t) chr);
+    for (const auto chr: *mqtt_password) {
+      crc.add(static_cast<uint8_t>(chr));
     }
   } else {
     crc.add(0);
