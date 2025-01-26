@@ -50,7 +50,7 @@ public:
 
     void publishSync(std::string *receiver) const;
 
-    void publishGadgetUpdate(const GadgetUpdateMeta &gadget_data) const;
+    void publishGadgetUpdate(const GadgetUpdateDTO &gadget_data) const;
 
     void publishEvent(const std::shared_ptr<Event> &event) const;
 

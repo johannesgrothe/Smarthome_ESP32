@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "gadgets/abstract/gadget.h"
+#include "api/dtos/gadget_update_dto.h"
 
 class GadgetManager {
 
@@ -22,7 +23,7 @@ public:
 
   uint8_t getGadgetCount() const;
 
-  void forwardUpdate(const GadgetUpdateMeta &data);
+  void forwardUpdate(const GadgetUpdateDTO &data);
 
   void loop();
 };

@@ -2,7 +2,7 @@
 #include "config_decoder.h"
 
 
-GadgetUpdateMeta ApiDecoder::decodeGadgetUpdateInfo(DynamicJsonDocument gadget_data) {
+GadgetUpdateDTO ApiDecoder::decodeGadgetUpdateInfo(DynamicJsonDocument gadget_data) {
     std::string id = gadget_data["id"];
     const DynamicJsonDocument properties = gadget_data["properties"];
     return {id, properties};

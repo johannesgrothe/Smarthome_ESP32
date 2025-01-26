@@ -2,7 +2,7 @@
 
 #include <mutex>
 #include <ArduinoJson.h>
-#include <api/gadget_meta.h>
+#include <api/dtos/gadget_dto.h>
 
 
 // List of all Gadget Types
@@ -61,6 +61,11 @@ protected:
      */
     virtual DynamicJsonDocument encodeProperties() = 0;
 
+    /**
+     * Encodes the gadgets type for the api
+     */
+    virtual gadget_definitions::GadgetIdentifier encodeType() = 0;
+
 public:
     virtual ~Gadget() = default;
 
@@ -112,5 +117,5 @@ public:
      *
      * @return The full gadget encoded in json
      */
-    GadgetMeta encode();
+    GadgetDTO encode();
 };

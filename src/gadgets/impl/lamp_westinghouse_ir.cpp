@@ -2,8 +2,12 @@
 
 #include <utility>
 
+gadget_definitions::GadgetIdentifier Lamp_WestinghouseIR::encodeType() {
+    return gadget_definitions::GadgetIdentifier::lamp_westinghouse_ir;
+}
+
 Lamp_WestinghouseIR::Lamp_WestinghouseIR(std::string name, const IR_Gadget &ir) : Lamp_OnOff(std::move(name)),
-    ir_(ir) {
+                                                                                  ir_(ir) {
 }
 
 void Lamp_WestinghouseIR::refresh() {

@@ -63,7 +63,8 @@ void Gadget::registerExternalChange() {
     mtx_.unlock();
 }
 
-GadgetMeta Gadget::encode() {
-    auto properties = encodeProperties();
-    return GadgetMeta(type_, name_, properties);
+GadgetDTO Gadget::encode() {
+    const auto properties = encodeProperties();
+    const auto type = encodeType();
+    return {type, name_, properties};
 }

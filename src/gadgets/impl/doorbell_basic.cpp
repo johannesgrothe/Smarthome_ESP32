@@ -2,7 +2,11 @@
 
 #include <hardware_controller.h>
 #include <utility>
-#include "../hardware_controller.h"
+#include <hardware_controller.h>
+
+gadget_definitions::GadgetIdentifier Doorbell_Basic::encodeType() {
+    return gadget_definitions::GadgetIdentifier::doorbell_basic;
+}
 
 /**
  * Constructor for the Doorbell_Basic

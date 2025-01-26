@@ -2,6 +2,10 @@
 
 #include <utility>
 
+gadget_definitions::GadgetIdentifier Sensor_Temperature_DHT::encodeType() {
+  return gadget_definitions::GadgetIdentifier::sensor_temperature_dht;
+}
+
 Sensor_Temperature_DHT::Sensor_Temperature_DHT(std::string name, const uint8_t pin) :
     Sensor_Temperature(std::move(name)),
     pin_(pin),

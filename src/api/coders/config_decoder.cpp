@@ -9,7 +9,8 @@ std::shared_ptr<EolConfig> ConfigDecoder::decodeEolConfig(DynamicJsonDocument co
                                   })) {
         return nullptr;
     }
-    HwVariant hw_variant = config["hw_variant"];
+    int hw_variant_int = config["hw_variant"];
+    auto hw_variant = static_cast<HwVariant>(hw_variant_int);
     std::string hw_serial = config["hw_serial"];
 
     return std::make_shared<EolConfig>(hw_variant, hw_serial);

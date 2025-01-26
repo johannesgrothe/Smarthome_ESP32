@@ -1,6 +1,8 @@
 #include "request_gadget.h"
 
-static const char *TAG = "RequestGadget";
+#include <hardware_controller.h>
+
+static auto TAG = "RequestGadget";
 
 // RequestGadget
 void RequestGadget::addIncomingRequest(const std::shared_ptr<Request>& request) {

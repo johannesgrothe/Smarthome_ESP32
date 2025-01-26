@@ -3,10 +3,10 @@
 #include <string>
 #include <ArduinoJson.h>
 
-class GadgetUpdateMeta {
+class GadgetUpdateDTO {
 public:
     const std::string id;
     DynamicJsonDocument properties;
 
-    GadgetUpdateMeta(std::string id, DynamicJsonDocument properties);
+    GadgetUpdateDTO(std::string id, DynamicJsonDocument properties);
 };

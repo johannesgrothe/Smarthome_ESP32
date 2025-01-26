@@ -2,23 +2,23 @@
 
 #include <vector>
 
-#include "gadget_meta.h"
-#include "client_meta.h"
+#include "dtos/gadget_dto.h"
+#include "dtos/client_dto.h"
+#include "dtos/gadget_update_dto.h"
 #include "../connectors/event.h"
 #include "../storage/system_config.h"
-#include "gadget_update_meta.h"
 
 class ApiManagerDelegate {
 public:
   virtual ~ApiManagerDelegate() = default;
 
-  virtual void handleGadgetUpdate(GadgetUpdateMeta gadget) = 0;
+  virtual void handleGadgetUpdate(GadgetUpdateDTO gadget) = 0;
 
   virtual void handleEvent(Event event) = 0;
 
-  virtual ClientMeta getClientData() = 0;
+  virtual ClientDTO getClientData() = 0;
 
-  virtual std::vector<GadgetMeta> getGadgetData() = 0;
+  virtual std::vector<GadgetDTO> getGadgetData() = 0;
 
   virtual bool handleSystemConfigWrite(SystemConfig cfg) = 0;
 };

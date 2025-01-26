@@ -9,7 +9,7 @@ Lamp_RGB::Lamp_RGB(std::string name) : Gadget(std::move(name),
                                        blue_(0) {
 }
 
-void Lamp_RGB::applyChanges(const DynamicJsonDocument &data) override {
+void Lamp_RGB::applyChanges(const DynamicJsonDocument &data) {
     uint8_t red = getRed();
     uint8_t green = getGreen();
     uint8_t blue = getBlue();
@@ -29,7 +29,7 @@ void Lamp_RGB::applyChanges(const DynamicJsonDocument &data) override {
     setColor(red, green, blue);
 }
 
-DynamicJsonDocument Lamp_RGB::encodeProperties() override {
+DynamicJsonDocument Lamp_RGB::encodeProperties() {
     DynamicJsonDocument doc(75);
     doc["red"] = getRed();
     doc["green"] = getRed();

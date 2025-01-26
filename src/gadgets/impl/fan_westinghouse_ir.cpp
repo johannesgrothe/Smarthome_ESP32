@@ -2,8 +2,12 @@
 
 #include <console_logger.h>
 
+gadget_definitions::GadgetIdentifier Fan_Westinghouse_IR::encodeType() {
+    return gadget_definitions::GadgetIdentifier::fan_westinghouse_ir;
+}
+
 Fan_Westinghouse_IR::Fan_Westinghouse_IR(const std::string &name, const IR_Gadget &ir) : Fan(name, 3),
-    ir_(ir) {
+                                                                                         ir_(ir) {
 };
 
 void Fan_Westinghouse_IR::refresh() {

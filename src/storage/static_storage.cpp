@@ -1,7 +1,7 @@
 #include "static_storage.h"
 #include <sstream>
 #include <ArduinoJson.h>
-#include <api/config_decoder.h>
+#include <api/coders/config_decoder.h>
 
 #include "../console_logger.h"
 

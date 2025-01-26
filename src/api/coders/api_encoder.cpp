@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-DynamicJsonDocument ApiEncoder::encodeClient(const ClientMeta &client_data, uint16_t runtime_id) {
+DynamicJsonDocument ApiEncoder::encodeClient(const ClientDTO &client_data, const uint16_t runtime_id) {
     DynamicJsonDocument doc(350);
     doc["runtime_id"] = runtime_id;
     doc["boot_mode"] = static_cast<int>(client_data.boot_mode);
@@ -17,7 +17,7 @@ DynamicJsonDocument ApiEncoder::encodeClient(const ClientMeta &client_data, uint
     return doc;
 }
 
-DynamicJsonDocument ApiEncoder::encodeGadget(const GadgetMeta &gadget_data) {
+DynamicJsonDocument ApiEncoder::encodeGadget(const GadgetDTO &gadget_data) {
     DynamicJsonDocument doc(350);
     doc["type"] = static_cast<int>(gadget_data.type);
     doc["id"] = gadget_data.name;
@@ -25,8 +25,8 @@ DynamicJsonDocument ApiEncoder::encodeGadget(const GadgetMeta &gadget_data) {
     return doc;
 }
 
-DynamicJsonDocument ApiEncoder::encodeSync(const ClientMeta &client_data,
-                                           const std::vector<GadgetMeta> &gadget_data,
+DynamicJsonDocument ApiEncoder::encodeSync(const ClientDTO &client_data,
+                                           const std::vector<GadgetDTO> &gadget_data,
                                            const uint16_t runtime_id) {
     DynamicJsonDocument doc(800);
     doc["client"] = encodeClient(client_data, runtime_id);
@@ -38,14 +38,14 @@ DynamicJsonDocument ApiEncoder::encodeSync(const ClientMeta &client_data,
     return doc;
 }
 
-DynamicJsonDocument ApiEncoder::encodeGadgetUpdate(const GadgetUpdateMeta &data) {
+DynamicJsonDocument ApiEncoder::encodeGadgetUpdate(const GadgetUpdateDTO &data) {
     DynamicJsonDocument doc(300);
     doc["id"] = data.id;
     doc["properties"] = data.properties;
     return doc;
 }
 
-DynamicJsonDocument ApiEncoder::encodeHeartbeat(uint16_t runtime_id) {
+DynamicJsonDocument ApiEncoder::encodeHeartbeat(const uint16_t runtime_id) {
     DynamicJsonDocument doc(100);
     doc["runtime_id"] = runtime_id;
     return doc;

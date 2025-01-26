@@ -12,7 +12,11 @@ void Switch_Basic::refresh() {
     }
 }
 
-Switch_Basic::Switch_Basic(std::string name, uint8_t pin, bool default_state) : Switch(std::move(name)),
+gadget_definitions::GadgetIdentifier Switch_Basic::encodeType() {
+    return gadget_definitions::GadgetIdentifier::wallswitch_basic;
+}
+
+Switch_Basic::Switch_Basic(std::string name, const uint8_t pin, const bool default_state) : Switch(std::move(name)),
     pin_(pin),
     last_action_(0),
     default_state_(default_state) {

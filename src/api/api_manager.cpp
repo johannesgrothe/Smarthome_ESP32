@@ -5,8 +5,8 @@
 #include <random.h>
 
 #include "protocol_paths.h"
-#include "api_encoder.h"
-#include "api_decoder.h"
+#include "coders/api_encoder.h"
+#include "coders/api_decoder.h"
 
 static auto TAG = "ApiManager";
 
@@ -170,7 +170,7 @@ void ApiManager::publishSync(std::string *receiver = nullptr) const {
     }
 }
 
-void ApiManager::publishGadgetUpdate(const GadgetUpdateMeta &gadget_data) const {
+void ApiManager::publishGadgetUpdate(const GadgetUpdateDTO &gadget_data) const {
     auto payload = ApiEncoder::encodeGadgetUpdate(gadget_data);
     const auto out_req = std::make_shared<Request>(api_definitions::uris::update_gadget,
                                                    genRequestID(),

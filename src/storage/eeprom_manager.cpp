@@ -320,7 +320,7 @@ void EepromManager::eraseEeprom() {
     }
 
     writeUInt8(VALID_CLIENT_CONFIG_BITFIELD_BYTE, 0);
-    writeUInt8(SYSTEM_SETTINGS_BITFIELD_BYTE, 0);
+    writeUInt8(VALID_EOL_CONFIG_BITFIELD_BYTE, 0);
 
     EEPROM.commit();
 }

@@ -43,15 +43,15 @@ set(ADDITIONAL_SOURCES
         ../src/gadgets/abstract/wallswitch.cpp
         ../src/api/api_manager.cpp
         ../src/api/api_manager_delegate.cpp
-        ../src/api/gadget_meta.cpp
-        ../src/api/client_meta.cpp
+        ../src/api/dtos/gadget_dto.cpp
+        ../src/api/dtos/client_dto.cpp
         ../src/api/characteristic_meta.cpp
         ../src/client_main.cpp
         ../src/connectors/request_gadget.cpp
         ../src/connectors/request_queue.cpp
         ../src/connectors/split_request_buffer.cpp
-        ../src/api/api_encoder.cpp
-        ../src/api/api_decoder.cpp
+        ../src/api/coders/api_encoder.cpp
+        ../src/api/coders/api_decoder.cpp
         ../src/storage/system_storage.cpp
         ../src/storage/eeprom_storage.cpp
         ../src/storage/static_storage.cpp
@@ -81,9 +81,9 @@ set(ADDITIONAL_SOURCES
         ../src/storage/eeprom_gadget_mapping_coder.cpp
         ../src/scheduled_messages_manager.cpp
         ../src/json_validator.cpp
-        ../src/api/config_decoder.cpp
+        ../src/api/coders/config_decoder.cpp
         ../src/api/gadget_meta_coder.cpp
-        ../src/api/gadget_update_meta.cpp
+        ../src/api/dtos/gadget_update_dto.cpp
         ../src/api/characteristic_update_meta.cpp
         test_helpers/validator.cpp
         )

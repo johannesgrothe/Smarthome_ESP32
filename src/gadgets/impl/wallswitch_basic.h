@@ -7,6 +7,9 @@ class Switch_Basic final : public Switch {
     unsigned long last_action_;
     bool default_state_;
 
+protected:
+    gadget_definitions::GadgetIdentifier encodeType() override;
+
 public:
     Switch_Basic(std::string name, uint8_t pin, bool default_state);
 

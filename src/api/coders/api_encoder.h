@@ -2,9 +2,9 @@
 
 #include <vector>
 #include <ArduinoJson.h>
-#include "gadget_meta.h"
-#include "client_meta.h"
-#include "gadget_update_meta.h"
+#include <api/dtos/gadget_dto.h>
+#include <api/dtos/client_dto.h>
+#include <api/dtos/gadget_update_dto.h>
 
 class ApiEncoder {
 public:
@@ -15,7 +15,7 @@ public:
    * @param client_data Data of the client to encode
    * @return A json document containing the client data
    */
-  static DynamicJsonDocument encodeClient(const ClientMeta &client_data, uint16_t runtime_id);
+  static DynamicJsonDocument encodeClient(const ClientDTO &client_data, uint16_t runtime_id);
 
   /**
    * Encodes a set of gadget data into a json document compliant to the api specification
@@ -23,7 +23,7 @@ public:
    * @param gadget_data Data of the gadget to encode
    * @return A json document containing the gadget data
    */
-  static DynamicJsonDocument encodeGadget(const GadgetMeta &gadget_data);
+  static DynamicJsonDocument encodeGadget(const GadgetDTO &gadget_data);
 
   /**
    * Encodes the data needed to perform a sync to api specification
@@ -33,8 +33,8 @@ public:
    * @param gadgets Datasets of all the gadgets
    * @return A json document containing all the information
    */
-  static DynamicJsonDocument encodeSync(const ClientMeta &client_data,
-                                        const std::vector<GadgetMeta> &gadgets,
+  static DynamicJsonDocument encodeSync(const ClientDTO &client_data,
+                                        const std::vector<GadgetDTO> &gadgets,
                                         uint16_t runtime_id);
 
   /**
@@ -43,7 +43,7 @@ public:
    * @param data Data of the gadget
    * @return A json document containing all the information
    */
-  static DynamicJsonDocument encodeGadgetUpdate(const GadgetUpdateMeta &data);
+  static DynamicJsonDocument encodeGadgetUpdate(const GadgetUpdateDTO &data);
 
   /**
    * Encodes the data for the periodic heartbeat message

@@ -1,4 +1,4 @@
-#include "api/gadget_update_meta.h"
+#include "api/dtos/gadget_update_dto.h"
 #include "gadget_manager.h"
 
 #include <console_logger.h>
@@ -43,7 +43,7 @@ void GadgetManager::loop() {
     }
 }
 
-void GadgetManager::forwardUpdate(const GadgetUpdateMeta &data) {
+void GadgetManager::forwardUpdate(const GadgetUpdateDTO &data) {
     for (const auto &gadget: gadgets_) {
         if (gadget->getName() == data.id) {
             logger_i(TAG, "Updating status for gadget '%s'", data.id.c_str());

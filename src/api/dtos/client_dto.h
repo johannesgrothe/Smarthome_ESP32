@@ -2,10 +2,10 @@
 
 #include <cstdint>
 #include <string>
-#include "../boot_mode.h"
+#include <boot_mode.h>
 #include "temp_variants.h"
 
-class ClientMeta {
+class ClientDTO {
 public:
     /**
      * Constructor for the client meta container
@@ -20,7 +20,7 @@ public:
      * @param api_version_minor Minor version of the clients api version
      * @param api_version_bugfix Bugfix version of the clients api version
      */
-    ClientMeta(BootMode boot_mode,
+    ClientDTO(BootMode boot_mode,
                HwVariant hw_variant,
                SwVariant sw_variant,
                std::string sw_uploaded,

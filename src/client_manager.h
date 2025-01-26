@@ -1,7 +1,7 @@
 #pragma once
 
 // Tools
-#include "api/gadget_update_meta.h"
+#include "api/dtos/gadget_update_dto.h"
 #include "console_logger.h"
 #include "boot_mode.h"
 #include "api/api_manager_delegate.h"
@@ -34,15 +34,15 @@ class ClientManager final : public ApiManagerDelegate {
 
     //region API_MANAGER_DELEGATE
 
-    void handleGadgetUpdate(GadgetUpdateMeta gadget) override;
+    void handleGadgetUpdate(GadgetUpdateDTO gadget) override;
 
     void handleEvent(Event event) override;
 
     bool handleSystemConfigWrite(SystemConfig cfg) override;
 
-    ClientMeta getClientData() override;
+    ClientDTO getClientData() override;
 
-    std::vector<GadgetMeta> getGadgetData() override;
+    std::vector<GadgetDTO> getGadgetData() override;
 
     //endregion API_MANAGER_DELEGATE
 

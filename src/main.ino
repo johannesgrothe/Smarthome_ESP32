@@ -185,7 +185,8 @@ void loopGadgets() {
     auto gadget = gadget_manager->getGadget(i);
     if (gadget->hasChanged()) {
         auto g = gadget->encode();
-        api_manager->publishGadgetUpdate(g);
+        auto update = GadgetUpdateDTO(g.name, g.properties);
+        api_manager->publishGadgetUpdate(update);
     }
   }
 }

@@ -5,7 +5,6 @@
 #include "../console_logger.h"
 
 SystemConfig::SystemConfig(std::string id,
-                           NetworkMode network_mode,
                            std::shared_ptr<std::string> wifi_ssid,
                            std::shared_ptr<std::string> wifi_pw,
                            std::shared_ptr<IPContainer> mqtt_ip,
@@ -13,7 +12,6 @@ SystemConfig::SystemConfig(std::string id,
                            std::shared_ptr<std::string> mqtt_username,
                            std::shared_ptr<std::string> mqtt_password) :
     id(std::move(id)),
-    network_mode(network_mode),
     wifi_ssid(std::move(wifi_ssid)),
     wifi_pw(std::move(wifi_pw)),
     mqtt_ip(std::move(mqtt_ip)),
@@ -28,9 +26,6 @@ unsigned short SystemConfig::crc16() const {
   for (const char c: id) {
     crc.add(static_cast<uint8_t>(c));
   }
-
-  // Add network mode
-  crc.add(static_cast<uint8_t>(network_mode));
 
   // Add Wifi SSID
   if (wifi_ssid) {

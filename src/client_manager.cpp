@@ -5,7 +5,6 @@
 
 #include "storage/static_storage.h"
 #include "storage/eeprom_storage.h"
-#include "gadget_factory.h"
 
 #include "network_loader.h"
 #include "random.h"
@@ -30,7 +29,7 @@ ClientManager::ClientManager(const BootMode boot_mode,
                                                                            event_manager_(std::move(event_manager)) {
 }
 
-void ClientManager::handleGadgetUpdate(GadgetUpdateMeta gadget) {
+void ClientManager::handleGadgetUpdate(GadgetUpdateDTO gadget) {
     gadget_manager_->forwardUpdate(gadget);
 }
 
@@ -46,7 +45,7 @@ bool ClientManager::handleSystemConfigWrite(SystemConfig cfg) {
     return system_storage_->saveSystemConfig(cfg);
 }
 
-ClientMeta ClientManager::getClientData() {
+ClientDTO ClientManager::getClientData() {
     return {
         system_mode_,
         hw_variant_,
@@ -60,8 +59,8 @@ ClientMeta ClientManager::getClientData() {
     };
 }
 
-std::vector<GadgetMeta> ClientManager::getGadgetData() {
-    std::vector<GadgetMeta> gadget_data;
+std::vector<GadgetDTO> ClientManager::getGadgetData() {
+    std::vector<GadgetDTO> gadget_data;
     if (gadget_manager_ == nullptr) {
         return gadget_data;
     }

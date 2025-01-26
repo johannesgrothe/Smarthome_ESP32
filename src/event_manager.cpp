@@ -2,6 +2,7 @@
 
 #include <utility>
 #include <sstream>
+#include <system_timer.h>
 
 EventManager::EventManager(std::vector<event_map> event_data) :
     event_map_(std::move(event_data)),

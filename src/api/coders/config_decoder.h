@@ -2,7 +2,7 @@
 
 #include <storage/eol_config.h>
 #include <storage/system_config.h>
-#include "../json_validator.h"
+#include <json_validator.h>
 
 class ConfigDecoder {
 public:

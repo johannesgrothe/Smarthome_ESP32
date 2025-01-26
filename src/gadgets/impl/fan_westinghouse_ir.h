@@ -41,9 +41,13 @@ static const uint16_t level_3[95] = {
 };
 
 class Fan_Westinghouse_IR final : public Fan {
-    const IR_Gadget& ir_;
+    const IR_Gadget &ir_;
+
+protected:
+    gadget_definitions::GadgetIdentifier encodeType() override;
+
 public:
-    explicit Fan_Westinghouse_IR(const std::string &name, const IR_Gadget& ir);
+    explicit Fan_Westinghouse_IR(const std::string &name, const IR_Gadget &ir);
 
     void refresh() override;
 };
