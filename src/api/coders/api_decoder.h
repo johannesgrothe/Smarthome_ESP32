@@ -2,7 +2,6 @@
 
 #include "../../storage/system_config.h"
 #include "../../storage/eol_config.h"
-#include "../../storage/gadget_config.h"
 #include "../dtos/gadget_update_dto.h"
 #include "../dtos/gadget_dto.h"
 

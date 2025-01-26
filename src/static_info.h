@@ -1,7 +1,5 @@
 #pragma once
 
-#include <ArduinoJson.h>
-
 #define SW_DATA_DEFAULT "<unknown>"
 
 /**

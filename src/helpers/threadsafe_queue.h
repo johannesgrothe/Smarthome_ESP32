@@ -23,7 +23,7 @@ public:
 
   /**
    * Adds an Element to the Queue
-   * @param req Element to add
+   * @param value Element to add
    */
   void push(T value) {
     std::lock_guard<std::mutex> lock(mutex_);

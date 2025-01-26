@@ -2,8 +2,7 @@
 
 #include <random.h>
 #include <string_methods.h>
-
-#include "eeprom_gadget_mapping_coder.h"
+#include <system_settings.h>
 
 uint8_t EepromManager::calculateNewContentFlag(const uint8_t index, const bool new_value, const uint8_t bitfield) {
     auto content_flag = bitfield;
