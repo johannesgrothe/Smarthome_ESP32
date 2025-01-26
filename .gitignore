@@ -10,8 +10,8 @@ CMakeListsPrivate.txt
 *.ino.cpp
 network_settings.h
 flash_info.h
-doc
 static_config.h
+doc
 /test_desktop/build/
 /test_reports/
 /test_desktop/libs/

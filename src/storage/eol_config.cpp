@@ -1,3 +1,5 @@
 #include "eol_config.h"
 
-EolConfig::EolConfig(HwVariant variant, std::string serial):variant(variant), serial(serial) {}
+#include <utility>
+
+EolConfig::EolConfig(const HwVariant variant, std::string serial):variant(variant), serial(std::move(serial)) {}

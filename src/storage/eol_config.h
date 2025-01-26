@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "base_config.h"
 #include "temp_variants.h"
 

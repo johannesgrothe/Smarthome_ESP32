@@ -1,14 +1,20 @@
 {
-  "id" : "TestClientESP32",
-  "network": {
-    "type": "mqtt",
-    "config": {
-      "wifi_ssid": "testwlan",
-      "wifi_password": "testpw",
-      "ip": "192.168.178.111",
-      "port": "1883",
-      "mqtt_username": null,
-      "mqtt_password": null
+  "system": {
+    "id": "TestClientESP32",
+    "network": {
+      "type": "mqtt",
+      "config": {
+        "wifi_ssid": "testwlan",
+        "wifi_password": "testpw",
+        "ip": "192.168.178.111",
+        "port": "1883",
+        "mqtt_username": null,
+        "mqtt_password": null
+      }
     }
+  },
+  "eol": {
+    "hw_variant": 1,
+    "hw_serial": "yolo1213"
   }
 }

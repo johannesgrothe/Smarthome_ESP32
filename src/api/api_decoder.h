@@ -2,7 +2,7 @@
 
 #include "gadget_meta.h"
 #include "../storage/system_config.h"
-#include "../storage/event_config.h"
+#include "../storage/eol_config.h"
 #include "../storage/gadget_config.h"
 #include "gadget_update_meta.h"
 
@@ -16,7 +16,5 @@ public:
 
     static std::shared_ptr<SystemConfig> decodeSystemConfig(const DynamicJsonDocument &data);
 
-    static std::shared_ptr<EventConfig> decodeEventConfig(const DynamicJsonDocument &data);
-
-    static std::shared_ptr<GadgetConfig> decodeGadgetConfig(const DynamicJsonDocument &data);
+    static std::shared_ptr<EolConfig> decodeEolConfig(const DynamicJsonDocument &data);
 };

@@ -2,7 +2,6 @@
 
 #include <memory>
 #include "../datatypes.h"
-#include "../network_mode.h"
 #include "../ip_container.h"
 #include "base_config.h"
 

@@ -1,10 +1,12 @@
 #include "client_manager.h"
 
+#include <static_info.h>
+#include <utility>
+
 #include "storage/static_storage.h"
 #include "storage/eeprom_storage.h"
 #include "gadget_factory.h"
 
-#include "hardware_controller.h"
 #include "network_loader.h"
 #include "random.h"
 #include "system/api_definitions.h"
@@ -13,19 +15,20 @@
 
 static auto TAG = "Initialization";
 
-ClientManager::ClientManager(BootMode boot_mode,
-                             HwVariant hw_variant,
-                             SwVariant sw_variant,
+ClientManager::ClientManager(const BootMode boot_mode,
+                             const HwVariant hw_variant,
+                             std::string hw_serial,
+                             const SwVariant sw_variant,
                              std::shared_ptr<SystemStorage> system_storage,
                              std::shared_ptr<GadgetManager> gadget_manager,
-                             std::shared_ptr<EventManager> event_manager):
-                                                                            system_mode_(boot_mode),
-                                                                            hw_variant_(hw_variant),
-                                                                            sw_variant_(sw_variant),
-                                                         system_storage_(system_storage),
-                                                         gadget_manager_(gadget_manager),
-                                                         event_manager_(event_manager) {
-  }
+                             std::shared_ptr<EventManager> event_manager): system_mode_(boot_mode),
+                                                                           sw_variant_(sw_variant),
+                                                                           hw_variant_(hw_variant),
+                                                                           hw_serial_(std::move(hw_serial)),
+                                                                           system_storage_(std::move(system_storage)),
+                                                                           gadget_manager_(std::move(gadget_manager)),
+                                                                           event_manager_(std::move(event_manager)) {
+}
 
 void ClientManager::handleGadgetUpdate(GadgetUpdateMeta gadget) {
     gadget_manager_->forwardUpdate(gadget);

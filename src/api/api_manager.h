@@ -3,7 +3,6 @@
 #include <gadget_manager.h>
 #include <memory>
 #include "api_manager_delegate.h"
-#include "gadget_meta.h"
 #include "../connectors/request_gadget.h"
 #include "../connectors/request.h"
 #include "../connectors/event.h"
@@ -15,9 +14,11 @@ class ApiManager {
     // Runtime id, number generated at startup to identify reboots to network partners
     const uint16_t runtime_id_;
 
+    // Network to perform API operations on
     std::shared_ptr<RequestGadget> network_;
 
-    std::shared_ptr<GadgetManager> gadgets_;
+    // Delegate to get information from and write information to
+    std::shared_ptr<ApiManagerDelegate> delegate_;
 
     static uint16_t genRequestID();
 
@@ -40,7 +41,7 @@ class ApiManager {
     void handleGadgetConfigWrite(const std::shared_ptr<Request> &req);
 
 public:
-    ApiManager(std::shared_ptr<GadgetManager> gadgets,
+    ApiManager(std::shared_ptr<ApiManagerDelegate> delegate,
                std::shared_ptr<RequestGadget> network,
                uint16_t runtime_id,
                std::string client_identifier);

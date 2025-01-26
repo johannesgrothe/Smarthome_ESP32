@@ -1,15 +1,14 @@
 #pragma once
 
-//#define STATIC_CONFIG_ACTIVE
+// #define STATIC_CONFIG_ACTIVE
 
-#include "../api/config_decoder.h"
 #include "system_storage.h"
 
 #ifdef STATIC_CONFIG_ACTIVE
 #include "static_config.h"
 #endif
 
-class StaticStorage: public SystemStorage {
+class StaticStorage final : public SystemStorage {
 public:
 
   StaticStorage();

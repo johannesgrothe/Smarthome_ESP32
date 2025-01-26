@@ -10,13 +10,13 @@
 
 static auto TAG = "ApiManager";
 
-ApiManager::ApiManager(std::shared_ptr<GadgetManager> gadgets,
+ApiManager::ApiManager(std::shared_ptr<ApiManagerDelegate> delegate,
                        std::shared_ptr<RequestGadget> network,
                        const uint16_t runtime_id,
                        std::string client_identifier) : client_id_(std::move(client_identifier)),
                                                         runtime_id_(runtime_id),
                                                         network_(std::move(network)),
-                                                        gadgets_(std::move(gadgets)) {
+                                                        delegate_(std::move(delegate)) {
 };
 
 void ApiManager::handleRequest(const std::shared_ptr<Request> &req) {
@@ -151,6 +151,7 @@ void ApiManager::publishSync(std::string *receiver = nullptr) const {
     const auto client_data = delegate_->getClientData();
 
     std::vector<GadgetMeta> gadget_data;
+    auto gadgets = delegate_->getGadgetData();
     if (gadgets_ != nullptr) {
         for (uint8_t i = 0; i < gadgets_->getGadgetCount(); i++) {
             const auto buf_gadget = gadgets_->getGadget(i);

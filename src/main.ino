@@ -6,10 +6,14 @@
 
 
 #include "storage/eeprom_storage.h"
+#include "storage/static_storage.h"
 #include "boot_mode.h"
 #include "api/api_manager.h"
 #include "client_manager.h"
 #include "variants/load_variant.h"
+#include "gadget_manager.h"
+#include "scheduled_messages_manager.h"
+#include "network_loader.h"
 
 //endregion
 
@@ -32,6 +36,18 @@ std::shared_ptr<ClientManager> client_manager;
 // Helper to handle all incoming and outgoing network traffic
 std::shared_ptr<ApiManager> api_manager;
 
+// Stores and manages all gadgets
+std::shared_ptr<GadgetManager> gadget_manager;
+
+// Stores and handles all events
+std::shared_ptr<EventManager> event_manager;
+
+// Manages the sending of scheduled messages like the heartbeat
+std::shared_ptr<ScheduledMessagesManager> scheduled_messages;
+
+// Network-connector to send and receive requests
+std::shared_ptr<RequestGadget> network;
+
 // Main task, handling the system in general
 TaskHandle_t main_task;
 
@@ -50,13 +66,18 @@ TaskHandle_t heartbeat_task;
 
 std::shared_ptr<SystemConfig> loadBackupSystemConfig() {
   auto cfg = std::make_shared<SystemConfig>("empty_client",
-                                            NetworkMode::Serial,
                                             nullptr,
                                             nullptr,
                                             nullptr,
                                             nullptr,
                                             nullptr,
                                             nullptr);
+  return cfg;
+}
+
+std::shared_ptr<EolConfig> loadBackupEolConfig() {
+  auto cfg = std::make_shared<EolConfig>(HwVariant::unknown,
+                                         "empty_serial");
   return cfg;
 }
 
@@ -162,22 +183,66 @@ void setup() {
   Serial.begin(SERIAL_SPEED);
 
   logger_i(TAG, "Launching...");
+  logger_i(TAG, "Software Info:");
+  logger_i(TAG, "Flash Date: %s", getSoftwareFlashDate().c_str());
+  logger_i(TAG, "Git Branch: %s", getSoftwareGitBranch().c_str());
+  logger_i(TAG, "Git Commit: %s", getSoftwareGitCommit().c_str());
+  logger_i(TAG, "API Version: %d.%d.%d",
+           api_definitions::version::major,
+           api_definitions::version::minor,
+           api_definitions::version::bugfix);
 
+#ifdef STATIC_CONFIG_ACTIVE
+  storage = std::make_shared<StaticStorage>();
+#else
   storage = std::make_shared<EepromStorage>();
-
-  auto system_config = storage->loadSystemConfig();
-
-  if (system_config == nullptr) {
-    logger_e(TAG, "Could not load system config, falling back to all backup configs");
-    system_config = loadBackupSystemConfig();
-  }
+#endif
 
   auto boot_mode = getBootMode();
 
-  auto hw_serial =
+  auto eol_config = storage->loadEolConfig();
+  if (eol_config == nullptr) {
+    logger_e(TAG, "Could not load system config, falling back to setup mode");
+    boot_mode = BootMode::Serial_Only;
+    eol_config = loadBackupEolConfig();
+  }
 
-  client_manager = std::make_shared<ClientManager>(system_config, SW_VARIANT, boot_mode);
+  auto system_config = storage->loadSystemConfig();
+  if (system_config == nullptr) {
+    logger_e(TAG, "Could not load system config, falling back to setup mode");
+    boot_mode = BootMode::Serial_Only;
+    system_config = loadBackupSystemConfig();
+  }
 
+  logger_i(TAG, "Initializing gadget manager");
+  gadget_manager = std::make_shared<GadgetManager>();
+
+  logger_i(TAG, "Initializing Gadgets:");
+  loadGadgets(gadget_manager);
+
+  logger_i(TAG, "Initializing event manager");
+  event_manager = std::make_shared<EventManager>(std::vector<event_map>());
+
+  client_manager = std::make_shared<ClientManager>(boot_mode,
+                                                   eol_config->variant,
+                                                   eol_config->serial,
+                                                   SW_VARIANT,
+                                                   storage,
+                                                   gadget_manager,
+                                                   event_manager);
+
+  logger_i(TAG, "Initializing Network");
+  if (boot_mode == BootMode::Serial_Only) {
+    network = NetworkLoader::loadMqtt(*system_config);
+  } else {
+    network = NetworkLoader::loadSerial();
+  }
+
+  if (network == nullptr) {
+    HardwareController::rebootChip("Network initialization failed.", 15);
+  }
+
+  api_manager = std::make_shared<ApiManager>(network);
 
   client_main = std::make_shared<ClientMain>(boot_mode, *system_config);
   client_main->setStorageManager(storage);

@@ -7,7 +7,6 @@
 #include "hardware_controller.h"
 #include "network_loader.h"
 #include "random.h"
-#include "api/gadget_meta_coder.h"
 #include "system/api_definitions.h"
 
 #include "config_variants.h"
