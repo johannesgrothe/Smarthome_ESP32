@@ -1,8 +1,12 @@
 #include "static_storage.h"
 #include <sstream>
+#include <ArduinoJson.h>
+#include <api/config_decoder.h>
+
 #include "../console_logger.h"
 
 StaticStorage::StaticStorage() {
+    logger_i(TAG, "Initializing EEPROM Storage...");
     initialized_ = staticConfigStringAvailable();
 }
 

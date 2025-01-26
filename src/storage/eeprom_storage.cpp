@@ -7,6 +7,7 @@
 static auto TAG = "EepromStorage";
 
 EepromStorage::EepromStorage() {
+    logger_i(TAG, "Initializing EEPROM Storage...");
     initialized_ = EepromManager::initEEPROM();
 
     if (initialized_) {

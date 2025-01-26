@@ -24,5 +24,5 @@ public:
 
   void forwardUpdate(const GadgetUpdateMeta &data);
 
-  void refresh();
+  void loop();
 };

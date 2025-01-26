@@ -149,16 +149,7 @@ void ApiManager::handleSystemConfigWrite(const std::shared_ptr<Request> &req) co
 void ApiManager::publishSync(std::string *receiver = nullptr) const {
     logger_i(TAG, "Publishing sync data");
     const auto client_data = delegate_->getClientData();
-
-    std::vector<GadgetMeta> gadget_data;
-    auto gadgets = delegate_->getGadgetData();
-    if (gadgets_ != nullptr) {
-        for (uint8_t i = 0; i < gadgets_->getGadgetCount(); i++) {
-            const auto buf_gadget = gadgets_->getGadget(i);
-            auto buf_g = buf_gadget->encode();
-            gadget_data.push_back(buf_g);
-        }
-    }
+    const auto gadget_data = delegate_->getGadgetData();
 
     auto payload = ApiEncoder::encodeSync(client_data, gadget_data, runtime_id_);
     if (receiver == nullptr) {

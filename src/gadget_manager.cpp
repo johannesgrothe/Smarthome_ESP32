@@ -37,7 +37,7 @@ uint8_t GadgetManager::getGadgetCount() const {
     return static_cast<uint8_t>(gadgets_.size());
 }
 
-void GadgetManager::refresh() {
+void GadgetManager::loop() {
     for (const auto &gadget: gadgets_) {
         gadget->refresh();
     }

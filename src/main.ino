@@ -4,7 +4,6 @@
 
 //region IMPORTS
 
-
 #include "storage/eeprom_storage.h"
 #include "storage/static_storage.h"
 #include "boot_mode.h"
@@ -14,6 +13,7 @@
 #include "gadget_manager.h"
 #include "scheduled_messages_manager.h"
 #include "network_loader.h"
+#include "random.h"
 
 //endregion
 
@@ -21,11 +21,11 @@
 
 static const char *TAG = "Initialization";
 
-// Main class instance, handles the complete system
-//std::shared_ptr<ClientMain> client_main;
-
 // Mode the system is supposed to be running in
 BootMode system_mode;
+
+// Ever changing ID for network partners to detect reboots
+uint16_t runtime_id = random_int(10000);
 
 // Storage to load and save configs
 std::shared_ptr<SystemStorage> storage;
@@ -83,97 +83,6 @@ std::shared_ptr<EolConfig> loadBackupEolConfig() {
 
 // endregion BACKUP CONFIGS
 
-//region TASKS
-
-/**
- * Function for the main task refresing the main content
- * @param args Unused
- */
-[[noreturn]] static void mainTask(void *args) {
-  while (true) {
-    client_main->loopSystem();
-    vTaskDelay(10 / portTICK_PERIOD_MS);
-  }
-}
-
-/**
- * Function for the network tasks receiving and sending requests
- * @param args Unused
- */
-[[noreturn]] static void networkTask(void *args) {
-  while (true) {
-    client_main->loopNetwork();
-    vTaskDelay(10 / portTICK_PERIOD_MS);
-  }
-}
-
-/**
- * Function for the gadgets refreshing their hardware
- * @param args Unused
- */
-[[noreturn]] static void gadgetTask(void *args) {
-  while (true) {
-    client_main->loopGadgets();
-    vTaskDelay(10 / portTICK_PERIOD_MS);
-  }
-}
-
-/**
- * Function for the network tasks receiving and sending requests
- * @param args Unused
- */
-[[noreturn]] static void heartbeatTask(void *args) {
-  while (true) {
-//    sendHeartbeat();
-    vTaskDelay(5000 / portTICK_PERIOD_MS);
-  }
-}
-
-/**
- * Creates and starts the tasks used by the system
- */
-static void createTasks() {
-  logger_i(TAG, "Creating tasks...");
-//  xTaskCreatePinnedToCore(
-//      mainTask,              // Task function.
-//      "Smarthome_Main",      // String with name of task.
-//      10000,                 // Stack size in words.
-//      NULL,                  // Parameter passed as input of the task
-//      1,                     // Priority of the task.
-//      &main_task,            // Task handle.
-//      0);                    // Core to run on
-
-  xTaskCreatePinnedToCore(
-      networkTask,
-      "Smarthome_Network",
-      10000,
-      NULL,
-      1,
-      &network_task,
-      1);
-
-  xTaskCreatePinnedToCore(
-      gadgetTask,
-      "Smarthome_Gadgets",
-      10000,
-      NULL,
-      1,
-      &gadget_task,
-      1);
-
-//  xTaskCreatePinnedToCore(
-//      heartbeatTask,
-//      "Smarthome_Heartbeat",
-//      10000,
-//      NULL,
-//      1,
-//      &heartbeat_task,
-//      1);
-  logger_i(TAG, "Tasks up and running.");
-}
-
-//endregion TASKS
-
 //region MAIN FUNCTIONS
 
 /**
@@ -184,10 +93,10 @@ void setup() {
 
   logger_i(TAG, "Launching...");
   logger_i(TAG, "Software Info:");
-  logger_i(TAG, "Flash Date: %s", getSoftwareFlashDate().c_str());
-  logger_i(TAG, "Git Branch: %s", getSoftwareGitBranch().c_str());
-  logger_i(TAG, "Git Commit: %s", getSoftwareGitCommit().c_str());
-  logger_i(TAG, "API Version: %d.%d.%d",
+  logger_i(TAG, "  Flash Date: %s", getSoftwareFlashDate().c_str());
+  logger_i(TAG, "  Git Branch: %s", getSoftwareGitBranch().c_str());
+  logger_i(TAG, "  Git Commit: %s", getSoftwareGitCommit().c_str());
+  logger_i(TAG, "  API Version: %d.%d.%d",
            api_definitions::version::major,
            api_definitions::version::minor,
            api_definitions::version::bugfix);
@@ -207,12 +116,21 @@ void setup() {
     eol_config = loadBackupEolConfig();
   }
 
+  logger_i(TAG, "Hardware Info:");
+  logger_i(TAG, "  HW Variant: %d", eol_config->variant);
+  logger_i(TAG, "  HW Serial: '%s'", eol_config->serial.c_str());
+
   auto system_config = storage->loadSystemConfig();
   if (system_config == nullptr) {
     logger_e(TAG, "Could not load system config, falling back to setup mode");
     boot_mode = BootMode::Serial_Only;
     system_config = loadBackupSystemConfig();
   }
+
+  logger_i(TAG, "Client Info:");
+  logger_i(TAG, "  Runtime ID: %d", runtime_id);
+  logger_i(TAG, "  Client ID: '%s'", system_config->id.c_str());
+  logger_i(TAG, "  Boot Mode: '%d'", boot_mode);
 
   logger_i(TAG, "Initializing gadget manager");
   gadget_manager = std::make_shared<GadgetManager>();
@@ -242,12 +160,34 @@ void setup() {
     HardwareController::rebootChip("Network initialization failed.", 15);
   }
 
-  api_manager = std::make_shared<ApiManager>(network);
+  api_manager = std::make_shared<ApiManager>(client_manager,
+                                             network,
+                                             runtime_id,
+                                             system_config->id);
 
-  client_main = std::make_shared<ClientMain>(boot_mode, *system_config);
-  client_main->setStorageManager(storage);
+  scheduled_messages = std::make_shared<ScheduledMessagesManager>(api_manager);
+
   logger_i(TAG, "Main launched successfully");
-  createTasks();
+}
+
+void loopNetwork() {
+  network->refresh();
+  if (network->hasRequest()) {
+    const auto req = network->getRequest();
+    api_manager->handleRequest(req);
+  }
+  scheduled_messages->loop();
+}
+
+void loopGadgets() {
+  gadget_manager->loop();
+  for (uint8_t i = 0; i < gadget_manager->getGadgetCount(); i++) {
+    auto gadget = gadget_manager->getGadget(i);
+    if (gadget->hasChanged()) {
+        auto g = gadget->encode();
+        api_manager->publishGadgetUpdate(g);
+    }
+  }
 }
 
 /**
@@ -255,7 +195,8 @@ void setup() {
  * Used for the heartbeat sending.
  */
 void loop() {
-  client_main->loopSystem();
+  loopNetwork();
+  loopGadgets();
 }
 
 //endregion

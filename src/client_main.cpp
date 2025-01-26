@@ -171,7 +171,6 @@ bool ClientMain::handleSystemConfigWrite(SystemConfig cfg) {
 
 ClientMeta ClientMain::getClientData() {
     return {
-        getPortMapping(),
         system_mode_,
         getSoftwareFlashDate(),
         getSoftwareGitCommit(),
@@ -233,7 +232,7 @@ void ClientMain::loopSystem() {
 
 void ClientMain::loopGadgets() {
     if (gadget_manager_ != nullptr) {
-        gadget_manager_->refresh();
+        gadget_manager_->loop();
         for (uint8_t i = 0; i < gadget_manager_->getGadgetCount(); i++) {
             auto gadget = gadget_manager_->getGadget(i);
             if (gadget->hasChanged()) {
