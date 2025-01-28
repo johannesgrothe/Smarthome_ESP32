@@ -22,6 +22,7 @@ public:
   /**
    * Reboots the chip and prints out the given message
    * @param reason The reason to print to the terminal
+   * @param delay Delay until reboot
    */
   static void rebootChip(const std::string &reason, uint8_t delay = 5);
 

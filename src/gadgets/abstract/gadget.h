@@ -26,9 +26,6 @@ class Gadget {
     // Whether the status of the gadget was changed by external things since the last refresh
     bool was_changed_;
 
-    // Mutex to protect the hardware update flags
-    std::mutex mtx_;
-
 protected:
     // Type of the gadget
     const GadgetType type_;

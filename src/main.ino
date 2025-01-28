@@ -48,18 +48,6 @@ std::shared_ptr<ScheduledMessagesManager> scheduled_messages;
 // Network-connector to send and receive requests
 std::shared_ptr<RequestGadget> network;
 
-// Main task, handling the system in general
-TaskHandle_t main_task;
-
-// Network task, receiving and sending requests via the network gadget
-TaskHandle_t network_task;
-
-// Gadget task, looping the gadgets refresh method allowing them to update their hardware
-TaskHandle_t gadget_task;
-
-// Heartbeat task, sending a heartbeat request every 5 seconds
-TaskHandle_t heartbeat_task;
-
 //endregion
 
 //region BACKUP CONFIGS
@@ -111,7 +99,7 @@ void setup() {
 
   auto eol_config = storage->loadEolConfig();
   if (eol_config == nullptr) {
-    logger_e(TAG, "Could not load system config, falling back to setup mode");
+    logger_e(TAG, "Could not load eol config, falling back to setup mode");
     boot_mode = BootMode::Serial_Only;
     eol_config = loadBackupEolConfig();
   }
@@ -151,9 +139,9 @@ void setup() {
 
   logger_i(TAG, "Initializing Network");
   if (boot_mode == BootMode::Serial_Only) {
-    network = NetworkLoader::loadMqtt(*system_config);
-  } else {
     network = NetworkLoader::loadSerial();
+  } else {
+    network = NetworkLoader::loadMqtt(*system_config);
   }
 
   if (network == nullptr) {
@@ -181,14 +169,14 @@ void loopNetwork() {
 
 void loopGadgets() {
   gadget_manager->loop();
-  for (uint8_t i = 0; i < gadget_manager->getGadgetCount(); i++) {
-    auto gadget = gadget_manager->getGadget(i);
-    if (gadget->hasChanged()) {
-        auto g = gadget->encode();
-        auto update = GadgetUpdateDTO(g.name, g.properties);
-        api_manager->publishGadgetUpdate(update);
-    }
-  }
+//  for (uint8_t i = 0; i < gadget_manager->getGadgetCount(); i++) {
+//    auto gadget = gadget_manager->getGadget(i);
+//    if (gadget->hasChanged()) {
+//        auto g = gadget->encode();
+//        auto update = GadgetUpdateDTO(g.name, g.properties);
+//        api_manager->publishGadgetUpdate(update);
+//    }
+//  }
 }
 
 /**
@@ -196,7 +184,7 @@ void loopGadgets() {
  * Used for the heartbeat sending.
  */
 void loop() {
-  loopNetwork();
+//  loopNetwork();
   loopGadgets();
 }
 

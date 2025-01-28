@@ -1,6 +1,6 @@
 #include "system_timer.h"
 
-static const char *TAG = "SystemTimer";
+static auto TAG = "SystemTimer";
 
 SystemTimer::SystemTimer() = default;
 

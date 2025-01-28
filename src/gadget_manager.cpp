@@ -22,14 +22,13 @@ std::shared_ptr<Gadget> GadgetManager::getGadget(const std::string &gadget_name)
 }
 
 std::shared_ptr<Gadget> GadgetManager::getGadget(const uint8_t index) const {
-    if (index >= gadgets_.size())
+    if (index >= gadgets_.size() || index < 0)
+        logger_e(TAG, "invalid index %d (gadget count: %d)", index, gadgets_.size());
         return nullptr;
     return gadgets_[index];
 }
 
-std::shared_ptr<Gadget> GadgetManager::operator[](int index) const {
-    if (index >= gadgets_.size() || index < 0)
-        return nullptr;
+std::shared_ptr<Gadget> GadgetManager::operator[](const int index) const {
     return getGadget(index);
 }
 
@@ -38,8 +37,24 @@ uint8_t GadgetManager::getGadgetCount() const {
 }
 
 void GadgetManager::loop() {
+    // logger_e(TAG, "size: %d, count: %d", gadgets_.size(), getGadgetCount());
+    // for (uint8_t i = 0; i < getGadgetCount(); i++) {
+    //     auto gadget = getGadget(i);
+    //     if (gadget != nullptr) {
+    //         gadget->refresh();
+    //         logger_e(TAG, "gadget at pos %d is cool", i);
+    //     } else {
+    //         logger_e(TAG, "gadget at pos %d is nullptr", i);
+    //     }
+    // }
     for (const auto &gadget: gadgets_) {
-        gadget->refresh();
+        if (gadget != nullptr) {
+            logger_e(TAG, "gadget is cool..?");
+            gadget->refresh();
+            logger_e(TAG, "yeah it was.");
+        } else {
+            logger_e(TAG, "gadget is nullptr");
+        }
     }
 }
 

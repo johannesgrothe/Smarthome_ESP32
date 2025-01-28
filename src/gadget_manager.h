@@ -8,7 +8,7 @@
 
 class GadgetManager {
 
-  std::vector<std::shared_ptr<Gadget>> gadgets_{};
+  std::vector<std::shared_ptr<Gadget>> gadgets_;
 
 public:
   GadgetManager();

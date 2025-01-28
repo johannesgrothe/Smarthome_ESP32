@@ -10,6 +10,7 @@ Lamp_RGB::Lamp_RGB(std::string name) : Gadget(std::move(name),
 }
 
 void Lamp_RGB::applyChanges(const DynamicJsonDocument &data) {
+    logger_e(TAG, "Lamp_RGB::applyChanges");
     uint8_t red = getRed();
     uint8_t green = getGreen();
     uint8_t blue = getBlue();
@@ -30,7 +31,8 @@ void Lamp_RGB::applyChanges(const DynamicJsonDocument &data) {
 }
 
 DynamicJsonDocument Lamp_RGB::encodeProperties() {
-    DynamicJsonDocument doc(75);
+    logger_e(TAG, "Lamp_RGB::encodeProperties");
+    DynamicJsonDocument doc(150);
     doc["red"] = getRed();
     doc["green"] = getRed();
     doc["blue"] = getRed();

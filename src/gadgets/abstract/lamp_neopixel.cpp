@@ -17,7 +17,9 @@ Lamp_NeoPixel_RGB::Lamp_NeoPixel_RGB(std::string name, const uint8_t pin,
                                      const uint16_t len) : Lamp_RGB(std::move(name)),
                                                            pin_(pin),
                                                            len_(len) {
+    logger_e(TAG, "Lamp_NeoPixel_RGB::Lamp_NeoPixel_RGB");
     led_stripe_ = Adafruit_NeoPixel(len_, pin_, NEO_GRB + NEO_KHZ800);
     led_stripe_.begin();
     led_stripe_.clear();
+    setLedColor(0x00, 0xFF, 0xFF);
 }

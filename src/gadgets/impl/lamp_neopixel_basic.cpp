@@ -8,7 +8,8 @@ gadget_definitions::GadgetIdentifier Lamp_NeoPixel_RGB_Basic::encodeType() {
 
 Lamp_NeoPixel_RGB_Basic::Lamp_NeoPixel_RGB_Basic(std::string name, const uint8_t pin, const uint16_t len) : Lamp_NeoPixel_RGB(
     std::move(name), pin, len) {
-    setLedColor(0xFF, 0xFF, 0xFF);
+    logger_e("Gadget", "Creating Neopixel Lamp on Pin %d", pin);
+    // setLedColor(0xFF, 0xFF, 0xFF);
 }
 
 void Lamp_NeoPixel_RGB_Basic::refresh() {

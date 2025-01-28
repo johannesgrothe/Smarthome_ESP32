@@ -29,10 +29,8 @@ bool Gadget::hasInitError() const {
 }
 
 bool Gadget::hasChanged() {
-    mtx_.lock();
     const bool buf = has_changed_;
     has_changed_ = false;
-    mtx_.unlock();
     if (buf) {
         logger_i(getName(), "Internal change detected.");
     }
@@ -40,10 +38,8 @@ bool Gadget::hasChanged() {
 }
 
 bool Gadget::wasChanged() {
-    mtx_.lock();
     const bool buf = was_changed_;
     was_changed_ = false;
-    mtx_.unlock();
     if (buf) {
         logger_i(getName(), "External change detected.");
     }
@@ -51,19 +47,16 @@ bool Gadget::wasChanged() {
 }
 
 void Gadget::registerInternalChange() {
-    mtx_.lock();
     has_changed_ = true;
-    mtx_.unlock();
 }
 
 
 void Gadget::registerExternalChange() {
-    mtx_.lock();
     was_changed_ = true;
-    mtx_.unlock();
 }
 
 GadgetDTO Gadget::encode() {
+    logger_e(TAG, "GadgetDTO::encode()");
     const auto properties = encodeProperties();
     const auto type = encodeType();
     return {type, name_, properties};
