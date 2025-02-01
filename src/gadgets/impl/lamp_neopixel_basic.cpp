@@ -6,16 +6,15 @@ gadget_definitions::GadgetIdentifier Lamp_NeoPixel_RGB_Basic::encodeType() {
     return gadget_definitions::GadgetIdentifier::lamp_neopixel_rgb_basic;
 }
 
-Lamp_NeoPixel_RGB_Basic::Lamp_NeoPixel_RGB_Basic(std::string name, const uint8_t pin, const uint16_t len) : Lamp_NeoPixel_RGB(
+Lamp_NeoPixel_RGB_Basic::Lamp_NeoPixel_RGB_Basic(std::string name, const uint8_t pin,
+                                                 const uint16_t len) : Lamp_NeoPixel_RGB(
     std::move(name), pin, len) {
     logger_e("Gadget", "Creating Neopixel Lamp on Pin %d", pin);
     // setLedColor(0xFF, 0xFF, 0xFF);
 }
 
 void Lamp_NeoPixel_RGB_Basic::refresh() {
-    logger_e("Gadget", "loop");
     if (wasChanged()) {
-        logger_e("Gadget", "was changed");
         setLedColor(red_, green_, blue_);
     }
 }

@@ -18,6 +18,6 @@ inline std::shared_ptr<IR_Gadget> loadIRGadget() {
 }
 
 inline void loadGadgets(const std::shared_ptr<GadgetManager> &manager) {
-    lamp1 = std::make_shared<Lamp_NeoPixel_RGB_Basic>("lamp1", 23, 1);
+    lamp1 = std::make_shared<Lamp_NeoPixel_RGB_Basic>("lamp1", 32, 1);
     manager->addGadget(lamp1);
 }

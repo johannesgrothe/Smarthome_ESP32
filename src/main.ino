@@ -169,14 +169,19 @@ void loopNetwork() {
 
 void loopGadgets() {
   gadget_manager->loop();
-//  for (uint8_t i = 0; i < gadget_manager->getGadgetCount(); i++) {
-//    auto gadget = gadget_manager->getGadget(i);
-//    if (gadget->hasChanged()) {
-//        auto g = gadget->encode();
-//        auto update = GadgetUpdateDTO(g.name, g.properties);
-//        api_manager->publishGadgetUpdate(update);
-//    }
-//  }
+  for (uint8_t i = 0; i < gadget_manager->getGadgetCount(); i++) {
+    auto gadget = gadget_manager->getGadget(i);
+    if (gadget == nullptr) {
+      logger_e(TAG, "gadget is nullptr");
+      continue;
+    }
+
+    if (gadget->hasChanged()) {
+        auto g = gadget->encode();
+        auto update = GadgetUpdateDTO(g.name, g.properties);
+        api_manager->publishGadgetUpdate(update);
+    }
+  }
 }
 
 /**
@@ -184,7 +189,7 @@ void loopGadgets() {
  * Used for the heartbeat sending.
  */
 void loop() {
-//  loopNetwork();
+  loopNetwork();
   loopGadgets();
 }
 

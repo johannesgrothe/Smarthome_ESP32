@@ -8,8 +8,6 @@ bool Lamp_NeoPixel_RGB::setLedColor(const uint8_t r, const uint8_t g, const uint
     const auto color = Adafruit_NeoPixel::Color(r, g, b);
     for (int k = 0; k < len_; k++) {
         led_stripe_->setPixelColor(k, color);
-        // led_stripe_.setPixelColor(k, led_stripe_.Color(r, g, b));
-        // led_stripe_.show();
     }
     led_stripe_->show();
     return true;
