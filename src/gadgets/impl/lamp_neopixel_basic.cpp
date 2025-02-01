@@ -13,7 +13,9 @@ Lamp_NeoPixel_RGB_Basic::Lamp_NeoPixel_RGB_Basic(std::string name, const uint8_t
 }
 
 void Lamp_NeoPixel_RGB_Basic::refresh() {
+    logger_e("Gadget", "loop");
     if (wasChanged()) {
+        logger_e("Gadget", "was changed");
         setLedColor(red_, green_, blue_);
     }
 }

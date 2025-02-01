@@ -38,10 +38,11 @@ bool Gadget::hasChanged() {
 }
 
 bool Gadget::wasChanged() {
+    logger_e("gadget", "checking change.");
     const bool buf = was_changed_;
     was_changed_ = false;
     if (buf) {
-        logger_i(getName(), "External change detected.");
+        logger_e("gadget", "External change detected.");
     }
     return buf;
 }
