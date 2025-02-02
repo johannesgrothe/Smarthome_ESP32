@@ -9,7 +9,7 @@
 #include "../test_dummys/dummy_eeprom.h"
 #endif
 
-#include <temp_variants.h>
+#include <system/variants.h>
 
 #include "../ip_container.h"
 

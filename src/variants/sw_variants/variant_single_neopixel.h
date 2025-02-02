@@ -1,6 +1,6 @@
 #pragma once
 #include <gadgets/impl/lamp_neopixel_basic.h>
-#include "temp_variants.h"
+#include "system/variants.h"
 #include "connectors/radio_gadget.h"
 #include "connectors/ir_gadget.h"
 #include "gadget_manager.h"

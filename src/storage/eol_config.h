@@ -3,7 +3,7 @@
 #include <string>
 
 #include "base_config.h"
-#include "temp_variants.h"
+#include "system/variants.h"
 
 class EolConfig final : public BaseConfig {
 public:

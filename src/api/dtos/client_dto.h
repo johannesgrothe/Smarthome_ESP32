@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string>
 #include <boot_mode.h>
-#include "temp_variants.h"
+#include "system/variants.h"
 
 class ClientDTO {
 public:
